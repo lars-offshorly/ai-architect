@@ -1,0 +1,85 @@
+[
+  {
+    "bundle_key": "hr_hub",
+    "display_name": "HR Hub",
+    "primary_entity": "people",
+    "default_modules": ["tickets", "queues", "kpis", "dashboard"],
+    "required_slots": ["team_size", "primary_use_case"],
+    "description": "Workspace for HR teams to manage employee requests, onboarding, and operational visibility.",
+    "optional_modules": ["forms", "approvals", "knowledge_base"],
+    "industry_hints": [
+      "human resources",
+      "people operations",
+      "talent",
+      "recruiting",
+      "hr",
+      "tech",
+      "agency",
+      "healthcare",
+      "logistics"
+    ],
+    "dummy_data_template_key": "hr_hub_base"
+  },
+  {
+    "bundle_key": "project_ops",
+    "display_name": "Project Operations",
+    "primary_entity": "work",
+    "default_modules": ["tasks", "timelines", "milestones", "dashboard"],
+    "required_slots": ["project_count", "team_size"],
+    "description": "Workspace for planning and delivering projects with structured execution tracking.",
+    "optional_modules": ["risk_register", "resource_planning", "timesheets"],
+    "industry_hints": [
+      "project management",
+      "consulting",
+      "delivery",
+      "implementation",
+      "operations"
+    ],
+    "dummy_data_template_key": "project_ops_base"
+  },
+  {
+    "bundle_key": "asset_mgmt",
+    "display_name": "Asset Management",
+    "primary_entity": "asset",
+    "default_modules": ["assets", "maintenance", "tickets", "dashboard"],
+    "required_slots": ["asset_types", "location_count"],
+    "description": "Workspace for lifecycle tracking, maintenance, and service workflows for physical assets.",
+    "optional_modules": ["inventory", "vendors", "compliance"],
+    "industry_hints": [
+      "asset",
+      "equipment",
+      "facility",
+      "fleet",
+      "warehouse"
+    ],
+    "dummy_data_template_key": "asset_mgmt_base"
+  },
+  {
+    "bundle_key": "field_service",
+    "display_name": "Field Service",
+    "primary_entity": "work",
+    "default_modules": ["work_orders", "scheduling", "forms", "dashboard"],
+    "required_slots": ["service_zones", "technician_count"],
+    "description": "Workspace for dispatching technicians, scheduling field jobs, and tracking service quality.",
+    "optional_modules": ["parts_inventory", "sla_tracking", "mobile_checklists"],
+    "industry_hints": [
+      "field service",
+      "dispatch",
+      "technician",
+      "onsite",
+      "repair"
+    ],
+    "dummy_data_template_key": "field_service_base"
+  },
+  {
+    "bundle_key": "generic",
+    "display_name": "Custom Workspace",
+    "primary_entity": "work",
+    "default_modules": ["tickets", "dashboard"],
+    "required_slots": ["primary_use_case"],
+    "description": "Fallback workspace for requests that do not confidently map to a specialized bundle.",
+    "optional_modules": ["notes", "forms", "tasks"],
+    "industry_hints": ["custom", "general", "other", "misc", "unknown"],
+    "dummy_data_template_key": "generic_base"
+  }
+]

@@ -1,0 +1,36 @@
+# Web framework
+fastapi>=0.121.2,<0.122.0
+uvicorn>=0.38.0,<0.39.0
+aiofiles>=25.1.0            # required by FastAPI StaticFiles (serves frontend/)
+
+# LangChain / LangGraph
+langchain-core==0.3.49
+langchain-openai==0.3.8
+langgraph==0.5.2
+langgraph-checkpoint-postgres>=3.0.2,<4.0.0
+
+# Database (used in database.py)
+asyncpg>=0.30.0,<0.31.0
+psycopg[binary,pool]>=3.1.0     # psycopg3 — required by AsyncPostgresSaver + psycopg_pool
+
+# HTTP client (async — no requests)
+httpx>=0.28.1,<0.29.0
+
+# Config management
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+
+# Logging / observability
+colorama>=0.4.6,<0.5.0          # coloured terminal output in logging_config
+
+# PyYAML — for parsing YAML frontmatter in template files
+pyyaml>=6.0.0,<7.0.0
+
+# Monitoring
+sentry-sdk>=2.47.0,<3.0.0
+
+
+# Testing
+pytest>=8.3.2,<9.0.0
+pytest-asyncio>=0.24.0,<0.25.0
+pytest-cov>=5.0.0,<6.0.0
