@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "hr_hub",
+  "display_name": "HR Hub",
+  "modules": ["tickets", "queues", "kpis", "dashboard"],
+  "stores": {
+    "tickets": [
+      {
+        "id": "ticket-001",
+        "title": "{{employee_name}} Leave Request",
+        "status": "pending",
+        "priority": "medium",
+        "category": "leave",
+        "assignee": "{{hr_manager}}",
+        "created_at": "2026-01-15T09:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "Onboarding — {{new_hire_name}}",
+        "status": "in_progress",
+        "priority": "high",
+        "category": "onboarding",
+        "assignee": "{{hr_manager}}",
+        "created_at": "2026-01-16T10:00:00Z"
+      }
+    ],
+    "queues": [
+      {
+        "id": "queue-001",
+        "name": "Leave Requests",
+        "ticket_count": 4,
+        "avg_resolution_days": 2
+      },
+      {
+        "id": "queue-002",
+        "name": "Onboarding",
+        "ticket_count": 2,
+        "avg_resolution_days": 5
+      }
+    ],
+    "kpis": [
+      {
+        "id": "kpi-001",
+        "label": "Open Requests",
+        "value": 6,
+        "unit": "tickets",
+        "trend": "up"
+      },
+      {
+        "id": "kpi-002",
+        "label": "Avg Resolution Time",
+        "value": 2.5,
+        "unit": "days",
+        "trend": "down"
+      },
+      {
+        "id": "kpi-003",
+        "label": "Employee Satisfaction",
+        "value": 87,
+        "unit": "%",
+        "trend": "stable"
+      }
+    ],
+    "dashboard_widgets": [
+      {
+        "id": "widget-001",
+        "type": "ticket_summary",
+        "title": "Request Overview",
+        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+      },
+      {
+        "id": "widget-002",
+        "type": "kpi_grid",
+        "title": "HR Metrics",
+        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+      }
+    ]
+  },
+  "metadata": {
+    "customizable_fields": ["company_name", "employee_names", "department_names", "role_names", "status_labels"]
+  }
+}

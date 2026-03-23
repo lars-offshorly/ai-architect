@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "generic",
+  "display_name": "Custom Workspace",
+  "modules": ["tickets", "dashboard"],
+  "config": {
+    "ticket_statuses": ["pending", "in_progress", "resolved", "closed"],
+    "ticket_priorities": ["low", "medium", "high"],
+    "kpi_definitions": [
+      {"key": "open_items", "label": "Open Items", "unit": "items"},
+      {"key": "completed_this_week", "label": "Completed This Week", "unit": "items"}
+    ]
+  },
+  "slots_used": ["primary_use_case", "company_name"]
+}

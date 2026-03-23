@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "field_service",
+  "display_name": "Field Service",
+  "modules": ["work_orders", "scheduling", "forms", "dashboard"],
+  "config": {
+    "work_order_statuses": ["pending", "dispatched", "in_progress", "completed", "cancelled"],
+    "work_order_priorities": ["low", "medium", "high", "emergency"],
+    "service_types": ["installation", "repair", "inspection", "maintenance", "emergency"],
+    "kpi_definitions": [
+      {"key": "sla_compliance", "label": "SLA Compliance", "unit": "%"},
+      {"key": "open_work_orders", "label": "Open Work Orders", "unit": "orders"},
+      {"key": "avg_job_duration", "label": "Avg Job Duration", "unit": "hours"}
+    ]
+  },
+  "slots_used": ["service_zones", "technician_count", "company_name"]
+}

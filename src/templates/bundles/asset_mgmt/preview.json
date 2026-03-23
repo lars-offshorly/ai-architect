@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "asset_mgmt",
+  "display_name": "Asset Management",
+  "modules": ["assets", "maintenance", "tickets", "dashboard"],
+  "stores": {
+    "assets": [
+      {"id": "asset-001", "name": "{{asset_name}}", "category": "{{asset_category}}", "status": "operational", "location": "{{location}}", "last_service": "2026-01-01T00:00:00Z"},
+      {"id": "asset-002", "name": "{{asset_name_2}}", "category": "{{asset_category}}", "status": "maintenance", "location": "{{location}}", "last_service": "2025-12-15T00:00:00Z"}
+    ],
+    "maintenance": [
+      {"id": "maint-001", "asset_id": "asset-002", "type": "scheduled", "status": "in_progress", "technician": "{{technician}}", "scheduled_date": "2026-01-20T08:00:00Z"},
+      {"id": "maint-002", "asset_id": "asset-001", "type": "preventive", "status": "scheduled", "technician": "{{technician}}", "scheduled_date": "2026-02-01T08:00:00Z"}
+    ],
+    "kpis": [
+      {"id": "kpi-001", "label": "Asset Uptime", "value": 94, "unit": "%", "trend": "stable"},
+      {"id": "kpi-002", "label": "Pending Maintenance", "value": 3, "unit": "items", "trend": "up"},
+      {"id": "kpi-003", "label": "Avg Repair Time", "value": 1.8, "unit": "days", "trend": "down"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "asset_map", "title": "Asset Locations", "position": {"row": 0, "col": 0, "width": 3, "height": 2}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Asset Metrics", "position": {"row": 2, "col": 0, "width": 3, "height": 1}}
+    ]
+  },
+  "metadata": {
+    "customizable_fields": ["company_name", "asset_categories", "location_names", "status_labels"]
+  }
+}

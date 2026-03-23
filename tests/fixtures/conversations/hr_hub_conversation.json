@@ -1,0 +1,7 @@
+[
+  {"role": "user", "content": "We need a workspace for our HR team to manage employee leave requests and onboarding."},
+  {"role": "assistant", "content": "Got it — sounds like you're managing people operations. What's the rough size of your team?"},
+  {"role": "user", "content": "We have about 50 employees and 3 HR managers."},
+  {"role": "assistant", "content": "Great. I'd recommend the HR Hub workspace with tickets, queues, KPIs, and a dashboard. Does that sound right?"},
+  {"role": "user", "content": "Yes, that works for us."}
+]
