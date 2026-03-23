@@ -1,0 +1,19 @@
+from __future__ import annotations
+
+CONFIDENCE_HIGH: float = 0.8
+CONFIDENCE_MEDIUM: float = 0.6
+CONFIDENCE_LOW: float = 0.4
+
+MAX_CONVERSATION_TURNS: int = 20
+MAX_CLARIFICATION_ATTEMPTS: int = 3
+CONVERSATION_HISTORY_WINDOW: int = 6
+
+DEFAULT_TOP_K_BUNDLES: int = 3
+
+PREVIEW_JSON_SCHEMA_VERSION: str = "1.0"
+APP_PAYLOAD_SCHEMA_VERSION: str = "1.0"
+
+BUNDLE_REGISTRY_FILENAME: str = "bundle_registry.yaml"
+PREVIEW_JSON_FILENAME: str = "preview.json"
+APP_JSON_FILENAME: str = "app.json"
+DUMMY_DATA_FILENAME: str = "dummy_data.json"
