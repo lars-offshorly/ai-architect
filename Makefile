@@ -1,0 +1,169 @@
+.PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr validate-templates generate-template seed help
+
+POETRY := poetry
+SRC_DIR := src
+TEST_DIR := tests
+LINT_PATHS := src tests onboarding catalog scripts
+
+help:
+	@echo "Available targets:"
+	@echo "  install               Install dependencies with Poetry (including dev)"
+	@echo "  run                   Start the API server (production mode)"
+	@echo "  dev                   Start the API server with hot reload"
+	@echo "  test                  Run all tests"
+	@echo "  test-unit             Run unit tests only"
+	@echo "  test-integration      Run integration tests only"
+	@echo "  lint                  Run black + ruff + flake8 + mypy + pylint + vulture"
+	@echo "  format                Run black + ruff formatter"
+	@echo "  lint-file             Lint specific file(s) or directory (usage: make lint-file src/foo.py tests/test_bar.py)"
+	@echo "  lint-staged           Lint staged Python files"
+	@echo "  lint-mr               Lint changed Python files vs dev branch"
+	@echo "  check-mr              Run tests + lint changed Python files vs dev branch"
+	@echo "  validate-templates    Validate all bundle template JSON files"
+	@echo "  generate-template     Scaffold a new bundle (usage: make generate-template BUNDLE=my_bundle)"
+	@echo "  seed BUNDLE=<key>     Print dummy data for a bundle to stdout"
+
+install:
+	$(POETRY) install --with dev
+
+run:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run uvicorn main:app --host 0.0.0.0 --port 8000
+
+dev:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+test:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR) -v
+
+test-unit:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR)/unit -v
+
+test-integration:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR)/integration -v
+
+lint:
+	@echo "black..."
+	@$(POETRY) run black $(LINT_PATHS)
+	@echo "ruff..."
+	@$(POETRY) run ruff check $(LINT_PATHS)
+	@echo "flake8..."
+	@$(POETRY) run flake8 $(LINT_PATHS) --count
+	@echo "mypy..."
+	@$(POETRY) run mypy $(LINT_PATHS)
+	@echo "pylint..."
+	@$(POETRY) run pylint $(LINT_PATHS)
+	@echo "vulture..."
+	@$(POETRY) run vulture $(LINT_PATHS) --min-confidence 90
+
+format:
+	@echo "black..."
+	@$(POETRY) run black $(LINT_PATHS)
+	@echo "ruff format..."
+	@$(POETRY) run ruff format $(LINT_PATHS)
+
+# Usage: make lint-file src/api/endpoints.py tests/test_api.py
+# Usage: make lint-file src/api/
+lint-file:
+	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo "Usage: make lint-file file1.py [file2.py ...] or make lint-file directory/"; \
+		exit 1; \
+	fi
+	@echo "Linting files: $(filter-out $@,$(MAKECMDGOALS))"
+	@echo "black..."
+	@$(POETRY) run black $(filter-out $@,$(MAKECMDGOALS))
+	@echo "ruff..."
+	@$(POETRY) run ruff check $(filter-out $@,$(MAKECMDGOALS))
+	@echo "flake8..."
+	@$(POETRY) run flake8 $(filter-out $@,$(MAKECMDGOALS))
+	@echo "mypy..."
+	@$(POETRY) run mypy $(filter-out $@,$(MAKECMDGOALS))
+	@echo "pylint..."
+	@$(POETRY) run pylint $(filter-out $@,$(MAKECMDGOALS))
+
+# Allow passing arguments to lint-file without escaping
+%:
+	@:
+
+lint-staged:
+	@echo "Formatting and linting staged Python files..."
+	@FILES=$$(git diff --cached --name-only --diff-filter=ACMR -- '*.py' | \
+		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -v __pycache__ | \
+		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
+	if [ -z "$$FILES" ]; then \
+		echo "No staged Python files to lint"; \
+	else \
+		echo "Files to process: $$FILES"; \
+		echo "black..."; \
+		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "ruff..."; \
+		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "flake8..."; \
+		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "mypy..."; \
+		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "pylint..."; \
+		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "vulture..."; \
+		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+	fi
+
+lint-mr:
+	@echo "Formatting and linting files changed compared to dev branch..."
+	@FILES=$$(git diff --name-only dev...HEAD -- '*.py' 2>/dev/null | \
+		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -v __pycache__ | \
+		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
+	if [ -z "$$FILES" ]; then \
+		echo "No existing Python files to lint"; \
+	else \
+		echo "Files to process: $$FILES"; \
+		echo "black..."; \
+		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "ruff..."; \
+		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "flake8..."; \
+		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "mypy..."; \
+		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "pylint..."; \
+		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "vulture..."; \
+		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+	fi
+
+check-mr:
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest
+	@echo "Formatting and linting files changed compared to dev branch..."
+	@FILES=$$(git diff --name-only dev...HEAD -- '*.py' 2>/dev/null | \
+		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -v __pycache__ | \
+		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
+	if [ -z "$$FILES" ]; then \
+		echo "No existing Python files to lint"; \
+	else \
+		echo "Files to process: $$FILES"; \
+		echo "black..."; \
+		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "ruff..."; \
+		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "flake8..."; \
+		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "mypy..."; \
+		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "pylint..."; \
+		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "vulture..."; \
+		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+	fi
+
+validate-templates:
+	$(POETRY) run python scripts/validate_templates.py
+
+generate-template:
+	@if [ -z "$(BUNDLE)" ]; then echo "Usage: make generate-template BUNDLE=<bundle_key>"; exit 1; fi
+	$(POETRY) run python scripts/generate_templates.py $(BUNDLE)
+
+seed:
+	@if [ -z "$(BUNDLE)" ]; then echo "Usage: make seed BUNDLE=<bundle_key>"; exit 1; fi
+	$(POETRY) run python scripts/seed_dummy_data.py $(BUNDLE)
