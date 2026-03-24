@@ -49,7 +49,7 @@ def get_replier_service() -> ReplierService:
 
 @lru_cache(maxsize=1)
 def get_preview_generator_service() -> PreviewGeneratorService:
-    return PreviewGeneratorService(get_template_repository())
+    return PreviewGeneratorService()
 
 
 @lru_cache(maxsize=1)
@@ -74,6 +74,5 @@ def get_preview_flow() -> PreviewFlow:
     display_names = {b.bundle_key: b.display_name for b in catalog.list_all()}
     return PreviewFlow(
         preview_generator_service=get_preview_generator_service(),
-        app_generator_service=get_app_generator_service(),
         bundle_display_names=display_names,
     )

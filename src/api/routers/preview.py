@@ -8,9 +8,8 @@ from api.deps import (
     get_session_repository,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
-from core.exceptions import BundleNotFoundError, SessionNotFoundError, TemplateLoadError
+from core.exceptions import BundleNotFoundError, SessionNotFoundError
 from core.logging import get_logger
-from domain.models.extracted_info import ExtractedInfo
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
@@ -37,20 +36,20 @@ async def generate_preview(
             detail="Session bundle must be confirmed before generating preview.",
         )
 
-    extracted = ExtractedInfo(session_id=session_id)
+    # Pass the full conversation history so the pipeline can personalise sample data.
+    # Previously this was a bare ExtractedInfo(session_id=...) with no content,
+    # which meant zero personalisation was applied.
+    messages = conv_repo.get_messages(session_id)
+    conversation_history = [{"role": m.role, "content": m.content} for m in messages]
 
     try:
         payload = flow.run(
             session_id=session_id,
             bundle_key=session.selected_bundle_key,
-            extracted=extracted,
+            conversation_history=conversation_history,
         )
     except BundleNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    except TemplateLoadError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
-        ) from exc
 
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,

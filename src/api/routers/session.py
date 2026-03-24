@@ -44,6 +44,11 @@ async def start_session(
         history=[user_msg],
         confirmed=False,
     )
+
+    if result.get("bundle_key"):
+        session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
+        session_repo.save(session)
+
     return SessionStartedResponse(
         status=result["status"],  # type: ignore[arg-type]
         session_id=session_id,
@@ -84,6 +89,8 @@ async def reply_to_session(
         confirmed=session.confirmed,
     )
     session.turn_count += 1
+    if result.get("bundle_key"):
+        session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
     session_repo.save(session)
 
     return ConversationTurnResponse(
