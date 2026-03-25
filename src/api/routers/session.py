@@ -1,3 +1,5 @@
+"""Router: session lifecycle and conversation turn endpoints."""
+
 from __future__ import annotations
 
 from uuid import uuid4
@@ -10,7 +12,10 @@ from api.deps import (
     get_session_repository,
 )
 from api.schemas.request import ConfirmBundleRequest, ReplyRequest, StartSessionRequest
-from api.schemas.response import ConversationTurnResponse, ErrorResponse, SessionStartedResponse
+from api.schemas.response import (
+    ConversationTurnResponse,
+    SessionStartedResponse,
+)
 from core.exceptions import SessionNotFoundError
 from core.logging import get_logger
 from domain.models.conversation import ConversationMessage
@@ -23,13 +28,16 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 logger = get_logger(__name__)
 
 
-@router.post("", response_model=SessionStartedResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=SessionStartedResponse, status_code=status.HTTP_201_CREATED
+)
 async def start_session(
     body: StartSessionRequest,
     session_repo: SessionRepository = Depends(get_session_repository),
     conv_repo: ConversationRepository = Depends(get_conversation_repository),
     flow: ConversationFlow = Depends(get_conversation_flow),
 ) -> SessionStartedResponse:
+    """Create a new session and process the opening user message."""
     session_id = str(uuid4())
     session = Session(session_id=session_id, user_id=body.user_id)
     session_repo.save(session)
@@ -67,10 +75,13 @@ async def reply_to_session(
     conv_repo: ConversationRepository = Depends(get_conversation_repository),
     flow: ConversationFlow = Depends(get_conversation_flow),
 ) -> ConversationTurnResponse:
+    """Append a user reply and run the next conversation turn."""
     try:
         session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
 
     user_msg = ConversationMessage(role="user", content=body.message)
     conv_repo.append_message(session_id, user_msg)
@@ -109,10 +120,13 @@ async def confirm_bundle(
     body: ConfirmBundleRequest,
     session_repo: SessionRepository = Depends(get_session_repository),
 ) -> ConversationTurnResponse:
+    """Confirm or reject the proposed bundle, updating session state accordingly."""
     try:
         session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
 
     session.confirmed = body.confirmed
     session_repo.save(session)

@@ -4,9 +4,6 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import pytest
-from langchain_core.messages import AIMessage
-from langgraph.checkpoint.memory import InMemorySaver
-
 from generator.personaliser import PersonalisationOutput
 from generator.schemas import (
     DummyDataJSON,
@@ -15,6 +12,9 @@ from generator.schemas import (
     StoreData,
     WorkspaceMeta,
 )
+from langchain_core.messages import AIMessage
+from langgraph.checkpoint.memory import InMemorySaver
+
 from onboarding.processor import OnboardingProcessor
 from onboarding.states import OnboardingIntents, TurnClassification
 

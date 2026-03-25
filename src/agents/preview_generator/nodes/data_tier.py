@@ -1,3 +1,5 @@
+"""Pipeline node: selects the data-generation tier for the current bundle."""
+
 from __future__ import annotations
 
 from core.logging import get_logger
@@ -34,7 +36,8 @@ def select_data_tier(state: PreviewGeneratorState) -> dict:
         tier = "tier_1"
     else:
         # TODO: Phase 2 — implement Tier 2 LLM-generated data for niche industries.
-        # Route here when bundle is unknown but not entirely generic (e.g. niche industry detected).
+        # Route here when bundle is unknown but not entirely generic
+        # (e.g. niche industry detected).
         tier = "tier_3"
 
     logger.info(

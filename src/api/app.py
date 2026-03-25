@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from core import Database, get_logger, pinecone_client, get_settings
+from core import Database, get_logger, get_settings, pinecone_client
 
 from .middleware import AuthMiddleware, RateLimitMiddleware
 from .routes import health_router, onboarding_router

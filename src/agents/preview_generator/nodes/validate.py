@@ -1,3 +1,5 @@
+"""Pipeline node: validates pipeline inputs before execution proceeds."""
+
 from __future__ import annotations
 
 from core.logging import get_logger
@@ -7,8 +9,8 @@ from ..state import PreviewGeneratorState
 logger = get_logger(__name__)
 
 # Routing tokens — must match keys in pipeline.py's conditional_edges map
-ROUTE_EMIT   = "emit_preview"
-ROUTE_RETRY  = "resolve_bundles_to_flags"
+ROUTE_EMIT = "emit_preview"
+ROUTE_RETRY = "resolve_bundles_to_flags"
 
 
 def validate_schema(state: PreviewGeneratorState) -> dict:
@@ -43,7 +45,7 @@ def validate_schema(state: PreviewGeneratorState) -> dict:
         logger.warning(
             "session=%s — validation failed (attempt %d/%d): %s",
             state.session_id,
-            new_retry_count,
+            state.retry_count + 1,
             state.max_retries,
             "; ".join(errors),
         )

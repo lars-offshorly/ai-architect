@@ -1,3 +1,5 @@
+"""Router: preview generation endpoint."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,10 +27,13 @@ async def generate_preview(
     conv_repo: ConversationRepository = Depends(get_conversation_repository),
     flow: PreviewFlow = Depends(get_preview_flow),
 ) -> AppPayloadResponseSchema:
+    """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
         session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
 
     if not session.confirmed or not session.selected_bundle_key:
         raise HTTPException(
@@ -49,7 +54,9 @@ async def generate_preview(
             conversation_history=conversation_history,
         )
     except BundleNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
 
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,

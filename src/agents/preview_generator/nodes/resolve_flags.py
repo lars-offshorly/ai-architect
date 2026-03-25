@@ -1,3 +1,5 @@
+"""Pipeline node: resolves feature flags from user context and bundle catalog."""
+
 from __future__ import annotations
 
 from core.logging import get_logger
@@ -14,7 +16,7 @@ logger = get_logger(__name__)
 # Keys absent from this map with no direct registry entry fall to Tier 3.
 # ---------------------------------------------------------------------------
 _CATALOG_TO_REGISTRY: dict[str, str] = {
-    "project_ops":   "project_mgmt",
+    "project_ops": "project_mgmt",
     "field_service": "ticketing",
 }
 

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
-from catalog.bundle_catalog import BundleCatalog
 from generator.schemas import (
     DummyDataJSON,
     GenerationJSON,
@@ -16,6 +14,8 @@ from generator.validator import (
     validate_generation_json,
     validate_output,
 )
+
+from catalog.bundle_catalog import BundleCatalog
 
 
 @pytest.fixture(name="catalog")

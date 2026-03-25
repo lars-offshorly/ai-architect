@@ -16,6 +16,9 @@ Bundle key mapping under test (catalog → registry):
   asset_mgmt   → (none)        (Tier 3 fallback)
   generic      → (none)        (Tier 3 fallback)
 """
+
+# pylint: disable=missing-class-docstring,missing-function-docstring
+
 from __future__ import annotations
 
 import pytest
@@ -25,6 +28,7 @@ from agents.preview_generator.service import PreviewGeneratorService
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(name="svc")
 def fixture_service() -> PreviewGeneratorService:
@@ -36,39 +40,111 @@ def fixture_service() -> PreviewGeneratorService:
 # ---------------------------------------------------------------------------
 
 _HISTORY_HR_HUB: list[dict] = [
-    {"role": "assistant", "content": "Hi! Tell me about your team and what you need help with."},
-    {"role": "user",      "content": "I manage HR at Vertex Solutions, a 200-person company. We struggle with employee onboarding, tracking leave requests, and keeping everyone aligned on company policy."},
-    {"role": "assistant", "content": "Got it — sounds like HR Hub would be a great fit. It covers onboarding tickets, leave queues, and KPI dashboards. How many people are on your HR team directly?"},
-    {"role": "user",      "content": "About 12 people. Maria Santos leads onboarding, Carlos Mendez handles compliance."},
-    {"role": "assistant", "content": "Perfect. HR Hub with onboarding, leave, and compliance modules — does that match what you need?"},
-    {"role": "user",      "content": "Yes, that's exactly it."},
+    {
+        "role": "assistant",
+        "content": "Hi! Tell me about your team and what you need help with.",
+    },
+    {
+        "role": "user",
+        "content": (
+            "I manage HR at Vertex Solutions, a 200-person company."
+            " We struggle with employee onboarding, tracking leave"
+            " requests, and keeping everyone aligned on company policy."
+        ),
+    },
+    {
+        "role": "assistant",
+        "content": (
+            "Got it — sounds like HR Hub would be a great fit."
+            " It covers onboarding tickets, leave queues, and KPI dashboards."
+            " How many people are on your HR team directly?"
+        ),
+    },
+    {
+        "role": "user",
+        "content": (
+            "About 12 people."
+            " Maria Santos leads onboarding, Carlos Mendez handles compliance."
+        ),
+    },
+    {
+        "role": "assistant",
+        "content": (
+            "Perfect. HR Hub with onboarding, leave, and compliance modules"
+            " — does that match what you need?"
+        ),
+    },
+    {"role": "user", "content": "Yes, that's exactly it."},
 ]
 
 _HISTORY_PROJECT_OPS: list[dict] = [
     {"role": "assistant", "content": "What does your team work on day-to-day?"},
-    {"role": "user",      "content": "We're a 30-person engineering team at NovaBuild. We run two-week sprints and track milestones for each product release."},
-    {"role": "assistant", "content": "Project Ops sounds like the right fit — sprint tasks, milestone tracking, and KPI dashboards. Does that work?"},
-    {"role": "user",      "content": "Exactly, we also need capacity utilisation metrics."},
-    {"role": "assistant", "content": "Noted — I'll include capacity utilisation. Confirming Project Ops?"},
-    {"role": "user",      "content": "Confirmed."},
+    {
+        "role": "user",
+        "content": (
+            "We're a 30-person engineering team at NovaBuild."
+            " We run two-week sprints and track milestones for each product release."
+        ),
+    },
+    {
+        "role": "assistant",
+        "content": (
+            "Project Ops sounds like the right fit — sprint tasks,"
+            " milestone tracking, and KPI dashboards. Does that work?"
+        ),
+    },
+    {"role": "user", "content": "Exactly, we also need capacity utilisation metrics."},
+    {
+        "role": "assistant",
+        "content": "Noted — I'll include capacity utilisation. Confirming Project Ops?",
+    },
+    {"role": "user", "content": "Confirmed."},
 ]
 
 _HISTORY_FIELD_SERVICE: list[dict] = [
     {"role": "assistant", "content": "Tell me about the work your team handles."},
-    {"role": "user",      "content": "We run an IT help desk at ClearPath. We handle bug reports, access requests, and SLA-bound support tickets across three departments."},
-    {"role": "assistant", "content": "That's a classic service-desk setup. I'd recommend the ticketing module with SLA tracking and queue management. Sound right?"},
-    {"role": "user",      "content": "Yes. We also need resolution time metrics."},
+    {
+        "role": "user",
+        "content": (
+            "We run an IT help desk at ClearPath."
+            " We handle bug reports, access requests,"
+            " and SLA-bound support tickets across three departments."
+        ),
+    },
+    {
+        "role": "assistant",
+        "content": (
+            "That's a classic service-desk setup."
+            " I'd recommend the ticketing module with SLA tracking"
+            " and queue management. Sound right?"
+        ),
+    },
+    {"role": "user", "content": "Yes. We also need resolution time metrics."},
 ]
 
 _HISTORY_ASSET_MGMT: list[dict] = [
     {"role": "assistant", "content": "What does your organisation manage?"},
-    {"role": "user",      "content": "We track physical equipment — laptops, servers, vehicles — across five office locations."},
-    {"role": "assistant", "content": "Asset management with maintenance scheduling. Let me put that together."},
-    {"role": "user",      "content": "Great."},
+    {
+        "role": "user",
+        "content": (
+            "We track physical equipment — laptops, servers, vehicles"
+            " — across five office locations."
+        ),
+    },
+    {
+        "role": "assistant",
+        "content": (
+            "Asset management with maintenance scheduling." " Let me put that together."
+        ),
+    },
+    {"role": "user", "content": "Great."},
 ]
 
 _HISTORY_GENERIC: list[dict] = [
-    {"role": "user", "content": "I'm not sure what I need yet. Just show me something general."},
+    {
+        "role": "user",
+        "content": "I'm not sure what I need yet. Just show me something general.",
+    },
 ]
 
 _HISTORY_EMPTY: list[dict] = []
@@ -77,6 +153,7 @@ _HISTORY_EMPTY: list[dict] = []
 # ---------------------------------------------------------------------------
 # Helper: assert generation_json contract
 # ---------------------------------------------------------------------------
+
 
 def _assert_generation_json(generation_json: dict, bundle_key: str) -> None:
     assert generation_json["schema_version"] == "1.0"
@@ -111,6 +188,7 @@ def _assert_dummy_data_json(dummy_data_json: dict, bundle_key: str) -> None:
 # ===========================================================================
 # 1. HR Hub — Tier 1, catalog key = registry key
 # ===========================================================================
+
 
 class TestHRHub:
     def test_returns_tuple(self, svc: PreviewGeneratorService) -> None:
@@ -177,8 +255,11 @@ class TestHRHub:
 # 2. Project Ops — Tier 1, catalog key "project_ops" → registry "project_mgmt"
 # ===========================================================================
 
+
 class TestProjectOps:
-    def test_generation_json_bundle_key_preserved(self, svc: PreviewGeneratorService) -> None:
+    def test_generation_json_bundle_key_preserved(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         # bundle_key in output should be the original catalog key
         gen, _ = svc.generate("sess-po-1", "project_ops", _HISTORY_PROJECT_OPS)
         assert gen["bundle_key"] == "project_ops"
@@ -215,16 +296,21 @@ class TestProjectOps:
         _, dummy = svc.generate("sess-po-6", "project_ops", _HISTORY_PROJECT_OPS)
         assert len(dummy["stores"]["milestones"]) > 0
 
-    def test_capacity_utilisation_kpi_included(self, svc: PreviewGeneratorService) -> None:
+    def test_capacity_utilisation_kpi_included(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         # "capacity utilisation" mentioned in conversation → should appear in KPIs
         _, dummy = svc.generate("sess-po-7", "project_ops", _HISTORY_PROJECT_OPS)
         kpi_labels = [k["key"] for k in dummy["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_labels
 
-    def test_sprint_methodology_in_milestone_names(self, svc: PreviewGeneratorService) -> None:
+    def test_sprint_methodology_in_milestone_names(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         _, dummy = svc.generate("sess-po-8", "project_ops", _HISTORY_PROJECT_OPS)
         milestone_names = [m["name"] for m in dummy["stores"]["milestones"]]
-        # sprint mentioned in conversation → project/milestone names use sprint templates
+        # sprint mentioned in conversation →
+        # project/milestone names use sprint templates
         sprint_milestones = [n for n in milestone_names if "Sprint" in n]
         assert len(sprint_milestones) > 0
 
@@ -232,6 +318,7 @@ class TestProjectOps:
 # ===========================================================================
 # 3. Field Service — Tier 1, "field_service" → "ticketing"
 # ===========================================================================
+
 
 class TestFieldService:
     def test_bundle_key_preserved_in_output(self, svc: PreviewGeneratorService) -> None:
@@ -263,6 +350,7 @@ class TestFieldService:
 # ===========================================================================
 # 4. Asset Mgmt — Tier 3 fallback (no registry entry)
 # ===========================================================================
+
 
 class TestAssetMgmtTier3:
     def test_does_not_raise(self, svc: PreviewGeneratorService) -> None:
@@ -302,6 +390,7 @@ class TestAssetMgmtTier3:
 # 5. Generic — Tier 3 fallback
 # ===========================================================================
 
+
 class TestGenericTier3:
     def test_does_not_raise(self, svc: PreviewGeneratorService) -> None:
         gen, dummy = svc.generate("sess-gen-1", "generic", _HISTORY_GENERIC)
@@ -318,13 +407,18 @@ class TestGenericTier3:
 # 6. Empty conversation history
 # ===========================================================================
 
+
 class TestEmptyHistory:
-    def test_hr_hub_empty_history_does_not_raise(self, svc: PreviewGeneratorService) -> None:
+    def test_hr_hub_empty_history_does_not_raise(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         gen, dummy = svc.generate("sess-empty-1", "hr_hub", _HISTORY_EMPTY)
         assert gen is not None
         assert dummy is not None
 
-    def test_hr_hub_empty_history_still_produces_flags(self, svc: PreviewGeneratorService) -> None:
+    def test_hr_hub_empty_history_still_produces_flags(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         gen, _ = svc.generate("sess-empty-2", "hr_hub", _HISTORY_EMPTY)
         flag_map = {f["name"]: f["isEnabled"] for f in gen["feature_flags"]}
         assert flag_map["hrhub-module"] is True
@@ -333,7 +427,9 @@ class TestEmptyHistory:
         _, dummy = svc.generate("sess-empty-3", "hr_hub", _HISTORY_EMPTY)
         assert dummy["company_name"] is None
 
-    def test_project_ops_empty_history_does_not_raise(self, svc: PreviewGeneratorService) -> None:
+    def test_project_ops_empty_history_does_not_raise(
+        self, svc: PreviewGeneratorService
+    ) -> None:
         gen, dummy = svc.generate("sess-empty-4", "project_ops", _HISTORY_EMPTY)
         assert gen["bundle_key"] == "project_ops"
         assert "tasks" in dummy["stores"]
@@ -343,16 +439,17 @@ class TestEmptyHistory:
 # 7. Feature flags — structural integrity across all catalog keys
 # ===========================================================================
 
+
 @pytest.mark.parametrize("catalog_key", ["hr_hub", "project_ops", "field_service"])
 def test_all_flags_have_required_fields(
     svc: PreviewGeneratorService, catalog_key: str
 ) -> None:
     gen, _ = svc.generate(f"sess-flags-{catalog_key}", catalog_key, [])
     for flag in gen["feature_flags"]:
-        assert "id" in flag,        f"Missing 'id' in flag: {flag}"
-        assert "name" in flag,      f"Missing 'name' in flag: {flag}"
+        assert "id" in flag, f"Missing 'id' in flag: {flag}"
+        assert "name" in flag, f"Missing 'name' in flag: {flag}"
         assert "isEnabled" in flag, f"Missing 'isEnabled' in flag: {flag}"
-        assert "module" in flag,    f"Missing 'module' in flag: {flag}"
+        assert "module" in flag, f"Missing 'module' in flag: {flag}"
 
 
 @pytest.mark.parametrize("catalog_key", ["hr_hub", "project_ops", "field_service"])
@@ -363,11 +460,14 @@ def test_tier1_bundles_have_kpis(
     assert len(dummy["stores"]["kpis"]) > 0, f"No KPIs for {catalog_key}"
 
 
-@pytest.mark.parametrize("catalog_key,expected_store", [
-    ("hr_hub",       "tickets"),
-    ("project_ops",  "tasks"),
-    ("field_service","tickets"),
-])
+@pytest.mark.parametrize(
+    "catalog_key,expected_store",
+    [
+        ("hr_hub", "tickets"),
+        ("project_ops", "tasks"),
+        ("field_service", "tickets"),
+    ],
+)
 def test_primary_store_name_per_bundle(
     svc: PreviewGeneratorService,
     catalog_key: str,
@@ -380,11 +480,14 @@ def test_primary_store_name_per_bundle(
     )
 
 
-@pytest.mark.parametrize("catalog_key,expected_secondary", [
-    ("hr_hub",       "queues"),
-    ("project_ops",  "milestones"),
-    ("field_service","queues"),
-])
+@pytest.mark.parametrize(
+    "catalog_key,expected_secondary",
+    [
+        ("hr_hub", "queues"),
+        ("project_ops", "milestones"),
+        ("field_service", "queues"),
+    ],
+)
 def test_secondary_store_name_per_bundle(
     svc: PreviewGeneratorService,
     catalog_key: str,

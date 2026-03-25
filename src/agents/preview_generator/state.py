@@ -1,6 +1,8 @@
+"""LangGraph state definition for the preview generator pipeline."""
+
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -35,7 +37,7 @@ class PreviewGeneratorState(BaseModel):
     # conversation_history items: {"role": "user"|"assistant", "content": str}
 
     # --- extract_user_context ---
-    user_context: Optional[UserContext] = None
+    user_context: UserContext | None = None
 
     # --- resolve_bundles_to_flags ---
     resolved_bundle_ids: list[str] = Field(default_factory=list)
@@ -45,7 +47,7 @@ class PreviewGeneratorState(BaseModel):
     landing_pages: list[dict] = Field(default_factory=list)
 
     # --- select_data_tier ---
-    data_tier: Optional[Literal["tier_1", "tier_2", "tier_3"]] = None
+    data_tier: Literal["tier_1", "tier_2", "tier_3"] | None = None
 
     # --- generate_sample_data ---
     sample_employees: list[dict] = Field(default_factory=list)
@@ -63,4 +65,4 @@ class PreviewGeneratorState(BaseModel):
     max_retries: int = 2
 
     # --- emit_preview ---
-    output: Optional[PreviewOutput] = None
+    output: PreviewOutput | None = None

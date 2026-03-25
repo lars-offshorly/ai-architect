@@ -1,5 +1,8 @@
+"""Service wrapper around the compiled preview generator LangGraph pipeline."""
+
 from __future__ import annotations
 
+from core.exceptions import PreviewGenerationError
 from core.logging import get_logger, get_session_logger
 
 from .pipeline import compiled_graph
@@ -49,7 +52,11 @@ class PreviewGeneratorService:
         result: dict = compiled_graph.invoke(initial_state)
 
         raw = result.get("output")
-        output: PreviewOutput = PreviewOutput.model_validate(raw) if isinstance(raw, dict) else raw
+        if raw is None:
+            raise PreviewGenerationError(
+                f"Pipeline produced no output for bundle={bundle_key}"
+            )
+        output = PreviewOutput.model_validate(raw) if isinstance(raw, dict) else raw
 
         session_logger.info(
             "Preview generation complete for bundle=%s modules=%s",

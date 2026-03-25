@@ -1,3 +1,5 @@
+"""Pipeline node: generates realistic sample data stores for the selected bundle."""
+
 from __future__ import annotations
 
 import itertools
@@ -15,37 +17,62 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 _DEFAULT_NAMES = [
-    "Maria Santos", "Carlos Mendez", "Ana Reyes", "James Okafor",
-    "Sofia Lim", "David Park", "Priya Nair", "Lucas Silva",
-    "Amara Diallo", "Noah Fischer",
+    "Maria Santos",
+    "Carlos Mendez",
+    "Ana Reyes",
+    "James Okafor",
+    "Sofia Lim",
+    "David Park",
+    "Priya Nair",
+    "Lucas Silva",
+    "Amara Diallo",
+    "Noah Fischer",
 ]
 
 _LEGAL_ROLES = [
-    "Senior Attorney", "Associate Attorney", "Paralegal",
-    "Legal Analyst", "Case Manager", "Litigation Support Specialist",
+    "Senior Attorney",
+    "Associate Attorney",
+    "Paralegal",
+    "Legal Analyst",
+    "Case Manager",
+    "Litigation Support Specialist",
 ]
 _TECH_ROLES = [
-    "Engineering Manager", "Senior Developer", "QA Engineer",
-    "DevOps Engineer", "Product Manager", "UX Designer",
+    "Engineering Manager",
+    "Senior Developer",
+    "QA Engineer",
+    "DevOps Engineer",
+    "Product Manager",
+    "UX Designer",
 ]
 _HR_ROLES = [
-    "HR Manager", "Talent Acquisition Specialist", "HR Coordinator",
-    "People Operations Lead", "Benefits Administrator",
+    "HR Manager",
+    "Talent Acquisition Specialist",
+    "HR Coordinator",
+    "People Operations Lead",
+    "Benefits Administrator",
 ]
 _GENERAL_ROLES = [
-    "Project Manager", "Team Lead", "Operations Manager",
-    "Business Analyst", "Coordinator", "Senior Associate",
+    "Project Manager",
+    "Team Lead",
+    "Operations Manager",
+    "Business Analyst",
+    "Coordinator",
+    "Senior Associate",
 ]
 _SUPPORT_ROLES = [
-    "Support Manager", "Help Desk Specialist", "IT Support Engineer",
-    "Customer Success Rep", "Tier 2 Support Agent",
+    "Support Manager",
+    "Help Desk Specialist",
+    "IT Support Engineer",
+    "Customer Success Rep",
+    "Tier 2 Support Agent",
 ]
 
 _DEPARTMENTS_BY_BUNDLE = {
     "project_mgmt": ["Operations", "Product", "Engineering", "Strategy"],
-    "ticketing":    ["IT Support", "Customer Success", "Operations", "Engineering"],
-    "hr_hub":       ["Human Resources", "Talent & Culture", "People Ops", "Finance"],
-    "weaves":       ["Operations", "Product", "Leadership", "Strategy"],
+    "ticketing": ["IT Support", "Customer Success", "Operations", "Engineering"],
+    "hr_hub": ["Human Resources", "Talent & Culture", "People Ops", "Finance"],
+    "weaves": ["Operations", "Product", "Leadership", "Strategy"],
 }
 
 # Project name templates keyed by work_type
@@ -120,16 +147,35 @@ _WEAVE_TITLES = [
     "Risk Assessment Summary",
 ]
 
-_STATUSES_PROJECT = ["In Progress", "In Progress", "On Hold", "Completed", "In Progress"]
-_STATUSES_TICKET  = ["Open", "In Progress", "Open", "Resolved", "Open", "In Progress"]
+_STATUSES_PROJECT = [
+    "In Progress",
+    "In Progress",
+    "On Hold",
+    "Completed",
+    "In Progress",
+]
+_STATUSES_TICKET = ["Open", "In Progress", "Open", "Resolved", "Open", "In Progress"]
 
-_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+_MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _name_pool(user_context: UserContext | None) -> list[str]:
     """People from conversation first, padded with the default pool."""
@@ -159,7 +205,9 @@ def _role_pool(bundle_key: str, user_context: UserContext | None) -> list[str]:
 
 
 def _dept_pool(bundle_key: str) -> list[str]:
-    return _DEPARTMENTS_BY_BUNDLE.get(bundle_key, ["Operations", "Product", "Engineering"])
+    return _DEPARTMENTS_BY_BUNDLE.get(
+        bundle_key, ["Operations", "Product", "Engineering"]
+    )
 
 
 def _base_date(offset_days: int) -> str:
@@ -186,6 +234,7 @@ def _company_slug(user_context: UserContext | None) -> str:
 # Generators
 # ---------------------------------------------------------------------------
 
+
 def _build_employees(
     bundle_key: str,
     user_context: UserContext | None,
@@ -203,20 +252,22 @@ def _build_employees(
         first = name.split()[0].lower()
         last = name.split()[-1].lower() if len(name.split()) > 1 else "user"
         company = _company_slug(user_context).lower()
-        employees.append({
-            "id": i + 1,
-            "name": name,
-            "role": next(role_cycle),
-            "department": next(dept_cycle),
-            "email": f"{first}.{last}@{company}.com",
-            "avatar": None,
-            "is_active": True,
-        })
+        employees.append(
+            {
+                "id": i + 1,
+                "name": name,
+                "role": next(role_cycle),
+                "department": next(dept_cycle),
+                "email": f"{first}.{last}@{company}.com",
+                "avatar": None,
+                "is_active": True,
+            }
+        )
     return employees
 
 
 def _build_projects(
-    bundle_key: str,
+    _bundle_key: str,
     user_context: UserContext | None,
     employees: list[dict],
     count: int = 5,
@@ -228,31 +279,31 @@ def _build_projects(
     projects = []
     for i in range(count):
         tmpl = templates[i % len(templates)]
-        name = (
-            tmpl.format(
-                n=i + 1,
-                q=((i % 4) + 1),
-                client="Martinez",
-                company=company,
-            )
+        name = tmpl.format(
+            n=i + 1,
+            q=((i % 4) + 1),
+            client="Martinez",
+            company=company,
         )
         lead = employees[i % len(employees)]["name"] if employees else "Unassigned"
-        projects.append({
-            "id": i + 1,
-            "name": name,
-            "status": _STATUSES_PROJECT[i % len(_STATUSES_PROJECT)],
-            "lead": lead,
-            "team_size": 3 + (i % 4),
-            "start_date": _base_date(60 - i * 10),
-            "due_date": _future_date(30 + i * 14),
-            "completion_pct": [68, 42, 15, 100, 30][i % 5],
-        })
+        projects.append(
+            {
+                "id": i + 1,
+                "name": name,
+                "status": _STATUSES_PROJECT[i % len(_STATUSES_PROJECT)],
+                "lead": lead,
+                "team_size": 3 + (i % 4),
+                "start_date": _base_date(60 - i * 10),
+                "due_date": _future_date(30 + i * 14),
+                "completion_pct": [68, 42, 15, 100, 30][i % 5],
+            }
+        )
     return projects
 
 
 def _build_tickets(
     bundle_key: str,
-    user_context: UserContext | None,
+    _user_context: UserContext | None,
     employees: list[dict],
     count: int = 6,
 ) -> list[dict]:
@@ -270,21 +321,27 @@ def _build_tickets(
         name = employees[i % len(employees)]["name"] if employees else "System"
         title = raw_title.format(name=name.split()[0])
 
-        tickets.append({
-            "id": 100 + i + 1,
-            "title": title,
-            "type": t_type,
-            "status": _STATUSES_TICKET[i % len(_STATUSES_TICKET)],
-            "priority": priority,
-            "requester": employees[(i + 1) % len(employees)]["name"] if employees else "User",
-            "assignee": employees[i % len(employees)]["name"] if employees else "Unassigned",
-            "created_at": _base_date(i * 3 + 1),
-        })
+        tickets.append(
+            {
+                "id": 100 + i + 1,
+                "title": title,
+                "type": t_type,
+                "status": _STATUSES_TICKET[i % len(_STATUSES_TICKET)],
+                "priority": priority,
+                "requester": (
+                    employees[(i + 1) % len(employees)]["name"] if employees else "User"
+                ),
+                "assignee": (
+                    employees[i % len(employees)]["name"] if employees else "Unassigned"
+                ),
+                "created_at": _base_date(i * 3 + 1),
+            }
+        )
     return tickets
 
 
 def _build_weaves(
-    user_context: UserContext | None,
+    _user_context: UserContext | None,
     employees: list[dict],
     projects: list[dict],
     count: int = 4,
@@ -298,21 +355,26 @@ def _build_weaves(
             project=project_name.split("—")[0].strip(),
         )
         creator = employees[i % len(employees)]["name"] if employees else "Admin"
-        participants = [e["name"] for e in employees[1:3]] if len(employees) >= 3 else []
-        weaves.append({
-            "id": i + 1,
-            "title": title,
-            "created_by": creator,
-            "participants": participants,
-            "status": "Active" if i % 3 != 2 else "Archived",
-            "created_at": _base_date(i * 7 + 2),
-        })
+        participants = (
+            [e["name"] for e in employees[1:3]] if len(employees) >= 3 else []
+        )
+        weaves.append(
+            {
+                "id": i + 1,
+                "title": title,
+                "created_by": creator,
+                "participants": participants,
+                "status": "Active" if i % 3 != 2 else "Archived",
+                "created_at": _base_date(i * 7 + 2),
+            }
+        )
     return weaves
 
 
 # ---------------------------------------------------------------------------
 # Node
 # ---------------------------------------------------------------------------
+
 
 def generate_sample_data(state: PreviewGeneratorState) -> dict:
     """Produce sample employees, projects, tickets, and weaves.
@@ -325,12 +387,13 @@ def generate_sample_data(state: PreviewGeneratorState) -> dict:
     ctx = state.user_context
 
     employees = _build_employees(bundle_key, ctx)
-    projects  = _build_projects(bundle_key, ctx, employees)
-    tickets   = _build_tickets(bundle_key, ctx, employees)
-    weaves    = _build_weaves(ctx, employees, projects)
+    projects = _build_projects(bundle_key, ctx, employees)
+    tickets = _build_tickets(bundle_key, ctx, employees)
+    weaves = _build_weaves(ctx, employees, projects)
 
     logger.info(
-        "session=%s — generated employees=%d projects=%d tickets=%d weaves=%d (tier=%s)",
+        "session=%s — generated employees=%d projects=%d"
+        " tickets=%d weaves=%d (tier=%s)",
         state.session_id,
         len(employees),
         len(projects),

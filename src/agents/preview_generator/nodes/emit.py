@@ -1,3 +1,5 @@
+"""Pipeline node: assembles the final PreviewOutput from resolved state."""
+
 from __future__ import annotations
 
 from core.logging import get_logger
@@ -11,16 +13,16 @@ logger = get_logger(__name__)
 # Map from flag name → display module name (for the modules[] list)
 # Only core module-level flags are mapped; nav and notification flags are skipped.
 _FLAG_TO_MODULE: dict[str, str] = {
-    "projects-module":     "Projects",
-    "tickets-module":      "Tickets",
-    "hrhub-module":        "HRHub",
-    "weaves-module":       "Weaves",
-    "dashboard-module":    "Dashboard",
-    "kpi-module":          "KPI",
-    "calendar_module":     "Calendar",
-    "chat-module":         "Chat",
-    "ai-toolkit-module":   "AIToolkit",
-    "rewards-module":      "Rewards",
+    "projects-module": "Projects",
+    "tickets-module": "Tickets",
+    "hrhub-module": "HRHub",
+    "weaves-module": "Weaves",
+    "dashboard-module": "Dashboard",
+    "kpi-module": "KPI",
+    "calendar_module": "Calendar",
+    "chat-module": "Chat",
+    "ai-toolkit-module": "AIToolkit",
+    "rewards-module": "Rewards",
 }
 
 
@@ -33,13 +35,15 @@ def _build_flag_list(feature_flags: dict[str, bool]) -> list[dict]:
     result = []
     for entry in ALL_FEATURE_FLAGS:
         name = entry["name"]
-        result.append({
-            "id":          entry["id"],
-            "name":        name,
-            "description": entry["description"],
-            "isEnabled":   feature_flags.get(name, False),
-            "module":      entry["module"],
-        })
+        result.append(
+            {
+                "id": entry["id"],
+                "name": name,
+                "description": entry["description"],
+                "isEnabled": feature_flags.get(name, False),
+                "module": entry["module"],
+            }
+        )
     return result
 
 
@@ -59,13 +63,15 @@ def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
 # "secondary" → sample_projects (groupings: queues / milestones)
 # "weaves"    → sample_weaves   (only included for weaves-enabled bundles)
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
-    "project_mgmt": {"primary": "tasks",    "secondary": "milestones", "weaves": None},
-    "hr_hub":       {"primary": "tickets",  "secondary": "queues",     "weaves": None},
-    "ticketing":    {"primary": "tickets",  "secondary": "queues",     "weaves": None},
-    "weaves":       {"primary": None,       "secondary": None,         "weaves": "weaves"},
+    "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
+    "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},
+    "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
+    "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
 }
 _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
-    "primary": "items", "secondary": "projects", "weaves": None,
+    "primary": "items",
+    "secondary": "projects",
+    "weaves": None,
 }
 
 
@@ -97,7 +103,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     Both are placed in state.output so service.py can unpack them.
     """
     flag_list = _build_flag_list(state.feature_flags)
-    modules   = _derive_modules(state.feature_flags)
+    modules = _derive_modules(state.feature_flags)
 
     company_name = (
         state.user_context.company_name
@@ -106,7 +112,9 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     )
 
     # resolved_bundle_ids[0] is the registry key (already translated from catalog key)
-    registry_key = state.resolved_bundle_ids[0] if state.resolved_bundle_ids else state.bundle_key
+    registry_key = (
+        state.resolved_bundle_ids[0] if state.resolved_bundle_ids else state.bundle_key
+    )
 
     generation_json = GenerationJson(
         schema_version="1.0",
@@ -119,11 +127,13 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         ),
     )
 
+    stores = _build_stores(registry_key, state)
+
     dummy_data_json = DummyDataJson(
         bundle_key=state.bundle_key,
         session_id=state.session_id,
         company_name=company_name,
-        stores=_build_stores(registry_key, state),
+        stores=stores,
     )
 
     logger.info(
@@ -131,7 +141,11 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         state.session_id,
         modules,
         sum(1 for f in flag_list if f["isEnabled"]),
-        list(_build_stores(registry_key, state).keys()),
+        list(stores.keys()),
     )
 
-    return {"output": PreviewOutput(generation_json=generation_json, dummy_data_json=dummy_data_json).model_dump()}
+    return {
+        "output": PreviewOutput(
+            generation_json=generation_json, dummy_data_json=dummy_data_json
+        ).model_dump()
+    }

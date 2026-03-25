@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from agents.replier.clarification import detect_missing_fields, is_critical
 from domain.enums.missing_field_type import MissingFieldType
 from domain.models.extracted_info import ExtractedInfo

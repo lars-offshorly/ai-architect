@@ -1,4 +1,8 @@
+"""Orchestrator: runs the preview pipeline and assembles the AppPayload."""
+
 from __future__ import annotations
+
+from typing import Any
 
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
@@ -17,10 +21,11 @@ class PreviewFlow:
 
     def __init__(
         self,
-        preview_generator_service: object,
+        preview_generator_service: Any,
         bundle_display_names: dict[str, str],
     ) -> None:
-        self._preview_gen = preview_generator_service  # type: ignore[assignment]
+        """Initialise with the generator service and a bundle-key → display-name map."""
+        self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
 
     def run(
@@ -29,6 +34,7 @@ class PreviewFlow:
         bundle_key: str,
         conversation_history: list[dict],
     ) -> AppPayload:
+        """Execute the preview pipeline and return the assembled AppPayload."""
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Running preview flow for bundle=%s", bundle_key)
 

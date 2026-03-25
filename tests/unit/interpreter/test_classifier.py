@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import pytest
-
-from agents.interpreter.rules import apply_rule_boosts, build_signal_boosts, detect_signals
+from agents.interpreter.rules import (
+    apply_rule_boosts,
+    build_signal_boosts,
+    detect_signals,
+)
 
 
 def test_detect_signals_finds_hr_terms() -> None:

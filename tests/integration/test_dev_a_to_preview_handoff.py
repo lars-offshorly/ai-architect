@@ -14,42 +14,53 @@ Layer 2 — Full HTTP flow with mocked ConversationFlow
   FastAPI app. Validates that selected_bundle_key is written to the session
   during the conversation turn (the bug that would have caused 400 on /preview).
 """
+
+# pylint: disable=missing-class-docstring,missing-function-docstring
+
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock
+from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from api.deps import get_conversation_flow, get_conversation_repository, get_session_repository
+from api.deps import (
+    get_conversation_repository,
+    get_session_repository,
+)
 from domain.models.conversation import ConversationMessage
 from domain.models.extracted_info import ExtractedInfo
 from domain.models.session import Session
-
 
 # ---------------------------------------------------------------------------
 # App fixture — shared across tests (same lru_cache state as production)
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(name="app", scope="module")
 def fixture_app():
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
     from main import create_app
+
     return create_app()
 
 
 @pytest.fixture(name="client")
 async def fixture_client(app):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         yield c
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _unique_id() -> str:
     return str(uuid.uuid4())
@@ -81,31 +92,53 @@ def _seed_confirmed_session(
 # Realistic conversation histories (mirror what the session.py router would record)
 _HR_HUB_HISTORY: list[tuple[str, str]] = [
     ("assistant", "Tell me about your team."),
-    ("user",      "We run HR at Vertex Solutions, 200 employees. Onboarding and leave management are our main challenges."),
-    ("assistant", "Sounds like HR Hub — tickets, queues, KPIs. How many on your HR team?"),
-    ("user",      "12 people. Maria Santos leads onboarding, Carlos Mendez handles compliance."),
+    (
+        "user",
+        "We run HR at Vertex Solutions, 200 employees."
+        " Onboarding and leave management are our main challenges.",
+    ),
+    (
+        "assistant",
+        "Sounds like HR Hub — tickets, queues, KPIs. How many on your HR team?",
+    ),
+    (
+        "user",
+        "12 people. Maria Santos leads onboarding, Carlos Mendez handles compliance.",
+    ),
     ("assistant", "HR Hub confirmed. Ready to generate your preview?"),
-    ("user",      "Yes."),
+    ("user", "Yes."),
 ]
 
 _PROJECT_OPS_HISTORY: list[tuple[str, str]] = [
     ("assistant", "What does your team work on?"),
-    ("user",      "30-person engineering team at NovaBuild. We run two-week sprints and track milestones."),
-    ("assistant", "Project Operations — tasks, milestones, KPI dashboard. Does that fit?"),
-    ("user",      "Yes, we also need capacity utilisation metrics."),
+    (
+        "user",
+        "30-person engineering team at NovaBuild."
+        " We run two-week sprints and track milestones.",
+    ),
+    (
+        "assistant",
+        "Project Operations — tasks, milestones, KPI dashboard. Does that fit?",
+    ),
+    ("user", "Yes, we also need capacity utilisation metrics."),
 ]
 
 _FIELD_SERVICE_HISTORY: list[tuple[str, str]] = [
     ("assistant", "What kind of work does your team handle?"),
-    ("user",      "IT help desk at ClearPath. Bug reports, access requests, SLA-bound support tickets."),
+    (
+        "user",
+        "IT help desk at ClearPath."
+        " Bug reports, access requests, SLA-bound support tickets.",
+    ),
     ("assistant", "Field Service / Ticketing with SLA tracking. Shall I set that up?"),
-    ("user",      "Confirmed."),
+    ("user", "Confirmed."),
 ]
 
 
 # ===========================================================================
 # Layer 1 — Direct handoff tests (pre-seeded session state)
 # ===========================================================================
+
 
 class TestDirectHandoff:
     """Dev A has finished the conversation and confirmed the bundle.
@@ -212,10 +245,14 @@ class TestDirectHandoff:
         assert resp.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_confirmed_but_no_bundle_key_returns_400(self, client: AsyncClient) -> None:
+    async def test_confirmed_but_no_bundle_key_returns_400(
+        self, client: AsyncClient
+    ) -> None:
         sid = _unique_id()
         session_repo = get_session_repository()
-        session_repo.save(Session(session_id=sid, confirmed=True, selected_bundle_key=None))
+        session_repo.save(
+            Session(session_id=sid, confirmed=True, selected_bundle_key=None)
+        )
 
         resp = await client.post(f"/sessions/{sid}/preview")
         assert resp.status_code == 400
@@ -229,6 +266,7 @@ class TestDirectHandoff:
 # ===========================================================================
 # Layer 2 — Full HTTP flow with mocked ConversationFlow
 # ===========================================================================
+
 
 class TestFullHttpFlow:
     """Drives the complete API sequence that a frontend client would use.
@@ -245,7 +283,7 @@ class TestFullHttpFlow:
 
         call_count = 0
 
-        async def _process_turn(*args, **kwargs):  # noqa: ANN001, ANN202
+        async def _process_turn(*_args: Any, **_kwargs: Any) -> object:
             nonlocal call_count
             result = sequence[min(call_count, len(sequence) - 1)]
             call_count += 1
@@ -260,20 +298,24 @@ class TestFullHttpFlow:
 
     @pytest.mark.asyncio
     async def test_selected_bundle_key_is_saved_after_pending_confirmation(
-        self, app, client: AsyncClient
+        self, app: Any, client: AsyncClient
     ) -> None:
         """When ConversationFlow returns pending_confirmation, the session
         should have selected_bundle_key set — so /confirm → /preview works.
         """
         from api import deps
 
-        mock_flow = self._make_mock_flow([{
-            "status": "pending_confirmation",
-            "message": "I recommend HR Hub. Does this look right?",
-            "bundle_key": "hr_hub",
-            "extracted": ExtractedInfo(session_id="placeholder"),
-            "slots": {"team_size": "12"},
-        }])
+        mock_flow = self._make_mock_flow(
+            [
+                {
+                    "status": "pending_confirmation",
+                    "message": "I recommend HR Hub. Does this look right?",
+                    "bundle_key": "hr_hub",
+                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "slots": {"team_size": "12"},
+                }
+            ]
+        )
         app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
 
         try:
@@ -310,34 +352,40 @@ class TestFullHttpFlow:
             data = preview_resp.json()
             assert data["bundle_key"] == "hr_hub"
             assert data["display_name"] == "HR Hub"
-            enabled_flags = {f["name"] for f in data["generation_json"]["feature_flags"] if f["isEnabled"]}
+            enabled_flags = {
+                f["name"]
+                for f in data["generation_json"]["feature_flags"]
+                if f["isEnabled"]
+            }
             assert "hrhub-module" in enabled_flags
         finally:
             app.dependency_overrides.pop(deps.get_conversation_flow, None)
 
     @pytest.mark.asyncio
     async def test_full_conversation_reply_then_preview(
-        self, app, client: AsyncClient
+        self, app: Any, client: AsyncClient
     ) -> None:
         """Start → reply (pending_confirmation) → confirm → preview."""
         from api import deps
 
-        mock_flow = self._make_mock_flow([
-            {
-                "status": "awaiting_input",
-                "question": "How many people are on your HR team?",
-                "bundle_key": None,
-                "extracted": ExtractedInfo(session_id="placeholder"),
-                "slots": {},
-            },
-            {
-                "status": "pending_confirmation",
-                "message": "I recommend HR Hub. Does this look right?",
-                "bundle_key": "hr_hub",
-                "extracted": ExtractedInfo(session_id="placeholder"),
-                "slots": {"team_size": "12"},
-            },
-        ])
+        mock_flow = self._make_mock_flow(
+            [
+                {
+                    "status": "awaiting_input",
+                    "question": "How many people are on your HR team?",
+                    "bundle_key": None,
+                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "slots": {},
+                },
+                {
+                    "status": "pending_confirmation",
+                    "message": "I recommend HR Hub. Does this look right?",
+                    "bundle_key": "hr_hub",
+                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "slots": {"team_size": "12"},
+                },
+            ]
+        )
         app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
 
         try:
@@ -377,18 +425,22 @@ class TestFullHttpFlow:
 
     @pytest.mark.asyncio
     async def test_preview_without_confirm_returns_400(
-        self, app, client: AsyncClient
+        self, app: Any, client: AsyncClient
     ) -> None:
         """selected_bundle_key set but confirmed=False → /preview must reject."""
         from api import deps
 
-        mock_flow = self._make_mock_flow([{
-            "status": "pending_confirmation",
-            "message": "I recommend Project Ops.",
-            "bundle_key": "project_ops",
-            "extracted": ExtractedInfo(session_id="placeholder"),
-            "slots": {},
-        }])
+        mock_flow = self._make_mock_flow(
+            [
+                {
+                    "status": "pending_confirmation",
+                    "message": "I recommend Project Ops.",
+                    "bundle_key": "project_ops",
+                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "slots": {},
+                }
+            ]
+        )
         app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
 
         try:

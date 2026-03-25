@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from agents.app_generator.validators import validate_dummy_data_json, validate_generation_json
+from agents.app_generator.validators import (
+    validate_dummy_data_json,
+    validate_generation_json,
+)
 from core.exceptions import InvalidPayloadError
 
 
