@@ -33,6 +33,8 @@ def select_data_tier(state: PreviewGeneratorState) -> dict:
     if is_known and flags_resolved:
         tier = "tier_1"
     else:
+        # TODO: Phase 2 — implement Tier 2 LLM-generated data for niche industries.
+        # Route here when bundle is unknown but not entirely generic (e.g. niche industry detected).
         tier = "tier_3"
 
     logger.info(

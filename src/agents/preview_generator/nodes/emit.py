@@ -3,6 +3,7 @@ from __future__ import annotations
 from core.logging import get_logger
 
 from ..bundles.registry import ALL_FEATURE_FLAGS
+from ..schemas import DummyDataJson, GenerationConfig, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -107,30 +108,30 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     # resolved_bundle_ids[0] is the registry key (already translated from catalog key)
     registry_key = state.resolved_bundle_ids[0] if state.resolved_bundle_ids else state.bundle_key
 
-    generation_json: dict = {
-        "schema_version": "1.0",
-        "bundle_key":     state.bundle_key,
-        "feature_flags":  flag_list,
-        "modules":        modules,
-        "config": {
-            "permission_services": state.permission_services,
-            "landing_pages":       state.landing_pages,
-        },
-    }
+    generation_json = GenerationJson(
+        schema_version="1.0",
+        bundle_key=state.bundle_key,
+        feature_flags=flag_list,
+        modules=modules,
+        config=GenerationConfig(
+            permission_services=state.permission_services,
+            landing_pages=state.landing_pages,
+        ),
+    )
 
-    dummy_data_json: dict = {
-        "bundle_key":   state.bundle_key,
-        "session_id":   state.session_id,
-        "company_name": company_name,
-        "stores":       _build_stores(registry_key, state),
-    }
+    dummy_data_json = DummyDataJson(
+        bundle_key=state.bundle_key,
+        session_id=state.session_id,
+        company_name=company_name,
+        stores=_build_stores(registry_key, state),
+    )
 
     logger.info(
-        "session=%s — emitted preview: modules=%s flags_enabled=%d employees=%d",
+        "session=%s — emitted preview: modules=%s flags_enabled=%d stores=%s",
         state.session_id,
         modules,
         sum(1 for f in flag_list if f["isEnabled"]),
-        len(state.sample_employees),
+        list(_build_stores(registry_key, state).keys()),
     )
 
-    return {"output": {"generation_json": generation_json, "dummy_data_json": dummy_data_json}}
+    return {"output": PreviewOutput(generation_json=generation_json, dummy_data_json=dummy_data_json).model_dump()}

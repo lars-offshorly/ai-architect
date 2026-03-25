@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import FrozenSet
 
 from core.logging import get_logger
 
@@ -42,10 +43,9 @@ _WATERFALL_KEYWORDS = frozenset([
     "milestone", "phase", "waterfall", "gantt", "wbs", "work breakdown",
     "baseline", "deliverable", "gate review",
 ])
-_LITIGATION_KEYWORDS = frozenset([
-    "litigation", "matter", "case", "court", "filing", "docket",
-    "discovery", "deposition", "arbitration",
-])
+# Superset of _LEGAL_KEYWORDS — adds "discovery" for work-type detection.
+# Any term added to _LEGAL_KEYWORDS is automatically covered here.
+_LITIGATION_KEYWORDS = _LEGAL_KEYWORDS | frozenset(["discovery"])
 _SUPPORT_KEYWORDS = frozenset([
     "support", "helpdesk", "help desk", "ticket", "issue", "request",
     "incident", "sla", "escalation", "resolution", "service desk",
@@ -95,6 +95,22 @@ _SIZE_PATTERNS = [
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _any_kw_in(text: str, keywords: FrozenSet[str]) -> bool:
+    """Match any keyword in text.
+
+    Multi-word phrases (e.g. "law firm", "help desk") use substring search.
+    Single-word keywords use \\b word-boundary matching to avoid false hits
+    (e.g. "case" should not match "caseload").
+    """
+    for kw in keywords:
+        if " " in kw:
+            if kw in text:
+                return True
+        elif re.search(rf"\b{re.escape(kw)}\b", text):
+            return True
+    return False
+
+
 def _user_text(conversation_history: list[dict]) -> str:
     """Concatenate only user messages, lower-cased, for keyword scanning."""
     parts = [m["content"] for m in conversation_history if m.get("role") == "user"]
@@ -110,40 +126,44 @@ def _detect_industry(text: str) -> tuple[str | None, str | None]:
     """Returns (industry_class, industry_detail).
     industry_class maps to broad category; industry_detail is more specific.
     """
-    if _LEGAL_KEYWORDS & set(text.split()):
+    if _any_kw_in(text, _LEGAL_KEYWORDS):
         return "legal", "Law / Litigation"
-    if _HR_KEYWORDS & set(text.split()):
+    if _any_kw_in(text, _HR_KEYWORDS):
         return "hr", "Human Resources"
-    if _CONSULTING_KEYWORDS & set(text.split()):
+    if _any_kw_in(text, _CONSULTING_KEYWORDS):
         return "consulting", "Professional Services / Consulting"
-    if _TECH_KEYWORDS & set(text.split()):
+    if _any_kw_in(text, _TECH_KEYWORDS):
         return "technology", "Software / Technology"
-    if _SUPPORT_KEYWORDS & set(text.split()):
+    if _any_kw_in(text, _SUPPORT_KEYWORDS):
         return "operations", "IT Support / Service Desk"
     return None, None
 
 
-def _detect_work_type(text: str) -> str:
-    """Returns the dominant work type keyword in the text."""
-    words = set(re.findall(r"\b\w+\b", text))
-    if _LITIGATION_KEYWORDS & words:
-        return "litigation"
-    if _AGILE_KEYWORDS & words:
-        return "sprint"
-    if _WATERFALL_KEYWORDS & words:
-        return "waterfall"
-    if _SUPPORT_KEYWORDS & words:
-        return "support_request"
-    return "waterfall"  # safe default
+def _detect_work_types(text: str) -> list[str]:
+    """Returns all work types detected in the text (one per matched keyword set).
+
+    A conversation can reference multiple work styles — e.g. a law firm that
+    also runs support tickets would produce ["litigation", "support_request"].
+    Defaults to ["waterfall"] when nothing is detected.
+    """
+    types: list[str] = []
+    if _any_kw_in(text, _LITIGATION_KEYWORDS):
+        types.append("litigation")
+    if _any_kw_in(text, _AGILE_KEYWORDS):
+        types.append("sprint")
+    if _any_kw_in(text, _WATERFALL_KEYWORDS):
+        types.append("waterfall")
+    if _any_kw_in(text, _SUPPORT_KEYWORDS):
+        types.append("support_request")
+    return types or ["waterfall"]  # safe default
 
 
 def _detect_methodology(text: str) -> str | None:
-    words = set(re.findall(r"\b\w+\b", text))
-    if _AGILE_KEYWORDS & words:
+    if _any_kw_in(text, _AGILE_KEYWORDS):
         return "agile"
-    if _WATERFALL_KEYWORDS & words:
+    if _any_kw_in(text, _WATERFALL_KEYWORDS):
         return "waterfall"
-    if {"kanban"} & words:
+    if re.search(r"\bkanban\b", text):
         return "kanban"
     return None
 
@@ -218,10 +238,9 @@ def _detect_company_size(text: str) -> str | None:
             return "enterprise"
 
     # Keyword signals
-    words = set(re.findall(r"\b\w+\b", text))
-    if _ENTERPRISE_KEYWORDS & words:
+    if _any_kw_in(text, _ENTERPRISE_KEYWORDS):
         return "enterprise"
-    if _SMALL_KEYWORDS & words:
+    if _any_kw_in(text, _SMALL_KEYWORDS):
         return "small"
     return None
 
@@ -268,19 +287,17 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
     _, industry_detail = _detect_industry(lower)
     people = _extract_people(raw)
     teams = _extract_teams(raw, lower)
-    work_type = _detect_work_type(lower)
+    work_types = _detect_work_types(lower)
     methodology = _detect_methodology(lower)
     key_phrases = _extract_key_phrases(lower)
 
     has_remote = any(kw in lower for kw in _REMOTE_KEYWORDS)
     has_clients = any(kw in lower for kw in _CLIENT_KEYWORDS)
 
+    has_deadlines = any(p in lower for p in ["deadline", "due date", "due by", "by friday"])
     work_items = [
-        WorkItemDetail(
-            work_type=work_type,
-            has_deadlines=any(p in lower for p in ["deadline", "due date", "due by", "by friday"]),
-            methodology=methodology,
-        )
+        WorkItemDetail(work_type=wt, has_deadlines=has_deadlines, methodology=methodology)
+        for wt in work_types
     ]
 
     # Primary concern: first sentence of first user message that contains a pain-point word
@@ -311,16 +328,16 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
     )
 
     logger.info(
-        "session=%s — extracted context: company=%r size=%r industry=%r work_type=%s",
+        "session=%s — extracted context: company=%r size=%r industry=%r work_types=%s",
         state.session_id,
         company_name,
         company_size,
         industry_detail,
-        work_type,
+        work_types,
     )
     return {"user_context": user_context}
 
-    # --- Phase 2 LLM upgrade stub ---
+    # TODO: Phase 2 — replace keyword scan with structured LLM call.
     # from agents.preview_generator.llm import extract_context_with_llm
     # try:
     #     llm_context = await extract_context_with_llm(history)

@@ -22,7 +22,7 @@ _CATALOG_TO_REGISTRY: dict[str, str] = {
 def _collect_bundle_ids(primary_key: str) -> list[str]:
     """Return primary bundle key plus any known compatible addons."""
     ids = [primary_key]
-    for addon_key in BUNDLE_REGISTRY[primary_key].get("compatible_addons", []):
+    for addon_key in BUNDLE_REGISTRY.get(primary_key, {}).get("compatible_addons", []):
         if addon_key in BUNDLE_REGISTRY:
             ids.append(addon_key)
     return ids
@@ -34,7 +34,7 @@ def _accumulate(bundle_ids: list[str]) -> tuple[set[str], list[str], list[dict]]
     services: list[str] = []
     pages: list[dict] = []
     for bid in bundle_ids:
-        bundle = BUNDLE_REGISTRY[bid]
+        bundle = BUNDLE_REGISTRY.get(bid, {})
         flags.update(bundle.get("flags", []))
         for svc in bundle.get("permission_services", []):
             if svc not in services:

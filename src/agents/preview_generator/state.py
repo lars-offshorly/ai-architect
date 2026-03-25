@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from .schemas import UserContext
+from .schemas import KpiMetric, PreviewOutput, UserContext
 
 
 class PreviewGeneratorState(BaseModel):
@@ -54,7 +54,7 @@ class PreviewGeneratorState(BaseModel):
     sample_weaves: list[dict] = Field(default_factory=list)
 
     # --- build_kpi_metrics ---
-    kpi_metrics: list[dict] = Field(default_factory=list)
+    kpi_metrics: list[KpiMetric] = Field(default_factory=list)
 
     # --- validate_schema ---
     schema_valid: bool = False
@@ -63,6 +63,4 @@ class PreviewGeneratorState(BaseModel):
     max_retries: int = 2
 
     # --- emit_preview ---
-    # output["generation_json"] = Knit JSON
-    # output["dummy_data_json"] = legacy stores format
-    output: Optional[dict] = None
+    output: Optional[PreviewOutput] = None

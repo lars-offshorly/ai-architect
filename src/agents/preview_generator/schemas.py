@@ -5,6 +5,47 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+# ---------------------------------------------------------------------------
+# KPI metrics
+# ---------------------------------------------------------------------------
+
+class KpiMetric(BaseModel):
+    key: str
+    label: str
+    type: str                        # "percentage" | "count" | "duration" | "status" | "ratio"
+    source_service: str
+    sample_value: float | int | str
+
+
+# ---------------------------------------------------------------------------
+# Preview output payloads
+# ---------------------------------------------------------------------------
+
+class GenerationConfig(BaseModel):
+    permission_services: list[str]
+    landing_pages: list[dict]
+
+
+class GenerationJson(BaseModel):
+    schema_version: str
+    bundle_key: str
+    feature_flags: list[dict]   # shape: {id, name, description, isEnabled, module}
+    modules: list[str]
+    config: GenerationConfig
+
+
+class DummyDataJson(BaseModel):
+    bundle_key: str
+    session_id: str
+    company_name: Optional[str] = None
+    stores: dict                # keys vary per bundle — stays untyped
+
+
+class PreviewOutput(BaseModel):
+    generation_json: GenerationJson
+    dummy_data_json: DummyDataJson
+
+
 class PersonDetail(BaseModel):
     """A person mentioned in the conversation — employee, team member, or the user themselves."""
 

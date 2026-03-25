@@ -3,6 +3,7 @@ from __future__ import annotations
 from core.logging import get_logger, get_session_logger
 
 from .pipeline import compiled_graph
+from .schemas import PreviewOutput
 from .state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -47,13 +48,12 @@ class PreviewGeneratorService:
 
         result: dict = compiled_graph.invoke(initial_state)
 
-        output: dict = result.get("output") or {}
-        generation_json  = output.get("generation_json",  {})
-        dummy_data_json  = output.get("dummy_data_json",  {})
+        raw = result.get("output")
+        output: PreviewOutput = PreviewOutput.model_validate(raw) if isinstance(raw, dict) else raw
 
         session_logger.info(
             "Preview generation complete for bundle=%s modules=%s",
             bundle_key,
-            generation_json.get("modules", []),
+            output.generation_json.modules,
         )
-        return generation_json, dummy_data_json
+        return output.generation_json.model_dump(), output.dummy_data_json.model_dump()

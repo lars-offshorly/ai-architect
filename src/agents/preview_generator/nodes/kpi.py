@@ -3,15 +3,18 @@ from __future__ import annotations
 from core.logging import get_logger
 
 from ..bundles.registry import BUNDLE_REGISTRY, METRICS_CATALOG
+from ..schemas import KpiMetric
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
+
+_FALLBACK_SLUGS: list[str] = ["capacity_utilization", "active_work_items"]
 
 # ---------------------------------------------------------------------------
 # Sample values per metric type — deterministic, index-based
 # ---------------------------------------------------------------------------
 
-_SAMPLE_VALUES: dict[str, list[object]] = {
+_SAMPLE_VALUES: dict[str, list[float | int | str]] = {
     "percentage": [87.5, 92.1, 78.4, 95.0, 83.2],
     "count":      [142, 38, 217, 15, 67],
     "duration":   [3.2, 1.8, 5.4, 2.1, 4.7],   # days
@@ -37,7 +40,7 @@ _PHRASE_TO_METRIC: dict[str, str] = {
 }
 
 
-def _pick_value(metric_type: str, index: int) -> object:
+def _pick_value(metric_type: str, index: int) -> float | int | str:
     pool = _SAMPLE_VALUES.get(metric_type, _SAMPLE_VALUES["count"])
     return pool[index % len(pool)]
 
@@ -73,19 +76,19 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
 
     # Fallback: at least show capacity_utilization and active_work_items
     if not all_slugs:
-        all_slugs = ["capacity_utilization", "active_work_items"]
+        all_slugs = _FALLBACK_SLUGS
 
     # Build output records
-    kpi_metrics: list[dict] = []
+    kpi_metrics: list[KpiMetric] = []
     for i, slug in enumerate(all_slugs):
         catalog_entry = METRICS_CATALOG[slug]
-        kpi_metrics.append({
-            "key":            catalog_entry["key"],
-            "label":          catalog_entry["label"],
-            "type":           catalog_entry["type"],
-            "source_service": catalog_entry["source_service"],
-            "sample_value":   _pick_value(catalog_entry["type"], i),
-        })
+        kpi_metrics.append(KpiMetric(
+            key=catalog_entry["key"],
+            label=catalog_entry["label"],
+            type=catalog_entry["type"],
+            source_service=catalog_entry["source_service"],
+            sample_value=_pick_value(catalog_entry["type"], i),
+        ))
 
     logger.info(
         "session=%s — built %d KPI metrics for bundle=%r (default=%d boost=%d)",
