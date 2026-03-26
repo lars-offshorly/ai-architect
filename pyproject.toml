@@ -69,6 +69,7 @@ select = ["E", "F", "I", "UP", "B", "C4"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+pythonpath = ["src", "."]
 
 [build-system]
 requires = ["hatchling"]
