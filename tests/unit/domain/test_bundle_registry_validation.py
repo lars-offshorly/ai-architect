@@ -182,5 +182,5 @@ class TestRegistryValidation:
         path = _write_registry(tmp_path, content)
         catalog = BundleCatalog(path)
 
-        with pytest.raises(BundleCatalogError):
+        with pytest.raises(BundleCatalogError, match="generic"):
             catalog.get_fallback()

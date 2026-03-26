@@ -118,6 +118,13 @@ class TestBundleMetadataService:
         assert "leave_types" in requirements
         assert "default_schedules" in requirements
 
+    def test_list_settings_configurations_hr_management(
+        self, service: BundleMetadataService
+    ) -> None:
+        configs = service.list_settings_configurations("hr_management")
+
+        assert len(configs) > 0
+
     def test_service_uses_injected_catalog(self) -> None:
         mock_catalog = MagicMock(spec=BundleCatalog)
         mock_catalog.get_metadata.return_value = BundleMetadata(

@@ -202,7 +202,7 @@ class BundleCatalog:
         return matched
 
     def match_by_industry_hint(self, hint: str) -> list[BundleDefinition]:
-        """Match bundles by hint string against synonyms (industry_hints field removed; synonyms serve this role)."""
+        """Match bundles whose synonyms contain or are contained by the given hint string (case-insensitive, bidirectional substring)."""
         normalized = hint.strip().casefold()
         if not normalized:
             return []
