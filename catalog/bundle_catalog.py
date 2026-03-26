@@ -6,11 +6,11 @@ import yaml
 from pydantic import BaseModel, Field, ValidationError
 
 from core.config import get_settings
-from core.exceptions import BundleRegistryValidationError
+from core.exceptions import AppError, BundleRegistryValidationError
 from domain.models.bundle_metadata import BundleMetadata, EntityDefinition
 
 
-class BundleCatalogError(RuntimeError):
+class BundleCatalogError(AppError):
     pass
 
 
@@ -104,7 +104,7 @@ class BundleCatalog:
             if not isinstance(item, dict):
                 raise BundleCatalogError("Each bundle entry must be a YAML mapping.")
             bundle_key = str(item.get("bundle_key", ""))
-            metadata = _parse_metadata(bundle_key, item.pop("metadata", None))
+            metadata = _parse_metadata(bundle_key, item.get("metadata"))
             try:
                 bundle = BundleDefinition.model_validate({**item, "metadata": metadata})
             except ValidationError as exc:
@@ -135,10 +135,6 @@ class BundleCatalog:
                         f"Bundle '{bundle.bundle_key}' is missing required field "
                         f"'{field}'."
                     )
-            if not bundle.template_dir:
-                raise BundleRegistryValidationError(
-                    f"Bundle '{bundle.bundle_key}' has an empty template_dir."
-                )
             if bundle.metadata is None:
                 raise BundleRegistryValidationError(
                     f"Bundle '{bundle.bundle_key}' is missing the metadata section."
