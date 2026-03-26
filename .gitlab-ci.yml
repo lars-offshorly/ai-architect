@@ -1,0 +1,27 @@
+stages:
+  - test
+
+default:
+  image: python:3.10
+  before_script:
+    - python --version
+    - pip install --upgrade pip setuptools wheel
+    - pip install poetry
+    - poetry --version
+    - poetry config virtualenvs.in-project true
+    - poetry install --with dev
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - when: never
+
+mr_check:
+  stage: test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    PYTHONPATH: "src:."
+  script:
+    - git fetch origin internal-dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
+    - make check-mr

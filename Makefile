@@ -4,6 +4,10 @@ POETRY := poetry
 SRC_DIR := src
 TEST_DIR := tests
 LINT_PATHS := src tests onboarding catalog scripts
+FLAKE8_FLAGS := --max-line-length=88
+PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
+
+export PYTHONPATH := $(SRC_DIR):.
 
 help:
 	@echo "Available targets:"
@@ -47,11 +51,11 @@ lint:
 	@echo "ruff..."
 	@$(POETRY) run ruff check $(LINT_PATHS)
 	@echo "flake8..."
-	@$(POETRY) run flake8 $(LINT_PATHS) --count
+	@$(POETRY) run flake8 $(LINT_PATHS) $(FLAKE8_FLAGS) --count
 	@echo "mypy..."
 	@$(POETRY) run mypy $(LINT_PATHS)
 	@echo "pylint..."
-	@$(POETRY) run pylint $(LINT_PATHS)
+	@$(POETRY) run pylint $(LINT_PATHS) $(PYLINT_FLAGS)
 	@echo "vulture..."
 	@$(POETRY) run vulture $(LINT_PATHS) --min-confidence 90
 
@@ -74,11 +78,11 @@ lint-file:
 	@echo "ruff..."
 	@$(POETRY) run ruff check $(filter-out $@,$(MAKECMDGOALS))
 	@echo "flake8..."
-	@$(POETRY) run flake8 $(filter-out $@,$(MAKECMDGOALS))
+	@$(POETRY) run flake8 $(filter-out $@,$(MAKECMDGOALS)) $(FLAKE8_FLAGS)
 	@echo "mypy..."
 	@$(POETRY) run mypy $(filter-out $@,$(MAKECMDGOALS))
 	@echo "pylint..."
-	@$(POETRY) run pylint $(filter-out $@,$(MAKECMDGOALS))
+	@$(POETRY) run pylint $(filter-out $@,$(MAKECMDGOALS)) $(PYLINT_FLAGS)
 
 # Allow passing arguments to lint-file without escaping
 %:
@@ -99,11 +103,11 @@ lint-staged:
 		echo "ruff..."; \
 		echo "$$FILES" | xargs $(POETRY) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
 		echo "$$FILES" | xargs $(POETRY) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
 		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
 	fi
@@ -123,11 +127,11 @@ lint-mr:
 		echo "ruff..."; \
 		echo "$$FILES" | xargs $(POETRY) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
 		echo "$$FILES" | xargs $(POETRY) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
 		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
 	fi
@@ -148,11 +152,11 @@ check-mr:
 		echo "ruff..."; \
 		echo "$$FILES" | xargs $(POETRY) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8; \
+		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
 		echo "$$FILES" | xargs $(POETRY) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint; \
+		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
 		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
 	fi
