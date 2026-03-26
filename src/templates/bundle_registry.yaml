@@ -75,6 +75,8 @@ bundles:
     required_signals:
       - employee-related workflow
       - hr or people operations process
+    # NOTE: Multi-word keys (e.g. "people ops", "service desk") require phrase-level
+    # matching. The classifier must check these as substrings/phrases, not single tokens.
     signal_boosts:
       employee: 0.15
       hr: 0.20
@@ -431,7 +433,12 @@ bundles:
       summary_label: report
 
     metadata:
-      kpis: []
+      kpis:
+        - gross_profit_margin
+        - budget_variance
+        - invoice_aging
+        - expense_ratio
+        - net_income
       workflows:
         - budget_planning
         - expense_tracking
