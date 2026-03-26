@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import logging
+
 from catalog.bundle_catalog import BundleCatalog
-from domain.models.bundle_metadata import BundleMetadata
+from domain.models.bundle_metadata import BundleMetadata, EntityDefinition
+
+logger = logging.getLogger(__name__)
 
 
 class BundleMetadataService:
@@ -11,6 +15,7 @@ class BundleMetadataService:
     def get_metadata(self, bundle_key: str) -> BundleMetadata:
         metadata = self._catalog.get_metadata(bundle_key)
         if metadata is None:
+            logger.warning("get_metadata called for unknown bundle_key=%s", bundle_key)
             return BundleMetadata(bundle_key=bundle_key)
         return metadata
 
@@ -25,3 +30,9 @@ class BundleMetadataService:
 
     def list_onboarding_config_requirements(self, bundle_key: str) -> list[str]:
         return self.get_metadata(bundle_key).onboarding_config_requirements
+
+    def list_settings_configurations(self, bundle_key: str) -> list[str]:
+        return self.get_metadata(bundle_key).settings_configurations
+
+    def get_entity_definitions(self, bundle_key: str) -> dict[str, EntityDefinition]:
+        return self.get_metadata(bundle_key).entity_definitions

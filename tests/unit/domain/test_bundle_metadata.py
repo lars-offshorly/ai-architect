@@ -9,7 +9,7 @@ from catalog.bundle_catalog import BundleCatalog
 from domain.models import BundleMetadata, EntityDefinition
 from domain.services.bundle_metadata import BundleMetadataService
 
-REGISTRY_PATH = Path("src/templates/bundle_registry.yaml")
+REGISTRY_PATH = Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
 
 
 @pytest.fixture(name="catalog")
@@ -130,3 +130,16 @@ class TestBundleMetadataService:
 
         mock_catalog.get_metadata.assert_called_once_with("hr_management")
         assert "test_kpi" in result.kpis
+
+    def test_get_entity_definitions_returns_dict(
+        self, service: BundleMetadataService
+    ) -> None:
+        defs = service.get_entity_definitions("hr_management")
+
+        assert "employee" in defs
+        assert defs["employee"].label == "Employee"
+
+    def test_list_settings_configurations_unknown_returns_empty(
+        self, service: BundleMetadataService
+    ) -> None:
+        assert service.list_settings_configurations("nonexistent") == []

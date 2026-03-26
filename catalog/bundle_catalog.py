@@ -37,8 +37,6 @@ class BundleDefinition(BaseModel):
 
     metadata: BundleMetadata | None = None
 
-    industry_hints: list[str] = Field(default_factory=list)
-
 
 def _parse_metadata(bundle_key: str, raw: dict | None) -> BundleMetadata | None:
     if raw is None:
@@ -204,12 +202,13 @@ class BundleCatalog:
         return matched
 
     def match_by_industry_hint(self, hint: str) -> list[BundleDefinition]:
+        """Match bundles by hint string against synonyms (industry_hints field removed; synonyms serve this role)."""
         normalized = hint.strip().casefold()
         if not normalized:
             return []
         matched: list[BundleDefinition] = []
         for bundle in self._bundles.values():
-            all_hints = bundle.industry_hints + bundle.synonyms
+            all_hints = bundle.synonyms
             for h in all_hints:
                 if normalized in h.casefold() or h.casefold() in normalized:
                     matched.append(bundle)
