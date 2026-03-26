@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import pytest
-
 from agents.preview_generator.modifier import TemplateModifier
+
 from domain.models.extracted_info import ExtractedInfo
 
 

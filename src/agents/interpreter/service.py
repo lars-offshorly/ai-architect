@@ -3,7 +3,6 @@ from __future__ import annotations
 from langchain_openai import ChatOpenAI
 
 from core.config import get_settings
-from core.constants import CONFIDENCE_MEDIUM
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion, SuggestedBundles
 from domain.models.conversation import ConversationMessage

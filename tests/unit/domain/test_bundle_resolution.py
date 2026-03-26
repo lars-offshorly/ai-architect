@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from domain.services.bundle_resolution import BundleResolutionService
 
 

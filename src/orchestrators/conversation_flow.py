@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from core.logging import get_logger, get_session_logger
-from domain.models.app_payload import AppPayload
 from domain.models.conversation import ConversationMessage
-from domain.models.extracted_info import ExtractedInfo
 
 logger = get_logger(__name__)
 

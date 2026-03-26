@@ -8,10 +8,10 @@ import time
 from dataclasses import dataclass
 
 import pytest
+from api.routes import onboarding as onboarding_route
 from httpx import ASGITransport, AsyncClient
 
 from api.app import create_app
-from api.routes import onboarding as onboarding_route
 
 
 @dataclass

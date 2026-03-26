@@ -6,11 +6,6 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-from langchain_core.messages import AIMessage
-from langgraph.checkpoint.memory import InMemorySaver
-
-from api.app import create_app
 from generator.personaliser import PersonalisationOutput
 from generator.schemas import (
     DummyDataJSON,
@@ -19,6 +14,11 @@ from generator.schemas import (
     StoreData,
     WorkspaceMeta,
 )
+from httpx import ASGITransport, AsyncClient
+from langchain_core.messages import AIMessage
+from langgraph.checkpoint.memory import InMemorySaver
+
+from api.app import create_app
 from onboarding.states import OnboardingIntents, TurnClassification
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from core.config import get_settings
@@ -14,8 +15,6 @@ from .clarification import (
     is_critical,
 )
 from .prompts import BUNDLE_SUGGESTION_SYSTEM_PROMPT
-
-from langchain_core.messages import HumanMessage, SystemMessage
 
 logger = get_logger(__name__)
 
