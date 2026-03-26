@@ -113,8 +113,12 @@ lint-staged:
 	fi
 
 lint-mr:
-	@echo "Formatting and linting files changed compared to dev branch..."
-	@FILES=$$(git diff --name-only dev...HEAD -- '*.py' 2>/dev/null | \
+	@echo "Formatting and linting committed (vs dev) and staged Python files..."
+	@FILES=$$( { \
+		git diff --name-only dev...HEAD -- '*.py' 2>/dev/null; \
+		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
+	} | \
+		sort -u | \
 		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
@@ -138,8 +142,12 @@ lint-mr:
 
 check-mr:
 	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest
-	@echo "Formatting and linting files changed compared to dev branch..."
-	@FILES=$$(git diff --name-only dev...HEAD -- '*.py' 2>/dev/null | \
+	@echo "Formatting and linting committed (vs dev) and staged Python files..."
+	@FILES=$$( { \
+		git diff --name-only dev...HEAD -- '*.py' 2>/dev/null; \
+		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
+	} | \
+		sort -u | \
 		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
