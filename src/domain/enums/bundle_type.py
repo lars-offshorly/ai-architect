@@ -4,8 +4,15 @@ from enum import Enum
 
 
 class BundleType(str, Enum):
-    HR_HUB = "hr_hub"
-    PROJECT_OPS = "project_ops"
-    ASSET_MGMT = "asset_mgmt"
-    FIELD_SERVICE = "field_service"
+    HR_MANAGEMENT = "hr_management"
+    TICKETING = "ticketing"
+    PROJECT_MGMT = "project_mgmt"
+    FINANCE = "finance"
+    MARKETING = "marketing"
+    SALES = "sales"
+    HEALTHCARE = "healthcare"
+    LEGAL_SERVICES = "legal_services"
+    CONSTRUCTION_REAL_ESTATE = "construction_real_estate"
+    EDUCATION = "education"
+    ALL_MICROSERVICES = "all_microservices"
     GENERIC = "generic"

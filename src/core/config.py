@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     CONFIDENCE_THRESHOLD: float = Field(default=0.6, ge=0.0, le=1.0)
     TOP_K_BUNDLES: int = Field(default=3, ge=1)
 
+    CONFIDENCE_PROCEED_THRESHOLD: float = Field(default=0.75, ge=0.0, le=1.0)
+    CONFIDENCE_SUGGEST_THRESHOLD: float = Field(default=0.50, ge=0.0, le=1.0)
+    SCORE_GAP_MINIMUM: float = Field(default=0.15, ge=0.0, le=1.0)
+    MAX_CLARIFICATION_TURNS: int = Field(default=3, ge=1)
+
     TEMPLATES_DIR: str = "src/templates/bundles"
     BUNDLE_REGISTRY_PATH: str = "src/templates/bundle_registry.yaml"
 
