@@ -1,129 +1,1257 @@
+# =============================================================================
+# Bundle Registry — Canonical source of truth for bundle definitions.
+# Ownership (AD-2): This file owns classification signals, bundle identity,
+# module lists, required slots, and metadata per bundle.
+# Template JSON files own renderable template content.
+# Overlap fields (display_name, modules): registry takes precedence for
+# classification/orchestration; template files take precedence for rendering.
+# =============================================================================
+
 bundles:
-  - bundle_key: hr_hub
-    display_name: HR Hub
+
+  # ---------------------------------------------------------------------------
+  # 1. HR Management
+  # ---------------------------------------------------------------------------
+  - bundle_key: hr_management
+    display_name: HR Management
     primary_entity: people
-    description: Workspace for HR teams to manage employee requests, onboarding, and operational visibility.
-    default_modules:
-      - tickets
-      - queues
-      - kpis
-      - dashboard
-    optional_modules:
-      - forms
-      - approvals
-      - knowledge_base
-    required_slots:
-      - team_size
-      - primary_use_case
-    industry_hints:
-      - human resources
-      - people operations
-      - talent
-      - recruiting
-      - hr
-      - tech
-      - agency
-      - healthcare
-      - logistics
-    template_dir: hr_hub
+    description: Handles employee lifecycle including hiring, onboarding, payroll, attendance, and performance management.
+    template_dir: hr_management
+    dummy_data_template_key: hr_management_base
     customizable_fields:
       - company_name
       - employee_names
       - department_names
       - role_names
+      - leave_types
       - status_labels
 
-  - bundle_key: project_ops
-    display_name: Project Operations
-    primary_entity: work
-    description: Workspace for planning and delivering projects with structured execution tracking.
     default_modules:
-      - tasks
-      - timelines
-      - milestones
-      - dashboard
+      - hr_hub
+      - chat
+      - video_call
+      - kpi
+      - rewards_store
+      - weaves
     optional_modules:
-      - risk_register
-      - resource_planning
-      - timesheets
+      - profile
+      - dashboard
+      - announcements
+    knit_service_bundles:
+      - hr_hub
+      - chat
+      - video_call
+      - weaves
     required_slots:
-      - project_count
       - team_size
-    industry_hints:
-      - project management
-      - consulting
-      - delivery
-      - implementation
-      - operations
-    template_dir: project_ops
+      - primary_use_case
+
+    synonyms:
+      - human resources
+      - people management
+      - people ops
+      - HR system
+      - employee management
+      - workforce management
+      - talent management
+      - staff management
+    typical_entities:
+      - employee
+      - manager
+      - department
+      - leave request
+      - attendance record
+      - payroll
+      - onboarding task
+    typical_intents:
+      - manage employees
+      - track attendance
+      - handle leave requests
+      - run payroll
+      - onboard new hires
+      - offboard employees
+      - track performance
+      - manage recruitment
+    required_signals:
+      - employee-related workflow
+      - hr or people operations process
+    # NOTE: Multi-word keys (e.g. "people ops", "service desk") require phrase-level
+    # matching. The classifier must check these as substrings/phrases, not single tokens.
+    signal_boosts:
+      employee: 0.15
+      hr: 0.20
+      leave: 0.20
+      onboarding: 0.15
+      payroll: 0.20
+      attendance: 0.15
+      people ops: 0.20
+      recruitment: 0.10
+      offboarding: 0.15
+      workforce: 0.10
+    terminology:
+      primary_record_label: employee
+      approver_label: manager
+      request_label: leave request
+
+    metadata:
+      kpis:
+        - active_headcount
+        - attendance_rate
+        - leave_balance_utilization
+        - capacity_utilization
+        - workload_distribution
+      workflows:
+        - employee_onboarding
+        - leave_request_and_approval
+        - attendance_tracking
+        - performance_review
+        - offboarding
+        - payroll_processing
+      entity_definitions:
+        employee:
+          label: Employee
+          plural: Employees
+        leave_request:
+          label: Leave Request
+          plural: Leave Requests
+        department:
+          label: Department
+          plural: Departments
+      onboarding_config_requirements:
+        - default_schedules
+        - leave_types
+        - leave_policy
+        - regularization_dates
+        - department_structure
+      coverage:
+        - employee reporting
+        - schedules
+        - attendance
+        - records
+      settings_configurations:
+        - default schedules
+        - leave types
+        - leave policy
+        - regularization dates
+
+  # ---------------------------------------------------------------------------
+  # 2. Ticketing Tool
+  # ---------------------------------------------------------------------------
+  - bundle_key: ticketing
+    display_name: Ticketing Tool
+    primary_entity: ticket
+    description: Manages support requests and incidents through structured queue-based workflows.
+    template_dir: ticketing
+    dummy_data_template_key: ticketing_base
+    customizable_fields:
+      - company_name
+      - queue_names
+      - ticket_categories
+      - status_labels
+      - priority_labels
+
+    default_modules:
+      - tickets
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+      - announcements
+    optional_modules:
+      - weaves
+      - profile
+    knit_service_bundles:
+      - ticketing
+      - chat
+      - video_call
+      - announcements
+    required_slots:
+      - primary_use_case
+      - queue_type
+
+    synonyms:
+      - help desk
+      - support tickets
+      - issue tracker
+      - service desk
+      - incident management
+      - request management
+      - ticketing system
+    typical_entities:
+      - ticket
+      - queue
+      - agent
+      - requestor
+      - category
+      - SLA
+    typical_intents:
+      - manage support requests
+      - track incidents
+      - assign tickets
+      - resolve issues
+      - monitor SLA
+      - set up queues
+      - handle service requests
+    required_signals:
+      - ticket or request workflow
+      - support or service process
+    signal_boosts:
+      ticket: 0.20
+      support: 0.15
+      issue: 0.15
+      helpdesk: 0.20
+      SLA: 0.20
+      queue: 0.20
+      incident: 0.15
+      request: 0.10
+      service desk: 0.15
+    terminology:
+      primary_record_label: ticket
+      handler_label: agent
+      request_label: support request
+
+    metadata:
+      kpis:
+        - avg_resolution_time
+        - sla_compliance
+        - active_work_items
+        - cycle_time
+      workflows:
+        - ticket_submission
+        - queue_routing
+        - sla_monitoring
+        - ticket_resolution
+        - escalation
+      entity_definitions:
+        ticket:
+          label: Ticket
+          plural: Tickets
+        queue:
+          label: Queue
+          plural: Queues
+        agent:
+          label: Agent
+          plural: Agents
+      onboarding_config_requirements:
+        - management_queue_setup
+        - ticket_counter_selection
+        - sla_rules
+        - category_definitions
+      coverage:
+        - queues
+        - ticket forms
+        - SLA tracking
+      settings_configurations:
+        - management queue setup
+        - ticket counter selection (New, Overdue, etc.)
+
+  # ---------------------------------------------------------------------------
+  # 3. Project Management
+  # ---------------------------------------------------------------------------
+  - bundle_key: project_mgmt
+    display_name: Project Management
+    primary_entity: project
+    description: Supports planning, task assignment, progress monitoring, and delivery tracking for projects and teams.
+    template_dir: project_mgmt
+    dummy_data_template_key: project_mgmt_base
     customizable_fields:
       - company_name
       - project_names
       - team_names
       - milestone_labels
-
-  - bundle_key: asset_mgmt
-    display_name: Asset Management
-    primary_entity: asset
-    description: Workspace for lifecycle tracking, maintenance, and service workflows for physical assets.
-    default_modules:
-      - assets
-      - maintenance
-      - tickets
-      - dashboard
-    optional_modules:
-      - inventory
-      - vendors
-      - compliance
-    required_slots:
-      - asset_types
-      - location_count
-    industry_hints:
-      - asset
-      - equipment
-      - facility
-      - fleet
-      - warehouse
-    template_dir: asset_mgmt
-    customizable_fields:
-      - company_name
-      - asset_categories
-      - location_names
       - status_labels
 
-  - bundle_key: field_service
-    display_name: Field Service
-    primary_entity: work
-    description: Workspace for dispatching technicians, scheduling field jobs, and tracking service quality.
     default_modules:
-      - work_orders
-      - scheduling
-      - forms
+      - projects
+      - chat
+      - video_call
+      - kpi
       - dashboard
+      - announcements
     optional_modules:
-      - parts_inventory
-      - sla_tracking
-      - mobile_checklists
+      - weaves
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - chat
+      - video_call
+      - announcements
     required_slots:
-      - service_zones
-      - technician_count
-    industry_hints:
-      - field service
-      - dispatch
-      - technician
-      - onsite
-      - repair
-    template_dir: field_service
+      - project_count
+      - team_size
+
+    synonyms:
+      - project tracker
+      - task management
+      - project planning
+      - work management
+      - delivery management
+      - project board
+      - sprint management
+      - PMO
+    typical_entities:
+      - project
+      - task
+      - milestone
+      - team member
+      - timeline
+      - deliverable
+    typical_intents:
+      - track project progress
+      - manage tasks
+      - assign work
+      - monitor deadlines
+      - manage milestones
+      - plan sprints
+      - track deliverables
+      - report on delivery
+    required_signals:
+      - project or task workflow
+      - planning or delivery process
+    signal_boosts:
+      project: 0.20
+      task: 0.15
+      milestone: 0.15
+      sprint: 0.20
+      delivery: 0.15
+      consulting: 0.15
+      deadline: 0.15
+      roadmap: 0.10
+      implementation: 0.10
+      timeline: 0.10
+    terminology:
+      primary_record_label: project
+      assignee_label: team member
+      item_label: task
+
+    metadata:
+      kpis:
+        - on_time_delivery_rate
+        - project_health_status
+        - cycle_time
+        - capacity_utilization
+        - planned_vs_actual
+      workflows:
+        - project_creation
+        - task_assignment
+        - milestone_tracking
+        - progress_reporting
+        - sprint_planning
+        - delivery_review
+      entity_definitions:
+        project:
+          label: Project
+          plural: Projects
+        task:
+          label: Task
+          plural: Tasks
+        milestone:
+          label: Milestone
+          plural: Milestones
+      onboarding_config_requirements:
+        - project_status_definitions
+        - task_status_definitions
+        - team_structure
+      coverage:
+        - projects
+        - document sharing
+        - timelines
+      settings_configurations:
+        - status definitions for projects
+        - status definitions for tasks
+
+  # ---------------------------------------------------------------------------
+  # 4. Finance
+  # ---------------------------------------------------------------------------
+  - bundle_key: finance
+    display_name: Finance
+    primary_entity: transaction
+    description: Covers budgeting, expense tracking, invoicing, and financial reporting for business operations.
+    template_dir: finance
+    dummy_data_template_key: finance_base
     customizable_fields:
       - company_name
-      - technician_names
-      - zone_names
-      - service_types
+      - account_names
+      - budget_categories
+      - currency_label
 
+    default_modules:
+      - weaves
+      - dashboard
+      - notifications
+    optional_modules:
+      - chat
+      - video_call
+      - profile
+    knit_service_bundles:
+      - weaves
+      - calendar
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - accounting
+      - budgeting
+      - financial management
+      - expense tracking
+      - invoicing
+      - bookkeeping
+      - financial reporting
+      - profit and loss
+    typical_entities:
+      - budget
+      - invoice
+      - expense
+      - account
+      - transaction
+      - report
+    typical_intents:
+      - track expenses
+      - manage budget
+      - create invoices
+      - view profit and loss
+      - generate financial reports
+      - track transactions
+    required_signals:
+      - financial or accounting workflow
+      - budget or expense tracking
+    signal_boosts:
+      finance: 0.20
+      budget: 0.20
+      invoice: 0.20
+      expense: 0.20
+      accounting: 0.20
+      payroll: 0.10
+      revenue: 0.15
+      profit: 0.15
+      loss: 0.15
+      financial: 0.15
+    terminology:
+      primary_record_label: transaction
+      document_label: invoice
+      summary_label: report
+
+    metadata:
+      kpis:
+        - gross_profit_margin
+        - budget_variance
+        - invoice_aging
+        - expense_ratio
+        - net_income
+      workflows:
+        - budget_planning
+        - expense_tracking
+        - invoice_generation
+        - profit_and_loss_reporting
+        - financial_period_close
+      entity_definitions:
+        invoice:
+          label: Invoice
+          plural: Invoices
+        expense:
+          label: Expense
+          plural: Expenses
+        budget:
+          label: Budget
+          plural: Budgets
+      onboarding_config_requirements:
+        - chart_of_accounts
+        - fiscal_year_setup
+        - currency_settings
+      coverage:
+        - profit and loss
+        - invoicing
+      settings_configurations: []
+
+  # ---------------------------------------------------------------------------
+  # 5. Marketing
+  # ---------------------------------------------------------------------------
+  - bundle_key: marketing
+    display_name: Marketing
+    primary_entity: campaign
+    description: Focuses on marketing campaign management, content planning, branding, and lead generation tracking.
+    template_dir: marketing
+    dummy_data_template_key: marketing_base
+    customizable_fields:
+      - company_name
+      - campaign_names
+      - channel_names
+      - status_labels
+
+    default_modules:
+      - projects
+      - weaves
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+    optional_modules:
+      - announcements
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - weaves
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+      - team_size
+
+    synonyms:
+      - marketing campaigns
+      - campaign management
+      - content marketing
+      - digital marketing
+      - marketing operations
+      - brand management
+      - lead generation
+    typical_entities:
+      - campaign
+      - content
+      - channel
+      - lead
+      - audience
+      - campaign calendar
+    typical_intents:
+      - manage campaigns
+      - track content
+      - plan marketing calendar
+      - generate leads
+      - monitor brand performance
+      - track marketing KPIs
+    required_signals:
+      - marketing or campaign workflow
+      - content or brand management process
+    signal_boosts:
+      marketing: 0.20
+      campaign: 0.20
+      branding: 0.15
+      content: 0.10
+      lead generation: 0.15
+      advertising: 0.15
+      digital marketing: 0.20
+      social media: 0.15
+    terminology:
+      primary_record_label: campaign
+      item_label: content piece
+      tracker_label: campaign tracker
+
+    metadata:
+      kpis:
+        - active_work_items
+        - planned_vs_actual
+        - on_time_delivery_rate
+      workflows:
+        - campaign_planning
+        - content_creation
+        - campaign_execution
+        - performance_review
+        - lead_tracking
+      entity_definitions:
+        campaign:
+          label: Campaign
+          plural: Campaigns
+        content:
+          label: Content
+          plural: Content Items
+      onboarding_config_requirements:
+        - project_status_definitions
+        - task_status_definitions
+        - channel_definitions
+      coverage:
+        - campaign tracker
+        - marketing content
+        - marketing calendar
+      settings_configurations:
+        - status for projects and tasks
+
+  # ---------------------------------------------------------------------------
+  # 6. Sales
+  # ---------------------------------------------------------------------------
+  - bundle_key: sales
+    display_name: Sales
+    primary_entity: lead
+    description: Manages customer acquisition, lead tracking, pipeline management, and sales performance reporting.
+    template_dir: sales
+    dummy_data_template_key: sales_base
+    customizable_fields:
+      - company_name
+      - stage_names
+      - product_names
+      - account_names
+      - status_labels
+
+    default_modules:
+      - projects
+      - weaves
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+    optional_modules:
+      - announcements
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - weaves
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - CRM
+      - sales pipeline
+      - lead tracker
+      - client pipeline
+      - customer acquisition
+      - sales management
+      - revenue management
+      - account management
+    typical_entities:
+      - lead
+      - opportunity
+      - account
+      - customer
+      - deal
+      - proposal
+      - sales rep
+    typical_intents:
+      - track leads
+      - manage pipeline
+      - manage opportunities
+      - close deals
+      - create proposals
+      - monitor sales performance
+      - assign accounts
+      - view sales KPIs
+    required_signals:
+      - sales or lead workflow
+      - customer acquisition or pipeline process
+    signal_boosts:
+      sales: 0.20
+      lead: 0.20
+      CRM: 0.20
+      pipeline: 0.20
+      customer: 0.10
+      deal: 0.15
+      opportunity: 0.15
+      revenue: 0.10
+      prospect: 0.15
+      account: 0.10
+    terminology:
+      primary_record_label: lead
+      owner_label: account owner
+      stage_label: pipeline stage
+
+    metadata:
+      kpis:
+        - active_work_items
+        - on_time_delivery_rate
+        - billable_vs_nonbillable
+        - cycle_time
+      workflows:
+        - lead_capture
+        - pipeline_management
+        - proposal_creation
+        - deal_closure
+        - client_onboarding
+        - performance_review
+      entity_definitions:
+        lead:
+          label: Lead
+          plural: Leads
+        opportunity:
+          label: Opportunity
+          plural: Opportunities
+        account:
+          label: Account
+          plural: Accounts
+      onboarding_config_requirements:
+        - pipeline_stage_definitions
+        - deal_status_definitions
+        - product_catalog
+      coverage:
+        - leads to clients workflow
+        - proposals
+        - sales KPI
+      settings_configurations:
+        - status for projects and tasks
+
+  # ---------------------------------------------------------------------------
+  # 7. Healthcare
+  # ---------------------------------------------------------------------------
+  - bundle_key: healthcare
+    display_name: Healthcare
+    primary_entity: patient
+    description: Supports patient records management, billing, care coordination, and appointment workflows.
+    template_dir: healthcare
+    dummy_data_template_key: healthcare_base
+    customizable_fields:
+      - company_name
+      - department_names
+      - provider_names
+      - appointment_types
+      - status_labels
+
+    default_modules:
+      - tickets
+      - chat
+      - video_call
+      - weaves
+      - dashboard
+    optional_modules:
+      - kpi
+      - announcements
+      - profile
+    knit_service_bundles:
+      - ticketing
+      - weaves
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - medical records
+      - patient management
+      - clinic management
+      - hospital system
+      - healthcare management
+      - care coordination
+      - patient intake
+    typical_entities:
+      - patient
+      - appointment
+      - medical record
+      - provider
+      - billing record
+      - care plan
+    typical_intents:
+      - manage patient records
+      - schedule appointments
+      - track billing
+      - coordinate care
+      - handle patient intake
+      - manage medical records
+    required_signals:
+      - patient or medical workflow
+      - healthcare or clinical process
+    signal_boosts:
+      patient: 0.20
+      medical: 0.20
+      healthcare: 0.20
+      clinic: 0.20
+      hospital: 0.20
+      appointment: 0.15
+      billing: 0.10
+      care: 0.10
+      diagnosis: 0.15
+      treatment: 0.10
+    terminology:
+      primary_record_label: patient record
+      handler_label: healthcare provider
+      request_label: appointment
+
+    metadata:
+      kpis:
+        - avg_resolution_time
+        - active_work_items
+        - sla_compliance
+      workflows:
+        - patient_intake
+        - appointment_scheduling
+        - medical_records_management
+        - billing_and_invoicing
+        - care_coordination
+        - discharge_process
+      entity_definitions:
+        patient:
+          label: Patient
+          plural: Patients
+        appointment:
+          label: Appointment
+          plural: Appointments
+        provider:
+          label: Provider
+          plural: Providers
+      onboarding_config_requirements:
+        - default_management_queue
+        - ticket_counters
+        - appointment_types
+        - department_structure
+      coverage:
+        - patient intake
+        - medical records
+        - appointment workflows
+      settings_configurations:
+        - default management queue
+        - ticket counters
+
+  # ---------------------------------------------------------------------------
+  # 8. Legal Services
+  # ---------------------------------------------------------------------------
+  - bundle_key: legal_services
+    display_name: Legal Services
+    primary_entity: case
+    description: Handles legal documentation, compliance tracking, case management, and client workflows.
+    template_dir: legal_services
+    dummy_data_template_key: legal_services_base
+    customizable_fields:
+      - company_name
+      - practice_area_names
+      - attorney_names
+      - case_types
+      - status_labels
+
+    default_modules:
+      - tickets
+      - chat
+      - video_call
+      - weaves
+      - dashboard
+    optional_modules:
+      - smart_vault
+      - kpi
+      - announcements
+      - profile
+    knit_service_bundles:
+      - ticketing
+      - weaves
+      - chat
+      - video_call
+      - smart_vault
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - law firm
+      - legal management
+      - case management
+      - legal operations
+      - legal practice
+      - litigation management
+      - compliance management
+      - contract management
+    typical_entities:
+      - case
+      - matter
+      - attorney
+      - client
+      - contract
+      - document
+      - deadline
+    typical_intents:
+      - manage cases
+      - track legal matters
+      - handle contracts
+      - manage compliance
+      - share legal documents
+      - track deadlines
+      - assign attorneys
+      - monitor case progress
+    required_signals:
+      - legal or case workflow
+      - law or compliance process
+    signal_boosts:
+      legal: 0.20
+      case: 0.20
+      attorney: 0.20
+      law: 0.20
+      litigation: 0.20
+      contract: 0.15
+      compliance: 0.15
+      matter: 0.20
+      court: 0.15
+      counsel: 0.15
+    terminology:
+      primary_record_label: case
+      handler_label: attorney
+      document_label: legal document
+
+    metadata:
+      kpis:
+        - avg_case_duration
+        - cases_per_attorney
+        - case_load_distribution
+        - upcoming_deadlines
+      workflows:
+        - case_intake
+        - matter_assignment
+        - document_management
+        - deadline_tracking
+        - billing_and_invoicing
+        - case_closure
+        - compliance_monitoring
+      entity_definitions:
+        case:
+          label: Case
+          plural: Cases
+        matter:
+          label: Matter
+          plural: Matters
+        attorney:
+          label: Attorney
+          plural: Attorneys
+      onboarding_config_requirements:
+        - default_management_queue
+        - ticket_counters
+        - practice_area_definitions
+        - case_type_definitions
+      coverage:
+        - case workflows
+        - contracts
+        - document sharing
+      settings_configurations:
+        - default management queue
+        - ticket counters
+
+  # ---------------------------------------------------------------------------
+  # 9. Construction & Real Estate
+  # ---------------------------------------------------------------------------
+  - bundle_key: construction_real_estate
+    display_name: Construction & Real Estate
+    primary_entity: site
+    description: Manages construction job assignments, site reporting, real estate listings, tenant onboarding, and maintenance ticketing.
+    template_dir: construction_real_estate
+    dummy_data_template_key: construction_real_estate_base
+    customizable_fields:
+      - company_name
+      - site_names
+      - project_names
+      - unit_names
+      - status_labels
+
+    default_modules:
+      - projects
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+    optional_modules:
+      - weaves
+      - tickets
+      - announcements
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - construction management
+      - real estate management
+      - property management
+      - site management
+      - facilities management
+      - building management
+      - contractor management
+    typical_entities:
+      - site
+      - unit
+      - tenant
+      - contractor
+      - project
+      - listing
+      - maintenance request
+    typical_intents:
+      - manage construction projects
+      - track site progress
+      - manage properties
+      - handle tenant onboarding
+      - schedule maintenance
+      - track job assignments
+      - manage listings
+    required_signals:
+      - construction or real estate workflow
+      - site or property management process
+    signal_boosts:
+      construction: 0.20
+      real estate: 0.20
+      property: 0.20
+      site: 0.15
+      tenant: 0.20
+      contractor: 0.20
+      building: 0.15
+      maintenance: 0.10
+      listing: 0.15
+      renovation: 0.15
+    terminology:
+      primary_record_label: project
+      site_label: site
+      unit_label: unit
+
+    metadata:
+      kpis:
+        - on_time_delivery_rate
+        - project_health_status
+        - active_work_items
+      workflows:
+        - project_planning
+        - site_report_submission
+        - tenant_onboarding
+        - maintenance_request
+        - listing_management
+        - job_assignment
+      entity_definitions:
+        project:
+          label: Project
+          plural: Projects
+        site:
+          label: Site
+          plural: Sites
+        tenant:
+          label: Tenant
+          plural: Tenants
+      onboarding_config_requirements:
+        - project_status_definitions
+        - task_status_definitions
+        - site_structure
+      coverage:
+        - site reports
+        - tenant onboarding
+        - maintenance ticketing
+      settings_configurations:
+        - status for projects and tasks
+
+  # ---------------------------------------------------------------------------
+  # 10. Education
+  # ---------------------------------------------------------------------------
+  - bundle_key: education
+    display_name: Education
+    primary_entity: course
+    description: Enables digital learning management including course creation, student enrollment, assignment tracking, and certificate issuance.
+    template_dir: education
+    dummy_data_template_key: education_base
+    customizable_fields:
+      - company_name
+      - course_names
+      - instructor_names
+      - subject_names
+      - status_labels
+
+    default_modules:
+      - projects
+      - weaves
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+    optional_modules:
+      - announcements
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - weaves
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - e-learning
+      - online learning
+      - learning management
+      - LMS
+      - course management
+      - student management
+      - training management
+      - educational platform
+    typical_entities:
+      - course
+      - student
+      - instructor
+      - assignment
+      - certificate
+      - enrollment
+      - module
+    typical_intents:
+      - create courses
+      - enroll students
+      - track assignments
+      - issue certificates
+      - manage curriculum
+      - monitor student progress
+    required_signals:
+      - education or learning workflow
+      - course or student management process
+    signal_boosts:
+      education: 0.20
+      course: 0.20
+      student: 0.20
+      learning: 0.20
+      training: 0.15
+      instructor: 0.15
+      curriculum: 0.15
+      certificate: 0.15
+      enrollment: 0.15
+      e-learning: 0.20
+    terminology:
+      primary_record_label: course
+      participant_label: student
+      facilitator_label: instructor
+
+    metadata:
+      kpis:
+        - active_work_items
+        - planned_vs_actual
+        - on_time_delivery_rate
+      workflows:
+        - course_creation
+        - student_enrollment
+        - assignment_tracking
+        - certificate_issuance
+        - progress_monitoring
+        - curriculum_management
+      entity_definitions:
+        course:
+          label: Course
+          plural: Courses
+        student:
+          label: Student
+          plural: Students
+        assignment:
+          label: Assignment
+          plural: Assignments
+      onboarding_config_requirements:
+        - course_status_definitions
+        - enrollment_settings
+        - subject_categories
+      coverage:
+        - course tasks
+        - assignments
+        - certificates
+      settings_configurations:
+        - status for projects and tasks
+
+  # ---------------------------------------------------------------------------
+  # 11. All Microservices
+  # ---------------------------------------------------------------------------
+  - bundle_key: all_microservices
+    display_name: All Microservices
+    primary_entity: work
+    description: Comprehensive all-in-one operating system combining every available Knit service hub and tool.
+    template_dir: all_microservices
+    dummy_data_template_key: all_microservices_base
+    customizable_fields:
+      - company_name
+      - primary_use_case
+      - department_names
+      - status_labels
+
+    default_modules:
+      - hr_hub
+      - tickets
+      - projects
+      - weaves
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+      - announcements
+      - calendar
+      - smart_vault
+      - rewards_store
+    optional_modules:
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - ticketing
+      - hr_hub
+      - weaves
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - calendar
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - all in one
+      - complete solution
+      - full platform
+      - enterprise suite
+      - all features
+      - everything
+      - all services
+    typical_entities:
+      - employee
+      - ticket
+      - project
+      - lead
+      - document
+      - task
+    typical_intents:
+      - manage everything
+      - full business platform
+      - all-in-one workspace
+      - enterprise management
+    required_signals:
+      - multiple business domains
+      - comprehensive or all-in-one requirement
+    signal_boosts:
+      all: 0.15
+      everything: 0.20
+      all-in-one: 0.20
+      comprehensive: 0.15
+      enterprise: 0.15
+      full platform: 0.20
+    terminology:
+      primary_record_label: work item
+
+    metadata:
+      kpis:
+        - on_time_delivery_rate
+        - project_health_status
+        - avg_resolution_time
+        - active_headcount
+        - sla_compliance
+        - capacity_utilization
+      workflows:
+        - employee_management
+        - ticketing
+        - project_delivery
+        - sales_pipeline
+        - financial_reporting
+        - content_management
+      entity_definitions:
+        employee:
+          label: Employee
+          plural: Employees
+        ticket:
+          label: Ticket
+          plural: Tickets
+        project:
+          label: Project
+          plural: Projects
+      onboarding_config_requirements:
+        - all configurations from all hubs
+      coverage:
+        - all features from all hubs
+      settings_configurations:
+        - all configurations from all hubs
+
+  # ---------------------------------------------------------------------------
+  # 12. Generic (Fallback)
+  # ---------------------------------------------------------------------------
   - bundle_key: generic
     display_name: Custom Workspace
     primary_entity: work
-    description: Fallback workspace for requests that do not confidently map to a specialized bundle.
+    description: Fallback workspace for requests that do not confidently map to a specialized bundle after clarification budget is exhausted.
+    template_dir: generic
+    dummy_data_template_key: generic_base
+    customizable_fields:
+      - company_name
+      - primary_use_case
+
     default_modules:
       - tickets
       - dashboard
@@ -131,15 +1259,38 @@ bundles:
       - notes
       - forms
       - tasks
+      - chat
+    knit_service_bundles:
+      - ticketing
     required_slots:
       - primary_use_case
-    industry_hints:
+
+    synonyms:
       - custom
       - general
-      - other
       - misc
       - unknown
-    template_dir: generic
-    customizable_fields:
-      - company_name
-      - primary_use_case
+      - other
+    typical_entities:
+      - work item
+    typical_intents:
+      - general workflow
+      - custom use case
+    required_signals: []
+    signal_boosts: {}
+    terminology:
+      primary_record_label: work item
+
+    metadata:
+      kpis: []
+      workflows:
+        - general_request_handling
+      entity_definitions:
+        work_item:
+          label: Work Item
+          plural: Work Items
+      onboarding_config_requirements:
+        - primary_use_case
+      coverage:
+        - general purpose workspace
+      settings_configurations: []

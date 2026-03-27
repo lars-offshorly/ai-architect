@@ -15,3 +15,8 @@ class Session(BaseModel):
     confirmed: bool = False
     selected_bundle_key: str | None = None
     auth_token: str | None = None
+
+    accumulated_extraction: dict | None = None
+    latest_classification: dict | None = None
+    latest_recommendation: dict | None = None
+    clarification_turn_count: int = 0

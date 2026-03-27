@@ -18,9 +18,11 @@ from repositories.session_repository import SessionRepository
 from repositories.template_repository import TemplateRepository
 
 
+@lru_cache(maxsize=1)
 def get_bundle_catalog() -> BundleCatalog:
-    """Return a fresh BundleCatalog instance."""
-    return BundleCatalog()
+    """Return a cached BundleCatalog instance. Cache is process-scoped; dev server restarts clear it."""
+    settings = get_settings()
+    return BundleCatalog(Path(settings.BUNDLE_REGISTRY_PATH))
 
 
 @lru_cache(maxsize=1)

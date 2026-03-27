@@ -34,11 +34,25 @@ class InvalidPayloadError(AppError):
 
 class ClassificationError(AppError):
     def __init__(self, reason: str = "") -> None:
-        super().__init__(f"Classification failed: {reason}" if reason else "Classification failed")
+        super().__init__(
+            f"Classification failed: {reason}" if reason else "Classification failed"
+        )
 
 
 class PreviewGenerationError(AppError):
     def __init__(self, reason: str = "") -> None:
         super().__init__(
-            f"Preview generation failed: {reason}" if reason else "Preview generation failed"
+            f"Preview generation failed: {reason}"
+            if reason
+            else "Preview generation failed"
         )
+
+
+class BundleRegistryValidationError(AppError):
+    def __init__(self, reason: str = "") -> None:
+        super().__init__(
+            f"Bundle registry validation failed: {reason}"
+            if reason
+            else "Bundle registry validation failed"
+        )
+        self.reason = reason
