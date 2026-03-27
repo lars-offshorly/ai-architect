@@ -11,13 +11,12 @@ logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Catalog → registry key translation
-# BundleCatalog (catalog/bundles.json) uses different keys than BUNDLE_REGISTRY.
-# Map catalog keys to the registry key that should be activated.
+# BundleCatalog uses the BundleType enum keys; BUNDLE_REGISTRY uses its own keys.
+# Only keys that differ between catalog and registry need an entry here.
 # Keys absent from this map with no direct registry entry fall to Tier 3.
 # ---------------------------------------------------------------------------
 _CATALOG_TO_REGISTRY: dict[str, str] = {
-    "project_ops": "project_mgmt",
-    "field_service": "ticketing",
+    "hr_management": "hr_hub",  # Dev A sends "hr_management"; registry key is "hr_hub"
 }
 
 
