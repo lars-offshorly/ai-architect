@@ -95,12 +95,6 @@ _BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
         "service_types",
         "kpi_definitions",
     ],
-    "asset_mgmt": [
-        "asset_statuses",
-        "maintenance_types",
-        "maintenance_statuses",
-        "kpi_definitions",
-    ],
 }
 _BUNDLE_CONFIG_FALLBACK_FIELDS: list[str] = [
     "ticket_statuses",
