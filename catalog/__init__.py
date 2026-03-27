@@ -1,5 +1,17 @@
 from __future__ import annotations
 
-from .bundle_catalog import BundleCatalog, BundleCatalogError, BundleDefinition
+from domain.models.bundle_metadata import BundleMetadata, EntityDefinition
 
-__all__ = ["BundleCatalog", "BundleCatalogError", "BundleDefinition"]
+from .bundle_catalog import (
+    BundleCatalog,
+    BundleCatalogError,
+    BundleDefinition,
+)
+
+__all__ = [
+    "BundleCatalog",
+    "BundleCatalogError",
+    "BundleDefinition",
+    "BundleMetadata",
+    "EntityDefinition",
+]
