@@ -56,3 +56,9 @@ class BundleRegistryValidationError(AppError):
             else "Bundle registry validation failed"
         )
         self.reason = reason
+
+
+class EditError(AppError):
+    def __init__(self, reason: str = "") -> None:
+        super().__init__(f"Edit failed: {reason}" if reason else "Edit failed")
+        self.reason = reason
