@@ -4,3 +4,7 @@ __pycache__/
 .windsurf/ 
 .claude/ 
 .agent/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+changes_*.md 
