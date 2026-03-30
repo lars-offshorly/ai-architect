@@ -1,0 +1,18 @@
+{
+  "session_id": "fixture-session-hr-hub",
+  "company_name": null,
+  "industry_hint": "human resources",
+  "primary_use_case": "manage employee leave requests and onboarding",
+  "entity_type": "people",
+  "employee_names": [],
+  "role_names": ["HR Manager"],
+  "department_names": [],
+  "metrics": [],
+  "status_labels": [],
+  "custom_terminology": {},
+  "slots": {
+    "team_size": 50,
+    "primary_use_case": "manage employee leave requests and onboarding",
+    "industry_hint": "human resources"
+  }
+}

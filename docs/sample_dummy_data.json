@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "session_id": "123e4567-e89b-12d3-a456-426614174000",
+  "bundle": "hr_hub",
+  "stores": {
+    "tickets": [
+      {
+        "id": 1,
+        "ticketId": "TCK-1001",
+        "title": "Offboard ",
+        "description": "My current laptop screen is flickering uncontrollably.",
+        "status": {
+          "id": 1,
+          "name": "Open",
+          "slug": "open",
+          "status": "open",
+          "description": "Ticket is open",
+          "color": "#ff0000",
+          "icon": null,
+          "deletedAt": null
+        },
+        "assignee": [{ "userId": 42 }],
+        "authorDetails": {
+          "firstName": "John",
+          "lastName": "Doe",
+          "userId": 45
+        },
+        "createdAt": "2026-03-11T12:00:00Z",
+        "dueDate": null,
+        "queue": null,
+        "priority": "High",
+        "priorityDescription": "Needs immediate attention",
+        "impact": 5,
+        "urgency": 5,
+        "category": "Hardware",
+        "subCategory": "Laptop",
+        "requestType": "Replacement",
+        "emailSubmitter": [],
+        "createdFromEmail": null,
+        "conversationEmail": "tck-1001@support.local",
+        "formId": 1,
+        "formName": "IT Support",
+        "form": null,
+        "submission": null,
+        "submittedBy": 45,
+        "account": "IT Dept",
+        "icon": null
+      }
+    ],
+    "projects": [
+      {
+        "id": "proj-1",
+        "name": "Q3 Marketing Campaign",
+        "description": "Launch new product marketing campaign",
+        "progress": 25,
+        "isFavorite": true,
+        "assignedTo": [],
+        "adminUsers": [],
+        "startDate": "2026-03-01T00:00:00Z",
+        "endDate": "2026-09-30T00:00:00Z"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-1",
+        "projectId": "proj-1",
+        "taskName": "Design Ad Creatives",
+        "status": "In Progress",
+        "progress": 50,
+        "assignedTo": [],
+        "taskDuration": 14,
+        "isSubtask": 0,
+        "subtasksCount": 0,
+        "taskDependenciesCount": 0,
+        "commentsCount": 0,
+        "attachmentsCount": 0,
+        "isFavorite": false,
+        "createdAt": "2026-03-05T00:00:00Z",
+        "updatedAt": "2026-03-11T00:00:00Z",
+        "parentProject": { "id": "proj-1", "name": "Q3 Marketing Campaign" },
+        "parentTask": { "id": null, "name": null },
+        "taskDependencies": [],
+        "taskLink": [],
+        "taskTimeSpent": null,
+        "lastTaskActivity": null,
+        "timelineColorSettings": null,
+        "timelineTypographySettings": null,
+        "customFields": []
+      }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "name": "Monthly Leads",
+        "type": "Quantitative",
+        "status": "Ongoing",
+        "frequency": "Monthly",
+        "assesseeType": "Teams",
+        "assessees": ["Marketing Team"],
+        "category": "Basic",
+        "startDate": "2026-03-01T00:00:00Z",
+        "endDate": "2026-03-31T23:59:59Z",
+        "qualitativeType": null,
+        "isMandatory": true,
+        "isDataEntryRemarksEnabled": false,
+        "evaluatorsHidden": false,
+        "evaluatorsSeeOverallResults": true,
+        "details": {
+          "target": 100,
+          "thresholds": [50, 80],
+          "condition": "Gte",
+          "dataLabel": "Items",
+          "customDataLabel": null,
+          "numberFormat": "Integer",
+          "resultType": "Sum"
+        },
+        "createdAt": "2026-03-01T00:00:00Z",
+        "updatedAt": "2026-03-01T00:00:00Z",
+        "owner": null,
+        "kpiAssessees": [],
+        "kpiUsers": [],
+        "currentUser": []
+      }
+    ],
+    "weaves": [
+      {
+        "id": "weave-1",
+        "name": "Budget Tracker",
+        "description": "Q3 Campaign Budget Tracking",
+        "createdAt": "2026-03-01T10:00:00Z",
+        "updatedAt": "2026-03-10T14:30:00Z",
+        "viewedAt": "2026-03-11T09:00:00Z",
+        "attributes": {
+          "format": "xlsx",
+          "gridline": true,
+          "theme": "light"
+        }
+      }
+    ]
+  }
+}

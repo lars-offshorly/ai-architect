@@ -1,0 +1,7 @@
+# This repository is managed with Poetry.
+#
+# Install dependencies with:
+#   poetry install --with dev
+#
+# If you need a pip-compatible lock file, export from Poetry:
+#   poetry export -f requirements.txt --output requirements.lock.txt --without-hashes --with dev

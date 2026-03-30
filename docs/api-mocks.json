@@ -1,0 +1,3014 @@
+{
+  "chat": {
+    "GET": {
+      "\/users\/\\d+\/status": {
+        "statusCode": 200,
+        "response": {
+          "userId": 66,
+          "status": "active",
+          "statusId": 1,
+          "isOnline": true
+        }
+      },
+      "/messages/total-unread-messages": {
+        "statusCode": 200,
+        "response": { "total": 0 }
+      }
+    },
+    "PUT": {
+      "/user-settings": {
+        "statusCode": 200,
+        "response": { "message": "success" }
+      }
+    }
+  },
+  "hrhub": {
+    "GET": {
+      "/employees/me": {
+        "statusCode": 200,
+        "response": {
+          "id": 42,
+          "firstName": "Jacob",
+          "middleName": "",
+          "lastName": "Foster",
+          "preferredName": "",
+          "suffix": "",
+          "sex": null,
+          "nationality": "",
+          "employeeNumber": "ba2d6efd8e1847f4bc2deace2fa95bf6",
+          "position": "Accountant",
+          "positionDescription": "Accountant",
+          "jobLevel": null,
+          "updatedAt": "2023-04-24T12:47:48.741691Z",
+          "createdAt": "2023-01-11T07:17:56.428350Z",
+          "teams": [],
+          "departmentAccountName": null,
+          "subTeam": null,
+          "status": "Absent",
+          "userId": 66,
+          "team": null,
+          "workNumber": "",
+          "workEmail": "",
+          "employmentStatus": "Active",
+          "employmentType": null,
+          "photo": null,
+          "orchestrationEmail": null,
+          "office": "",
+          "town": "",
+          "city": "",
+          "state": "",
+          "country": "",
+          "birthdate": "1923-01-01",
+          "gender": null,
+          "civilStatus": null,
+          "citizenships": {},
+          "updatedBy": null,
+          "skype": "",
+          "facebook": "",
+          "instagram": "",
+          "linkedin": "",
+          "twitter": "",
+          "isSoloParent": false,
+          "hasDeviceVerification": false,
+          "isInternal": false,
+          "homeNumber": "",
+          "mobileNumber": "",
+          "personalEmail": "",
+          "isPermanentAddressAsCurrent": false,
+          "addresses": {},
+          "highestAttainment": "College Graduate",
+          "educations": [],
+          "awards": [],
+          "professionalLicenses": [],
+          "families": [],
+          "emergencyContacts": [],
+          "healthClearances": [],
+          "hmo": [],
+          "jobType": null,
+          "isImmediateSupervisor": false,
+          "isOvertimeEligible": true,
+          "isOvertimeRound": true,
+          "hasToTimeIn": true,
+          "isNsdEligible": true,
+          "hasGovernmentContributions": true,
+          "customWithholdingTaxPercent": null,
+          "waivedSeparationPenalty": false,
+          "originalHireDate": null,
+          "companyHireDate": null,
+          "startDateInCurrentTeam": null,
+          "separationDate": null,
+          "clientHireDate": null,
+          "regularizationDate": null,
+          "totalServiceLength": null,
+          "certificates": [],
+          "ongoingStudies": [],
+          "positionHistory": [],
+          "employmentHistory": [],
+          "performanceRatings": [],
+          "trainings": [],
+          "immediateSupervisor": null,
+          "immediateSupervisors": [],
+          "documents": [],
+          "teamCode": "",
+          "currentCompany": "",
+          "employmentGroup": null,
+          "departmentAccountCode": "",
+          "typeOfActiveEmployment": null,
+          "hiringStatus": null,
+          "atRisk": false,
+          "rehireEligibility": null,
+          "separationReason": null,
+          "separationCategory": null,
+          "clientTimezone": "",
+          "clientNoStreet": "",
+          "clientCountry": "",
+          "clientCity": "",
+          "clientTown": "",
+          "clientState": "",
+          "clientZipCode": "",
+          "clientHoliday": null,
+          "clientEmail": "",
+          "holidayToBeFollowed": null,
+          "taxIdNumber": "",
+          "socialSecuritySystemNumber": "",
+          "philhealthNumber": "",
+          "hdmfNumber": "",
+          "onboardingDate": null,
+          "workSetup": null,
+          "monthlyPay": "89607.00",
+          "monthlyPayCurrency": "PHP",
+          "earnings": "89607.00",
+          "earningsCurrency": "PHP",
+          "typeOfEarner": "Monthly",
+          "allowances": [],
+          "nightShiftStart": null,
+          "nightShiftEnd": null,
+          "role": "Admin",
+          "currentScheduleDailyBillingSeconds": 10800,
+          "userSettings": {
+            "showScheduleDeleteMessage": true
+          }
+        }
+      }
+    }
+  },
+  "notification": {
+    "GET": {
+      "/announcements": {
+        "statusCode": 200,
+        "response": {
+          "pages": {
+            "next": 0,
+            "numPages": 1,
+            "perPage": 100
+          },
+          "count": 0,
+          "totalCount": 0,
+          "results": []
+        }
+      },
+      "/notifications/total-unread": {
+        "statusCode": 200,
+        "response": 0
+      }
+    }
+  },
+  "orchestration": {
+    "GET": {
+      "/feature_flags": {
+        "statusCode": 200,
+        "response": {
+          "pages": {
+            "next": null,
+            "previous": null,
+            "current": 1,
+            "numPages": 1,
+            "perPage": 100
+          },
+          "count": 69,
+          "results": [
+            {
+              "id": 111,
+              "name": "activity-feed-announcement-popup",
+              "description": "activity-feed-announcement-popup",
+              "isEnabled": true,
+              "createdAt": "2025-02-07T07:08:34.124045Z",
+              "updatedAt": "2025-02-14T03:49:03.223087Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 180,
+              "name": "activity-feed-announcement-read-all",
+              "description": "activity-feed-announcement-read-all",
+              "isEnabled": true,
+              "createdAt": "2025-07-31T10:08:50.765890Z",
+              "updatedAt": "2025-07-31T10:08:50.765910Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 113,
+              "name": "activity-feed-announcement-repeat",
+              "description": "activity-feed-announcement-repeat",
+              "isEnabled": false,
+              "createdAt": "2025-02-10T10:05:10.804725Z",
+              "updatedAt": "2025-02-10T10:06:37.154972Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 178,
+              "name": "activity-feed-announcement-rules",
+              "description": "activity-feed-announcement-rules",
+              "isEnabled": true,
+              "createdAt": "2025-07-30T09:15:55.780753Z",
+              "updatedAt": "2025-07-30T09:15:55.780773Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 114,
+              "name": "activity-feed-announcement-share-by-email",
+              "description": "activity-feed-announcement-share-by-email",
+              "isEnabled": false,
+              "createdAt": "2025-02-10T10:05:22.547689Z",
+              "updatedAt": "2025-02-10T10:06:45.035967Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 147,
+              "name": "activity-feed-filter-calendar",
+              "description": "activity-feed-filter-calendar",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:25:27.927463Z",
+              "updatedAt": "2025-12-11T04:11:45.928700Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 148,
+              "name": "activity-feed-filter-dashboard",
+              "description": "activity-feed-filter-dashboard",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:25:38.581015Z",
+              "updatedAt": "2025-12-11T04:11:56.560751Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 149,
+              "name": "activity-feed-filter-hrhub",
+              "description": "activity-feed-filter-hrhub",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:25:47.999029Z",
+              "updatedAt": "2025-12-11T04:12:10.844734Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 150,
+              "name": "activity-feed-filter-tickets",
+              "description": "activity-feed-filter-tickets",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:26:05.306352Z",
+              "updatedAt": "2025-12-11T04:12:14.209472Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 151,
+              "name": "activity-feed-filter-todo",
+              "description": "activity-feed-filter-todo",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:26:14.109701Z",
+              "updatedAt": "2025-12-11T04:12:17.288891Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 152,
+              "name": "activity-feed-filter-weaves",
+              "description": "activity-feed-filter-weaves",
+              "isEnabled": true,
+              "createdAt": "2025-04-03T00:26:23.758211Z",
+              "updatedAt": "2025-12-11T04:12:20.407603Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 74,
+              "name": "activity-feed-module",
+              "description": "Activity Feed Module",
+              "isEnabled": true,
+              "createdAt": "2024-03-21T00:29:09.609394Z",
+              "updatedAt": "2024-03-21T00:51:42.374425Z",
+              "module": "Global"
+            },
+            {
+              "id": 185,
+              "name": "activity-feed-module-scheduled-announcements",
+              "description": "activity-feed-module-scheduled-announcements",
+              "isEnabled": true,
+              "createdAt": "2025-09-03T09:27:32.485605Z",
+              "updatedAt": "2025-09-04T03:21:41.737691Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 137,
+              "name": "activity-feed-nav-notification",
+              "description": "activity-feed-nav-notification",
+              "isEnabled": false,
+              "createdAt": "2025-03-28T04:15:34.261821Z",
+              "updatedAt": "2025-03-28T04:15:34.261844Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 138,
+              "name": "activity-feed-nav-search",
+              "description": "activity-feed-nav-search",
+              "isEnabled": false,
+              "createdAt": "2025-03-28T04:15:47.645263Z",
+              "updatedAt": "2025-03-28T04:15:47.645284Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 139,
+              "name": "activity-feed-nav-settings",
+              "description": "activity-feed-nav-settings",
+              "isEnabled": false,
+              "createdAt": "2025-03-28T04:15:58.070261Z",
+              "updatedAt": "2025-03-28T04:15:58.070281Z",
+              "module": "Notifications"
+            },
+            {
+              "id": 131,
+              "name": "activity-feed-notification",
+              "description": "activity-feed-notification",
+              "isEnabled": true,
+              "createdAt": "2025-03-05T01:44:26.292389Z",
+              "updatedAt": "2025-03-05T01:44:26.292408Z",
+              "module": "Global"
+            },
+            {
+              "id": 110,
+              "name": "activity-feed-notifications-toast",
+              "description": "Activity Feed Notifications Toast",
+              "isEnabled": true,
+              "createdAt": "2025-02-06T08:25:27.406350Z",
+              "updatedAt": "2025-02-06T08:36:10.795888Z",
+              "module": "Global"
+            },
+            {
+              "id": 125,
+              "name": "activity-feed-unread-count",
+              "description": "activity-feed-unread-count",
+              "isEnabled": true,
+              "createdAt": "2025-02-26T06:49:03.145012Z",
+              "updatedAt": "2025-02-26T06:49:03.145032Z",
+              "module": "Global"
+            },
+            {
+              "id": 187,
+              "name": "ai-toolkit-module",
+              "description": "AI Toolkit Module",
+              "isEnabled": true,
+              "createdAt": "2025-09-10T05:05:22.058374Z",
+              "updatedAt": "2025-09-10T05:05:22.058395Z",
+              "module": "Global"
+            },
+            {
+              "id": 181,
+              "name": "app-file-download-dialog",
+              "description": "app-file-download-dialog",
+              "isEnabled": true,
+              "createdAt": "2025-08-06T07:44:41.858926Z",
+              "updatedAt": "2025-08-06T07:44:41.858946Z",
+              "module": "Global"
+            },
+            {
+              "id": 90,
+              "name": "app-homepage-hr-hub",
+              "description": "Set the hr-hub dashboard as home page.\r\ndependencies:\r\n    hrhub-module\r\n    hrhub-dashboard",
+              "isEnabled": true,
+              "createdAt": "2024-10-16T13:27:02.553095Z",
+              "updatedAt": "2025-05-28T06:30:29.443274Z",
+              "module": "Global"
+            },
+            {
+              "id": 83,
+              "name": "autologout-by-ttl",
+              "description": "Auto Logout by TTL",
+              "isEnabled": false,
+              "createdAt": "2024-08-01T03:26:01.473847Z",
+              "updatedAt": "2024-08-01T03:26:01.473867Z",
+              "module": "Global"
+            },
+            {
+              "id": 109,
+              "name": "calendar_module",
+              "description": "Calendar module",
+              "isEnabled": true,
+              "createdAt": "2025-01-09T12:01:27.770505Z",
+              "updatedAt": "2025-01-09T12:01:27.770538Z",
+              "module": "Global"
+            },
+            {
+              "id": 92,
+              "name": "chat-bot",
+              "description": "chat-bot",
+              "isEnabled": true,
+              "createdAt": "2024-10-18T03:55:16.695546Z",
+              "updatedAt": "2026-01-26T14:18:56.107714Z",
+              "module": "AI Chat Bot"
+            },
+            {
+              "id": 107,
+              "name": "chat-float",
+              "description": "Chat boxes that floats on right bottom",
+              "isEnabled": true,
+              "createdAt": "2024-12-07T02:12:21.378423Z",
+              "updatedAt": "2026-02-24T13:38:28.018164Z",
+              "module": "Global"
+            },
+            {
+              "id": 5,
+              "name": "chat-module",
+              "description": "Chat Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T12:42:44.796530Z",
+              "updatedAt": "2025-03-31T07:45:36.799269Z",
+              "module": "Global"
+            },
+            {
+              "id": 130,
+              "name": "chat-notification",
+              "description": "chat-notification",
+              "isEnabled": true,
+              "createdAt": "2025-03-05T01:43:52.549660Z",
+              "updatedAt": "2025-03-05T01:44:41.541722Z",
+              "module": "Global"
+            },
+            {
+              "id": 124,
+              "name": "chat-unread-count",
+              "description": "chat-unread-count",
+              "isEnabled": true,
+              "createdAt": "2025-02-26T06:48:47.108703Z",
+              "updatedAt": "2025-02-26T06:48:47.108723Z",
+              "module": "Global"
+            },
+            {
+              "id": 157,
+              "name": "chatbot-module",
+              "description": "Chatbot Module",
+              "isEnabled": true,
+              "createdAt": "2025-05-05T15:54:57.395874Z",
+              "updatedAt": "2025-05-05T15:54:57.395892Z",
+              "module": "Global"
+            },
+            {
+              "id": 2,
+              "name": "dashboard-module",
+              "description": "Dashboard Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T11:44:44.063887Z",
+              "updatedAt": "2024-10-03T09:43:55.905804Z",
+              "module": "Global"
+            },
+            {
+              "id": 177,
+              "name": "docbot-module",
+              "description": "AI Document Verification Module",
+              "isEnabled": true,
+              "createdAt": "2025-07-28T12:09:27.955255Z",
+              "updatedAt": "2025-07-28T12:09:27.955277Z",
+              "module": "Global"
+            },
+            {
+              "id": 40,
+              "name": "hrhub-admin-hangout",
+              "description": "HR Hub Admin Hangout",
+              "isEnabled": false,
+              "createdAt": "2024-02-28T06:52:50.472651Z",
+              "updatedAt": "2024-03-14T12:23:08.783104Z",
+              "module": "Global"
+            },
+            {
+              "id": 179,
+              "name": "hrhub-employee-handbook",
+              "description": "HRHUB Employee Handbook",
+              "isEnabled": true,
+              "createdAt": "2025-07-31T05:56:12.421632Z",
+              "updatedAt": "2025-07-31T05:56:12.421650Z",
+              "module": "Global"
+            },
+            {
+              "id": 38,
+              "name": "hrhub-employee-movement",
+              "description": "Hr Hub Employee Movement",
+              "isEnabled": true,
+              "createdAt": "2024-02-28T06:51:04.478568Z",
+              "updatedAt": "2024-03-14T12:21:46.159377Z",
+              "module": "Global"
+            },
+            {
+              "id": 37,
+              "name": "hrhub-live-feed",
+              "description": "Hr Hub Live Feed",
+              "isEnabled": false,
+              "createdAt": "2024-02-28T06:50:02.901681Z",
+              "updatedAt": "2024-03-14T12:19:33.316430Z",
+              "module": "Global"
+            },
+            {
+              "id": 3,
+              "name": "hrhub-module",
+              "description": "Hr Hub Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T11:53:52.473897Z",
+              "updatedAt": "2025-03-31T07:45:40.470287Z",
+              "module": "Global"
+            },
+            {
+              "id": 42,
+              "name": "hrhub-my-tasks",
+              "description": "Hr Hub My Tasks",
+              "isEnabled": false,
+              "createdAt": "2024-02-28T06:54:01.750712Z",
+              "updatedAt": "2024-03-14T12:20:00.353466Z",
+              "module": "Global"
+            },
+            {
+              "id": 120,
+              "name": "hrhub-onboarding",
+              "description": "Enable Onboarding form",
+              "isEnabled": true,
+              "createdAt": "2025-02-20T07:14:13.079605Z",
+              "updatedAt": "2025-03-07T09:25:33.765180Z",
+              "module": "Global"
+            },
+            {
+              "id": 174,
+              "name": "hrhub-overview",
+              "description": "HR Hub Overview",
+              "isEnabled": true,
+              "createdAt": "2025-06-10T08:33:22.936045Z",
+              "updatedAt": "2025-06-10T08:52:12.239191Z",
+              "module": "Global"
+            },
+            {
+              "id": 39,
+              "name": "hrhub-tasks",
+              "description": "Hr Hub Tasks",
+              "isEnabled": false,
+              "createdAt": "2024-02-28T06:51:27.688166Z",
+              "updatedAt": "2024-03-14T12:29:42.513641Z",
+              "module": "Global"
+            },
+            {
+              "id": 207,
+              "name": "kpi-advanced-type",
+              "description": "kpi-advanced-type",
+              "isEnabled": false,
+              "createdAt": "2026-03-03T10:42:07.703506Z",
+              "updatedAt": "2026-03-03T10:48:08.281309Z",
+              "module": "Global"
+            },
+            {
+              "id": 123,
+              "name": "kpi-module",
+              "description": "KPI Module",
+              "isEnabled": true,
+              "createdAt": "2025-02-25T04:10:41.105040Z",
+              "updatedAt": "2025-02-25T04:10:41.105060Z",
+              "module": "Global"
+            },
+            {
+              "id": 188,
+              "name": "menu-ai-toolkit-nav",
+              "description": "Menu Ai Toolkit Nav",
+              "isEnabled": true,
+              "createdAt": "2025-09-10T08:03:31.241584Z",
+              "updatedAt": "2025-09-10T08:03:31.241607Z",
+              "module": "Global"
+            },
+            {
+              "id": 65,
+              "name": "menu-calendar-nav",
+              "description": "Menu Calendar Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:48:50.769034Z",
+              "updatedAt": "2025-03-18T10:21:47.337976Z",
+              "module": "Global"
+            },
+            {
+              "id": 59,
+              "name": "menu-dashboard-nav",
+              "description": "Menu Dashboard Nav",
+              "isEnabled": true,
+              "createdAt": "2024-03-12T16:44:13.014551Z",
+              "updatedAt": "2024-03-14T00:43:24.853690Z",
+              "module": "Global"
+            },
+            {
+              "id": 58,
+              "name": "menu-favorites-nav",
+              "description": "Menu Favorites Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:41:08.236929Z",
+              "updatedAt": "2024-03-12T16:59:14.410663Z",
+              "module": "Global"
+            },
+            {
+              "id": 71,
+              "name": "menu-games-nav",
+              "description": "Menu Games Navigation",
+              "isEnabled": true,
+              "createdAt": "2024-03-20T18:03:14.947509Z",
+              "updatedAt": "2024-03-20T18:04:02.451053Z",
+              "module": "Global"
+            },
+            {
+              "id": 62,
+              "name": "menu-kanban-nav",
+              "description": "Menu Kanban Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:47:14.231896Z",
+              "updatedAt": "2024-03-12T16:59:17.745934Z",
+              "module": "Global"
+            },
+            {
+              "id": 60,
+              "name": "menu-knit-show-nav",
+              "description": "Menu Knit Show Navigation",
+              "isEnabled": true,
+              "createdAt": "2024-03-12T16:44:54.342884Z",
+              "updatedAt": "2024-03-19T06:37:13.077569Z",
+              "module": "Global"
+            },
+            {
+              "id": 61,
+              "name": "menu-know-your-knit-nav",
+              "description": "Menu Know Your Knit Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:45:35.029559Z",
+              "updatedAt": "2024-03-12T16:59:23.146879Z",
+              "module": "Global"
+            },
+            {
+              "id": 70,
+              "name": "menu-kpi-nav",
+              "description": "Menu KPI Navigation",
+              "isEnabled": true,
+              "createdAt": "2024-03-20T18:01:51.099572Z",
+              "updatedAt": "2024-03-20T18:11:34.667253Z",
+              "module": "Global"
+            },
+            {
+              "id": 72,
+              "name": "menu-reports-nav",
+              "description": "Menu Reports Navigation",
+              "isEnabled": true,
+              "createdAt": "2024-03-20T18:03:39.602464Z",
+              "updatedAt": "2024-03-20T18:03:39.602484Z",
+              "module": "Global"
+            },
+            {
+              "id": 63,
+              "name": "menu-timeline-nav",
+              "description": "Menu Timeline Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:47:47.517328Z",
+              "updatedAt": "2024-03-12T16:59:26.139344Z",
+              "module": "Global"
+            },
+            {
+              "id": 66,
+              "name": "menu-todos-nav",
+              "description": "Menu Todos Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:49:17.414538Z",
+              "updatedAt": "2024-03-12T16:59:28.775466Z",
+              "module": "Global"
+            },
+            {
+              "id": 64,
+              "name": "menu-whiteboard-nav",
+              "description": "Menu Whiteboard Navigation",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:48:18.362705Z",
+              "updatedAt": "2024-03-12T16:59:31.682654Z",
+              "module": "Global"
+            },
+            {
+              "id": 132,
+              "name": "profile-module",
+              "description": "Knit user profile module",
+              "isEnabled": true,
+              "createdAt": "2025-03-13T08:20:48.737229Z",
+              "updatedAt": "2025-04-02T11:39:24.561082Z",
+              "module": "Global"
+            },
+            {
+              "id": 7,
+              "name": "projects-module",
+              "description": "Projects Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T12:44:00.848679Z",
+              "updatedAt": "2025-03-31T07:45:44.315150Z",
+              "module": "Global"
+            },
+            {
+              "id": 135,
+              "name": "push-notification",
+              "description": "push-notification",
+              "isEnabled": true,
+              "createdAt": "2025-03-18T08:35:42.149620Z",
+              "updatedAt": "2025-03-18T08:35:42.149639Z",
+              "module": "Global"
+            },
+            {
+              "id": 198,
+              "name": "rewards-module",
+              "description": "Rewards Module",
+              "isEnabled": true,
+              "createdAt": "2025-11-12T04:10:42.907382Z",
+              "updatedAt": "2025-11-12T04:10:42.907395Z",
+              "module": "Global"
+            },
+            {
+              "id": 54,
+              "name": "search-toolbar",
+              "description": "Search Toolbar on the Header",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:10:43.247066Z",
+              "updatedAt": "2024-03-12T17:10:24.472127Z",
+              "module": "Global"
+            },
+            {
+              "id": 55,
+              "name": "sidebar-help-nav",
+              "description": "Help navigation on the right sidebar",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:15:17.322192Z",
+              "updatedAt": "2024-03-12T16:55:24.278287Z",
+              "module": "Global"
+            },
+            {
+              "id": 57,
+              "name": "sidebar-invite-user-nav",
+              "description": "Invite user navigation on the right sidebar",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:17:21.931386Z",
+              "updatedAt": "2024-03-12T16:53:14.731574Z",
+              "module": "Global"
+            },
+            {
+              "id": 56,
+              "name": "sidebar-notification-nav",
+              "description": "Notification navigation on the right sidebar",
+              "isEnabled": false,
+              "createdAt": "2024-03-12T16:16:16.682371Z",
+              "updatedAt": "2024-03-12T16:55:46.660468Z",
+              "module": "Global"
+            },
+            {
+              "id": 6,
+              "name": "tickets-module",
+              "description": "Tickets Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T12:43:40.203410Z",
+              "updatedAt": "2025-03-31T07:45:48.635094Z",
+              "module": "Global"
+            },
+            {
+              "id": 206,
+              "name": "tickets-unread-count",
+              "description": "",
+              "isEnabled": true,
+              "createdAt": "2026-03-03T07:35:16.184785Z",
+              "updatedAt": "2026-03-03T07:35:16.184808Z",
+              "module": "Global"
+            },
+            {
+              "id": 169,
+              "name": "use-office-timezone",
+              "description": "Apply timezone from \"HR Record > Employment > Organization > Office\" field.\r\n\r\nBy code it is now allowed only in HR Hub module.\r\n\r\nhttps://sourcefit.knitware.com/projects/PR-7143443f-5b39-4165-bbb8-27309bf1a1d9/list?search=Show+attendances,+requests+in+PH+Timezone",
+              "isEnabled": true,
+              "createdAt": "2025-05-29T11:48:26.444309Z",
+              "updatedAt": "2025-06-24T15:49:11.702023Z",
+              "module": "Global"
+            },
+            {
+              "id": 192,
+              "name": "user-online-status",
+              "description": "user-online-status",
+              "isEnabled": false,
+              "createdAt": "2025-10-06T08:03:16.020837Z",
+              "updatedAt": "2025-10-06T08:06:10.847194Z",
+              "module": "Global"
+            },
+            {
+              "id": 4,
+              "name": "weaves-module",
+              "description": "Weaves Module",
+              "isEnabled": true,
+              "createdAt": "2024-02-13T12:41:49.120241Z",
+              "updatedAt": "2025-03-31T07:45:52.236647Z",
+              "module": "Global"
+            }
+          ]
+        }
+      },
+      "/permissions/me": {
+        "statusCode": 200,
+        "response": [
+          {
+            "id": 296,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Project Settings",
+            "service": "projects"
+          },
+          {
+            "id": 297,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Project Settings",
+            "service": "projects"
+          },
+          {
+            "id": 298,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Project Settings",
+            "service": "projects"
+          },
+          {
+            "id": 301,
+            "scope": "Associated",
+            "intent": "Edit",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 312,
+            "scope": "Associated",
+            "intent": "Edit",
+            "instance": "Project Folder",
+            "service": "projects"
+          },
+          {
+            "id": 330,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Counter Settings",
+            "service": "tickets"
+          },
+          {
+            "id": 331,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Form Template",
+            "service": "tickets"
+          },
+          {
+            "id": 332,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Form Template",
+            "service": "tickets"
+          },
+          {
+            "id": 333,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Form Template",
+            "service": "tickets"
+          },
+          {
+            "id": 334,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Form",
+            "service": "tickets"
+          },
+          {
+            "id": 335,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Form",
+            "service": "tickets"
+          },
+          {
+            "id": 336,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Form",
+            "service": "tickets"
+          },
+          {
+            "id": 337,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Form",
+            "service": "tickets"
+          },
+          {
+            "id": 340,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Submission",
+            "service": "tickets"
+          },
+          {
+            "id": 342,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Submission",
+            "service": "tickets"
+          },
+          {
+            "id": 343,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Submission",
+            "service": "tickets"
+          },
+          {
+            "id": 344,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Taxonomy",
+            "service": "tickets"
+          },
+          {
+            "id": 345,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Taxonomy",
+            "service": "tickets"
+          },
+          {
+            "id": 346,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Taxonomy",
+            "service": "tickets"
+          },
+          {
+            "id": 347,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Taxonomy",
+            "service": "tickets"
+          },
+          {
+            "id": 349,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Share",
+            "service": "tickets"
+          },
+          {
+            "id": 350,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Share",
+            "service": "tickets"
+          },
+          {
+            "id": 351,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Share",
+            "service": "tickets"
+          },
+          {
+            "id": 354,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Queue",
+            "service": "tickets"
+          },
+          {
+            "id": 355,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Queue",
+            "service": "tickets"
+          },
+          {
+            "id": 356,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Queue",
+            "service": "tickets"
+          },
+          {
+            "id": 357,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Queue",
+            "service": "tickets"
+          },
+          {
+            "id": 358,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Ticket",
+            "service": "tickets"
+          },
+          {
+            "id": 359,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Ticket",
+            "service": "tickets"
+          },
+          {
+            "id": 360,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Ticket",
+            "service": "tickets"
+          },
+          {
+            "id": 361,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Ticket",
+            "service": "tickets"
+          },
+          {
+            "id": 363,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Settings",
+            "service": "tickets"
+          },
+          {
+            "id": 364,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Settings",
+            "service": "tickets"
+          },
+          {
+            "id": 365,
+            "scope": "All",
+            "intent": "View",
+            "instance": "User Assignment",
+            "service": "tickets"
+          },
+          {
+            "id": 366,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "User Assignment",
+            "service": "tickets"
+          },
+          {
+            "id": 367,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Status",
+            "service": "tickets"
+          },
+          {
+            "id": 368,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Status",
+            "service": "tickets"
+          },
+          {
+            "id": 369,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Status",
+            "service": "tickets"
+          },
+          {
+            "id": 370,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Status",
+            "service": "tickets"
+          },
+          {
+            "id": 371,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Tag",
+            "service": "tickets"
+          },
+          {
+            "id": 372,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Tag",
+            "service": "tickets"
+          },
+          {
+            "id": 373,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Tag",
+            "service": "tickets"
+          },
+          {
+            "id": 374,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Tag",
+            "service": "tickets"
+          },
+          {
+            "id": 376,
+            "scope": "All",
+            "intent": "View",
+            "instance": "User Ids",
+            "service": "tickets"
+          },
+          {
+            "id": 377,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 378,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 383,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Benefit Forms",
+            "service": "hr_hub"
+          },
+          {
+            "id": 384,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Benefit Forms",
+            "service": "hr_hub"
+          },
+          {
+            "id": 389,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Dependents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 390,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Dependents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 395,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Education",
+            "service": "hr_hub"
+          },
+          {
+            "id": 396,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Education",
+            "service": "hr_hub"
+          },
+          {
+            "id": 401,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Health",
+            "service": "hr_hub"
+          },
+          {
+            "id": 402,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Health",
+            "service": "hr_hub"
+          },
+          {
+            "id": 407,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents ID",
+            "service": "hr_hub"
+          },
+          {
+            "id": 408,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents ID",
+            "service": "hr_hub"
+          },
+          {
+            "id": 413,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Loans",
+            "service": "hr_hub"
+          },
+          {
+            "id": 414,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Loans",
+            "service": "hr_hub"
+          },
+          {
+            "id": 202,
+            "scope": "All",
+            "intent": "Approve",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 203,
+            "scope": "All",
+            "intent": "Approve",
+            "instance": "Change History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 204,
+            "scope": "All",
+            "intent": "Assign",
+            "instance": "Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 205,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 206,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 207,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Teams",
+            "service": "hr_hub"
+          },
+          {
+            "id": 208,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employees",
+            "service": "hr_hub"
+          },
+          {
+            "id": 209,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Users",
+            "service": "hr_hub"
+          },
+          {
+            "id": 210,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Attendances",
+            "service": "hr_hub"
+          },
+          {
+            "id": 211,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Change History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 212,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Payrolls",
+            "service": "hr_hub"
+          },
+          {
+            "id": 224,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Change History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 225,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 226,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 227,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Teams",
+            "service": "hr_hub"
+          },
+          {
+            "id": 228,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Employees",
+            "service": "hr_hub"
+          },
+          {
+            "id": 229,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Users",
+            "service": "hr_hub"
+          },
+          {
+            "id": 230,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Payrolls",
+            "service": "hr_hub"
+          },
+          {
+            "id": 234,
+            "scope": "Self",
+            "intent": "Add",
+            "instance": "Attendances",
+            "service": "hr_hub"
+          },
+          {
+            "id": 241,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 242,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 243,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Teams",
+            "service": "hr_hub"
+          },
+          {
+            "id": 244,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Employees",
+            "service": "hr_hub"
+          },
+          {
+            "id": 245,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Change History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 246,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Users",
+            "service": "hr_hub"
+          },
+          {
+            "id": 253,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 254,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 255,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Teams",
+            "service": "hr_hub"
+          },
+          {
+            "id": 256,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employees",
+            "service": "hr_hub"
+          },
+          {
+            "id": 257,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Change History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 258,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Users",
+            "service": "hr_hub"
+          },
+          {
+            "id": 268,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Direct Reports",
+            "service": "hr_hub"
+          },
+          {
+            "id": 269,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Credits",
+            "service": "hr_hub"
+          },
+          {
+            "id": 270,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Movement Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 272,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Salary Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 274,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Credits",
+            "service": "hr_hub"
+          },
+          {
+            "id": 275,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Movement Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 277,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Salary Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 279,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Direct Reports",
+            "service": "hr_hub"
+          },
+          {
+            "id": 280,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Credits",
+            "service": "hr_hub"
+          },
+          {
+            "id": 281,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Movement Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 283,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Salary Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 285,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Direct Reports",
+            "service": "hr_hub"
+          },
+          {
+            "id": 286,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Credits",
+            "service": "hr_hub"
+          },
+          {
+            "id": 287,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Movement Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 289,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Salary Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 419,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Performance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 420,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Performance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 425,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Pre-Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 426,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Pre-Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 431,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Contact",
+            "service": "hr_hub"
+          },
+          {
+            "id": 432,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Contact",
+            "service": "hr_hub"
+          },
+          {
+            "id": 437,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Dependents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 438,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Dependents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 443,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Education",
+            "service": "hr_hub"
+          },
+          {
+            "id": 444,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Education",
+            "service": "hr_hub"
+          },
+          {
+            "id": 449,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Emergency",
+            "service": "hr_hub"
+          },
+          {
+            "id": 450,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Emergency",
+            "service": "hr_hub"
+          },
+          {
+            "id": 455,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Employment History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 456,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Employment History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 461,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Family",
+            "service": "hr_hub"
+          },
+          {
+            "id": 462,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Family",
+            "service": "hr_hub"
+          },
+          {
+            "id": 469,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Medical",
+            "service": "hr_hub"
+          },
+          {
+            "id": 470,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Medical",
+            "service": "hr_hub"
+          },
+          {
+            "id": 479,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "HR Assets",
+            "service": "hr_hub"
+          },
+          {
+            "id": 480,
+            "scope": "All",
+            "intent": "View",
+            "instance": "HR Assets",
+            "service": "hr_hub"
+          },
+          {
+            "id": 485,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "HR Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 486,
+            "scope": "All",
+            "intent": "View",
+            "instance": "HR Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 493,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "HR Records",
+            "service": "hr_hub"
+          },
+          {
+            "id": 494,
+            "scope": "All",
+            "intent": "View",
+            "instance": "HR Records",
+            "service": "hr_hub"
+          },
+          {
+            "id": 497,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "HR Reporting Structure",
+            "service": "hr_hub"
+          },
+          {
+            "id": 498,
+            "scope": "All",
+            "intent": "View",
+            "instance": "HR Reporting Structure",
+            "service": "hr_hub"
+          },
+          {
+            "id": 503,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Activity Feed",
+            "service": "hr_hub"
+          },
+          {
+            "id": 504,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Activity Feed",
+            "service": "hr_hub"
+          },
+          {
+            "id": 509,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Holidays",
+            "service": "hr_hub"
+          },
+          {
+            "id": 510,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Holidays",
+            "service": "hr_hub"
+          },
+          {
+            "id": 515,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Leave Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 516,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Leave Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 527,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Requests History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 528,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Requests History",
+            "service": "hr_hub"
+          },
+          {
+            "id": 548,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Constraints",
+            "service": "hr_hub"
+          },
+          {
+            "id": 549,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Constraints",
+            "service": "hr_hub"
+          },
+          {
+            "id": 550,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Constraints",
+            "service": "hr_hub"
+          },
+          {
+            "id": 551,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Constraints",
+            "service": "hr_hub"
+          },
+          {
+            "id": 552,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Records",
+            "service": "hr_hub"
+          },
+          {
+            "id": 553,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Records",
+            "service": "hr_hub"
+          },
+          {
+            "id": 561,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Team Management",
+            "service": "hr_hub"
+          },
+          {
+            "id": 563,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Employee Dependents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 565,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "HR Assets",
+            "service": "hr_hub"
+          },
+          {
+            "id": 566,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "HR Assets",
+            "service": "hr_hub"
+          },
+          {
+            "id": 567,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Team Attendance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 569,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Documents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 571,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Documents",
+            "service": "hr_hub"
+          },
+          {
+            "id": 572,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee General",
+            "service": "hr_hub"
+          },
+          {
+            "id": 573,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee General",
+            "service": "hr_hub"
+          },
+          {
+            "id": 576,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Attendance Logs",
+            "service": "hr_hub"
+          },
+          {
+            "id": 580,
+            "scope": "All",
+            "intent": "Approve",
+            "instance": "Leave Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 583,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 584,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Task",
+            "service": "projects"
+          },
+          {
+            "id": 586,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Payroll Registers",
+            "service": "weaves"
+          },
+          {
+            "id": 587,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Payroll Register Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 588,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Payroll Register Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 589,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Payroll Register Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 590,
+            "scope": "All",
+            "intent": "Rename",
+            "instance": "Payroll Registers",
+            "service": "weaves"
+          },
+          {
+            "id": 591,
+            "scope": "All",
+            "intent": "Export",
+            "instance": "Payroll Registers",
+            "service": "weaves"
+          },
+          {
+            "id": 592,
+            "scope": "All",
+            "intent": "Share",
+            "instance": "Payroll Registers",
+            "service": "weaves"
+          },
+          {
+            "id": 593,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Payroll Register Templates",
+            "service": "weaves"
+          },
+          {
+            "id": 594,
+            "scope": "All",
+            "intent": "Use",
+            "instance": "Payroll Register Templates",
+            "service": "weaves"
+          },
+          {
+            "id": 595,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Masterlists",
+            "service": "weaves"
+          },
+          {
+            "id": 596,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Employee Masterlist Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 597,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Employee Masterlist Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 598,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Employee Masterlist Columns",
+            "service": "weaves"
+          },
+          {
+            "id": 599,
+            "scope": "All",
+            "intent": "Rename",
+            "instance": "Employee Masterlists",
+            "service": "weaves"
+          },
+          {
+            "id": 600,
+            "scope": "All",
+            "intent": "Export",
+            "instance": "Employee Masterlists",
+            "service": "weaves"
+          },
+          {
+            "id": 601,
+            "scope": "All",
+            "intent": "Share",
+            "instance": "Employee Masterlists",
+            "service": "weaves"
+          },
+          {
+            "id": 602,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Masterlist Templates",
+            "service": "weaves"
+          },
+          {
+            "id": 603,
+            "scope": "All",
+            "intent": "Use",
+            "instance": "Employee Masterlist Templates",
+            "service": "weaves"
+          },
+          {
+            "id": 607,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 608,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 609,
+            "scope": "All",
+            "intent": "Duplicate",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 611,
+            "scope": "All",
+            "intent": "Move",
+            "instance": "Project",
+            "service": "projects"
+          },
+          {
+            "id": 612,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Project Task",
+            "service": "projects"
+          },
+          {
+            "id": 613,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Project Task",
+            "service": "projects"
+          },
+          {
+            "id": 614,
+            "scope": "All",
+            "intent": "Duplicate",
+            "instance": "Project Task",
+            "service": "projects"
+          },
+          {
+            "id": 615,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Project Task",
+            "service": "projects"
+          },
+          {
+            "id": 616,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Project Task",
+            "service": "projects"
+          },
+          {
+            "id": 617,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Project Task Folder",
+            "service": "projects"
+          },
+          {
+            "id": 618,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Project Task Folder",
+            "service": "projects"
+          },
+          {
+            "id": 619,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Project Task Folder",
+            "service": "projects"
+          },
+          {
+            "id": 620,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Project Task Folder",
+            "service": "projects"
+          },
+          {
+            "id": 621,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Project Folder",
+            "service": "projects"
+          },
+          {
+            "id": 622,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Project Folder",
+            "service": "projects"
+          },
+          {
+            "id": 623,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Project Folder",
+            "service": "projects"
+          },
+          {
+            "id": 625,
+            "scope": "All",
+            "intent": "Move",
+            "instance": "Task",
+            "service": "projects"
+          },
+          {
+            "id": 626,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Direct Reports",
+            "service": "hr_hub"
+          },
+          {
+            "id": 627,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Documents Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 629,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 631,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 633,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Documents Employment",
+            "service": "hr_hub"
+          },
+          {
+            "id": 635,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Documents Finance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 637,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Finance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 639,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Finance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 641,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Documents Finance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 643,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Documents Exit Clearance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 645,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Documents Exit Clearance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 647,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Documents Exit Clearance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 649,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Documents Exit Clearance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 652,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Compensations",
+            "service": "hr_hub"
+          },
+          {
+            "id": 653,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Compensations",
+            "service": "hr_hub"
+          },
+          {
+            "id": 656,
+            "scope": "All",
+            "intent": "View",
+            "instance": "AI Email Generator",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 657,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Article Writer",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 660,
+            "scope": "All",
+            "intent": "Cancel",
+            "instance": "Leave Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 661,
+            "scope": "All",
+            "intent": "Cancel",
+            "instance": "Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 665,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Leave Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 669,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Announcements",
+            "service": "notifications"
+          },
+          {
+            "id": 670,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Announcements",
+            "service": "notifications"
+          },
+          {
+            "id": 671,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Announcements",
+            "service": "notifications"
+          },
+          {
+            "id": 672,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Announcements",
+            "service": "notifications"
+          },
+          {
+            "id": 675,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Employee Schedules",
+            "service": "hr_hub"
+          },
+          {
+            "id": 705,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Smart Vault",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 706,
+            "scope": "All",
+            "intent": "View",
+            "instance": "CVBot",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 707,
+            "scope": "All",
+            "intent": "View",
+            "instance": "RFPBot",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 708,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Chat Bot",
+            "service": "ai_toolkit"
+          },
+          {
+            "id": 709,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Data Management",
+            "service": "data_formulation"
+          },
+          {
+            "id": 710,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Data Management",
+            "service": "data_formulation"
+          },
+          {
+            "id": 712,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Kpi",
+            "service": "kpi"
+          },
+          {
+            "id": 714,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "HR Hub Home",
+            "service": "hr_hub"
+          },
+          {
+            "id": 715,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "My Requests",
+            "service": "hr_hub"
+          },
+          {
+            "id": 716,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "My Leaves",
+            "service": "hr_hub"
+          },
+          {
+            "id": 717,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "My Employee Record",
+            "service": "hr_hub"
+          },
+          {
+            "id": 718,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "My Schedule",
+            "service": "hr_hub"
+          },
+          {
+            "id": 723,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Events",
+            "service": "calendar"
+          },
+          {
+            "id": 724,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Events",
+            "service": "calendar"
+          },
+          {
+            "id": 725,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Events",
+            "service": "calendar"
+          },
+          {
+            "id": 726,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Events",
+            "service": "calendar"
+          },
+          {
+            "id": 727,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Calendars",
+            "service": "calendar"
+          },
+          {
+            "id": 728,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Calendars",
+            "service": "calendar"
+          },
+          {
+            "id": 729,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Calendars",
+            "service": "calendar"
+          },
+          {
+            "id": 730,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Calendars",
+            "service": "calendar"
+          },
+          {
+            "id": 744,
+            "scope": "All",
+            "intent": "Add",
+            "instance": "Holidays",
+            "service": "hr_hub"
+          },
+          {
+            "id": 747,
+            "scope": "All",
+            "intent": "Override",
+            "instance": "Credits",
+            "service": "hr_hub"
+          },
+          {
+            "id": 748,
+            "scope": "All",
+            "intent": "Create",
+            "instance": "Store Rewards",
+            "service": "store"
+          },
+          {
+            "id": 749,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Store Rewards",
+            "service": "store"
+          },
+          {
+            "id": 750,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Store Rewards",
+            "service": "store"
+          },
+          {
+            "id": 751,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Store Rewards",
+            "service": "store"
+          },
+          {
+            "id": 752,
+            "scope": "All",
+            "intent": "Redeem",
+            "instance": "Store Rewards",
+            "service": "store"
+          },
+          {
+            "id": 753,
+            "scope": "All",
+            "intent": "Create",
+            "instance": "Store Transactions",
+            "service": "store"
+          },
+          {
+            "id": 754,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Store Transactions",
+            "service": "store"
+          },
+          {
+            "id": 755,
+            "scope": "All",
+            "intent": "Cancel",
+            "instance": "Store Transactions",
+            "service": "store"
+          },
+          {
+            "id": 759,
+            "scope": "Self",
+            "intent": "View",
+            "instance": "My Attendance",
+            "service": "hr_hub"
+          },
+          {
+            "id": 763,
+            "scope": "All",
+            "intent": "View",
+            "instance": "Kpi Module Settings",
+            "service": "kpi"
+          },
+          {
+            "id": 764,
+            "scope": "All",
+            "intent": "Delete",
+            "instance": "Kpi Module Settings",
+            "service": "kpi"
+          },
+          {
+            "id": 765,
+            "scope": "All",
+            "intent": "Edit",
+            "instance": "Kpi Module Settings",
+            "service": "kpi"
+          }
+        ]
+      },
+      "/users/me": {
+        "statusCode": 200,
+        "response": {
+          "id": 66,
+          "email": "jerome.decastro@sourcefit.com",
+          "username": "jerome.decastro@sourcefit.com",
+          "isActive": true,
+          "lastLogin": "2026-03-16T18:02:55.552619Z",
+          "dateJoined": "2023-01-11T07:17:56Z",
+          "isEmailConfirmed": true,
+          "showTutorial": false,
+          "roles": ["Admin"],
+          "role": "Admin",
+          "isPasswordGenerated": false,
+          "isSsoUser": false,
+          "landingPages": [
+            {
+              "id": 108,
+              "module": "Projects",
+              "selectionAutoShow": false,
+              "default": "List",
+              "showTutorial": true
+            },
+            {
+              "id": 6,
+              "module": "Weaves",
+              "selectionAutoShow": false,
+              "default": "Weave",
+              "showTutorial": false
+            },
+            {
+              "id": 321,
+              "module": "Tickets",
+              "selectionAutoShow": true,
+              "default": "Ticket",
+              "showTutorial": true
+            },
+            {
+              "id": 311,
+              "module": "Dashboard",
+              "selectionAutoShow": true,
+              "default": "Dashboard",
+              "showTutorial": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  "tickets": {
+    "GET": {
+      "/permissions": {
+        "statusCode": 200,
+        "response": {
+          "results": [
+            {
+              "id": 2932,
+              "userId": 66,
+              "role": "Manager",
+              "entity": "queue",
+              "entityId": 421,
+              "permissions": {
+                "editQueueSettings": "All",
+                "viewTickets": "All",
+                "editTickets": "All",
+                "downloadTickets": "All",
+                "duplicateTickets": "All",
+                "createTicketShares": "All",
+                "deleteTicketShares": "All",
+                "viewSubmissions": "All",
+                "deleteSubmissions": "All",
+                "createForms": "All",
+                "downloadForms": "All",
+                "createFormShares": "All",
+                "deleteFormShares": "All",
+                "viewInternalChatMessages": "All",
+                "editChatMessages": "All",
+                "viewActivityLog": "All",
+                "viewTicketSharesUsers": "All",
+                "viewFormsSharesUsers": "All",
+                "editQueueUsers": "All",
+                "deleteQueueUsers": "All",
+                "editPermissions": "All",
+                "chatWithSubmitter": "All",
+                "callWithSubmitter": "All",
+                "recordCallWithSubmitter": "All"
+              }
+            },
+            {
+              "id": 2947,
+              "userId": 66,
+              "role": "Manager",
+              "entity": "queue",
+              "entityId": 427,
+              "permissions": {
+                "editQueueSettings": "All",
+                "viewTickets": "All",
+                "editTickets": "All",
+                "downloadTickets": "All",
+                "duplicateTickets": "All",
+                "createTicketShares": "All",
+                "deleteTicketShares": "All",
+                "viewSubmissions": "All",
+                "deleteSubmissions": "All",
+                "createForms": "All",
+                "downloadForms": "All",
+                "createFormShares": "All",
+                "deleteFormShares": "All",
+                "viewInternalChatMessages": "All",
+                "editChatMessages": "All",
+                "viewActivityLog": "All",
+                "viewTicketSharesUsers": "All",
+                "viewFormsSharesUsers": "All",
+                "editQueueUsers": "All",
+                "deleteQueueUsers": "All",
+                "editPermissions": "All",
+                "chatWithSubmitter": "All",
+                "callWithSubmitter": "All",
+                "recordCallWithSubmitter": "All"
+              }
+            },
+            {
+              "id": 2951,
+              "userId": 66,
+              "role": "Manager",
+              "entity": "queue",
+              "entityId": 429,
+              "permissions": {
+                "editQueueSettings": "All",
+                "viewTickets": "All",
+                "editTickets": "All",
+                "downloadTickets": "All",
+                "duplicateTickets": "All",
+                "createTicketShares": "All",
+                "deleteTicketShares": "All",
+                "viewSubmissions": "All",
+                "deleteSubmissions": "All",
+                "createForms": "All",
+                "downloadForms": "All",
+                "createFormShares": "All",
+                "deleteFormShares": "All",
+                "viewInternalChatMessages": "All",
+                "editChatMessages": "All",
+                "viewActivityLog": "All",
+                "viewTicketSharesUsers": "All",
+                "viewFormsSharesUsers": "All",
+                "editQueueUsers": "All",
+                "deleteQueueUsers": "All",
+                "editPermissions": "All",
+                "chatWithSubmitter": "All",
+                "callWithSubmitter": "All",
+                "recordCallWithSubmitter": "All"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "weaves": {
+    "GET": {
+      "/user-settings": {
+        "statusCode": 200,
+        "response": { "attributes": { "restoreWeaveShow": false } }
+      },
+      "/worksheets": {
+        "statusCode": 200,
+        "response": {
+          "results": [
+            {
+              "id": "a11c6a3e-2888-42de-b44c-ff51e776bf50",
+              "authorId": 66,
+              "name": "Sample Weave 32",
+              "shared": false,
+              "activeSheetId": "a1541d28-8e11-4316-85ba-37af9cbdc7b2",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-10 06:53:00",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-02-18T17:02:16.000000Z",
+              "updatedAt": "2026-03-18T09:33:05.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a11ca477-eb10-4459-a723-2b97fa4af776",
+              "authorId": 66,
+              "name": "Sample Weave 36",
+              "shared": false,
+              "activeSheetId": "a154193a-412e-4aa9-acc3-ca2a48a17e78",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-02 14:34:42",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-02-18T19:45:04.000000Z",
+              "updatedAt": "2026-03-18T09:22:05.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a11c9e65-fc58-4231-b0dd-96467d56dba5",
+              "authorId": 66,
+              "name": "Sample Weave 34",
+              "shared": false,
+              "activeSheetId": "a1541939-9754-4f06-b63f-58c6907a232a",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-02-23 14:55:19",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-02-18T19:28:06.000000Z",
+              "updatedAt": "2026-03-18T09:22:05.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a143cffb-485a-4337-91b0-51902b871a5b",
+              "authorId": 66,
+              "name": "Weave 1",
+              "shared": false,
+              "activeSheetId": "a143cffb-5730-496c-b7fa-c5ffceb43944",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-12 05:47:02",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-10T07:04:02.000000Z",
+              "updatedAt": "2026-03-10T16:04:30.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a142380c-de6d-4c54-af81-c750496bb213",
+              "authorId": 66,
+              "name": "Sample Weave 52",
+              "shared": false,
+              "activeSheetId": "0a570cc3-f5db-4671-9cbb-e38901da8d56",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-09 14:10:27",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-09T12:03:22.000000Z",
+              "updatedAt": "2026-03-09T14:10:40.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a13be3f5-4a2c-477c-b22e-744d2cef6a2a",
+              "authorId": 66,
+              "name": "Sample Weave 60",
+              "shared": true,
+              "activeSheetId": "22101fd7-9cc1-4bfa-9aa5-103d304a64ed",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet",
+                "sheetsSort": [
+                  "1b8243ef-ea75-4440-a519-cc58e6e79e57",
+                  "a8db0e84-9c35-4851-a38a-2e90bc893650",
+                  "e15eedb5-8cfe-4b8f-9a5f-f6e516382fbb",
+                  "e1e34a85-020f-4df0-a046-c710034c8fa4",
+                  "30312544-618e-464f-917f-263d6c14ac6e",
+                  "c5cc7989-bddc-4103-9464-fc9234076288",
+                  "22101fd7-9cc1-4bfa-9aa5-103d304a64ed",
+                  "7db89c7f-126e-4220-b0c0-e2bdb8ae86ba",
+                  "0ac22668-60a5-4d57-be28-1834a8b67014"
+                ]
+              },
+              "lastViewedAt": "2026-03-09 10:40:13",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-06T08:33:16.000000Z",
+              "updatedAt": "2026-03-09T10:41:07.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a137b740-54f6-4aab-9a92-ea4b84c4af89",
+              "authorId": 66,
+              "name": "Sample Weaves 53",
+              "shared": false,
+              "activeSheetId": "a13bdd96-3d94-47b0-b961-d21438d1cd50",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet",
+                "jobs": {
+                  "import": {
+                    "status": "processing"
+                  }
+                }
+              },
+              "lastViewedAt": "2026-03-06 08:32:32",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-04T06:44:57.000000Z",
+              "updatedAt": "2026-03-06T08:32:08.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a13ba6fe-cabe-497b-8178-bdd026cd5b7f",
+              "authorId": 66,
+              "name": "Sample Weave 55",
+              "shared": true,
+              "activeSheetId": "a13ba6fe-cd22-4f1d-a5bb-de2d687a7039",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-06 05:45:03",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-06T05:42:48.000000Z",
+              "updatedAt": "2026-03-06T05:47:47.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a135cb52-b390-4190-a863-f6829f4c25a3",
+              "authorId": 66,
+              "name": "Sample Form",
+              "shared": false,
+              "activeSheetId": "a135cb52-b600-4f5e-99a6-afd1bfa528e7",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "form"
+              },
+              "lastViewedAt": "2026-03-03 07:49:26",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-03T07:49:25.000000Z",
+              "updatedAt": "2026-03-03T07:49:25.000000Z",
+              "deletedAt": null
+            },
+            {
+              "id": "a135cb40-7e58-4b0c-9bd8-335d92c80b7c",
+              "authorId": 66,
+              "name": "Sample Weave",
+              "shared": false,
+              "activeSheetId": "a135cb40-815f-4c7d-9048-d2a8b1703081",
+              "parentId": null,
+              "templateId": null,
+              "archived": false,
+              "description": null,
+              "attributes": {
+                "format": "spreadsheet"
+              },
+              "lastViewedAt": "2026-03-03 07:49:17",
+              "favorite": false,
+              "sheets": [],
+              "tags": [],
+              "folders": [],
+              "sharedGroup": null,
+              "unsharedGroup": null,
+              "createdAt": "2026-03-03T07:49:13.000000Z",
+              "updatedAt": "2026-03-03T07:49:13.000000Z",
+              "deletedAt": null
+            }
+          ],
+          "pages": {
+            "next": null,
+            "previous": null,
+            "current": 1,
+            "numPages": 1,
+            "perPage": 50
+          },
+          "count": 10
+        }
+      }
+    }
+  }
+}

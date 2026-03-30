@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "hr_hub",
+  "display_name": "HR Hub",
+  "modules": ["tickets", "queues", "kpis", "dashboard"],
+  "config": {
+    "ticket_categories": ["leave", "onboarding", "offboarding", "policy", "payroll", "other"],
+    "default_statuses": ["pending", "in_progress", "on_hold", "resolved", "closed"],
+    "default_priorities": ["low", "medium", "high", "urgent"],
+    "queue_names": ["Leave Requests", "Onboarding", "General HR"],
+    "kpi_definitions": [
+      {"key": "open_requests", "label": "Open Requests", "unit": "tickets"},
+      {"key": "avg_resolution_days", "label": "Avg Resolution Time", "unit": "days"},
+      {"key": "employee_satisfaction", "label": "Employee Satisfaction", "unit": "%"}
+    ]
+  },
+  "slots_used": ["team_size", "primary_use_case", "company_name", "industry_hint"]
+}

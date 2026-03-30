@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "hr_hub",
+  "session_id": "fixture-session-hr-hub",
+  "display_name": "HR Hub",
+  "modules": ["tickets", "queues", "kpis", "dashboard"],
+  "stores": {
+    "tickets": [
+      {"id": "ticket-001", "title": "Annual Leave — Jane Smith", "status": "pending", "priority": "medium", "category": "leave", "assignee": "HR Manager", "created_at": "2026-01-15T09:00:00Z"}
+    ],
+    "queues": [
+      {"id": "queue-001", "name": "Leave Requests", "ticket_count": 1, "avg_resolution_days": 2}
+    ],
+    "kpis": [
+      {"id": "kpi-001", "label": "Open Requests", "value": 1, "unit": "tickets", "trend": "stable"}
+    ],
+    "dashboard_widgets": []
+  }
+}
