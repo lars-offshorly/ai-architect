@@ -5,7 +5,7 @@ from __future__ import annotations
 from core.logging import get_logger
 
 from ..bundles.registry import ALL_FEATURE_FLAGS
-from ..schemas import DummyDataJson, GenerationConfig, GenerationJson, PreviewOutput
+from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -75,6 +75,52 @@ _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
 }
 
 
+_BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
+    "hr_hub": [
+        "ticket_categories",
+        "default_statuses",
+        "default_priorities",
+        "queue_names",
+        "kpi_definitions",
+    ],
+    "project_mgmt": [
+        "task_statuses",
+        "task_priorities",
+        "milestone_statuses",
+        "kpi_definitions",
+    ],
+    "ticketing": [
+        "work_order_statuses",
+        "work_order_priorities",
+        "service_types",
+        "kpi_definitions",
+    ],
+}
+_BUNDLE_CONFIG_FALLBACK_FIELDS: list[str] = [
+    "ticket_statuses",
+    "ticket_priorities",
+    "kpi_definitions",
+]
+
+
+def _build_config(
+    registry_key: str,
+    permission_services: list[str],
+    landing_pages: list[dict],
+    kpi_metrics: list,
+) -> dict[str, object]:
+    """Build the per-bundle config dict for generation_json."""
+    config: dict[str, object] = {
+        "permission_services": permission_services,
+        "landing_pages": landing_pages,
+    }
+    fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
+    kpi_keys = [k.key for k in kpi_metrics]
+    for field in fields:
+        config[field] = kpi_keys if field == "kpi_definitions" else []
+    return config
+
+
 def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     """Build the stores dict with frontend-correct key names for this bundle."""
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
@@ -121,9 +167,11 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         bundle_key=state.bundle_key,
         feature_flags=flag_list,
         modules=modules,
-        config=GenerationConfig(
-            permission_services=state.permission_services,
-            landing_pages=state.landing_pages,
+        config=_build_config(
+            registry_key,
+            state.permission_services,
+            state.landing_pages,
+            state.kpi_metrics,
         ),
     )
 

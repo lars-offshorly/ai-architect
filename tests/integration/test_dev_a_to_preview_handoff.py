@@ -13,6 +13,11 @@ Layer 2 — Full HTTP flow with mocked ConversationFlow
   Drives POST /sessions → /reply → /confirm → /preview over the actual
   FastAPI app. Validates that selected_bundle_key is written to the session
   during the conversation turn (the bug that would have caused 400 on /preview).
+
+Bundle key mapping under test (catalog → registry):
+  hr_management → hr_hub       (Tier 1, key translation)
+  project_mgmt  → project_mgmt (Tier 1)
+  ticketing     → ticketing    (Tier 1)
 """
 
 # pylint: disable=missing-class-docstring,missing-function-docstring
@@ -148,7 +153,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_hr_hub_returns_200(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "hr_hub", _HR_HUB_HISTORY)
+        _seed_confirmed_session(sid, "hr_management", _HR_HUB_HISTORY)
 
         resp = await client.post(f"/sessions/{sid}/preview")
         assert resp.status_code == 200, resp.text
@@ -156,14 +161,14 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_hr_hub_response_schema(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "hr_hub", _HR_HUB_HISTORY)
+        _seed_confirmed_session(sid, "hr_management", _HR_HUB_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
 
         assert data["schema_version"] == "1.0"
         assert data["session_id"] == sid
-        assert data["bundle_key"] == "hr_hub"
-        assert data["display_name"] == "HR Hub"
+        assert data["bundle_key"] == "hr_management"
+        assert data["display_name"] == "HR Management"
         assert isinstance(data["modules"], list)
         assert isinstance(data["generation_json"], dict)
         assert isinstance(data["dummy_data_json"], dict)
@@ -171,7 +176,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_hr_hub_generation_json_has_flags(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "hr_hub", _HR_HUB_HISTORY)
+        _seed_confirmed_session(sid, "hr_management", _HR_HUB_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         flags = data["generation_json"]["feature_flags"]
@@ -182,7 +187,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_hr_hub_dummy_data_store_names(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "hr_hub", _HR_HUB_HISTORY)
+        _seed_confirmed_session(sid, "hr_management", _HR_HUB_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         stores = data["dummy_data_json"]["stores"]
@@ -193,7 +198,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_hr_hub_company_name_in_dummy_data(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "hr_hub", _HR_HUB_HISTORY)
+        _seed_confirmed_session(sid, "hr_management", _HR_HUB_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         # "Vertex Solutions" is mentioned in the conversation
@@ -202,7 +207,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_project_ops_returns_200(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "project_ops", _PROJECT_OPS_HISTORY)
+        _seed_confirmed_session(sid, "project_mgmt", _PROJECT_OPS_HISTORY)
 
         resp = await client.post(f"/sessions/{sid}/preview")
         assert resp.status_code == 200, resp.text
@@ -210,7 +215,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_project_ops_store_names(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "project_ops", _PROJECT_OPS_HISTORY)
+        _seed_confirmed_session(sid, "project_mgmt", _PROJECT_OPS_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         stores = data["dummy_data_json"]["stores"]
@@ -220,7 +225,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_field_service_returns_200(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "field_service", _FIELD_SERVICE_HISTORY)
+        _seed_confirmed_session(sid, "ticketing", _FIELD_SERVICE_HISTORY)
 
         resp = await client.post(f"/sessions/{sid}/preview")
         assert resp.status_code == 200, resp.text
@@ -228,7 +233,7 @@ class TestDirectHandoff:
     @pytest.mark.asyncio
     async def test_field_service_store_names(self, client: AsyncClient) -> None:
         sid = _unique_id()
-        _seed_confirmed_session(sid, "field_service", _FIELD_SERVICE_HISTORY)
+        _seed_confirmed_session(sid, "ticketing", _FIELD_SERVICE_HISTORY)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         stores = data["dummy_data_json"]["stores"]
@@ -309,8 +314,8 @@ class TestFullHttpFlow:
             [
                 {
                     "status": "pending_confirmation",
-                    "message": "I recommend HR Hub. Does this look right?",
-                    "bundle_key": "hr_hub",
+                    "message": "I recommend HR Management. Does this look right?",
+                    "bundle_key": "hr_management",
                     "extracted": ExtractedInfo(session_id="placeholder"),
                     "slots": {"team_size": "12"},
                 }
@@ -327,12 +332,12 @@ class TestFullHttpFlow:
             assert start_resp.status_code == 201
             start_data = start_resp.json()
             assert start_data["status"] == "pending_confirmation"
-            assert start_data["bundle_key"] == "hr_hub"
+            assert start_data["bundle_key"] == "hr_management"
             sid = start_data["session_id"]
 
             # Step 2: selected_bundle_key must be written to the session
             session = get_session_repository().get(sid)
-            assert session.selected_bundle_key == "hr_hub", (
+            assert session.selected_bundle_key == "hr_management", (
                 "selected_bundle_key must be set when process_turn returns bundle_key "
                 "— otherwise /preview will always return 400"
             )
@@ -350,8 +355,8 @@ class TestFullHttpFlow:
             assert preview_resp.status_code == 200, preview_resp.text
 
             data = preview_resp.json()
-            assert data["bundle_key"] == "hr_hub"
-            assert data["display_name"] == "HR Hub"
+            assert data["bundle_key"] == "hr_management"
+            assert data["display_name"] == "HR Management"
             enabled_flags = {
                 f["name"]
                 for f in data["generation_json"]["feature_flags"]
@@ -379,8 +384,8 @@ class TestFullHttpFlow:
                 },
                 {
                     "status": "pending_confirmation",
-                    "message": "I recommend HR Hub. Does this look right?",
-                    "bundle_key": "hr_hub",
+                    "message": "I recommend HR Management. Does this look right?",
+                    "bundle_key": "hr_management",
                     "extracted": ExtractedInfo(session_id="placeholder"),
                     "slots": {"team_size": "12"},
                 },
@@ -406,8 +411,8 @@ class TestFullHttpFlow:
             )
             assert reply_resp.status_code == 200
             assert reply_resp.json()["status"] == "pending_confirmation"
-            assert reply_resp.json()["bundle_key"] == "hr_hub"
-            assert get_session_repository().get(sid).selected_bundle_key == "hr_hub"
+            assert reply_resp.json()["bundle_key"] == "hr_management"
+            assert get_session_repository().get(sid).selected_bundle_key == "hr_management"
 
             # Step 3: Confirm
             confirm_resp = await client.post(
@@ -419,7 +424,7 @@ class TestFullHttpFlow:
             # Step 4: Preview
             preview_resp = await client.post(f"/sessions/{sid}/preview")
             assert preview_resp.status_code == 200
-            assert preview_resp.json()["bundle_key"] == "hr_hub"
+            assert preview_resp.json()["bundle_key"] == "hr_management"
         finally:
             app.dependency_overrides.pop(deps.get_conversation_flow, None)
 
@@ -434,8 +439,8 @@ class TestFullHttpFlow:
             [
                 {
                     "status": "pending_confirmation",
-                    "message": "I recommend Project Ops.",
-                    "bundle_key": "project_ops",
+                    "message": "I recommend Project Management.",
+                    "bundle_key": "project_mgmt",
                     "extracted": ExtractedInfo(session_id="placeholder"),
                     "slots": {},
                 }
@@ -451,7 +456,7 @@ class TestFullHttpFlow:
             sid = start_resp.json()["session_id"]
 
             session = get_session_repository().get(sid)
-            assert session.selected_bundle_key == "project_ops"
+            assert session.selected_bundle_key == "project_mgmt"
             assert session.confirmed is False
 
             preview_resp = await client.post(f"/sessions/{sid}/preview")

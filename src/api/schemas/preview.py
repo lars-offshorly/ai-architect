@@ -14,3 +14,7 @@ class PreviewResponseSchema(BaseModel):
     display_name: str
     modules: list[str] = Field(default_factory=list)
     stores: dict[str, list[dict[str, object]]] = Field(default_factory=dict)
+
+
+class EditRequestSchema(BaseModel):
+    instruction: str
