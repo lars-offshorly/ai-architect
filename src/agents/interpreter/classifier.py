@@ -4,14 +4,30 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
+from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
 from domain.models.bundle import BundleSuggestion, SuggestedBundles
 from domain.services.bundle_resolution import BundleResolutionService
 
 from .prompts import CLASSIFICATION_SYSTEM_PROMPT
-from .rules import apply_rule_boosts, build_signal_boosts, detect_signals
+from .rules import apply_rule_boosts, detect_signals
 
 logger = get_logger(__name__)
+
+_INTENT_BOOST = 0.15
+
+
+def _apply_intent_boost(
+    candidates: list[dict],
+    bundles: list,
+    intent: str,
+) -> list[dict]:
+    bundle_map = {b.bundle_key: b for b in bundles}
+    for candidate in candidates:
+        bundle = bundle_map.get(candidate["bundle_key"])
+        if bundle and any(intent in ti.lower() for ti in bundle.typical_intents):
+            candidate["confidence"] = min(1.0, candidate["confidence"] + _INTENT_BOOST)
+    return candidates
 
 
 class _BundleScore(BaseModel):
@@ -26,9 +42,12 @@ class _ClassificationOutput(BaseModel):
 
 
 class Classifier:
-    def __init__(self, model: ChatOpenAI, catalog_context: str) -> None:
+    def __init__(
+        self, model: ChatOpenAI, catalog_context: str, catalog: BundleCatalog
+    ) -> None:
         self._model = model
         self._catalog_context = catalog_context
+        self._catalog = catalog
         self._resolver = BundleResolutionService()
 
     async def classify(
@@ -36,8 +55,11 @@ class Classifier:
         session_id: str,
         user_message: str,
         bundle_keys: list[str],
+        preselected_intent: str | None = None,
     ) -> SuggestedBundles:
-        prompt = CLASSIFICATION_SYSTEM_PROMPT.format(catalog_context=self._catalog_context)
+        prompt = CLASSIFICATION_SYSTEM_PROMPT.format(
+            catalog_context=self._catalog_context
+        )
         structured = self._model.with_structured_output(_ClassificationOutput)
         try:
             result = await structured.ainvoke(
@@ -66,12 +88,16 @@ class Classifier:
             for s in output.scores
             if s.bundle_key in bundle_keys
         ]
-        signals = detect_signals(user_message)
-        boosts = build_signal_boosts()
-        boosted = apply_rule_boosts(candidates, boosts, signals)
+        bundles = self._catalog.list_all()
+        signals = detect_signals(user_message, bundles)
+        boosted = apply_rule_boosts(candidates, bundles, signals)
+        if preselected_intent:
+            boosted = _apply_intent_boost(boosted, bundles, preselected_intent.lower())
         return self._resolver.rank(session_id, boosted)
 
-    def top_suggestion(self, suggested: SuggestedBundles, threshold: float) -> BundleSuggestion | None:
+    def top_suggestion(
+        self, suggested: SuggestedBundles, threshold: float
+    ) -> BundleSuggestion | None:
         top = suggested.top()
         if top is None or top.confidence < threshold:
             return None
