@@ -100,6 +100,9 @@ class InterpreterService:
         self,
         session_id: str,
         history: list[ConversationMessage],
+        extracted: ExtractionResult | None = None,
     ) -> str:
-        summary = await self._summarizer.summarize(session_id, history)
+        summary = await self._summarizer.summarize(
+            session_id, history, extracted=extracted
+        )
         return summary.summary_text
