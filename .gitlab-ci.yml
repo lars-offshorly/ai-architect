@@ -23,7 +23,7 @@ mr_check:
   variables:
     PYTHONPATH: "src:."
   script:
-    - git fetch origin internal-dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
+    - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
     - echo "========== RUNNING ALL TESTS =========="
     - echo "Note: Some tests may have collection errors due to missing/refactored modules"
     - echo ""

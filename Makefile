@@ -119,9 +119,9 @@ lint-staged:
 	fi
 
 lint-mr:
-	@echo "Formatting and linting committed (vs dev) and staged Python files..."
+	@echo "Formatting and linting committed (vs origin/dev) and staged Python files..."
 	@FILES=$$( { \
-		git diff --name-only dev...HEAD -- '*.py' 2>/dev/null; \
+		git diff --name-only origin/dev...HEAD -- '*.py' 2>/dev/null; \
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
@@ -150,9 +150,9 @@ check-mr:
 	@echo "========== RUNNING TESTS =========="
 	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest -v --tb=short --continue-on-collection-errors || true
 	@echo "\n========== TESTS COMPLETED =========="
-	@echo "Formatting and linting committed (vs dev) and staged Python files..."
+	@echo "Formatting and linting committed (vs origin/dev) and staged Python files..."
 	@FILES=$$( { \
-		git diff --name-only dev...HEAD -- '*.py' 2>/dev/null; \
+		git diff --name-only origin/dev...HEAD -- '*.py' 2>/dev/null; \
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
