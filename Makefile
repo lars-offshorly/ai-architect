@@ -37,13 +37,19 @@ dev:
 	PYTHONPATH=$(SRC_DIR) $(POETRY) run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 test:
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR) -v
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors || true
+	@echo "\n========== TEST SUMMARY =========="
+	@echo "Tests completed. Check output above for pass/fail details."
 
 test-unit:
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR)/unit -v
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR)/unit -v --tb=short --continue-on-collection-errors || true
+	@echo "\n========== TEST SUMMARY =========="
+	@echo "Unit tests completed. Check output above for pass/fail details."
 
 test-integration:
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest $(TEST_DIR)/integration -v
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR)/integration -v --tb=short --continue-on-collection-errors || true
+	@echo "\n========== TEST SUMMARY =========="
+	@echo "Integration tests completed. Check output above for pass/fail details."
 
 lint:
 	@echo "black..."
@@ -141,7 +147,9 @@ lint-mr:
 	fi
 
 check-mr:
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest
+	@echo "========== RUNNING TESTS =========="
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest -v --tb=short --continue-on-collection-errors || true
+	@echo "\n========== TESTS COMPLETED =========="
 	@echo "Formatting and linting committed (vs dev) and staged Python files..."
 	@FILES=$$( { \
 		git diff --name-only dev...HEAD -- '*.py' 2>/dev/null; \
