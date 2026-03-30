@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# pylint: disable=duplicate-code
 from typing import Annotated
 from uuid import uuid4
 
@@ -28,7 +29,11 @@ from domain.models.bundle import SuggestedBundles
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.session import Session
-from orchestrators.conversation_flow import ConversationFlow
+from orchestrators.conversation_flow import (
+    ConversationFlow,
+    ConversationTurnRequest,
+    TurnOptions,
+)
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
 
@@ -144,13 +149,15 @@ async def start_session(
     conv_repo.append_message(session_id, user_msg)
 
     result = await flow.process_turn(
-        session_id=session_id,
-        user_message=body.message,
-        accumulated_extraction=None,
-        history=[user_msg],
-        confirmed=False,
-        preselected_bundle_key=preselected_bundle_key,
-        preselected_intent=preselected_intent,
+        ConversationTurnRequest(
+            session_id=session_id,
+            user_message=body.message,
+            history=[user_msg],
+            confirmed=False,
+            accumulated_extraction=None,
+            preselected_bundle_key=preselected_bundle_key,
+            options=TurnOptions(preselected_intent=preselected_intent),
+        )
     )
 
     if result.get("bundle_key"):
@@ -205,14 +212,18 @@ async def reply_to_session(
     history = conv_repo.get_messages(session_id)
 
     result = await flow.process_turn(
-        session_id=session_id,
-        user_message=body.message,
-        accumulated_extraction=session.accumulated_extraction,
-        history=history,
-        confirmed=session.confirmed,
-        preselected_bundle_key=session.preselected_bundle_key,
-        preselected_intent=session.preselected_intent,
-        force_preview=body.force_preview,
+        ConversationTurnRequest(
+            session_id=session_id,
+            user_message=body.message,
+            history=history,
+            confirmed=session.confirmed,
+            accumulated_extraction=session.accumulated_extraction,
+            preselected_bundle_key=session.preselected_bundle_key,
+            options=TurnOptions(
+                preselected_intent=session.preselected_intent,
+                force_preview=body.force_preview,
+            ),
+        )
     )
     session.turn_count += 1
     if result.get("bundle_key"):
