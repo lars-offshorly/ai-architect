@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -26,13 +27,6 @@ class KpiMetric(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class GenerationConfig(BaseModel):
-    """Permission and navigation config embedded in the generation JSON."""
-
-    permission_services: list[str]
-    landing_pages: list[dict]
-
-
 class GenerationJson(BaseModel):
     """Knit workspace configuration payload (feature flags, modules, config)."""
 
@@ -40,7 +34,7 @@ class GenerationJson(BaseModel):
     bundle_key: str
     feature_flags: list[dict]  # shape: {id, name, description, isEnabled, module}
     modules: list[str]
-    config: GenerationConfig
+    config: dict[str, object]
 
 
 class DummyDataJson(BaseModel):
@@ -112,3 +106,24 @@ class UserContext(BaseModel):
     key_phrases: list[str] = Field(
         default_factory=list
     )  # signal phrases for KPI matching
+
+
+# ---------------------------------------------------------------------------
+# Edit sub-graph
+# ---------------------------------------------------------------------------
+
+
+class EditActionType(str, Enum):
+    add_module = "add_module"
+    remove_module = "remove_module"
+    add_kpi = "add_kpi"
+    remove_kpi = "remove_kpi"
+    add_dashboard = "add_dashboard"
+    remove_dashboard = "remove_dashboard"
+    unsupported = "unsupported"
+
+
+class EditAction(BaseModel):
+    action_type: EditActionType
+    target: str | None = None
+    raw_instruction: str = ""
