@@ -69,6 +69,7 @@ class InterpreterPort(Protocol):
         self,
         session_id: str,
         history: list[ConversationMessage],
+        extracted: ExtractionResult | None = None,
     ) -> str: ...
 
     async def extract_only(self, request: InterpreterRequest) -> ExtractionResult: ...
@@ -196,7 +197,7 @@ class ConversationFlow:
             return request.options.summary
         summary_history = request.history[:-1] if request.history else []
         return await self._interpreter.summarize_history(
-            request.session_id, summary_history
+            request.session_id, summary_history, request.accumulated_extraction
         )
 
     async def _resolve_turn_context(
