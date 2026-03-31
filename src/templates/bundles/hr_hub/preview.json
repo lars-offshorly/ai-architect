@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
-  "display_name": "HR Hub",
-  "modules": ["tickets", "queues", "kpis", "dashboard"],
+  "bundle_key": "hr_management",
   "stores": {
     "tickets": [
       {
