@@ -18,3 +18,21 @@ class PreviewResponseSchema(BaseModel):
 
 class EditRequestSchema(BaseModel):
     instruction: str
+
+
+class EditPreviewRequestSchema(BaseModel):
+    """Request body for POST /sessions/{id}/preview/edit."""
+
+    current_preview: dict[str, object] = Field(
+        ...,
+        description=(
+            "The full AppPayloadResponseSchema output from a prior "
+            "/preview or /preview/early call."
+        ),
+    )
+    instruction: str = Field(
+        ...,
+        description="Natural-language edit instruction (e.g. 'remove the chat module').",
+        min_length=1,
+        max_length=500,
+    )
