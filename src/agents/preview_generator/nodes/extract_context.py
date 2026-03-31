@@ -196,7 +196,7 @@ _COMPANY_PATTERNS = [
         re.IGNORECASE,
     ),
     re.compile(
-        r"(?:at|for)\s+([A-Z][A-Za-z0-9\s&'.-]{1,40}?)(?:\s*[,.]|\s+we\b|\s+our\b)",
+        r"(?:at|for)\s+([A-Z][a-z0-9\s&'.-]{1,40}?)(?:\s*[,.]|\s+we\b|\s+our\b)",
         re.IGNORECASE,
     ),
 ]
@@ -208,7 +208,7 @@ _NAME_PATTERNS = [
 ]
 _ROLE_PATTERNS = [
     re.compile(
-        r"i(?:'m| am) (?:a |an )?([A-Za-z\s]{3,30}?)(?:\s+at\b|\s+in\b|\s*[,.])",
+        r"i(?:'m| am) (?:a |an )?([a-z\s]{3,30}?)(?:\s+at\b|\s+in\b|\s*[,.])",
         re.IGNORECASE,
     ),
     re.compile(
@@ -221,8 +221,8 @@ _TEAM_PATTERNS = [
     re.compile(
         r"(\d+)\s+(?:person |people |member )?(?:team|staff|employee)", re.IGNORECASE
     ),
-    re.compile(r"(?:our\s+)?([A-Za-z\s]{3,25}?)\s+team", re.IGNORECASE),
-    re.compile(r"([A-Za-z\s]{3,25}?)\s+department", re.IGNORECASE),
+    re.compile(r"(?:our\s+)?([a-z\s]{3,25}?)\s+team", re.IGNORECASE),
+    re.compile(r"([a-z\s]{3,25}?)\s+department", re.IGNORECASE),
 ]
 _SIZE_PATTERNS = [
     re.compile(r"(\d+)\s+(?:person|people|employee|member|staff)", re.IGNORECASE),
@@ -430,28 +430,207 @@ def _extract_key_phrases(text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# ExtractionResult → UserContext mapping (Tier 1)
+# ---------------------------------------------------------------------------
+
+_METHODOLOGY_HINTS = ("agile", "scrum", "kanban", "waterfall", "hybrid")
+
+
+def _methodology_from_hints(hints: list[str], intent: str | None) -> str | None:
+    """Derive work_methodology from workflow_hints or preselected_intent."""
+    sources = hints + ([intent] if intent else [])
+    for src in sources:
+        lower = src.lower()
+        for keyword in _METHODOLOGY_HINTS:
+            if keyword in lower:
+                return keyword
+    return None
+
+
+def _map_extraction_result(
+    extraction_result: "ExtractionResult",  # noqa: F821 — forward ref for clarity
+    preselected_intent: str | None,
+) -> UserContext:
+    """Map Dev A's ExtractionResult directly to UserContext (no LLM call).
+
+    Only sets fields that ExtractionResult can provide. Callers should run
+    keyword scan afterward to fill any remaining None fields.
+    """
+    ps = extraction_result.personalization_signals
+    cs = extraction_result.classification_signals
+
+    # People: employee names + role names as separate PersonDetail entries
+    people: list[PersonDetail] = []
+    seen_names: set[str] = set()
+    for name in ps.employee_names:
+        if name and name not in seen_names:
+            seen_names.add(name)
+            people.append(PersonDetail(name=name))
+    for role in ps.role_names:
+        if role:
+            people.append(PersonDetail(role=role))
+
+    # Teams: department names → TeamDetail
+    teams: list[TeamDetail] = [
+        TeamDetail(name=dept, function=dept)
+        for dept in ps.department_names
+        if dept
+    ]
+
+    # Key phrases: interpreter metrics + custom terminology values
+    key_phrases: list[str] = list(cs.metrics)
+    key_phrases += [v for v in ps.terminology.values() if v]
+
+    # Supplement with preselected_intent if it isn't a methodology keyword
+    if preselected_intent:
+        intent_lower = preselected_intent.lower()
+        is_methodology = any(kw in intent_lower for kw in _METHODOLOGY_HINTS)
+        if not is_methodology and preselected_intent not in key_phrases:
+            key_phrases.append(preselected_intent)
+
+    return UserContext(
+        company_name=ps.company_name or None,
+        industry_detail=cs.domain_hints[0] if cs.domain_hints else None,
+        people=people,
+        teams=teams,
+        work_methodology=_methodology_from_hints(cs.workflow_hints, preselected_intent),
+        key_phrases=key_phrases,
+    )
+
+
+def _keyword_fill(ctx: UserContext, history: list[dict]) -> UserContext:
+    """Run keyword scan and fill any UserContext fields still None.
+
+    Returns a new UserContext with gaps filled; fields already set are preserved.
+    """
+    if not history:
+        return ctx
+
+    lower = _user_text(history)
+    raw = _raw_user_text(history)
+
+    company_name = ctx.company_name or _extract_company_name(raw)
+    company_size = ctx.company_size or _detect_company_size(lower)
+    _, industry_detail = _detect_industry(lower)
+    industry_detail = ctx.industry_detail or industry_detail
+    people = ctx.people or _extract_people(raw)
+    teams = ctx.teams or _extract_teams(raw, lower)
+    methodology = ctx.work_methodology or _detect_methodology(lower)
+
+    has_remote = ctx.has_remote_teams
+    if has_remote is None:
+        has_remote = any(kw in lower for kw in _REMOTE_KEYWORDS) or None
+
+    has_clients = ctx.has_clients
+    if has_clients is None:
+        has_clients = any(kw in lower for kw in _CLIENT_KEYWORDS) or None
+
+    # Merge key_phrases — preserve existing, add newly detected
+    existing = set(ctx.key_phrases)
+    extra = [p for p in _extract_key_phrases(lower) if p not in existing]
+    key_phrases = ctx.key_phrases + extra
+
+    has_deadlines = any(
+        p in lower for p in ["deadline", "due date", "due by", "by friday"]
+    )
+    if ctx.work_items:
+        work_items = ctx.work_items
+    else:
+        work_types = _detect_work_types(lower)
+        work_items = [
+            WorkItemDetail(
+                work_type=wt, has_deadlines=has_deadlines, methodology=methodology
+            )
+            for wt in work_types
+        ]
+
+    primary_concern = ctx.primary_concern
+    if not primary_concern:
+        pain_words = [
+            "struggle", "difficult", "hard to", "problem",
+            "issue", "can't", "cannot", "need to",
+        ]
+        for msg in history:
+            if msg.get("role") != "user":
+                continue
+            for sentence in re.split(r"[.!?]", msg["content"]):
+                if any(pw in sentence.lower() for pw in pain_words):
+                    primary_concern = sentence.strip()
+                    break
+            if primary_concern:
+                break
+
+    return UserContext(
+        company_name=company_name,
+        company_size=company_size,
+        industry_detail=industry_detail,
+        people=people,
+        teams=teams,
+        work_items=work_items,
+        has_remote_teams=has_remote,
+        has_clients=has_clients,
+        work_methodology=methodology,
+        primary_concern=primary_concern,
+        key_phrases=key_phrases,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Node
 # ---------------------------------------------------------------------------
 
 
 def extract_user_context(state: PreviewGeneratorState) -> dict:
-    """Phase 1: keyword-based UserContext extraction.
+    """Extract structured UserContext from available signals.
 
-    Reads state.conversation_history (user messages only).
-    Returns {"user_context": UserContext(...)}.
+    Three-tier resolution — NO redundant LLM call when Dev A's data is present:
 
-    Phase 2 upgrade: replace _detect_* helpers with a structured LLM call
-    (anthropic tool_use / structured output). The keyword logic below becomes
-    the fallback when the LLM call fails or confidence is low.
+    Tier 1 — extraction_result present (Dev A already did the work):
+      Map ExtractionResult fields → UserContext directly.
+      Keyword scan fills any remaining None fields.
+      CONTEXT_EXTRACTION_SYSTEM_PROMPT is NOT invoked.
+
+    Tier 2 — extraction_result absent, history present:
+      LLM extraction via CONTEXT_EXTRACTION_SYSTEM_PROMPT (Phase 2, not yet wired).
+      Keyword scan fills remaining None fields.
+      One LLM call — only for sessions Dev A never processed.
+
+    Tier 3 — nothing available:
+      Return empty UserContext(). No LLM call.
     """
     history = state.conversation_history
+    extraction_result = state.extraction_result
+    preselected_intent = state.preselected_intent
+
+    # --- Tier 1: ExtractionResult present — map directly, no LLM ---
+    if extraction_result is not None:
+        ctx = _map_extraction_result(extraction_result, preselected_intent)
+        ctx = _keyword_fill(ctx, history)
+        logger.info(
+            "session=%s — Tier 1 context: company=%r size=%r industry=%r "
+            "methodology=%r phrases=%d (from ExtractionResult)",
+            state.session_id,
+            ctx.company_name,
+            ctx.company_size,
+            ctx.industry_detail,
+            ctx.work_methodology,
+            len(ctx.key_phrases),
+        )
+        return {"user_context": ctx}
+
+    # --- Tier 3: no history (and no ExtractionResult) ---
     if not history:
         logger.info(
-            "session=%s — no conversation history, returning empty UserContext",
+            "session=%s — Tier 3: no extraction_result and no history, "
+            "returning empty UserContext",
             state.session_id,
         )
         return {"user_context": UserContext()}
 
+    # --- Tier 2: no ExtractionResult, but history available ---
+    # Phase 2: call _extract_context_via_llm() here using
+    # CONTEXT_EXTRACTION_SYSTEM_PROMPT, then pass result to _keyword_fill().
+    # For now: keyword-only path (same as original Phase 1 behaviour).
     lower = _user_text(history)
     raw = _raw_user_text(history)
 
@@ -461,12 +640,20 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
     people = _extract_people(raw)
     teams = _extract_teams(raw, lower)
     work_types = _detect_work_types(lower)
-    methodology = _detect_methodology(lower)
+    methodology = _detect_methodology(lower) or _methodology_from_hints(
+        [], preselected_intent
+    )
     key_phrases = _extract_key_phrases(lower)
+
+    # Append preselected_intent as a signal phrase if it isn't a methodology word
+    if preselected_intent:
+        intent_lower = preselected_intent.lower()
+        is_methodology = any(kw in intent_lower for kw in _METHODOLOGY_HINTS)
+        if not is_methodology and preselected_intent not in key_phrases:
+            key_phrases.append(preselected_intent)
 
     has_remote = any(kw in lower for kw in _REMOTE_KEYWORDS)
     has_clients = any(kw in lower for kw in _CLIENT_KEYWORDS)
-
     has_deadlines = any(
         p in lower for p in ["deadline", "due date", "due by", "by friday"]
     )
@@ -477,17 +664,9 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
         for wt in work_types
     ]
 
-    # Primary concern: first sentence of first user message
-    # that contains a pain-point word
     pain_words = [
-        "struggle",
-        "difficult",
-        "hard to",
-        "problem",
-        "issue",
-        "can't",
-        "cannot",
-        "need to",
+        "struggle", "difficult", "hard to", "problem",
+        "issue", "can't", "cannot", "need to",
     ]
     primary_concern: str | None = None
     for msg in history:
@@ -515,13 +694,12 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
     )
 
     logger.info(
-        "session=%s — extracted context: company=%r size=%r industry=%r work_types=%s",
+        "session=%s — Tier 2 context: company=%r size=%r industry=%r work_types=%s "
+        "(keyword scan — no ExtractionResult)",
         state.session_id,
         company_name,
         company_size,
         industry_detail,
         work_types,
     )
-    # TODO(phase-2): replace keyword scan with a structured LLM call.
-    # Use anthropic tool_use / structured output; keep keyword logic as fallback.
     return {"user_context": user_context}
