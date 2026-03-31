@@ -6,6 +6,7 @@ from typing import Any
 
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
+from domain.models.extraction_result import ExtractionResult
 
 logger = get_logger(__name__)
 
@@ -33,8 +34,16 @@ class PreviewFlow:
         session_id: str,
         bundle_key: str,
         conversation_history: list[dict],
+        extraction_result: ExtractionResult | None = None,
+        preselected_intent: str | None = None,
     ) -> AppPayload:
-        """Execute the preview pipeline and return the assembled AppPayload."""
+        """Execute the preview pipeline and return the assembled AppPayload.
+
+        Args:
+            extraction_result:  Dev A's accumulated ExtractionResult. When present,
+                                the pipeline skips its own keyword scan / LLM call.
+            preselected_intent: User-chosen intent before conversation started.
+        """
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Running preview flow for bundle=%s", bundle_key)
 
@@ -42,6 +51,8 @@ class PreviewFlow:
             session_id=session_id,
             bundle_key=bundle_key,
             conversation_history=conversation_history,
+            extraction_result=extraction_result,
+            preselected_intent=preselected_intent,
         )
 
         display_name = self._display_names.get(bundle_key, bundle_key)
