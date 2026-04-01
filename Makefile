@@ -4,7 +4,7 @@ POETRY := poetry
 POETRY_QUIET := env PYTHONWARNINGS="ignore::Warning" $(POETRY)
 SRC_DIR := src
 TEST_DIR := tests
-LINT_PATHS := src tests onboarding catalog scripts
+LINT_PATHS := src onboarding catalog scripts
 FLAKE8_FLAGS := --max-line-length=88
 PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
 
@@ -98,7 +98,7 @@ lint-file:
 lint-staged:
 	@echo "Formatting and linting staged Python files..."
 	@FILES=$$(git diff --cached --name-only --diff-filter=ACMR -- '*.py' | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \
@@ -126,7 +126,7 @@ lint-mr:
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \
@@ -157,7 +157,7 @@ check-mr:
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \

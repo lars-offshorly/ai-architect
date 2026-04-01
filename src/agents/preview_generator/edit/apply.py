@@ -120,8 +120,7 @@ def _remove_module(payload: dict, flag_name: str) -> str | None:
         stores = dummy["stores"]
         if "kpis" in stores:
             stores["kpis"] = [
-                k for k in stores["kpis"]
-                if k.get("source_service") != source_service
+                k for k in stores["kpis"] if k.get("source_service") != source_service
             ]
 
     if "stores" in dummy:
@@ -159,16 +158,14 @@ def _remove_kpi(payload: dict, kpi_key: str) -> str | None:
     # Remove from stores
     if "stores" in dummy and "kpis" in dummy["stores"]:
         dummy["stores"]["kpis"] = [
-            k for k in dummy["stores"]["kpis"]
-            if k.get("key") != kpi_key
+            k for k in dummy["stores"]["kpis"] if k.get("key") != kpi_key
         ]
 
     # Remove from config.kpi_definitions
     config = gen.get("config", {})
     if "kpi_definitions" in config:
         config["kpi_definitions"] = [
-            k for k in config["kpi_definitions"]
-            if k != kpi_key
+            k for k in config["kpi_definitions"] if k != kpi_key
         ]
 
     logger.info("Removed KPI %s", kpi_key)
@@ -194,13 +191,15 @@ def _add_kpi(payload: dict, kpi_key: str) -> str | None:
 
     existing_keys = {k.get("key") for k in dummy["stores"]["kpis"]}
     if kpi_key not in existing_keys:
-        dummy["stores"]["kpis"].append({
-            "key": catalog_entry["key"],
-            "label": catalog_entry["label"],
-            "type": catalog_entry["type"],
-            "source_service": catalog_entry["source_service"],
-            "sample_value": _SAMPLE_VALUES.get(catalog_entry["type"], 0),
-        })
+        dummy["stores"]["kpis"].append(
+            {
+                "key": catalog_entry["key"],
+                "label": catalog_entry["label"],
+                "type": catalog_entry["type"],
+                "source_service": catalog_entry["source_service"],
+                "sample_value": _SAMPLE_VALUES.get(catalog_entry["type"], 0),
+            }
+        )
 
     # Add to config.kpi_definitions
     config = gen.get("config", {})
@@ -262,6 +261,7 @@ def apply_edit(
     """
     # Deep copy to avoid mutating the caller's data
     result = copy.deepcopy(payload)
+    warning: str | None = None
 
     if action.action_type == EditActionType.unsupported:
         warning = (

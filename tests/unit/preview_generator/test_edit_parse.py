@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 from agents.preview_generator.edit.parse import parse_edit_instruction
-from agents.preview_generator.schemas import EditAction, EditActionType
-
+from agents.preview_generator.schemas import EditActionType
 
 # ---------------------------------------------------------------------------
 # Remove module

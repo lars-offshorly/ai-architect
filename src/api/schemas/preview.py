@@ -32,7 +32,9 @@ class EditPreviewRequestSchema(BaseModel):
     )
     instruction: str = Field(
         ...,
-        description="Natural-language edit instruction (e.g. 'remove the chat module').",
+        description=(
+            "Natural-language edit instruction " "(e.g. 'remove the chat module')."
+        ),
         min_length=1,
         max_length=500,
     )

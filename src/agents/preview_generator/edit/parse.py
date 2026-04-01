@@ -6,8 +6,6 @@ Phase 2: LLM-based parser (keyword logic becomes fallback).
 
 from __future__ import annotations
 
-import re
-
 from core.logging import get_logger
 
 from ..bundles.registry import METRICS_CATALOG
@@ -20,7 +18,9 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 _ADD_VERBS = frozenset(["add", "enable", "include", "show", "turn on", "activate"])
-_REMOVE_VERBS = frozenset(["remove", "disable", "hide", "drop", "turn off", "delete", "deactivate"])
+_REMOVE_VERBS = frozenset(
+    ["remove", "disable", "hide", "drop", "turn off", "delete", "deactivate"]
+)
 
 # ---------------------------------------------------------------------------
 # Module alias → flag name mapping
@@ -138,12 +138,13 @@ def _is_kpi_context(text: str) -> bool:
 
 
 def _is_dashboard_only(text: str) -> bool:
-    """Check if the instruction is about the dashboard itself (not a module add/remove)."""
+    """Check if the instruction is about the dashboard itself.
+
+    (not a module add/remove).
+    """
     # "remove dashboard" with no other module reference means dashboard action
     return "dashboard" in text and not any(
-        alias in text
-        for alias in _MODULE_ALIASES
-        if alias != "dashboard"
+        alias in text for alias in _MODULE_ALIASES if alias != "dashboard"
     )
 
 
@@ -179,7 +180,9 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     # --- KPI detection (check before module to handle "remove attendance KPI") ---
     kpi_target = _find_kpi_target(text)
     if kpi_target and _is_kpi_context(text):
-        action_type = EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+        action_type = (
+            EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+        )
         logger.info("Parsed %s KPI: %r → %s", verb, raw, kpi_target)
         return EditAction(
             action_type=action_type,
@@ -189,7 +192,11 @@ def parse_edit_instruction(instruction: str) -> EditAction:
 
     # --- Dashboard detection ---
     if _is_dashboard_only(text):
-        action_type = EditActionType.add_dashboard if verb == "add" else EditActionType.remove_dashboard
+        action_type = (
+            EditActionType.add_dashboard
+            if verb == "add"
+            else EditActionType.remove_dashboard
+        )
         logger.info("Parsed %s dashboard: %r", verb, raw)
         return EditAction(
             action_type=action_type,
@@ -200,7 +207,9 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     # --- Module detection ---
     module_target = _find_module_target(text)
     if module_target:
-        action_type = EditActionType.add_module if verb == "add" else EditActionType.remove_module
+        action_type = (
+            EditActionType.add_module if verb == "add" else EditActionType.remove_module
+        )
         logger.info("Parsed %s module: %r → %s", verb, raw, module_target)
         return EditAction(
             action_type=action_type,
@@ -210,7 +219,9 @@ def parse_edit_instruction(instruction: str) -> EditAction:
 
     # --- KPI fallback: verb + slug without explicit "kpi"/"metric" word ---
     if kpi_target:
-        action_type = EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+        action_type = (
+            EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+        )
         logger.info("Parsed %s KPI (fallback): %r → %s", verb, raw, kpi_target)
         return EditAction(
             action_type=action_type,

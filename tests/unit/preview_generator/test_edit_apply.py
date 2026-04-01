@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import copy
-
-import pytest
+from typing import Any
 
 from agents.preview_generator.edit.apply import apply_edit
 from agents.preview_generator.schemas import EditAction, EditActionType
-
 
 # ---------------------------------------------------------------------------
 # Fixtures — minimal AppPayloadResponseSchema dict
@@ -24,16 +22,70 @@ def _make_payload(
     config: dict | None = None,
 ) -> dict:
     """Build a minimal payload dict matching AppPayloadResponseSchema shape."""
-    flags = [
-        {"id": 5, "name": "chat-module", "description": "Chat Module", "isEnabled": True, "module": "Global"},
-        {"id": 7, "name": "projects-module", "description": "Projects Module", "isEnabled": True, "module": "Global"},
-        {"id": 6, "name": "tickets-module", "description": "Tickets Module", "isEnabled": True, "module": "Global"},
-        {"id": 2, "name": "dashboard-module", "description": "Dashboard Module", "isEnabled": True, "module": "Global"},
-        {"id": 123, "name": "kpi-module", "description": "KPI Module", "isEnabled": True, "module": "Global"},
-        {"id": 3, "name": "hrhub-module", "description": "Hr Hub Module", "isEnabled": False, "module": "Global"},
-        {"id": 109, "name": "calendar_module", "description": "Calendar module", "isEnabled": False, "module": "Global"},
-        {"id": 4, "name": "weaves-module", "description": "Weaves Module", "isEnabled": False, "module": "Global"},
-        {"id": 187, "name": "ai-toolkit-module", "description": "AI Toolkit Module", "isEnabled": False, "module": "Global"},
+    flags: list[dict[str, Any]] = [
+        {
+            "id": 5,
+            "name": "chat-module",
+            "description": "Chat Module",
+            "isEnabled": True,
+            "module": "Global",
+        },
+        {
+            "id": 7,
+            "name": "projects-module",
+            "description": "Projects Module",
+            "isEnabled": True,
+            "module": "Global",
+        },
+        {
+            "id": 6,
+            "name": "tickets-module",
+            "description": "Tickets Module",
+            "isEnabled": True,
+            "module": "Global",
+        },
+        {
+            "id": 2,
+            "name": "dashboard-module",
+            "description": "Dashboard Module",
+            "isEnabled": True,
+            "module": "Global",
+        },
+        {
+            "id": 123,
+            "name": "kpi-module",
+            "description": "KPI Module",
+            "isEnabled": True,
+            "module": "Global",
+        },
+        {
+            "id": 3,
+            "name": "hrhub-module",
+            "description": "Hr Hub Module",
+            "isEnabled": False,
+            "module": "Global",
+        },
+        {
+            "id": 109,
+            "name": "calendar_module",
+            "description": "Calendar module",
+            "isEnabled": False,
+            "module": "Global",
+        },
+        {
+            "id": 4,
+            "name": "weaves-module",
+            "description": "Weaves Module",
+            "isEnabled": False,
+            "module": "Global",
+        },
+        {
+            "id": 187,
+            "name": "ai-toolkit-module",
+            "description": "AI Toolkit Module",
+            "isEnabled": False,
+            "module": "Global",
+        },
     ]
     if flag_overrides:
         for f in flags:
@@ -100,13 +152,21 @@ def _action(action_type: EditActionType, target: str | None = None) -> EditActio
 class TestRemoveModule:
     def test_flag_disabled(self) -> None:
         payload = _make_payload()
-        result, _ = apply_edit(payload, _action(EditActionType.remove_module, "chat-module"))
-        flag = next(f for f in result["generation_json"]["feature_flags"] if f["name"] == "chat-module")
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "chat-module")
+        )
+        flag = next(
+            f
+            for f in result["generation_json"]["feature_flags"]
+            if f["name"] == "chat-module"
+        )
         assert flag["isEnabled"] is False
 
     def test_module_removed_from_list(self) -> None:
         payload = _make_payload()
-        result, _ = apply_edit(payload, _action(EditActionType.remove_module, "chat-module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "chat-module")
+        )
         assert "Chat" not in result["generation_json"]["modules"]
         assert "Chat" not in result["modules"]
 
@@ -119,7 +179,9 @@ class TestRemoveModule:
         payload["dummy_data_json"]["stores"]["kpis"][0]["source_service"] = "tickets"
         payload["dummy_data_json"]["stores"]["kpis"][1]["source_service"] = "hr_hub"
 
-        result, _ = apply_edit(payload, _action(EditActionType.remove_module, "tickets-module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "tickets-module")
+        )
         remaining_kpis = result["dummy_data_json"]["stores"]["kpis"]
         kpi_keys = [k["key"] for k in remaining_kpis]
         assert "avg_resolution_time" not in kpi_keys
@@ -128,22 +190,27 @@ class TestRemoveModule:
     def test_cascading_store_removal_tickets(self) -> None:
         """Removing tickets-module removes the 'tickets' store."""
         payload = _make_payload()
-        result, _ = apply_edit(payload, _action(EditActionType.remove_module, "tickets-module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "tickets-module")
+        )
         assert "tickets" not in result["dummy_data_json"]["stores"]
 
     def test_cascading_store_removal_projects(self) -> None:
         """Removing projects-module removes project-related stores."""
         payload = _make_payload()
         payload["dummy_data_json"]["stores"]["tasks"] = [{"id": 1}]
-        result, _ = apply_edit(payload, _action(EditActionType.remove_module, "projects-module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "projects-module")
+        )
         assert "tasks" not in result["dummy_data_json"]["stores"]
         assert "milestones" not in result["dummy_data_json"]["stores"]
 
     def test_idempotent_remove_already_disabled(self) -> None:
         """Removing a module that's already disabled is a no-op."""
         payload = _make_payload(flag_overrides={"calendar_module": False})
-        original = copy.deepcopy(payload)
-        result, warning = apply_edit(payload, _action(EditActionType.remove_module, "calendar_module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_module, "calendar_module")
+        )
         # Should not error, payload essentially unchanged structurally
         assert result["generation_json"]["feature_flags"] is not None
 
@@ -163,20 +230,30 @@ class TestRemoveModule:
 class TestAddModule:
     def test_flag_enabled(self) -> None:
         payload = _make_payload(flag_overrides={"calendar_module": False})
-        result, _ = apply_edit(payload, _action(EditActionType.add_module, "calendar_module"))
-        flag = next(f for f in result["generation_json"]["feature_flags"] if f["name"] == "calendar_module")
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_module, "calendar_module")
+        )
+        flag = next(
+            f
+            for f in result["generation_json"]["feature_flags"]
+            if f["name"] == "calendar_module"
+        )
         assert flag["isEnabled"] is True
 
     def test_module_added_to_list(self) -> None:
         payload = _make_payload(modules=["Projects"])
-        result, _ = apply_edit(payload, _action(EditActionType.add_module, "calendar_module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_module, "calendar_module")
+        )
         assert "Calendar" in result["generation_json"]["modules"]
         assert "Calendar" in result["modules"]
 
     def test_idempotent_add_already_enabled(self) -> None:
         """Adding a module already in the list doesn't duplicate it."""
         payload = _make_payload()
-        result, _ = apply_edit(payload, _action(EditActionType.add_module, "chat-module"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_module, "chat-module")
+        )
         assert result["generation_json"]["modules"].count("Chat") == 1
 
 
@@ -188,19 +265,28 @@ class TestAddModule:
 class TestRemoveKpi:
     def test_kpi_removed_from_stores(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
-        result, _ = apply_edit(payload, _action(EditActionType.remove_kpi, "capacity_utilization"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_kpi, "capacity_utilization")
+        )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" not in kpi_keys
         assert "active_work_items" in kpi_keys
 
     def test_kpi_removed_from_config(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
-        result, _ = apply_edit(payload, _action(EditActionType.remove_kpi, "capacity_utilization"))
-        assert "capacity_utilization" not in result["generation_json"]["config"]["kpi_definitions"]
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_kpi, "capacity_utilization")
+        )
+        assert (
+            "capacity_utilization"
+            not in result["generation_json"]["config"]["kpi_definitions"]
+        )
 
     def test_remove_nonexistent_kpi_is_noop(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
-        result, _ = apply_edit(payload, _action(EditActionType.remove_kpi, "nonexistent_metric"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_kpi, "nonexistent_metric")
+        )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_keys
 
@@ -213,24 +299,34 @@ class TestRemoveKpi:
 class TestAddKpi:
     def test_kpi_added_to_stores(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
-        result, _ = apply_edit(payload, _action(EditActionType.add_kpi, "sla_compliance"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_kpi, "sla_compliance")
+        )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "sla_compliance" in kpi_keys
 
     def test_kpi_added_to_config(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
-        result, _ = apply_edit(payload, _action(EditActionType.add_kpi, "sla_compliance"))
-        assert "sla_compliance" in result["generation_json"]["config"]["kpi_definitions"]
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_kpi, "sla_compliance")
+        )
+        assert (
+            "sla_compliance" in result["generation_json"]["config"]["kpi_definitions"]
+        )
 
     def test_add_unknown_kpi_returns_warning(self) -> None:
         payload = _make_payload()
-        result, warning = apply_edit(payload, _action(EditActionType.add_kpi, "nonexistent_metric"))
+        result, warning = apply_edit(
+            payload, _action(EditActionType.add_kpi, "nonexistent_metric")
+        )
         assert warning is not None
         assert "not found" in warning.lower() or "unknown" in warning.lower()
 
     def test_add_duplicate_kpi_is_noop(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
-        result, _ = apply_edit(payload, _action(EditActionType.add_kpi, "capacity_utilization"))
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_kpi, "capacity_utilization")
+        )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert kpi_keys.count("capacity_utilization") == 1
 
@@ -243,8 +339,14 @@ class TestAddKpi:
 class TestDashboard:
     def test_remove_dashboard(self) -> None:
         payload = _make_payload()
-        result, _ = apply_edit(payload, _action(EditActionType.remove_dashboard, "dashboard-module"))
-        flag = next(f for f in result["generation_json"]["feature_flags"] if f["name"] == "dashboard-module")
+        result, _ = apply_edit(
+            payload, _action(EditActionType.remove_dashboard, "dashboard-module")
+        )
+        flag = next(
+            f
+            for f in result["generation_json"]["feature_flags"]
+            if f["name"] == "dashboard-module"
+        )
         assert flag["isEnabled"] is False
         assert "Dashboard" not in result["generation_json"]["modules"]
 
@@ -253,8 +355,14 @@ class TestDashboard:
             modules=["Projects"],
             flag_overrides={"dashboard-module": False},
         )
-        result, _ = apply_edit(payload, _action(EditActionType.add_dashboard, "dashboard-module"))
-        flag = next(f for f in result["generation_json"]["feature_flags"] if f["name"] == "dashboard-module")
+        result, _ = apply_edit(
+            payload, _action(EditActionType.add_dashboard, "dashboard-module")
+        )
+        flag = next(
+            f
+            for f in result["generation_json"]["feature_flags"]
+            if f["name"] == "dashboard-module"
+        )
         assert flag["isEnabled"] is True
         assert "Dashboard" in result["generation_json"]["modules"]
 

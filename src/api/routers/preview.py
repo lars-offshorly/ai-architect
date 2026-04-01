@@ -7,6 +7,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from agents.preview_generator.edit.apply import apply_edit
+from agents.preview_generator.edit.parse import parse_edit_instruction
 from api.deps import (
     get_conversation_repository,
     get_preview_flow,
@@ -21,9 +23,6 @@ from domain.models.session import Session
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
-
-from agents.preview_generator.edit.parse import parse_edit_instruction
-from agents.preview_generator.edit.apply import apply_edit
 
 router = APIRouter(prefix="/sessions", tags=["preview"])
 logger = get_logger(__name__)

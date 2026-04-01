@@ -2,24 +2,26 @@
 
 from __future__ import annotations
 
-import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from api.routers.preview import router as preview_router
 from domain.models.session import Session
-from fastapi import FastAPI
-
+from repositories.conversation_repository import ConversationRepository
+from repositories.session_repository import SessionRepository
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _build_app(session_repo, conv_repo) -> FastAPI:
+def _build_app(
+    session_repo: SessionRepository, conv_repo: ConversationRepository
+) -> FastAPI:
     """Build a minimal FastAPI app with the preview router."""
     from api.deps import (
-        get_session_repository,
         get_conversation_repository,
+        get_session_repository,
     )
 
     app = FastAPI()
@@ -41,10 +43,34 @@ def _make_preview_payload(session_id: str = "sess-1") -> dict:
             "schema_version": "1.0",
             "bundle_key": "project_mgmt",
             "feature_flags": [
-                {"id": 5, "name": "chat-module", "description": "Chat Module", "isEnabled": True, "module": "Global"},
-                {"id": 7, "name": "projects-module", "description": "Projects Module", "isEnabled": True, "module": "Global"},
-                {"id": 2, "name": "dashboard-module", "description": "Dashboard Module", "isEnabled": True, "module": "Global"},
-                {"id": 123, "name": "kpi-module", "description": "KPI Module", "isEnabled": True, "module": "Global"},
+                {
+                    "id": 5,
+                    "name": "chat-module",
+                    "description": "Chat Module",
+                    "isEnabled": True,
+                    "module": "Global",
+                },
+                {
+                    "id": 7,
+                    "name": "projects-module",
+                    "description": "Projects Module",
+                    "isEnabled": True,
+                    "module": "Global",
+                },
+                {
+                    "id": 2,
+                    "name": "dashboard-module",
+                    "description": "Dashboard Module",
+                    "isEnabled": True,
+                    "module": "Global",
+                },
+                {
+                    "id": 123,
+                    "name": "kpi-module",
+                    "description": "KPI Module",
+                    "isEnabled": True,
+                    "module": "Global",
+                },
             ],
             "modules": ["Projects", "Chat", "Dashboard", "KPI"],
             "config": {
@@ -83,6 +109,7 @@ class FakeSessionRepo:
 
     def get(self, session_id: str) -> Session:
         from core.exceptions import SessionNotFoundError
+
         if session_id not in self._store:
             raise SessionNotFoundError(f"Session {session_id} not found")
         return self._store[session_id]
@@ -105,11 +132,13 @@ class TestEditEndpoint:
     def setup_method(self) -> None:
         self.session_repo = FakeSessionRepo()
         self.conv_repo = FakeConvRepo()
-        self.app = _build_app(self.session_repo, self.conv_repo)
+        self.app = _build_app(self.session_repo, self.conv_repo)  # type: ignore
         self.client = TestClient(self.app)
 
         # Seed a session
-        session = Session(session_id="sess-1", confirmed=True, selected_bundle_key="project_mgmt")
+        session = Session(
+            session_id="sess-1", confirmed=True, selected_bundle_key="project_mgmt"
+        )
         self.session_repo.save(session)
 
     def test_successful_edit(self) -> None:
