@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import yaml
@@ -117,7 +118,7 @@ class BundleCatalog:
 
         return bundles
 
-    def validate(self) -> None:
+    def validate(self, templates_dir: Path | None = None) -> None:
         required_fields = (
             "bundle_key",
             "display_name",
@@ -138,10 +139,78 @@ class BundleCatalog:
                     f"Bundle '{bundle.bundle_key}' is missing the metadata section."
                 )
 
+            if templates_dir is not None:
+                template_path = templates_dir / bundle.template_dir
+                if not template_path.is_dir():
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}' template directory does not "
+                        f"exist: {template_path}"
+                    )
+
+            if bundle.bundle_key != "generic":
+                if not bundle.typical_entities:
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}' is missing required field "
+                        f"'typical_entities'."
+                    )
+                if not bundle.typical_intents:
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}' is missing required field "
+                        f"'typical_intents'."
+                    )
+                if not bundle.required_signals:
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}' is missing required field "
+                        f"'required_signals'."
+                    )
+
         if "generic" not in self._bundles:
             raise BundleRegistryValidationError(
                 "Registry is missing required fallback bundle: generic"
             )
+
+    def validate_template_consistency(self, templates_dir: Path) -> None:
+        """Check overlap fields between registry and template JSON files.
+
+        AD-2 precedence: registry owns display_name and modules for
+        classification/orchestration. If a template JSON file declares these
+        fields they must match the registry values to avoid silent divergence.
+        """
+        for bundle in self._bundles.values():
+            bundle_dir = templates_dir / bundle.template_dir
+            if not bundle_dir.is_dir():
+                continue
+            for json_file in bundle_dir.glob("*.json"):
+                try:
+                    data = json.loads(json_file.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if not isinstance(data, dict):
+                    continue
+
+                if (
+                    "display_name" in data
+                    and data["display_name"] != bundle.display_name
+                ):
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}': "
+                        f"template file '{json_file.name}' has display_name "
+                        f"'{data['display_name']}' which conflicts with "
+                        f"registry value '{bundle.display_name}'. "
+                        f"Registry takes precedence (AD-2)."
+                    )
+
+                if "modules" in data:
+                    template_modules = set(data["modules"])
+                    registry_modules = set(bundle.default_modules)
+                    if template_modules != registry_modules:
+                        raise BundleRegistryValidationError(
+                            f"Bundle '{bundle.bundle_key}': template file "
+                            f"'{json_file.name}' has modules "
+                            f"{sorted(template_modules)} which conflicts with "
+                            f"registry default_modules {sorted(registry_modules)}. "
+                            f"Registry takes precedence (AD-2)."
+                        )
 
     def get(self, bundle_key: str) -> BundleDefinition | None:
         return self._bundles.get(bundle_key)
@@ -202,7 +271,7 @@ class BundleCatalog:
         return matched
 
     def match_by_industry_hint(self, hint: str) -> list[BundleDefinition]:
-        """Match bundles whose synonyms contain or are contained by the given hint string (case-insensitive, bidirectional substring)."""
+        """Match bundles by case-insensitive bidirectional substring on synonyms."""
         normalized = hint.strip().casefold()
         if not normalized:
             return []
@@ -220,6 +289,19 @@ class BundleCatalog:
         if bundle is None:
             return []
         return list(bundle.required_slots)
+
+    def has_bundle(self, bundle_key: str) -> bool:
+        return bundle_key in self._bundles
+
+    def get_all_typical_intents(self) -> list[str]:
+        seen: set[str] = set()
+        result: list[str] = []
+        for bundle in self._bundles.values():
+            for intent in bundle.typical_intents:
+                if intent not in seen:
+                    seen.add(intent)
+                    result.append(intent)
+        return result
 
     def get_fallback(self) -> BundleDefinition:
         fallback_bundle = self.get("generic")

@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from langchain_openai import ChatOpenAI
 
+from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion, SuggestedBundles
 from domain.models.conversation import ConversationMessage
-from domain.models.extracted_info import ExtractedInfo
+from domain.models.extraction_result import ExtractionResult
+from domain.models.interpreter_request import InterpreterRequest
 
 from .classifier import Classifier
 from .extractor import Extractor
+from .signal_accumulator import SignalAccumulator
 from .summarizer import Summarizer
 
 logger = get_logger(__name__)
@@ -19,27 +22,16 @@ def _build_catalog_context(bundle_keys: list[str]) -> str:
     return "\n".join(f"- {key}" for key in bundle_keys)
 
 
-def _merge_slots(base: dict[str, object], extracted: ExtractedInfo) -> dict[str, object]:
-    merged = dict(base)
-    if extracted.company_name and "company_name" not in merged:
-        merged["company_name"] = extracted.company_name
-    if extracted.industry_hint and "industry_hint" not in merged:
-        merged["industry_hint"] = extracted.industry_hint
-    if extracted.primary_use_case and "primary_use_case" not in merged:
-        merged["primary_use_case"] = extracted.primary_use_case
-    return merged
-
-
 class InterpreterService:
-    def __init__(self, bundle_keys: list[str]) -> None:
+    def __init__(self, bundle_keys: list[str], catalog: BundleCatalog) -> None:
         settings = get_settings()
         model = ChatOpenAI(
             model=settings.OPENAI_MODEL,
             temperature=settings.CLASSIFIER_TEMPERATURE,
         )
         catalog_context = _build_catalog_context(bundle_keys)
-        self._extractor = Extractor(model)
-        self._classifier = Classifier(model, catalog_context)
+        self._extractor = Extractor(model, catalog)
+        self._classifier = Classifier(model, catalog_context, catalog)
         self._summarizer = Summarizer(
             ChatOpenAI(
                 model=settings.OPENAI_MODEL,
@@ -49,37 +41,68 @@ class InterpreterService:
         self._bundle_keys = bundle_keys
         self._threshold = settings.CONFIDENCE_THRESHOLD
 
+    @staticmethod
+    def _inject_preselected_intent(
+        extracted: ExtractionResult, preselected_intent: str | None
+    ) -> None:
+        if (
+            preselected_intent
+            and preselected_intent not in extracted.classification_signals.intents
+        ):
+            extracted.classification_signals.intents.insert(0, preselected_intent)
+
+    async def extract_only(self, request: InterpreterRequest) -> ExtractionResult:
+        """Run extraction and signal accumulation without calling the LLM classifier.
+
+        Used when the bundle is already known (preselected path) so the classifier
+        round-trip cost and latency can be avoided entirely.
+        """
+        current = await self._extractor.extract(
+            request.session_id,
+            request.user_message,
+            history=request.history,
+            summary=request.summary,
+        )
+        extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
+        self._inject_preselected_intent(extracted, request.preselected_intent)
+        return extracted
+
     async def interpret(
-        self,
-        session_id: str,
-        user_message: str,
-        existing_slots: dict[str, object],
-        history: list[ConversationMessage],
-    ) -> tuple[ExtractedInfo, SuggestedBundles]:
-        session_logger = get_session_logger(__name__, session_id)
+        self, request: InterpreterRequest
+    ) -> tuple[ExtractionResult, SuggestedBundles]:
+        session_logger = get_session_logger(__name__, request.session_id)
         session_logger.info("Running interpreter")
 
-        extracted = await self._extractor.extract(session_id, user_message)
-        merged_slots = _merge_slots(existing_slots, extracted)
-        extracted.slots = merged_slots
+        current = await self._extractor.extract(
+            request.session_id,
+            request.user_message,
+            history=request.history,
+            summary=request.summary,
+        )
+        extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
+        self._inject_preselected_intent(extracted, request.preselected_intent)
 
         suggested = await self._classifier.classify(
-            session_id, user_message, self._bundle_keys
+            request.session_id,
+            request.user_message,
+            self._bundle_keys,
+            preselected_intent=request.preselected_intent,
         )
         session_logger.info(
             "Interpreter complete: top_bundle=%s", suggested.top_bundle_key
         )
         return extracted, suggested
 
-    def top_bundle(
-        self, suggested: SuggestedBundles
-    ) -> BundleSuggestion | None:
+    def top_bundle(self, suggested: SuggestedBundles) -> BundleSuggestion | None:
         return self._classifier.top_suggestion(suggested, self._threshold)
 
     async def summarize_history(
         self,
         session_id: str,
         history: list[ConversationMessage],
+        extracted: ExtractionResult | None = None,
     ) -> str:
-        summary = await self._summarizer.summarize(session_id, history)
+        summary = await self._summarizer.summarize(
+            session_id, history, extracted=extracted
+        )
         return summary.summary_text

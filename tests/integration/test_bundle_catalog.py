@@ -6,7 +6,9 @@ import pytest
 
 from catalog.bundle_catalog import BundleCatalog, BundleCatalogError
 
-REGISTRY_PATH = Path(__file__).resolve().parents[2] / "src/templates/bundle_registry.yaml"
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[2] / "src/templates/bundle_registry.yaml"
+)
 EXPECTED_BUNDLE_COUNT = 12
 
 
@@ -188,3 +190,14 @@ def test_validate_passes_on_valid_registry(catalog: BundleCatalog) -> None:
 def test_catalog_errors_on_missing_file() -> None:
     with pytest.raises(BundleCatalogError):
         BundleCatalog(Path("nonexistent/path.yaml"))
+
+
+def test_validate_with_template_dirs_passes(
+    catalog: BundleCatalog, tmp_path: Path
+) -> None:
+    templates_dir = tmp_path / "templates"
+    templates_dir.mkdir()
+    for bundle in catalog.list_all():
+        (templates_dir / bundle.template_dir).mkdir(exist_ok=True)
+
+    catalog.validate(templates_dir=templates_dir)

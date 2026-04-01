@@ -7,10 +7,9 @@ from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
 from domain.models.bundle import BundleSuggestion
-from domain.models.extracted_info import ExtractedInfo
+from domain.models.extraction_result import ExtractionResult
 
 from .clarification import (
-    detect_missing_fields,
     generate_clarification_question,
     is_critical,
 )
@@ -30,12 +29,11 @@ class ReplierService:
     async def build_clarification(
         self,
         session_id: str,
-        extracted: ExtractedInfo,
-        required_slots: list[str],
+        extracted: ExtractionResult,
         bundle_key: str,
     ) -> tuple[MissingFieldType | None, str]:
         session_logger = get_session_logger(__name__, session_id)
-        missing = detect_missing_fields(extracted, required_slots)
+        missing = extracted.missing_fields
 
         critical = [f for f in missing if is_critical(f)]
         target = critical[0] if critical else (missing[0] if missing else None)
@@ -44,8 +42,9 @@ class ReplierService:
             session_logger.info("No missing fields detected")
             return None, ""
 
+        slots = extracted.to_extracted_info().slots
         question = await generate_clarification_question(
-            self._model, target, bundle_key, extracted.slots
+            self._model, target, bundle_key, slots
         )
         session_logger.info("Clarification needed for field=%s", target.value)
         return target, question
@@ -63,7 +62,8 @@ class ReplierService:
                     SystemMessage(content=BUNDLE_SUGGESTION_SYSTEM_PROMPT),
                     HumanMessage(
                         content=(
-                            f"Recommended workspace: {suggestion.display_name} ({suggestion.bundle_key})\n"
+                            "Recommended workspace: "
+                            f"{suggestion.display_name} ({suggestion.bundle_key})\n"
                             f"What we know about the user: {slots}"
                         )
                     ),
