@@ -1,18 +1,27 @@
 from __future__ import annotations
 
 EXTRACTION_SYSTEM_PROMPT = (
-    "Extract structured information from the user's workspace onboarding message.\n"
-    "Identify:\n"
+    "Extract structured signals from the workspace onboarding conversation below.\n\n"
+    "Return two sections:\n\n"
+    "classification_signals:\n"
+    "- keywords: key terms that describe what is being managed "
+    "(e.g. 'leave', 'project', 'ticket')\n"
+    "- entities: business objects mentioned (e.g. 'employee', 'patient', 'asset')\n"
+    "- intents: what the user wants to do (e.g. 'track leave', 'approve requests')\n"
+    "- workflow_hints: process or workflow descriptions "
+    "(e.g. 'leave approval workflow')\n"
+    "- domain_hints: industry or domain signals (e.g. 'healthcare', 'logistics')\n"
+    "- metrics: KPIs or measurements mentioned (e.g. 'headcount', 'avg_wait_time')\n\n"
+    "personalization_signals:\n"
     "- company_name: name of the company or team (if mentioned)\n"
-    "- industry_hint: industry or domain (e.g. healthcare, logistics, consulting)\n"
-    "- primary_use_case: one-sentence summary of what they want to manage\n"
-    "- entity_type: 'people' for HR/team, 'work' for projects/tasks, 'asset' for equipment\n"
-    "- employee_names: any staff names mentioned\n"
+    "- employee_names: staff names mentioned\n"
     "- role_names: job titles or roles mentioned\n"
     "- department_names: team or department names mentioned\n"
-    "- metrics: KPIs or measurement terms mentioned\n"
-    "- status_labels: any workflow state names mentioned\n"
-    "Return null for fields that are not present. Do not invent values."
+    "- branch_names: office or branch names mentioned\n"
+    "- custom_labels: any custom terminology the user uses for their workspace\n"
+    "- terminology: key-value pairs of custom label mappings "
+    "(e.g. {'ticket': 'case'})\n\n"
+    "Return empty lists for absent fields. Do not invent values."
 )
 
 CLASSIFICATION_SYSTEM_PROMPT = (
@@ -27,7 +36,8 @@ CLASSIFICATION_SYSTEM_PROMPT = (
 )
 
 SUMMARIZATION_SYSTEM_PROMPT = (
-    "Summarize the following workspace onboarding conversation into a single concise paragraph.\n"
+    "Summarize the following workspace onboarding conversation into a single "
+    "concise paragraph.\n"
     "Focus on: what the user wants to manage, their entity type, any business context, "
     "and any confirmed preferences.\n"
     "Be factual and brief — 2–4 sentences maximum."

@@ -11,3 +11,10 @@ class AppPayloadResponseSchema(BaseModel):
     modules: list[str] = Field(default_factory=list)
     generation_json: dict[str, object] = Field(default_factory=dict)
     dummy_data_json: dict[str, object] = Field(default_factory=dict)
+    warning: str | None = Field(
+        default=None,
+        description=(
+            "Present when the preview was generated without full bundle confirmation. "
+            "Indicates the output may contain generic or incomplete data."
+        ),
+    )
