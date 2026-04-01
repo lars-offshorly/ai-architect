@@ -5,7 +5,6 @@ from langchain_openai import ChatOpenAI
 
 from core.logging import get_logger
 from domain.enums.missing_field_type import MissingFieldType
-from domain.models.extracted_info import ExtractedInfo
 
 from .prompts import CLARIFICATION_SYSTEM_PROMPT
 
@@ -18,22 +17,6 @@ _CRITICAL_FIELDS: frozenset[MissingFieldType] = frozenset(
         MissingFieldType.WORKFLOW_TYPE,
     }
 )
-
-
-def detect_missing_fields(
-    extracted: ExtractedInfo,
-    required_slots: list[str],
-) -> list[MissingFieldType]:
-    slots = extracted.slots
-    missing: list[MissingFieldType] = []
-    for slot in required_slots:
-        try:
-            field = MissingFieldType(slot)
-        except ValueError:
-            continue
-        if not slots.get(slot):
-            missing.append(field)
-    return missing
 
 
 def is_critical(field: MissingFieldType) -> bool:

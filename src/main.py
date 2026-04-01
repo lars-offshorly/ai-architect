@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.routers.bundles import router as bundles_router
 from api.routers.health import router as health_router
 from api.routers.preview import router as preview_router
 from api.routers.session import router as session_router
@@ -14,32 +15,33 @@ logger = get_logger(__name__)
 
 
 def create_app() -> FastAPI:
-    settings = get_settings()
-    app = FastAPI(
+    app_settings = get_settings()
+    application = FastAPI(
         title="AI Architect API",
         version="0.1.0",
         description="AI-powered workspace onboarding pipeline.",
     )
-    cors_origins = ["*"] if settings.DEBUG else []
-    app.add_middleware(
+    cors_origins = ["*"] if app_settings.DEBUG else []
+    application.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.include_router(health_router)
-    app.include_router(session_router)
-    app.include_router(preview_router)
-    return app
+    application.include_router(health_router)
+    application.include_router(session_router)
+    application.include_router(preview_router)
+    application.include_router(bundles_router)
+    return application
 
 
 app = create_app()
 
 if __name__ == "__main__":
-    settings = get_settings()
+    run_settings = get_settings()
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=settings.DEBUG,
+        reload=run_settings.DEBUG,
     )
