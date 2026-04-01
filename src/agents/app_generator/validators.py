@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pydantic import ValidationError
+
+from agents.app_generator.schemas import DummyDataJsonSchema, GenerationJsonSchema
 from core.exceptions import InvalidPayloadError
 from core.logging import get_logger
 
@@ -7,26 +10,35 @@ logger = get_logger(__name__)
 
 
 def validate_generation_json(data: dict[str, object], bundle_key: str) -> None:
-    required = {"schema_version", "bundle_key", "modules", "config"}
-    missing = required - data.keys()
-    if missing:
-        raise InvalidPayloadError(f"generation_json missing keys: {missing}")
+    """Validate *data* against :class:`GenerationJsonSchema`.
+
+    Raises :class:`~core.exceptions.InvalidPayloadError` on any schema
+    violation, including bundle-key mismatches and missing required fields.
+    """
     if data.get("bundle_key") != bundle_key:
         raise InvalidPayloadError(
-            f"generation_json bundle_key mismatch: expected={bundle_key}"
+            f"generation_json bundle_key mismatch: expected={bundle_key!r}, "
+            f"got={data.get('bundle_key')!r}"
         )
-    modules = data.get("modules")
-    if not isinstance(modules, list) or not modules:
-        raise InvalidPayloadError("generation_json 'modules' must be a non-empty list")
+    try:
+        GenerationJsonSchema.model_validate(data)
+    except ValidationError as exc:
+        raise InvalidPayloadError(
+            f"generation_json failed schema validation: {exc}"
+        ) from exc
     logger.info("generation_json validation passed for bundle=%s", bundle_key)
 
 
 def validate_dummy_data_json(data: dict[str, object], bundle_key: str) -> None:
-    required = {"bundle_key", "stores"}
-    missing = required - data.keys()
-    if missing:
-        raise InvalidPayloadError(f"dummy_data_json missing keys: {missing}")
-    stores = data.get("stores")
-    if not isinstance(stores, dict):
-        raise InvalidPayloadError("dummy_data_json 'stores' must be a dict")
+    """Validate *data* against :class:`DummyDataJsonSchema`.
+
+    Raises :class:`~core.exceptions.InvalidPayloadError` on any schema
+    violation, including missing ``stores`` or unrecognised bundle keys.
+    """
+    try:
+        DummyDataJsonSchema.model_validate(data)
+    except ValidationError as exc:
+        raise InvalidPayloadError(
+            f"dummy_data_json failed schema validation: {exc}"
+        ) from exc
     logger.info("dummy_data_json validation passed for bundle=%s", bundle_key)

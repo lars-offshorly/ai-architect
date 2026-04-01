@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
+
+from agents.app_generator.schemas import DummyDataJsonSchema, GenerationJsonSchema
 
 
 class AppPayloadContract(BaseModel):
@@ -12,21 +14,25 @@ class AppPayloadContract(BaseModel):
     generation_json: dict[str, object]
     dummy_data_json: dict[str, object]
 
-    _REQUIRED_GENERATION_KEYS: frozenset[str] = frozenset(
-        {"schema_version", "bundle_key", "modules", "config"}
-    )
-    _REQUIRED_DUMMY_KEYS: frozenset[str] = frozenset(
-        {"bundle_key", "stores"}
-    )
-
     def validate_contract(self) -> list[str]:
+        """Return a list of human-readable error strings.
+
+        Each embedded JSON blob is validated via the full Pydantic schema so
+        that all field-level constraints are checked, not just key presence.
+        """
         errors: list[str] = []
-        gen_missing = self._REQUIRED_GENERATION_KEYS - self.generation_json.keys()
-        if gen_missing:
-            errors.append(f"generation_json missing keys: {gen_missing}")
-        dummy_missing = self._REQUIRED_DUMMY_KEYS - self.dummy_data_json.keys()
-        if dummy_missing:
-            errors.append(f"dummy_data_json missing keys: {dummy_missing}")
+
+        try:
+            GenerationJsonSchema.model_validate(self.generation_json)
+        except ValidationError as exc:
+            errors.append(f"generation_json schema errors: {exc}")
+
+        try:
+            DummyDataJsonSchema.model_validate(self.dummy_data_json)
+        except ValidationError as exc:
+            errors.append(f"dummy_data_json schema errors: {exc}")
+
         if not self.modules:
             errors.append("modules list must not be empty")
+
         return errors
