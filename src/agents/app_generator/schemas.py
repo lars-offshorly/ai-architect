@@ -135,7 +135,7 @@ class GenericConfig(BaseModel):
 class FeatureFlagItem(BaseModel):
     """A single feature flag entry controlling module visibility."""
 
-    id: str = Field(
+    id: int = Field(
         description="Stable flag identifier used by the orchestration service.",
     )
     name: str = Field(
@@ -280,26 +280,60 @@ class KpiStoreItem(BaseModel):
     id: int | str = Field(description="Record identifier (int in full form, str slug in templates).")
 
     # Simple template form fields
-    label: str | None = Field(default=None, description="Display label used in the simple template form.")
-    value: int | float | None = Field(default=None, description="Current numeric value (simple form).")
-    unit: str | None = Field(default=None, description="Display unit suffix (simple form).")
-    trend: str | None = Field(default=None, description="Direction indicator: 'up', 'down', or 'stable'.")
+    label: str | None = Field(
+        default=None, description="Display label used in the simple template form."
+    )
+    value: int | float | None = Field(
+        default=None, description="Current numeric value (simple form)."
+    )
+    unit: str | None = Field(
+        default=None, description="Display unit suffix (simple form)."
+    )
+    trend: str | None = Field(
+        default=None, description="Direction indicator: 'up', 'down', or 'stable'."
+    )
 
     # Full frontend form fields
-    name: str | None = Field(default=None, description="KPI display name (full frontend form).")
-    type: str | None = Field(default=None, description="'Quantitative' or 'Qualitative'.")
-    status: str | None = Field(default=None, description="'Ongoing', 'Completed', or 'Not Started'.")
-    frequency: str | None = Field(default=None, description="Measurement cadence, e.g. 'Monthly'.")
-    assesseeType: str | None = Field(default=None, description="'Teams' or 'Individuals'.")
-    assessees: list[str] = Field(default_factory=list, description="Names of teams or individuals assessed.")
+    name: str | None = Field(
+        default=None, description="KPI display name (full frontend form)."
+    )
+    type: str | None = Field(
+        default=None, description="'Quantitative' or 'Qualitative'."
+    )
+    status: str | None = Field(
+        default=None, description="'Ongoing', 'Completed', or 'Not Started'."
+    )
+    frequency: str | None = Field(
+        default=None, description="Measurement cadence, e.g. 'Monthly'."
+    )
+    assesseeType: str | None = Field(
+        default=None, description="'Teams' or 'Individuals'."
+    )
+    assessees: list[str] = Field(
+        default_factory=list, description="Names of teams or individuals assessed."
+    )
     category: str | None = Field(default=None, description="KPI grouping category.")
-    startDate: str | None = Field(default=None, description="ISO 8601 period start datetime.")
-    endDate: str | None = Field(default=None, description="ISO 8601 period end datetime.")
-    qualitativeType: str | None = Field(default=None, description="Sub-type for qualitative KPIs.")
-    isMandatory: bool | None = Field(default=None, description="Whether a response is required.")
-    isDataEntryRemarksEnabled: bool | None = Field(default=None, description="Whether remarks are allowed during data entry.")
-    evaluatorsHidden: bool | None = Field(default=None, description="Whether evaluator identities are hidden.")
-    evaluatorsSeeOverallResults: bool | None = Field(default=None, description="Whether evaluators see aggregate results.")
+    startDate: str | None = Field(
+        default=None, description="ISO 8601 period start datetime."
+    )
+    endDate: str | None = Field(
+        default=None, description="ISO 8601 period end datetime."
+    )
+    qualitativeType: str | None = Field(
+        default=None, description="Sub-type for qualitative KPIs."
+    )
+    isMandatory: bool | None = Field(
+        default=None, description="Whether a response is required."
+    )
+    isDataEntryRemarksEnabled: bool | None = Field(
+        default=None, description="Whether remarks are allowed during data entry."
+    )
+    evaluatorsHidden: bool | None = Field(
+        default=None, description="Whether evaluator identities are hidden."
+    )
+    evaluatorsSeeOverallResults: bool | None = Field(
+        default=None, description="Whether evaluators see aggregate results."
+    )
     details: dict[str, object] | None = Field(
         default=None,
         description=(
@@ -308,11 +342,21 @@ class KpiStoreItem(BaseModel):
         ),
     )
     owner: str | None = Field(default=None, description="KPI owner identifier.")
-    kpiAssessees: list[dict[str, object]] = Field(default_factory=list, description="Structured assessee records.")
-    kpiUsers: list[dict[str, object]] = Field(default_factory=list, description="KPI user assignment records.")
-    currentUser: list[dict[str, object]] = Field(default_factory=list, description="Current user association records.")
-    createdAt: str | None = Field(default=None, description="ISO 8601 creation timestamp.")
-    updatedAt: str | None = Field(default=None, description="ISO 8601 last-updated timestamp.")
+    kpiAssessees: list[dict[str, object]] = Field(
+        default_factory=list, description="Structured assessee records."
+    )
+    kpiUsers: list[dict[str, object]] = Field(
+        default_factory=list, description="KPI user assignment records."
+    )
+    currentUser: list[dict[str, object]] = Field(
+        default_factory=list, description="Current user association records."
+    )
+    createdAt: str | None = Field(
+        default=None, description="ISO 8601 creation timestamp."
+    )
+    updatedAt: str | None = Field(
+        default=None, description="ISO 8601 last-updated timestamp."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -327,10 +371,14 @@ class TicketStatusObject(BaseModel):
     name: str = Field(description="Human-readable status name, e.g. 'Open'.")
     slug: str = Field(description="Machine-readable slug, e.g. 'open'.")
     status: str = Field(description="Status string; mirrors slug in practice.")
-    description: str = Field(default="", description="Optional explanation of the status.")
+    description: str = Field(
+        default="", description="Optional explanation of the status."
+    )
     color: str = Field(default="", description="Hex color code for the status badge.")
     icon: str | None = Field(default=None, description="Optional icon identifier.")
-    deletedAt: str | None = Field(default=None, description="ISO 8601 soft-delete timestamp.")
+    deletedAt: str | None = Field(
+        default=None, description="ISO 8601 soft-delete timestamp."
+    )
 
 
 class TicketAssigneeRef(BaseModel):
@@ -350,7 +398,9 @@ class TicketAuthorDetails(BaseModel):
 class TicketStoreItem(BaseModel):
     """A ticket record inside ``stores.tickets``."""
 
-    id: int | str = Field(description="Record identifier (int in full form, str slug in templates).")
+    id: int | str = Field(
+        description="Record identifier (int in full form, str slug in templates)."
+    )
 
     # Core required fields
     title: str = Field(description="Ticket subject line.")
@@ -369,36 +419,74 @@ class TicketStoreItem(BaseModel):
     )
 
     # Full-form specific fields
-    ticketId: str | None = Field(default=None, description="Human-readable ticket reference code, e.g. 'TCK-1001'.")
-    authorDetails: TicketAuthorDetails | None = Field(default=None, description="Submitter name and userId (full form).")
-    priorityDescription: str | None = Field(default=None, description="Prose description of the priority level.")
+    ticketId: str | None = Field(
+        default=None,
+        description="Human-readable ticket reference code, e.g. 'TCK-1001'.",
+    )
+    authorDetails: TicketAuthorDetails | None = Field(
+        default=None, description="Submitter name and userId (full form)."
+    )
+    priorityDescription: str | None = Field(
+        default=None, description="Prose description of the priority level."
+    )
     subCategory: str | None = Field(default=None, description="Optional sub-category.")
-    requestType: str | None = Field(default=None, description="Optional request type label.")
+    requestType: str | None = Field(
+        default=None, description="Optional request type label."
+    )
     impact: int | None = Field(default=None, description="Integer impact score (1–5).")
-    urgency: int | None = Field(default=None, description="Integer urgency score (1–5).")
-    emailSubmitter: list[str] = Field(default_factory=list, description="Email addresses that submitted via email.")
-    createdFromEmail: str | None = Field(default=None, description="Source email address if email-created.")
-    conversationEmail: str | None = Field(default=None, description="Reply-to email address for this ticket thread.")
-    formId: int | None = Field(default=None, description="ID of the form used to submit.")
-    formName: str | None = Field(default=None, description="Name of the form used to submit.")
-    form: dict[str, object] | None = Field(default=None, description="Full form object.")
-    submission: dict[str, object] | None = Field(default=None, description="Form submission data.")
-    submittedBy: int | None = Field(default=None, description="User ID of the submitter.")
-    account: str | None = Field(default=None, description="Account or department label.")
+    urgency: int | None = Field(
+        default=None, description="Integer urgency score (1–5)."
+    )
+    emailSubmitter: list[str] = Field(
+        default_factory=list, description="Email addresses that submitted via email."
+    )
+    createdFromEmail: str | None = Field(
+        default=None, description="Source email address if email-created."
+    )
+    conversationEmail: str | None = Field(
+        default=None, description="Reply-to email address for this ticket thread."
+    )
+    formId: int | None = Field(
+        default=None, description="ID of the form used to submit."
+    )
+    formName: str | None = Field(
+        default=None, description="Name of the form used to submit."
+    )
+    form: dict[str, object] | None = Field(
+        default=None, description="Full form object."
+    )
+    submission: dict[str, object] | None = Field(
+        default=None, description="Form submission data."
+    )
+    submittedBy: int | None = Field(
+        default=None, description="User ID of the submitter."
+    )
+    account: str | None = Field(
+        default=None, description="Account or department label."
+    )
     icon: str | None = Field(default=None, description="Optional icon identifier.")
 
     # Shared optional fields
-    priority: str | None = Field(default=None, description="Priority label, e.g. 'high', 'High'.")
+    priority: str | None = Field(
+        default=None, description="Priority label, e.g. 'high', 'High'."
+    )
     category: str | None = Field(default=None, description="Ticket category slug.")
     queue: str | None = Field(default=None, description="Queue assignment.")
     dueDate: str | None = Field(default=None, description="ISO 8601 due date.")
 
     # Timestamps — two naming conventions used across the codebase
-    createdAt: str | None = Field(default=None, description="ISO 8601 creation timestamp (camelCase).")
-    created_at: str | None = Field(default=None, description="ISO 8601 creation timestamp (snake_case, template form).")
+    createdAt: str | None = Field(
+        default=None, description="ISO 8601 creation timestamp (camelCase)."
+    )
+    created_at: str | None = Field(
+        default=None,
+        description="ISO 8601 creation timestamp (snake_case, template form).",
+    )
 
     # Template-form specific fields
-    requester: str | None = Field(default=None, description="Submitter name string (template form).")
+    requester: str | None = Field(
+        default=None, description="Submitter name string (template form)."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -418,12 +506,24 @@ class ProjectStoreItem(BaseModel):
 
     id: str | int = Field(description="Project identifier.")
     name: str = Field(description="Project display name.")
-    description: str | None = Field(default=None, description="Optional project description.")
-    progress: int | None = Field(default=None, ge=0, le=100, description="Completion percentage (0–100).")
-    isFavorite: bool = Field(default=False, description="Whether the project is starred by the current user.")
-    assignedTo: list[dict[str, object]] = Field(default_factory=list, description="Assigned user records.")
-    adminUsers: list[dict[str, object]] = Field(default_factory=list, description="Admin user records.")
-    startDate: str | None = Field(default=None, description="ISO 8601 project start date.")
+    description: str | None = Field(
+        default=None, description="Optional project description."
+    )
+    progress: int | None = Field(
+        default=None, ge=0, le=100, description="Completion percentage (0–100)."
+    )
+    isFavorite: bool = Field(
+        default=False, description="Whether the project is starred by the current user."
+    )
+    assignedTo: list[dict[str, object]] = Field(
+        default_factory=list, description="Assigned user records."
+    )
+    adminUsers: list[dict[str, object]] = Field(
+        default_factory=list, description="Admin user records."
+    )
+    startDate: str | None = Field(
+        default=None, description="ISO 8601 project start date."
+    )
     endDate: str | None = Field(default=None, description="ISO 8601 project end date.")
 
 
@@ -433,43 +533,95 @@ class TaskStoreItem(BaseModel):
     id: str | int = Field(description="Task identifier.")
 
     # Name — two aliases used across the codebase
-    taskName: str | None = Field(default=None, description="Task display name (full frontend form).")
-    title: str | None = Field(default=None, description="Task display name (simple template form).")
+    taskName: str | None = Field(
+        default=None, description="Task display name (full frontend form)."
+    )
+    title: str | None = Field(
+        default=None, description="Task display name (simple template form)."
+    )
 
     # Project linkage
-    projectId: str | int | None = Field(default=None, description="ID of the parent project.")
-    project: str | None = Field(default=None, description="Parent project name string (template form).")
+    projectId: str | int | None = Field(
+        default=None, description="ID of the parent project."
+    )
+    project: str | None = Field(
+        default=None, description="Parent project name string (template form)."
+    )
 
     status: str | None = Field(default=None, description="Status slug or label.")
-    priority: str | None = Field(default=None, description="Priority level slug (template form).")
-    progress: int | None = Field(default=None, ge=0, le=100, description="Completion percentage (0–100).")
+    priority: str | None = Field(
+        default=None, description="Priority level slug (template form)."
+    )
+    progress: int | None = Field(
+        default=None, ge=0, le=100, description="Completion percentage (0–100)."
+    )
 
     # Assignee — list in full form, string in template form
-    assignedTo: list[dict[str, object]] = Field(default_factory=list, description="Assigned user records (full form).")
-    assignee: str | None = Field(default=None, description="Assignee name string (template form).")
+    assignedTo: list[dict[str, object]] = Field(
+        default_factory=list, description="Assigned user records (full form)."
+    )
+    assignee: str | None = Field(
+        default=None, description="Assignee name string (template form)."
+    )
 
     # Full frontend form fields
-    taskDuration: int | None = Field(default=None, description="Estimated duration in days.")
-    isSubtask: int | None = Field(default=None, description="1 if subtask, 0 if root task.")
-    subtasksCount: int | None = Field(default=None, description="Number of child subtasks.")
-    taskDependenciesCount: int | None = Field(default=None, description="Number of task dependencies.")
+    taskDuration: int | None = Field(
+        default=None, description="Estimated duration in days."
+    )
+    isSubtask: int | None = Field(
+        default=None, description="1 if subtask, 0 if root task."
+    )
+    subtasksCount: int | None = Field(
+        default=None, description="Number of child subtasks."
+    )
+    taskDependenciesCount: int | None = Field(
+        default=None, description="Number of task dependencies."
+    )
     commentsCount: int | None = Field(default=None, description="Number of comments.")
-    attachmentsCount: int | None = Field(default=None, description="Number of file attachments.")
-    isFavorite: bool | None = Field(default=None, description="Whether the task is starred.")
-    parentProject: TaskParentRef | None = Field(default=None, description="Lightweight parent project reference.")
-    parentTask: TaskParentRef | None = Field(default=None, description="Lightweight parent task reference.")
-    taskDependencies: list[dict[str, object]] = Field(default_factory=list, description="Dependency records.")
-    taskLink: list[dict[str, object]] = Field(default_factory=list, description="Linked task records.")
-    taskTimeSpent: dict[str, object] | None = Field(default=None, description="Time tracking record.")
-    lastTaskActivity: dict[str, object] | None = Field(default=None, description="Last activity record.")
-    timelineColorSettings: dict[str, object] | None = Field(default=None, description="Timeline colour config.")
-    timelineTypographySettings: dict[str, object] | None = Field(default=None, description="Timeline typography config.")
-    customFields: list[dict[str, object]] = Field(default_factory=list, description="Custom field records.")
+    attachmentsCount: int | None = Field(
+        default=None, description="Number of file attachments."
+    )
+    isFavorite: bool | None = Field(
+        default=None, description="Whether the task is starred."
+    )
+    parentProject: TaskParentRef | None = Field(
+        default=None, description="Lightweight parent project reference."
+    )
+    parentTask: TaskParentRef | None = Field(
+        default=None, description="Lightweight parent task reference."
+    )
+    taskDependencies: list[dict[str, object]] = Field(
+        default_factory=list, description="Dependency records."
+    )
+    taskLink: list[dict[str, object]] = Field(
+        default_factory=list, description="Linked task records."
+    )
+    taskTimeSpent: dict[str, object] | None = Field(
+        default=None, description="Time tracking record."
+    )
+    lastTaskActivity: dict[str, object] | None = Field(
+        default=None, description="Last activity record."
+    )
+    timelineColorSettings: dict[str, object] | None = Field(
+        default=None, description="Timeline colour config."
+    )
+    timelineTypographySettings: dict[str, object] | None = Field(
+        default=None, description="Timeline typography config."
+    )
+    customFields: list[dict[str, object]] = Field(
+        default_factory=list, description="Custom field records."
+    )
 
     # Timestamps — two naming conventions
-    createdAt: str | None = Field(default=None, description="ISO 8601 creation timestamp (camelCase).")
-    updatedAt: str | None = Field(default=None, description="ISO 8601 last-updated timestamp (camelCase).")
-    due_date: str | None = Field(default=None, description="ISO 8601 due date (snake_case, template form).")
+    createdAt: str | None = Field(
+        default=None, description="ISO 8601 creation timestamp (camelCase)."
+    )
+    updatedAt: str | None = Field(
+        default=None, description="ISO 8601 last-updated timestamp (camelCase)."
+    )
+    due_date: str | None = Field(
+        default=None, description="ISO 8601 due date (snake_case, template form)."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -482,8 +634,13 @@ class MilestoneStoreItem(BaseModel):
 
     id: str | int = Field(description="Milestone identifier.")
     name: str = Field(description="Milestone display name.")
-    status: str | None = Field(default=None, description="Health state slug: 'pending', 'at_risk', or 'achieved'.")
-    target_date: str | None = Field(default=None, description="ISO 8601 target completion date.")
+    status: str | None = Field(
+        default=None,
+        description="Health state slug: 'pending', 'at_risk', or 'achieved'.",
+    )
+    target_date: str | None = Field(
+        default=None, description="ISO 8601 target completion date."
+    )
     project: str | None = Field(default=None, description="Name of the parent project.")
 
 
@@ -497,8 +654,12 @@ class QueueStoreItem(BaseModel):
 
     id: str | int = Field(description="Queue identifier.")
     name: str = Field(description="Human-readable queue label.")
-    ticket_count: int | None = Field(default=None, description="Number of open tickets in the queue.")
-    avg_resolution_days: float | int | None = Field(default=None, description="Rolling average resolution time in days.")
+    ticket_count: int | None = Field(
+        default=None, description="Number of open tickets in the queue."
+    )
+    avg_resolution_days: float | int | None = Field(
+        default=None, description="Rolling average resolution time in days."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -509,21 +670,58 @@ class QueueStoreItem(BaseModel):
 class WeaveAttributes(BaseModel):
     """Visual and format attributes of a Weave (spreadsheet) entity."""
 
-    format: str | None = Field(default=None, description="File format of the sheet, e.g. 'xlsx'.")
-    gridline: bool | None = Field(default=None, description="Whether grid lines are shown.")
-    theme: str | None = Field(default=None, description="UI theme, e.g. 'light' or 'dark'.")
+    format: str | None = Field(
+        default=None, description="File format of the sheet, e.g. 'xlsx'."
+    )
+    sheetsSort: list[object] | None = Field(
+        default=None, description="Sheet ordering metadata."
+    )
+    jobs: list[object] | None = Field(
+        default=None, description="Background jobs associated with this weave."
+    )
 
 
 class WeaveStoreItem(BaseModel):
-    """A Weave (spreadsheet) record inside ``stores.weaves``."""
+    """A Weave (spreadsheet) record inside ``stores.weaves``.
+
+    Shape matches the ``/weaves`` mock endpoint (``api-mocks.json``).
+    """
 
     id: str | int = Field(description="Weave identifier.")
     name: str = Field(description="Weave display name.")
-    description: str | None = Field(default=None, description="Optional description of the spreadsheet's purpose.")
-    attributes: WeaveAttributes | None = Field(default=None, description="Visual and format attributes.")
-    createdAt: str | None = Field(default=None, description="ISO 8601 creation timestamp.")
-    updatedAt: str | None = Field(default=None, description="ISO 8601 last-updated timestamp.")
-    viewedAt: str | None = Field(default=None, description="ISO 8601 most-recent-view timestamp.")
+    description: str | None = Field(
+        default=None, description="Optional description of the spreadsheet's purpose."
+    )
+    authorId: int | None = Field(
+        default=None, description="User ID of the weave creator."
+    )
+    shared: bool | None = Field(
+        default=None, description="True when the weave is shared with the workspace."
+    )
+    activeSheetId: str | None = Field(
+        default=None, description="ID of the currently active sheet."
+    )
+    archived: bool | None = Field(
+        default=None, description="True when the weave is archived."
+    )
+    favorite: bool | None = Field(
+        default=None, description="True when the weave is starred by the owner."
+    )
+    attributes: WeaveAttributes | None = Field(
+        default=None, description="Visual and format attributes."
+    )
+    createdAt: str | None = Field(
+        default=None, description="ISO 8601 creation timestamp."
+    )
+    updatedAt: str | None = Field(
+        default=None, description="ISO 8601 last-updated timestamp."
+    )
+    lastViewedAt: str | None = Field(
+        default=None, description="ISO 8601 most-recent-view timestamp."
+    )
+    deletedAt: str | None = Field(
+        default=None, description="ISO 8601 soft-delete timestamp; null when active."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -539,19 +737,31 @@ class AssetStoreItem(BaseModel):
     category: str | None = Field(default=None, description="Asset category slug.")
     status: str | None = Field(default=None, description="Lifecycle state slug.")
     location: str | None = Field(default=None, description="Physical location label.")
-    last_service: str | None = Field(default=None, description="ISO 8601 most-recent-service timestamp.")
+    last_service: str | None = Field(
+        default=None, description="ISO 8601 most-recent-service timestamp."
+    )
 
 
 class MaintenanceStoreItem(BaseModel):
     """A maintenance record inside ``stores.maintenance``"""
 
     id: str | int = Field(description="Maintenance record identifier.")
-    asset_id: str | int | None = Field(default=None, description="ID of the associated asset.")
-    type: str | None = Field(default=None, description="Maintenance activity type slug.")
+    asset_id: str | int | None = Field(
+        default=None, description="ID of the associated asset."
+    )
+    type: str | None = Field(
+        default=None, description="Maintenance activity type slug."
+    )
     status: str | None = Field(default=None, description="Job status slug.")
-    technician: str | None = Field(default=None, description="Name of the assigned technician.")
-    scheduled_date: str | None = Field(default=None, description="ISO 8601 scheduled start datetime.")
-    completed_date: str | None = Field(default=None, description="ISO 8601 completion datetime.")
+    technician: str | None = Field(
+        default=None, description="Name of the assigned technician."
+    )
+    scheduled_date: str | None = Field(
+        default=None, description="ISO 8601 scheduled start datetime."
+    )
+    completed_date: str | None = Field(
+        default=None, description="ISO 8601 completion datetime."
+    )
     notes: str | None = Field(default=None, description="Optional free-text notes.")
 
 
@@ -569,12 +779,22 @@ class WorkOrderStoreItem(BaseModel):
     title: str = Field(description="Work order description.")
     status: str | None = Field(default=None, description="Lifecycle status slug.")
     priority: str | None = Field(default=None, description="Priority level slug.")
-    service_type: str | None = Field(default=None, description="Category of service activity.")
-    technician: str | None = Field(default=None, description="Name of the assigned technician.")
+    service_type: str | None = Field(
+        default=None, description="Category of service activity."
+    )
+    technician: str | None = Field(
+        default=None, description="Name of the assigned technician."
+    )
     zone: str | None = Field(default=None, description="Service zone label.")
-    scheduled_date: str | None = Field(default=None, description="ISO 8601 scheduled datetime.")
-    completed_date: str | None = Field(default=None, description="ISO 8601 completion datetime.")
-    location: str | None = Field(default=None, description="Optional site address or location description.")
+    scheduled_date: str | None = Field(
+        default=None, description="ISO 8601 scheduled datetime."
+    )
+    completed_date: str | None = Field(
+        default=None, description="ISO 8601 completion datetime."
+    )
+    location: str | None = Field(
+        default=None, description="Optional site address or location description."
+    )
 
 
 class SchedulingStoreItem(BaseModel):
@@ -584,9 +804,15 @@ class SchedulingStoreItem(BaseModel):
 
     id: str | int = Field(description="Scheduling record identifier.")
     technician: str = Field(description="Technician name.")
-    zone: str | None = Field(default=None, description="Service zone this technician covers.")
-    available_slots: int | None = Field(default=None, description="Number of open time slots remaining today.")
-    booked_slots: int | None = Field(default=None, description="Number of already-booked time slots today.")
+    zone: str | None = Field(
+        default=None, description="Service zone this technician covers."
+    )
+    available_slots: int | None = Field(
+        default=None, description="Number of open time slots remaining today."
+    )
+    booked_slots: int | None = Field(
+        default=None, description="Number of already-booked time slots today."
+    )
 
 
 # ---------------------------------------------------------------------------
