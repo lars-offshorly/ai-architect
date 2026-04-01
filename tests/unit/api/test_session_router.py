@@ -315,8 +315,9 @@ class TestReplySessionPersistsExtraction:
             flow=mock_flow,
         )
 
-        call_kwargs = mock_flow.process_turn.call_args.kwargs
-        passed_extraction = call_kwargs.get("accumulated_extraction")
+        # process_turn is called with a ConversationTurnRequest object as the first positional argument
+        turn_request = mock_flow.process_turn.call_args.args[0]
+        passed_extraction = turn_request.accumulated_extraction
         assert passed_extraction is not None
         assert isinstance(passed_extraction, ExtractionResult)
         assert passed_extraction.session_id == "s-existing"
@@ -491,8 +492,8 @@ class TestReplySessionForwardsPreselectedIntent:
             flow=mock_flow,
         )
 
-        call_kwargs = mock_flow.process_turn.call_args.kwargs
-        assert call_kwargs.get("preselected_intent") == "manage employees"
+        turn_request = mock_flow.process_turn.call_args.args[0]
+        assert turn_request.options.preselected_intent == "manage employees"
 
     @pytest.mark.asyncio
     async def test_reply_forwards_none_intent_when_not_stored_on_session(
@@ -552,8 +553,8 @@ class TestReplySessionForwardsPreselectedBundleKey:
             flow=mock_flow,
         )
 
-        call_kwargs = mock_flow.process_turn.call_args.kwargs
-        assert call_kwargs.get("preselected_bundle_key") == _VALID_BUNDLE_KEY
+        turn_request = mock_flow.process_turn.call_args.args[0]
+        assert turn_request.preselected_bundle_key == _VALID_BUNDLE_KEY
 
     @pytest.mark.asyncio
     async def test_reply_forwards_none_bundle_key_when_not_preselected(

@@ -62,5 +62,7 @@ async def test_process_turn_summarizes_prior_history_and_forwards_summary() -> N
         )
     )
 
-    interpreter.summarize_history.assert_awaited_once_with("s1", history[:-1])
+    interpreter.summarize_history.assert_awaited_once_with(
+        "s1", history[:-1], None
+    )
     assert interpreter.interpret.call_args.args[0].summary == "prior summary"
