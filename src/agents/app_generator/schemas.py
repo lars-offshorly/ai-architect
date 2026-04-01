@@ -200,7 +200,9 @@ class GenerationJsonSchema(BaseModel):
     )
     slots_used: list[str] = Field(
         default_factory=list,
-        description="Conversation slot keys applied during personalisation. Informational.",
+        description=(
+            "Conversation slot keys applied during personalisation. Informational."
+        ),
     )
 
     @model_validator(mode="after")
@@ -259,8 +261,12 @@ class GenerationJsonSchema(BaseModel):
 class WidgetPosition(BaseModel):
     """Grid position and size of a dashboard widget."""
 
-    row: int = Field(description="Zero-based row index of the widget's top-left corner.")
-    col: int = Field(description="Zero-based column index of the widget's top-left corner.")
+    row: int = Field(
+        description="Zero-based row index of the widget's top-left corner."
+    )
+    col: int = Field(
+        description="Zero-based column index of the widget's top-left corner."
+    )
     width: int = Field(ge=1, description="Horizontal span in grid units.")
     height: int = Field(ge=1, description="Vertical span in grid units.")
 
@@ -277,7 +283,9 @@ class DashboardWidgetEntity(BaseModel):
 class KpiStoreItem(BaseModel):
     """A KPI record inside ``stores.kpis``."""
 
-    id: int | str = Field(description="Record identifier (int in full form, str slug in templates).")
+    id: int | str = Field(
+        description="Record identifier (int in full form, str slug in templates)."
+    )
 
     # Simple template form fields
     label: str | None = Field(
@@ -409,13 +417,18 @@ class TicketStoreItem(BaseModel):
     # Status — accepts nested object (full form) or plain string (template form)
     status: TicketStatusObject | str | None = Field(
         default=None,
-        description="TicketStatusObject (full form) or status slug string (template form).",
+        description=(
+            "TicketStatusObject (full form) or status slug string (template form)."
+        ),
     )
 
     # Assignee — accepts list of refs (full form) or plain string (template form)
     assignee: list[TicketAssigneeRef] | str | None = Field(
         default=None,
-        description="List of TicketAssigneeRef (full form) or assignee name string (template form).",
+        description=(
+            "List of TicketAssigneeRef (full form) or assignee name string"
+            " (template form)."
+        ),
     )
 
     # Full-form specific fields
@@ -910,7 +923,9 @@ class DummyDataJsonSchema(BaseModel):
         description="Company name extracted from the conversation for personalisation.",
     )
     stores: dict[str, object] = Field(
-        description="Bundle-specific store dict; validated against the bundle stores model.",
+        description=(
+            "Bundle-specific store dict; validated against the bundle stores model."
+        ),
     )
 
     @model_validator(mode="after")
