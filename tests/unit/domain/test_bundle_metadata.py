@@ -9,7 +9,9 @@ from catalog.bundle_catalog import BundleCatalog
 from domain.models import BundleMetadata, EntityDefinition
 from domain.services.bundle_metadata import BundleMetadataService
 
-REGISTRY_PATH = Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
+)
 
 
 @pytest.fixture(name="catalog")

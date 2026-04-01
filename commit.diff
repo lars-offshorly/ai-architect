@@ -1,0 +1,1404 @@
+commit 3fb75a1b6fc66821ab4894c194271a51577d8903
+Author: Lars <lars@offshorly.com>
+Date:   Mon Mar 30 17:52:58 2026 +0800
+
+    feat: add early preview support with force_preview flag and preselected bundle/intent
+    
+    - Add `preselected_bundle_key` and `preselected_intent` to session model for skipping AI classification
+    - Add `force_preview` flag to enable preview generation with incomplete data
+    - Add `warning` field to AppPayloadResponseSchema for early preview notifications
+    - Extend InterpreterService with `extract_only` method to bypass classifier when bundle is preselected
+    - Add intent boost mechanism in classifier to prioritize bun
+
+diff --git a/src/agents/interpreter/classifier.py b/src/agents/interpreter/classifier.py
+index 7fcbff8..8dde55f 100644
+--- a/src/agents/interpreter/classifier.py
++++ b/src/agents/interpreter/classifier.py
+@@ -4,15 +4,31 @@ from langchain_core.messages import HumanMessage, SystemMessage
+ from langchain_openai import ChatOpenAI
+ from pydantic import BaseModel, Field
+ 
++from catalog.bundle_catalog import BundleCatalog
+ from core.logging import get_logger
+ from domain.models.bundle import BundleSuggestion, SuggestedBundles
+ from domain.services.bundle_resolution import BundleResolutionService
+ 
+ from .prompts import CLASSIFICATION_SYSTEM_PROMPT
+-from .rules import apply_rule_boosts, build_signal_boosts, detect_signals
++from .rules import apply_rule_boosts, detect_signals
+ 
+ logger = get_logger(__name__)
+ 
++_INTENT_BOOST = 0.15
++
++
++def _apply_intent_boost(
++    candidates: list[dict],
++    bundles: list,
++    intent: str,
++) -> list[dict]:
++    bundle_map = {b.bundle_key: b for b in bundles}
++    for candidate in candidates:
++        bundle = bundle_map.get(candidate["bundle_key"])
++        if bundle and any(intent in ti.lower() for ti in bundle.typical_intents):
++            candidate["confidence"] = min(1.0, candidate["confidence"] + _INTENT_BOOST)
++    return candidates
++
+ 
+ class _BundleScore(BaseModel):
+     bundle_key: str
+@@ -26,9 +42,12 @@ class _ClassificationOutput(BaseModel):
+ 
+ 
+ class Classifier:
+-    def __init__(self, model: ChatOpenAI, catalog_context: str) -> None:
++    def __init__(
++        self, model: ChatOpenAI, catalog_context: str, catalog: BundleCatalog
++    ) -> None:
+         self._model = model
+         self._catalog_context = catalog_context
++        self._catalog = catalog
+         self._resolver = BundleResolutionService()
+ 
+     async def classify(
+@@ -36,8 +55,11 @@ class Classifier:
+         session_id: str,
+         user_message: str,
+         bundle_keys: list[str],
++        preselected_intent: str | None = None,
+     ) -> SuggestedBundles:
+-        prompt = CLASSIFICATION_SYSTEM_PROMPT.format(catalog_context=self._catalog_context)
++        prompt = CLASSIFICATION_SYSTEM_PROMPT.format(
++            catalog_context=self._catalog_context
++        )
+         structured = self._model.with_structured_output(_ClassificationOutput)
+         try:
+             result = await structured.ainvoke(
+@@ -66,12 +88,16 @@ class Classifier:
+             for s in output.scores
+             if s.bundle_key in bundle_keys
+         ]
+-        signals = detect_signals(user_message)
+-        boosts = build_signal_boosts()
+-        boosted = apply_rule_boosts(candidates, boosts, signals)
++        bundles = self._catalog.list_all()
++        signals = detect_signals(user_message, bundles)
++        boosted = apply_rule_boosts(candidates, bundles, signals)
++        if preselected_intent:
++            boosted = _apply_intent_boost(boosted, bundles, preselected_intent.lower())
+         return self._resolver.rank(session_id, boosted)
+ 
+-    def top_suggestion(self, suggested: SuggestedBundles, threshold: float) -> BundleSuggestion | None:
++    def top_suggestion(
++        self, suggested: SuggestedBundles, threshold: float
++    ) -> BundleSuggestion | None:
+         top = suggested.top()
+         if top is None or top.confidence < threshold:
+             return None
+diff --git a/src/agents/interpreter/service.py b/src/agents/interpreter/service.py
+index 787e9e5..efc68f8 100644
+--- a/src/agents/interpreter/service.py
++++ b/src/agents/interpreter/service.py
+@@ -2,14 +2,17 @@ from __future__ import annotations
+ 
+ from langchain_openai import ChatOpenAI
+ 
++from catalog.bundle_catalog import BundleCatalog
+ from core.config import get_settings
+ from core.logging import get_logger, get_session_logger
+ from domain.models.bundle import BundleSuggestion, SuggestedBundles
+ from domain.models.conversation import ConversationMessage
+-from domain.models.extracted_info import ExtractedInfo
++from domain.models.extraction_result import ExtractionResult
++from domain.models.interpreter_request import InterpreterRequest
+ 
+ from .classifier import Classifier
+ from .extractor import Extractor
++from .signal_accumulator import SignalAccumulator
+ from .summarizer import Summarizer
+ 
+ logger = get_logger(__name__)
+@@ -19,27 +22,16 @@ def _build_catalog_context(bundle_keys: list[str]) -> str:
+     return "\n".join(f"- {key}" for key in bundle_keys)
+ 
+ 
+-def _merge_slots(base: dict[str, object], extracted: ExtractedInfo) -> dict[str, object]:
+-    merged = dict(base)
+-    if extracted.company_name and "company_name" not in merged:
+-        merged["company_name"] = extracted.company_name
+-    if extracted.industry_hint and "industry_hint" not in merged:
+-        merged["industry_hint"] = extracted.industry_hint
+-    if extracted.primary_use_case and "primary_use_case" not in merged:
+-        merged["primary_use_case"] = extracted.primary_use_case
+-    return merged
+-
+-
+ class InterpreterService:
+-    def __init__(self, bundle_keys: list[str]) -> None:
++    def __init__(self, bundle_keys: list[str], catalog: BundleCatalog) -> None:
+         settings = get_settings()
+         model = ChatOpenAI(
+             model=settings.OPENAI_MODEL,
+             temperature=settings.CLASSIFIER_TEMPERATURE,
+         )
+         catalog_context = _build_catalog_context(bundle_keys)
+-        self._extractor = Extractor(model)
+-        self._classifier = Classifier(model, catalog_context)
++        self._extractor = Extractor(model, catalog)
++        self._classifier = Classifier(model, catalog_context, catalog)
+         self._summarizer = Summarizer(
+             ChatOpenAI(
+                 model=settings.OPENAI_MODEL,
+@@ -49,31 +41,59 @@ class InterpreterService:
+         self._bundle_keys = bundle_keys
+         self._threshold = settings.CONFIDENCE_THRESHOLD
+ 
++    @staticmethod
++    def _inject_preselected_intent(
++        extracted: ExtractionResult, preselected_intent: str | None
++    ) -> None:
++        if (
++            preselected_intent
++            and preselected_intent not in extracted.classification_signals.intents
++        ):
++            extracted.classification_signals.intents.insert(0, preselected_intent)
++
++    async def extract_only(self, request: InterpreterRequest) -> ExtractionResult:
++        """Run extraction and signal accumulation without calling the LLM classifier.
++
++        Used when the bundle is already known (preselected path) so the classifier
++        round-trip cost and latency can be avoided entirely.
++        """
++        current = await self._extractor.extract(
++            request.session_id,
++            request.user_message,
++            history=request.history,
++            summary=request.summary,
++        )
++        extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
++        self._inject_preselected_intent(extracted, request.preselected_intent)
++        return extracted
++
+     async def interpret(
+-        self,
+-        session_id: str,
+-        user_message: str,
+-        existing_slots: dict[str, object],
+-        history: list[ConversationMessage],
+-    ) -> tuple[ExtractedInfo, SuggestedBundles]:
+-        session_logger = get_session_logger(__name__, session_id)
++        self, request: InterpreterRequest
++    ) -> tuple[ExtractionResult, SuggestedBundles]:
++        session_logger = get_session_logger(__name__, request.session_id)
+         session_logger.info("Running interpreter")
+ 
+-        extracted = await self._extractor.extract(session_id, user_message)
+-        merged_slots = _merge_slots(existing_slots, extracted)
+-        extracted.slots = merged_slots
++        current = await self._extractor.extract(
++            request.session_id,
++            request.user_message,
++            history=request.history,
++            summary=request.summary,
++        )
++        extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
++        self._inject_preselected_intent(extracted, request.preselected_intent)
+ 
+         suggested = await self._classifier.classify(
+-            session_id, user_message, self._bundle_keys
++            request.session_id,
++            request.user_message,
++            self._bundle_keys,
++            preselected_intent=request.preselected_intent,
+         )
+         session_logger.info(
+             "Interpreter complete: top_bundle=%s", suggested.top_bundle_key
+         )
+         return extracted, suggested
+ 
+-    def top_bundle(
+-        self, suggested: SuggestedBundles
+-    ) -> BundleSuggestion | None:
++    def top_bundle(self, suggested: SuggestedBundles) -> BundleSuggestion | None:
+         return self._classifier.top_suggestion(suggested, self._threshold)
+ 
+     async def summarize_history(
+diff --git a/src/api/schemas/app_payload.py b/src/api/schemas/app_payload.py
+index 537b487..55aac77 100644
+--- a/src/api/schemas/app_payload.py
++++ b/src/api/schemas/app_payload.py
+@@ -11,3 +11,10 @@ class AppPayloadResponseSchema(BaseModel):
+     modules: list[str] = Field(default_factory=list)
+     generation_json: dict[str, object] = Field(default_factory=dict)
+     dummy_data_json: dict[str, object] = Field(default_factory=dict)
++    warning: str | None = Field(
++        default=None,
++        description=(
++            "Present when the preview was generated without full bundle confirmation. "
++            "Indicates the output may contain generic or incomplete data."
++        ),
++    )
+diff --git a/src/domain/models/session.py b/src/domain/models/session.py
+index 90079a3..7434338 100644
+--- a/src/domain/models/session.py
++++ b/src/domain/models/session.py
+@@ -5,6 +5,8 @@ from uuid import uuid4
+ 
+ from pydantic import BaseModel, Field
+ 
++from domain.models.extraction_result import ExtractionResult
++
+ 
+ class Session(BaseModel):
+     session_id: str = Field(default_factory=lambda: str(uuid4()))
+@@ -16,7 +18,9 @@ class Session(BaseModel):
+     selected_bundle_key: str | None = None
+     auth_token: str | None = None
+ 
+-    accumulated_extraction: dict | None = None
++    accumulated_extraction: ExtractionResult | None = None
+     latest_classification: dict | None = None
+     latest_recommendation: dict | None = None
+     clarification_turn_count: int = 0
++    preselected_intent: str | None = None
++    preselected_bundle_key: str | None = None
+diff --git a/src/orchestrators/conversation_flow.py b/src/orchestrators/conversation_flow.py
+index 197644a..878f965 100644
+--- a/src/orchestrators/conversation_flow.py
++++ b/src/orchestrators/conversation_flow.py
+@@ -1,87 +1,338 @@
+ from __future__ import annotations
+ 
++from dataclasses import dataclass, field
++from logging import Logger
++from typing import Protocol, cast
++
++from agents.interpreter.missing_fields import MissingFieldDetector
++from catalog.bundle_catalog import BundleCatalog
+ from core.logging import get_logger, get_session_logger
++from domain.models.bundle import BundleSuggestion, SuggestedBundles
+ from domain.models.conversation import ConversationMessage
++from domain.models.extraction_result import ExtractionResult
++from domain.models.interpreter_request import InterpreterRequest
+ 
+ logger = get_logger(__name__)
+ 
+ _FlowResult = dict[str, object]
+ 
++_EARLY_PREVIEW_WARNING = (
++    "Preview generated with incomplete information. Some data may be generic."
++)
++
++_FORCE_PREVIEW_FALLBACK_BUNDLE = "all_microservices"
++
++_PREVIEW_KEYWORDS = [
++    "preview now",
++    "show preview",
++    "generate preview",
++    "see preview",
++    "show me the system",
++    "build it now",
++]
++
++
++def _detect_preview_intent(user_message: str) -> bool:
++    """Return True if the user message contains a recognised preview-request keyword."""
++    lowered = user_message.lower()
++    return any(kw in lowered for kw in _PREVIEW_KEYWORDS)
++
++
++@dataclass(slots=True)
++class TurnOptions:
++    summary: str = ""
++    preselected_intent: str | None = None
++    force_preview: bool = False
++
++
++@dataclass(slots=True)
++class ConversationTurnRequest:
++    session_id: str
++    user_message: str
++    history: list[ConversationMessage]
++    confirmed: bool
++    accumulated_extraction: ExtractionResult | None = None
++    preselected_bundle_key: str | None = None
++    options: TurnOptions = field(default_factory=TurnOptions)
++
++
++@dataclass(slots=True)
++class _TurnContext:
++    extracted: ExtractionResult
++    suggested: SuggestedBundles
++    top: BundleSuggestion | None
++    slots: dict[str, object]
++
++
++class InterpreterPort(Protocol):
++    async def summarize_history(
++        self,
++        session_id: str,
++        history: list[ConversationMessage],
++    ) -> str: ...
++
++    async def extract_only(self, request: InterpreterRequest) -> ExtractionResult: ...
++
++    async def interpret(
++        self, request: InterpreterRequest
++    ) -> tuple[ExtractionResult, SuggestedBundles]: ...
++
++    def top_bundle(self, suggested: SuggestedBundles) -> BundleSuggestion | None: ...
++
++
++class ReplierPort(Protocol):
++    async def build_clarification(
++        self,
++        session_id: str,
++        extracted: ExtractionResult,
++        bundle_key: str,
++    ) -> tuple[object | None, str]: ...
++
++    async def build_bundle_suggestion(
++        self,
++        session_id: str,
++        _suggestion: BundleSuggestion,
++        slots: dict[str, object],
++    ) -> str: ...
++
+ 
+ class ConversationFlow:
+     def __init__(
+         self,
+-        interpreter_service: object,
+-        replier_service: object,
++        interpreter_service: InterpreterPort,
++        replier_service: ReplierPort,
++        bundle_catalog: BundleCatalog,
+         required_slots_by_bundle: dict[str, list[str]],
+     ) -> None:
+-        self._interpreter = interpreter_service  # type: ignore[assignment]
+-        self._replier = replier_service  # type: ignore[assignment]
+-        self._required_slots = required_slots_by_bundle
++        self._interpreter = interpreter_service
++        self._replier = replier_service
++        self._missing_field_detector = MissingFieldDetector(
++            bundle_catalog, required_slots_by_bundle
++        )
++
++    def should_generate_early_preview(
++        self, user_message: str, force_preview: bool
++    ) -> bool:
++        return force_preview or _detect_preview_intent(user_message)
+ 
+     async def process_turn(
+         self,
+-        session_id: str,
+-        user_message: str,
+-        existing_slots: dict[str, object],
+-        history: list[ConversationMessage],
+-        confirmed: bool,
++        request: ConversationTurnRequest | None = None,
++        **kwargs: object,
+     ) -> _FlowResult:
+-        session_logger = get_session_logger(__name__, session_id)
++        turn_request = self._coerce_turn_request(request, kwargs)
++        session_logger = get_session_logger(__name__, turn_request.session_id)
++        summary_for_turn = await self._resolve_summary(turn_request)
++        context = await self._resolve_turn_context(turn_request, summary_for_turn)
+ 
+-        extracted, suggested = await self._interpreter.interpret(
+-            session_id, user_message, existing_slots, history
+-        )
+-        top = self._interpreter.top_bundle(suggested)
++        if self.should_generate_early_preview(
++            turn_request.user_message, turn_request.options.force_preview
++        ):
++            return self._build_early_preview_response(context, session_logger)
+ 
+-        if top is None:
++        if context.top is None:
+             session_logger.info("No confident bundle — asking clarification")
+             _, question = await self._replier.build_clarification(
+-                session_id, extracted, ["primary_use_case"], "unknown"
++                turn_request.session_id, context.extracted, "unknown"
+             )
+-            return {
+-                "status": "awaiting_input",
+-                "question": question,
+-                "extracted": extracted,
+-                "suggested": suggested,
+-                "slots": extracted.slots,
+-            }
+-
+-        required = self._required_slots.get(top.bundle_key, [])
++            return self._awaiting_input_response(question, context)
++
+         missing_field, question = await self._replier.build_clarification(
+-            session_id, extracted, required, top.bundle_key
++            turn_request.session_id, context.extracted, context.top.bundle_key
+         )
+         if missing_field is not None:
+             session_logger.info(
+-                "Missing field=%s for bundle=%s", missing_field.value, top.bundle_key
++                "Missing field=%s for bundle=%s",
++                getattr(missing_field, "value", missing_field),
++                context.top.bundle_key,
+             )
+-            return {
+-                "status": "awaiting_input",
+-                "question": question,
+-                "extracted": extracted,
+-                "suggested": suggested,
+-                "slots": extracted.slots,
+-            }
+-
+-        if not confirmed:
++            return self._awaiting_input_response(question, context)
++
++        if not turn_request.confirmed:
+             message = await self._replier.build_bundle_suggestion(
+-                session_id, top, extracted.slots
++                turn_request.session_id, context.top, context.slots
++            )
++            session_logger.info("Suggesting bundle=%s", context.top.bundle_key)
++            return self._pending_confirmation_response(message, context)
++
++        session_logger.info(
++            "All slots filled and confirmed for bundle=%s", context.top.bundle_key
++        )
++        return self._ready_for_preview_response(context, preview_type="confirmed")
++
++    @staticmethod
++    def _coerce_turn_request(
++        request: ConversationTurnRequest | None,
++        kwargs: dict[str, object],
++    ) -> ConversationTurnRequest:
++        if request is not None:
++            if kwargs:
++                raise TypeError(
++                    "process_turn() accepts either a ConversationTurnRequest "
++                    "or keyword fields, not both."
++                )
++            return request
++
++        return ConversationTurnRequest(
++            session_id=cast(str, kwargs["session_id"]),
++            user_message=cast(str, kwargs["user_message"]),
++            history=cast(list[ConversationMessage], kwargs["history"]),
++            confirmed=cast(bool, kwargs["confirmed"]),
++            accumulated_extraction=cast(
++                ExtractionResult | None, kwargs.get("accumulated_extraction")
++            ),
++            preselected_bundle_key=cast(
++                str | None, kwargs.get("preselected_bundle_key")
++            ),
++            options=TurnOptions(
++                summary=cast(str, kwargs.get("summary", "")),
++                preselected_intent=cast(str | None, kwargs.get("preselected_intent")),
++                force_preview=cast(bool, kwargs.get("force_preview", False)),
++            ),
++        )
++
++    async def _resolve_summary(self, request: ConversationTurnRequest) -> str:
++        if request.options.summary:
++            return request.options.summary
++        summary_history = request.history[:-1] if request.history else []
++        return await self._interpreter.summarize_history(
++            request.session_id, summary_history
++        )
++
++    async def _resolve_turn_context(
++        self,
++        request: ConversationTurnRequest,
++        summary_for_turn: str,
++    ) -> _TurnContext:
++        interpreter_request = InterpreterRequest(
++            session_id=request.session_id,
++            user_message=request.user_message,
++            history=request.history,
++            accumulated_extraction=request.accumulated_extraction,
++            summary=summary_for_turn,
++            preselected_intent=request.options.preselected_intent,
++        )
++
++        if request.preselected_bundle_key is not None:
++            extracted = await self._interpreter.extract_only(interpreter_request)
++            suggested = self._mock_preselected_suggestion(
++                request.session_id, request.preselected_bundle_key
++            )
++            top = suggested.top()
++        else:
++            extracted, suggested = await self._interpreter.interpret(
++                interpreter_request
+             )
+-            session_logger.info("Suggesting bundle=%s", top.bundle_key)
+-            return {
+-                "status": "pending_confirmation",
+-                "message": message,
+-                "bundle_key": top.bundle_key,
+-                "extracted": extracted,
+-                "suggested": suggested,
+-                "slots": extracted.slots,
+-            }
+-
+-        session_logger.info("All slots filled and confirmed for bundle=%s", top.bundle_key)
++            top = self._interpreter.top_bundle(suggested)
++
++        return self._build_turn_context(extracted, suggested, top)
++
++    @staticmethod
++    def _mock_preselected_suggestion(
++        session_id: str, preselected_bundle_key: str
++    ) -> SuggestedBundles:
++        return SuggestedBundles(
++            session_id=session_id,
++            suggestions=[
++                BundleSuggestion(
++                    bundle_key=preselected_bundle_key,
++                    display_name=preselected_bundle_key,
++                    confidence=1.0,
++                    reasoning="Pre-selected by user",
++                    matched_signals=[],
++                )
++            ],
++            top_bundle_key=preselected_bundle_key,
++        )
++
++    def _build_turn_context(
++        self,
++        extracted: ExtractionResult,
++        suggested: SuggestedBundles,
++        top: BundleSuggestion | None,
++    ) -> _TurnContext:
++        slots = extracted.to_extracted_info().slots
++        extracted.missing_fields = self._missing_field_detector.compute(
++            extracted, top.bundle_key if top is not None else None
++        )
++        return _TurnContext(
++            extracted=extracted,
++            suggested=suggested,
++            top=top,
++            slots=slots,
++        )
++
++    def _build_early_preview_response(
++        self,
++        context: _TurnContext,
++        session_logger: Logger,
++    ) -> _FlowResult:
++        bundle_key_for_preview = self._resolve_preview_bundle_key(context)
++        session_logger.info(
++            "Early preview requested for bundle=%s", bundle_key_for_preview
++        )
++        return self._ready_for_preview_response(
++            context,
++            preview_type="early",
++            warning=_EARLY_PREVIEW_WARNING,
++            bundle_key=bundle_key_for_preview,
++        )
++
++    @staticmethod
++    def _resolve_preview_bundle_key(context: _TurnContext) -> str:
++        effective_top = (
++            context.top if context.top is not None else context.suggested.top()
++        )
++        if effective_top is not None:
++            return effective_top.bundle_key
++        return _FORCE_PREVIEW_FALLBACK_BUNDLE
++
++    @staticmethod
++    def _awaiting_input_response(
++        question: str,
++        context: _TurnContext,
++    ) -> _FlowResult:
++        return {
++            "status": "awaiting_input",
++            "question": question,
++            "extracted": context.extracted,
++            "suggested": context.suggested,
++            "slots": context.slots,
++        }
++
++    @staticmethod
++    def _pending_confirmation_response(
++        message: str,
++        context: _TurnContext,
++    ) -> _FlowResult:
++        bundle_key = context.top.bundle_key if context.top is not None else None
++        return {
++            "status": "pending_confirmation",
++            "message": message,
++            "bundle_key": bundle_key,
++            "extracted": context.extracted,
++            "suggested": context.suggested,
++            "slots": context.slots,
++        }
++
++    @staticmethod
++    def _ready_for_preview_response(
++        context: _TurnContext,
++        preview_type: str,
++        warning: str | None = None,
++        bundle_key: str | None = None,
++    ) -> _FlowResult:
++        resolved_bundle_key = (
++            bundle_key
++            if bundle_key is not None
++            else (context.top.bundle_key if context.top is not None else None)
++        )
+         return {
+             "status": "ready_for_preview",
+-            "bundle_key": top.bundle_key,
+-            "extracted": extracted,
+-            "suggested": suggested,
+-            "slots": extracted.slots,
++            "bundle_key": resolved_bundle_key,
++            "extracted": context.extracted,
++            "suggested": context.suggested,
++            "slots": context.slots,
++            "warning": warning,
++            "preview_type": preview_type,
+         }
+diff --git a/tests/integration/test_early_preview.py b/tests/integration/test_early_preview.py
+new file mode 100644
+index 0000000..3814309
+--- /dev/null
++++ b/tests/integration/test_early_preview.py
+@@ -0,0 +1,319 @@
++"""Integration tests: early preview endpoint and force_preview flag.
++
++Layer 1 — Direct endpoint tests (pre-seeded session state)
++  Verifies /preview/early behavior across session states: selected bundle,
++  latest_classification only, and no bundle at all (fallback).
++
++Layer 2 — Reply with force_preview flag
++  Verifies that force_preview=True is passed through the API and the flow
++  returns a warning and preview_type="early" in the response.
++"""
++
++from __future__ import annotations
++
++import importlib
++import os
++import sys
++import uuid
++from pathlib import Path
++from typing import Any
++from unittest.mock import MagicMock
++
++import pytest
++from httpx import ASGITransport, AsyncClient
++
++from api import deps
++from api.deps import (
++    get_conversation_repository,
++    get_session_repository,
++)
++from domain.models.conversation import ConversationMessage
++from domain.models.extraction_result import ExtractionResult
++from domain.models.session import Session
++
++
++@pytest.fixture(name="app", scope="module")
++def fixture_app():
++    sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
++    os.environ["DEBUG"] = "True"
++    config_module = importlib.import_module("core.config")
++    config_module.get_settings.cache_clear()
++    main_module = importlib.import_module("main")
++    return main_module.create_app()
++
++
++@pytest.fixture(name="client")
++async def fixture_client(app):
++    async with AsyncClient(
++        transport=ASGITransport(app=app), base_url="http://test"
++    ) as c:
++        yield c
++
++
++def _unique_id() -> str:
++    return str(uuid.uuid4())
++
++
++def _seed_session(
++    session_id: str,
++    *,
++    confirmed: bool = False,
++    selected_bundle_key: str | None = None,
++    latest_classification: dict | None = None,
++    history: list[tuple[str, str]] | None = None,
++) -> None:
++    session_repo = get_session_repository()
++    conv_repo = get_conversation_repository()
++
++    session = Session(
++        session_id=session_id,
++        confirmed=confirmed,
++        selected_bundle_key=selected_bundle_key,
++        latest_classification=latest_classification,
++    )
++    session_repo.save(session)
++
++    for role, content in history or []:
++        conv_repo.append_message(
++            session_id,
++            ConversationMessage(role=role, content=content),  # type: ignore[arg-type]
++        )
++
++
++# ===========================================================================
++# Layer 1 — /preview/early direct endpoint tests
++# ===========================================================================
++
++
++class TestEarlyPreviewEndpoint:
++
++    @pytest.mark.asyncio
++    async def test_early_preview_with_selected_bundle_returns_200(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(sid, selected_bundle_key="hr_management")
++
++        resp = await client.post(f"/sessions/{sid}/preview/early")
++        assert resp.status_code == 200, resp.text
++
++    @pytest.mark.asyncio
++    async def test_early_preview_includes_warning_field(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(sid, selected_bundle_key="hr_management")
++
++        data = (await client.post(f"/sessions/{sid}/preview/early")).json()
++        assert data["warning"] is not None
++        assert "incomplete" in data["warning"].lower()
++
++    @pytest.mark.asyncio
++    async def test_early_preview_unconfirmed_session_still_returns_200(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(sid, confirmed=False, selected_bundle_key="ticketing")
++
++        resp = await client.post(f"/sessions/{sid}/preview/early")
++        assert resp.status_code == 200, resp.text
++
++    @pytest.mark.asyncio
++    async def test_early_preview_uses_latest_classification_when_no_selected_bundle(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(
++            sid,
++            latest_classification={"top_bundle_key": "project_mgmt"},
++        )
++
++        data = (await client.post(f"/sessions/{sid}/preview/early")).json()
++        assert data["bundle_key"] == "project_mgmt"
++
++    @pytest.mark.asyncio
++    async def test_early_preview_falls_back_to_all_microservices_when_no_bundle(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(sid)
++
++        data = (await client.post(f"/sessions/{sid}/preview/early")).json()
++        assert data["bundle_key"] == "all_microservices"
++        assert data["warning"] is not None
++
++    @pytest.mark.asyncio
++    async def test_early_preview_missing_session_returns_404(
++        self, client: AsyncClient
++    ) -> None:
++        resp = await client.post(f"/sessions/{_unique_id()}/preview/early")
++        assert resp.status_code == 404
++
++    @pytest.mark.asyncio
++    async def test_early_preview_response_has_required_schema_fields(
++        self, client: AsyncClient
++    ) -> None:
++        sid = _unique_id()
++        _seed_session(sid, selected_bundle_key="hr_management")
++
++        data = (await client.post(f"/sessions/{sid}/preview/early")).json()
++        assert data["schema_version"] == "1.0"
++        assert data["session_id"] == sid
++        assert data["bundle_key"] == "hr_management"
++        assert data["display_name"] == "HR Management"
++        assert isinstance(data["modules"], list)
++        assert isinstance(data["generation_json"], dict)
++        assert isinstance(data["dummy_data_json"], dict)
++
++    @pytest.mark.asyncio
++    async def test_regular_preview_still_requires_confirmation(
++        self, client: AsyncClient
++    ) -> None:
++        """Verify that the standard /preview endpoint is unaffected."""
++        sid = _unique_id()
++        _seed_session(sid, confirmed=False, selected_bundle_key="ticketing")
++
++        resp = await client.post(f"/sessions/{sid}/preview")
++        assert resp.status_code == 400
++
++
++# ===========================================================================
++# Layer 2 — force_preview flag via /reply
++# ===========================================================================
++
++
++class TestForcePreviawViaReply:
++
++    def _make_mock_flow(self, responses: list[dict]) -> object:
++        """Return a mock ConversationFlow that yields from the given response list."""
++        call_index = 0
++
++        async def _process_turn(*_args: Any, **_kwargs: Any) -> dict:
++            nonlocal call_index
++            result = responses[min(call_index, len(responses) - 1)]
++            call_index += 1
++            return result
++
++        mock = MagicMock()
++        mock.process_turn = _process_turn
++        return mock
++
++    @pytest.mark.asyncio
++    async def test_force_preview_true_returns_warning_in_reply(
++        self, app: Any, client: AsyncClient
++    ) -> None:
++        mock_flow = self._make_mock_flow(
++            [
++                {
++                    "status": "ready_for_preview",
++                    "bundle_key": "hr_management",
++                    "extracted": ExtractionResult(session_id="placeholder"),
++                    "suggested": None,
++                    "slots": {},
++                    "warning": (
++                        "Preview generated with incomplete information."
++                        " Some data may be generic."
++                    ),
++                    "preview_type": "early",
++                }
++            ]
++        )
++        app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
++
++        try:
++            start_resp = await client.post(
++                "/sessions",
++                json={"message": "I need something"},
++            )
++            assert start_resp.status_code == 201
++            sid = start_resp.json()["session_id"]
++
++            reply_resp = await client.post(
++                f"/sessions/{sid}/reply",
++                json={"message": "just show me", "force_preview": True},
++            )
++            assert reply_resp.status_code == 200
++            data = reply_resp.json()
++            assert data["status"] == "ready_for_preview"
++            assert data["warning"] is not None
++            assert data["preview_type"] == "early"
++        finally:
++            app.dependency_overrides.pop(deps.get_conversation_flow, None)
++
++    @pytest.mark.asyncio
++    async def test_preview_keyword_in_message_surfaces_warning(
++        self, app: Any, client: AsyncClient
++    ) -> None:
++        mock_flow = self._make_mock_flow(
++            [
++                {
++                    "status": "ready_for_preview",
++                    "bundle_key": "ticketing",
++                    "extracted": ExtractionResult(session_id="placeholder"),
++                    "suggested": None,
++                    "slots": {},
++                    "warning": (
++                        "Preview generated with incomplete information."
++                        " Some data may be generic."
++                    ),
++                    "preview_type": "early",
++                }
++            ]
++        )
++        app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
++
++        try:
++            start_resp = await client.post(
++                "/sessions",
++                json={"message": "I manage support tickets"},
++            )
++            assert start_resp.status_code == 201
++            sid = start_resp.json()["session_id"]
++
++            reply_resp = await client.post(
++                f"/sessions/{sid}/reply",
++                json={"message": "preview now"},
++            )
++            assert reply_resp.status_code == 200
++            data = reply_resp.json()
++            assert data["status"] == "ready_for_preview"
++            assert data["warning"] is not None
++            assert data["preview_type"] == "early"
++        finally:
++            app.dependency_overrides.pop(deps.get_conversation_flow, None)
++
++    @pytest.mark.asyncio
++    async def test_force_preview_false_returns_no_warning_for_normal_flow(
++        self, app: Any, client: AsyncClient
++    ) -> None:
++        mock_flow = self._make_mock_flow(
++            [
++                {
++                    "status": "pending_confirmation",
++                    "message": "I recommend HR Management.",
++                    "bundle_key": "hr_management",
++                    "extracted": ExtractionResult(session_id="placeholder"),
++                    "suggested": None,
++                    "slots": {},
++                }
++            ]
++        )
++        app.dependency_overrides[deps.get_conversation_flow] = lambda: mock_flow
++
++        try:
++            start_resp = await client.post(
++                "/sessions",
++                json={"message": "I manage HR"},
++            )
++            sid = start_resp.json()["session_id"]
++
++            reply_resp = await client.post(
++                f"/sessions/{sid}/reply",
++                json={"message": "tell me more", "force_preview": False},
++            )
++            assert reply_resp.status_code == 200
++            data = reply_resp.json()
++            assert data["warning"] is None
++            assert data["preview_type"] is None
++        finally:
++            app.dependency_overrides.pop(deps.get_conversation_flow, None)
+diff --git a/tests/unit/orchestrators/test_conversation_flow_preselection.py b/tests/unit/orchestrators/test_conversation_flow_preselection.py
+new file mode 100644
+index 0000000..7459ed9
+--- /dev/null
++++ b/tests/unit/orchestrators/test_conversation_flow_preselection.py
+@@ -0,0 +1,413 @@
++"""Unit tests for ConversationFlow pre-selection and pre-filled intent paths."""
++
++from __future__ import annotations
++
++from pathlib import Path
++from unittest.mock import AsyncMock, MagicMock
++
++import pytest
++
++from catalog.bundle_catalog import BundleCatalog
++from domain.enums.missing_field_type import MissingFieldType
++from domain.models.bundle import SuggestedBundles
++from domain.models.conversation import ConversationMessage
++from domain.models.extraction_result import ExtractionResult
++from orchestrators.conversation_flow import (
++    ConversationFlow,
++    InterpreterPort,
++    ReplierPort,
++)
++
++REGISTRY_PATH = (
++    Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
++)
++
++_PRESELECTED_KEY = "hr_management"
++
++
++def _make_flow(
++    interpreter: InterpreterPort,
++    replier: ReplierPort,
++) -> ConversationFlow:
++    catalog = BundleCatalog(REGISTRY_PATH)
++    required_slots = {b.bundle_key: b.required_slots for b in catalog.list_all()}
++    return ConversationFlow(
++        interpreter_service=interpreter,
++        replier_service=replier,
++        bundle_catalog=catalog,
++        required_slots_by_bundle=required_slots,
++    )
++
++
++def _make_interpreter_mock(extraction: ExtractionResult) -> MagicMock:
++    interpreter = MagicMock()
++    interpreter.summarize_history = AsyncMock(return_value="")
++    interpreter.interpret = AsyncMock(
++        return_value=(extraction, SuggestedBundles(session_id="s1", suggestions=[]))
++    )
++    interpreter.extract_only = AsyncMock(return_value=extraction)
++    interpreter.top_bundle = MagicMock(return_value=None)
++    return interpreter
++
++
++def _make_replier_mock() -> MagicMock:
++    replier = MagicMock()
++    replier.build_clarification = AsyncMock(
++        return_value=(MissingFieldType.PRIMARY_USE_CASE, "What is your use case?")
++    )
++    replier.build_bundle_suggestion = AsyncMock(return_value="Here is your bundle")
++    return replier
++
++
++class TestPreselectedBundleBypassesClassification:
++    @pytest.mark.asyncio
++    async def test_top_bundle_not_called_when_preselected(self) -> None:
++        extraction = ExtractionResult(session_id="s1")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s1",
++            user_message="I need HR",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need HR")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++        )
++
++        interpreter.top_bundle.assert_not_called()
++
++    @pytest.mark.asyncio
++    async def test_extract_only_called_on_preselected_path(self) -> None:
++        extraction = ExtractionResult(session_id="s1")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s1",
++            user_message="I need HR",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need HR")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++        )
++
++        interpreter.extract_only.assert_awaited_once()
++        interpreter.interpret.assert_not_awaited()
++
++    @pytest.mark.asyncio
++    async def test_mock_suggestion_has_full_confidence(self) -> None:
++        extraction = ExtractionResult(session_id="s1")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        replier.build_clarification = AsyncMock(return_value=(None, None))
++        replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s1",
++            user_message="I need HR",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need HR")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++        )
++
++        suggested: SuggestedBundles = result["suggested"]  # type: ignore[assignment]
++        assert suggested.top() is not None
++        assert suggested.top().bundle_key == _PRESELECTED_KEY
++        assert suggested.top().confidence == 1.0
++        assert suggested.top().reasoning == "Pre-selected by user"
++
++    @pytest.mark.asyncio
++    async def test_bundle_key_in_result_matches_preselected(self) -> None:
++        extraction = ExtractionResult(session_id="s1")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        replier.build_clarification = AsyncMock(return_value=(None, None))
++        replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s1",
++            user_message="I need HR",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need HR")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++        )
++
++        assert result.get("bundle_key") == _PRESELECTED_KEY
++
++
++class TestPreselectedBundleDoesNotBreakNormalFlow:
++    @pytest.mark.asyncio
++    async def test_normal_flow_without_preselection_unchanged(self) -> None:
++        extraction = ExtractionResult(session_id="s2")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s2",
++            user_message="I need something",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need something")],
++            confirmed=False,
++        )
++
++        interpreter.top_bundle.assert_called_once()
++        interpreter.interpret.assert_awaited_once()
++
++    @pytest.mark.asyncio
++    async def test_missing_field_detection_runs_with_preselected_bundle(self) -> None:
++        extraction = ExtractionResult(session_id="s1")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s1",
++            user_message="I need HR",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need HR")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++        )
++
++        assert "extracted" in result
++        extracted: ExtractionResult = result["extracted"]  # type: ignore[assignment]
++        assert extracted.missing_fields is not None
++
++
++_PRESELECTED_INTENT = "manage employees"
++
++
++class TestPrefilledIntentInjection:
++    @pytest.mark.asyncio
++    async def test_interpret_called_with_preselected_intent(self) -> None:
++        extraction = ExtractionResult(session_id="s3")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s3",
++            user_message="I need an HR system",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need an HR system")],
++            confirmed=False,
++            preselected_intent=_PRESELECTED_INTENT,
++        )
++
++        request = interpreter.interpret.call_args.args[0]
++        assert request.preselected_intent == _PRESELECTED_INTENT
++
++    @pytest.mark.asyncio
++    async def test_extract_only_called_with_intent_and_preselected_bundle(self) -> None:
++        extraction = ExtractionResult(session_id="s4")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        replier.build_clarification = AsyncMock(return_value=(None, None))
++        replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s4",
++            user_message="I need an HR system",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need an HR system")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++            preselected_intent=_PRESELECTED_INTENT,
++        )
++
++        request = interpreter.extract_only.call_args.args[0]
++        assert request.preselected_intent == _PRESELECTED_INTENT
++        interpreter.interpret.assert_not_awaited()
++        suggested: SuggestedBundles = result["suggested"]  # type: ignore[assignment]
++        assert suggested.top() is not None
++        assert suggested.top().bundle_key == _PRESELECTED_KEY
++
++    @pytest.mark.asyncio
++    async def test_no_intent_forwarded_when_not_provided(self) -> None:
++        extraction = ExtractionResult(session_id="s5")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s5",
++            user_message="I need something",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need something")],
++            confirmed=False,
++        )
++
++        request = interpreter.interpret.call_args.args[0]
++        assert request.preselected_intent is None
++
++
++class TestForcePreviewing:
++    @pytest.mark.asyncio
++    async def test_force_preview_returns_ready_for_preview_with_warning(self) -> None:
++        extraction = ExtractionResult(session_id="s6")
++        interpreter = _make_interpreter_mock(extraction)
++        interpreter.top_bundle = MagicMock(
++            return_value=MagicMock(bundle_key="hr_management")
++        )
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s6",
++            user_message="I need an HR tool",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need an HR tool")],
++            confirmed=False,
++            force_preview=True,
++        )
++
++        assert result["status"] == "ready_for_preview"
++        assert result.get("warning") is not None
++        assert "incomplete" in str(result.get("warning")).lower()
++        assert result.get("preview_type") == "early"
++
++    @pytest.mark.asyncio
++    async def test_force_preview_does_not_call_replier(self) -> None:
++        extraction = ExtractionResult(session_id="s7")
++        interpreter = _make_interpreter_mock(extraction)
++        interpreter.top_bundle = MagicMock(
++            return_value=MagicMock(bundle_key="ticketing")
++        )
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        await flow.process_turn(
++            session_id="s7",
++            user_message="build it now",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="build it now")],
++            confirmed=False,
++            force_preview=True,
++        )
++
++        replier.build_clarification.assert_not_awaited()
++        replier.build_bundle_suggestion.assert_not_awaited()
++
++    @pytest.mark.asyncio
++    async def test_preview_keyword_in_message_triggers_early_preview(self) -> None:
++        extraction = ExtractionResult(session_id="s8")
++        interpreter = _make_interpreter_mock(extraction)
++        interpreter.top_bundle = MagicMock(
++            return_value=MagicMock(bundle_key="ticketing")
++        )
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s8",
++            user_message="preview now",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="preview now")],
++            confirmed=False,
++            force_preview=False,
++        )
++
++        assert result["status"] == "ready_for_preview"
++        assert result.get("preview_type") == "early"
++        assert result.get("warning") is not None
++
++    @pytest.mark.asyncio
++    async def test_force_preview_with_preselected_bundle_returns_preselected_key(
++        self,
++    ) -> None:
++        extraction = ExtractionResult(session_id="s9")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s9",
++            user_message="show preview",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="show preview")],
++            confirmed=False,
++            preselected_bundle_key=_PRESELECTED_KEY,
++            force_preview=True,
++        )
++
++        assert result["status"] == "ready_for_preview"
++        assert result.get("bundle_key") == _PRESELECTED_KEY
++        assert result.get("preview_type") == "early"
++
++    @pytest.mark.asyncio
++    async def test_force_preview_falls_back_to_all_microservices_when_no_bundle(
++        self,
++    ) -> None:
++        extraction = ExtractionResult(session_id="s11")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s11",
++            user_message="just show me anything",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="just show me anything")],
++            confirmed=False,
++            force_preview=True,
++        )
++
++        assert result["status"] == "ready_for_preview"
++        assert result.get("bundle_key") == "all_microservices"
++        assert result.get("preview_type") == "early"
++        assert result.get("warning") is not None
++
++    @pytest.mark.asyncio
++    async def test_confirmed_path_returns_preview_type_confirmed(
++        self,
++    ) -> None:
++        extraction = ExtractionResult(session_id="s12")
++        interpreter = _make_interpreter_mock(extraction)
++        interpreter.top_bundle = MagicMock(
++            return_value=MagicMock(bundle_key="hr_management")
++        )
++        replier = _make_replier_mock()
++        replier.build_clarification = AsyncMock(return_value=(None, None))
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s12",
++            user_message="yes confirm",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="yes confirm")],
++            confirmed=True,
++        )
++
++        assert result["status"] == "ready_for_preview"
++        assert result.get("preview_type") == "confirmed"
++        assert result.get("warning") is None
++
++    @pytest.mark.asyncio
++    async def test_no_force_preview_and_no_keyword_continues_normal_flow(
++        self,
++    ) -> None:
++        extraction = ExtractionResult(session_id="s10")
++        interpreter = _make_interpreter_mock(extraction)
++        replier = _make_replier_mock()
++        flow = _make_flow(interpreter, replier)
++
++        result = await flow.process_turn(
++            session_id="s10",
++            user_message="I need something",
++            accumulated_extraction=None,
++            history=[ConversationMessage(role="user", content="I need something")],
++            confirmed=False,
++            force_preview=False,
++        )
++
++        assert result.get("preview_type") is None
++        assert result.get("warning") is None

@@ -9,7 +9,6 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState
 
-
 SYSTEM_PROMPT = (
     "You are a friendly assistant helping someone configure their team's workspace. "
     "Ask ONE natural, conversational question to learn the missing detail. "
@@ -88,5 +87,8 @@ async def clarification(state: OnboardingState, config: RunnableConfig) -> Comma
     answer = str(user_reply).strip() if user_reply else ""
     return Command(
         goto="conversation_classifier",
-        update={"messages": [HumanMessage(content=answer, name="user")], "thinking_trace": [step]},
+        update={
+            "messages": [HumanMessage(content=answer, name="user")],
+            "thinking_trace": [step],
+        },
     )

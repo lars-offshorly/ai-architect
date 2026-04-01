@@ -3,7 +3,9 @@ from __future__ import annotations
 from domain.services.bundle_resolution import BundleResolutionService
 
 
-def _make_candidates(*bundle_keys_and_confidences: tuple[str, float]) -> list[dict[str, object]]:
+def _make_candidates(
+    *bundle_keys_and_confidences: tuple[str, float],
+) -> list[dict[str, object]]:
     return [
         {
             "bundle_key": key,
@@ -18,7 +20,9 @@ def _make_candidates(*bundle_keys_and_confidences: tuple[str, float]) -> list[di
 
 def test_rank_returns_sorted_by_confidence() -> None:
     service = BundleResolutionService()
-    candidates = _make_candidates(("hr_hub", 0.4), ("project_ops", 0.8), ("generic", 0.2))
+    candidates = _make_candidates(
+        ("hr_hub", 0.4), ("project_ops", 0.8), ("generic", 0.2)
+    )
     result = service.rank("session-1", candidates)
     keys = [s.bundle_key for s in result.suggestions]
     assert keys == ["project_ops", "hr_hub", "generic"]
@@ -50,7 +54,9 @@ def test_top_returns_highest_confidence() -> None:
 
 def test_above_threshold_filters_correctly() -> None:
     service = BundleResolutionService()
-    candidates = _make_candidates(("hr_hub", 0.9), ("project_ops", 0.5), ("generic", 0.3))
+    candidates = _make_candidates(
+        ("hr_hub", 0.9), ("project_ops", 0.5), ("generic", 0.3)
+    )
     result = service.rank("session-1", candidates)
     above = result.above_threshold(0.6)
     assert len(above) == 1

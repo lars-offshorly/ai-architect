@@ -14,7 +14,9 @@ class ConversationRepository:
     def get_messages(self, session_id: str) -> list[ConversationMessage]:
         return list(self._messages.get(session_id, []))
 
-    def get_recent_messages(self, session_id: str, window: int) -> list[ConversationMessage]:
+    def get_recent_messages(
+        self, session_id: str, window: int
+    ) -> list[ConversationMessage]:
         messages = self._messages.get(session_id, [])
         return list(messages[-window:])
 

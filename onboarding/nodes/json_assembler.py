@@ -14,7 +14,6 @@ from langgraph.graph import END
 
 from ..states import OnboardingState
 
-
 CATALOG = BundleCatalog()
 
 
@@ -75,5 +74,5 @@ async def json_assembler(state: OnboardingState) -> Command:
             "generation_json": output.generation_json.model_dump(),
             "dummy_data_json": output.dummy_data_json.model_dump(),
             "thinking_trace": [step],
-        }
+        },
     )

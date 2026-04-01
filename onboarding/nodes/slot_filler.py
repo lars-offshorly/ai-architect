@@ -10,7 +10,6 @@ from core import get_session_logger
 
 from ..states import OnboardingState
 
-
 CATALOG = BundleCatalog()
 
 
@@ -59,7 +58,11 @@ async def slot_filler(state: OnboardingState) -> Command:
         step = f"Slots: still need **{', '.join(missing_slots)}**"
         return Command(
             goto="clarification",
-            update={"slots": slots, "clarification_queue": missing_slots, "thinking_trace": [step]},
+            update={
+                "slots": slots,
+                "clarification_queue": missing_slots,
+                "thinking_trace": [step],
+            },
         )
 
     filled = ", ".join(f"{k}={v}" for k, v in slots.items() if v is not None)

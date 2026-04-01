@@ -10,7 +10,6 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingIntents, OnboardingState
 
-
 CATALOG = BundleCatalog()
 SYSTEM_PROMPT = (
     "Extract onboarding intent from the user's message about setting up their team workspace.\n"
@@ -52,8 +51,7 @@ def _extract_team_size(message: str) -> int | None:
 
 def _catalog_context() -> str:
     entries = [
-        f"- {bundle.bundle_key}: {bundle.description}"
-        for bundle in CATALOG.list_all()
+        f"- {bundle.bundle_key}: {bundle.description}" for bundle in CATALOG.list_all()
     ]
     return "\n".join(entries)
 
@@ -113,12 +111,20 @@ async def intent_extraction(state: OnboardingState) -> Command:
         bundle_step = f"Bundle detected: **{intents.bundle}** ({conf_pct} confidence)"
         return Command(
             goto="slot_filler",
-            update={"onboarding_intents": intents, "slots": slots, "thinking_trace": [step, bundle_step]},
+            update={
+                "onboarding_intents": intents,
+                "slots": slots,
+                "thinking_trace": [step, bundle_step],
+            },
         )
 
     session_logger.warning("Intent extraction could not determine a valid bundle")
     bundle_step = f"Bundle unclear ({conf_pct} confidence) — asking for more context"
     return Command(
         goto="clarification",
-        update={"onboarding_intents": intents, "slots": slots, "thinking_trace": [step, bundle_step]},
+        update={
+            "onboarding_intents": intents,
+            "slots": slots,
+            "thinking_trace": [step, bundle_step],
+        },
     )

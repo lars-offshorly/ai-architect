@@ -7,7 +7,6 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState, TurnClassification
 
-
 TURN_ROUTING: dict[str, str] = {
     "new_onboarding": "intent_extraction",
     "clarification_answer": "slot_filler",
@@ -70,9 +69,14 @@ async def conversation_classifier(state: OnboardingState) -> Command:
     except (RuntimeError, TypeError, ValueError) as exc:
         session_logger.error("Turn classification failed: %s", exc)
         step = f"Turn #{turn_count}: classification failed — routing to clarification"
-        return Command(goto="clarification", update={"turn_count": turn_count, "thinking_trace": [step]})
+        return Command(
+            goto="clarification",
+            update={"turn_count": turn_count, "thinking_trace": [step]},
+        )
 
     target_node = TURN_ROUTING.get(classification.turn_type, "clarification")
     session_logger.info("Turn classified as %s", classification.turn_type)
     step = f"Turn #{turn_count}: classified as **{classification.turn_type}**"
-    return Command(goto=target_node, update={"turn_count": turn_count, "thinking_trace": [step]})
+    return Command(
+        goto=target_node, update={"turn_count": turn_count, "thinking_trace": [step]}
+    )

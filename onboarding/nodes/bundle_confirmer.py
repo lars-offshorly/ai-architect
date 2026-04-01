@@ -10,7 +10,6 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState
 
-
 CATALOG = BundleCatalog()
 SYSTEM_PROMPT = (
     "You are a friendly workspace setup assistant who just gathered information from the user. "
@@ -39,9 +38,7 @@ async def bundle_confirmer(state: OnboardingState, config: RunnableConfig) -> Co
     intents = state.get("onboarding_intents")
     fallback_bundle = CATALOG.get_fallback()
     bundle_key = (
-        intents.bundle
-        if intents and intents.bundle
-        else fallback_bundle.bundle_key
+        intents.bundle if intents and intents.bundle else fallback_bundle.bundle_key
     )
     bundle = CATALOG.get(bundle_key) or CATALOG.get_fallback()
     slots = dict(state.get("slots", {}))

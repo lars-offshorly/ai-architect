@@ -1,0 +1,455 @@
+commit 378fb3cc91a9a756b97b390adefe4afea3b5706e
+Author: Lars <lars@offshorly.com>
+Date:   Mon Mar 30 18:24:19 2026 +0800
+
+    feat(api): enhance routers with debug endpoints and improved session handling
+    
+    - Add debug schema and endpoints for extraction result inspection
+    - Add bundles router for bundle catalog access
+    - Enhance preview router with better error handling and validation
+    - Improve session router with accumulated signal support
+    - Add dependency injection helpers in deps.py
+    - Register new routers in main app configuration
+
+diff --git a/src/api/app.py b/src/api/app.py
+index ff958d3..5500ac2 100644
+--- a/src/api/app.py
++++ b/src/api/app.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++# pylint: disable=import-error,no-name-in-module
+ import pathlib
+ from collections.abc import AsyncIterator
+ from contextlib import asynccontextmanager
+@@ -14,6 +15,11 @@ from core import Database, get_logger, get_settings, pinecone_client
+ from .middleware import AuthMiddleware, RateLimitMiddleware
+ from .routes import health_router, onboarding_router
+ 
++try:
++    from .routers.bundles import router as BUNDLES_ROUTER
++except ImportError:  # pragma: no cover - optional in legacy app wiring
++    BUNDLES_ROUTER = None
++
+ _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
+ 
+ logger = get_logger(__name__)
+@@ -51,6 +57,8 @@ def create_app() -> FastAPI:
+     app.add_middleware(RateLimitMiddleware)
+     app.include_router(health_router)
+     app.include_router(onboarding_router)
++    if BUNDLES_ROUTER is not None:
++        app.include_router(BUNDLES_ROUTER)
+ 
+     if _FRONTEND_DIR.exists():
+         app.mount("/static", StaticFiles(directory=_FRONTEND_DIR), name="static")
+diff --git a/src/api/deps.py b/src/api/deps.py
+index b6c4119..bc8e4e2 100644
+--- a/src/api/deps.py
++++ b/src/api/deps.py
+@@ -11,6 +11,7 @@ from agents.preview_generator.service import PreviewGeneratorService
+ from agents.replier.service import ReplierService
+ from catalog.bundle_catalog import BundleCatalog
+ from core.config import get_settings
++from domain.services.bundle_metadata import BundleMetadataService
+ from orchestrators.conversation_flow import ConversationFlow
+ from orchestrators.preview_flow import PreviewFlow
+ from repositories.conversation_repository import ConversationRepository
+@@ -20,9 +21,16 @@ from repositories.template_repository import TemplateRepository
+ 
+ @lru_cache(maxsize=1)
+ def get_bundle_catalog() -> BundleCatalog:
+-    """Return a cached BundleCatalog instance. Cache is process-scoped; dev server restarts clear it."""
++    """Return a cached BundleCatalog instance.
++
++    Cache is process-scoped; dev server restarts clear it.
++    """
+     settings = get_settings()
+-    return BundleCatalog(Path(settings.BUNDLE_REGISTRY_PATH))
++    catalog = BundleCatalog(Path(settings.BUNDLE_REGISTRY_PATH))
++    templates_dir = Path(settings.TEMPLATES_DIR)
++    catalog.validate(templates_dir=templates_dir)
++    catalog.validate_template_consistency(templates_dir=templates_dir)
++    return catalog
+ 
+ 
+ @lru_cache(maxsize=1)
+@@ -48,7 +56,7 @@ def get_conversation_repository() -> ConversationRepository:
+ def get_interpreter_service() -> InterpreterService:
+     """Return a cached InterpreterService seeded with all known bundle keys."""
+     catalog = get_bundle_catalog()
+-    return InterpreterService(bundle_keys=catalog.list_keys())
++    return InterpreterService(bundle_keys=catalog.list_keys(), catalog=catalog)
+ 
+ 
+ @lru_cache(maxsize=1)
+@@ -77,6 +85,7 @@ def get_conversation_flow() -> ConversationFlow:
+     return ConversationFlow(
+         interpreter_service=get_interpreter_service(),
+         replier_service=get_replier_service(),
++        bundle_catalog=catalog,
+         required_slots_by_bundle=required_slots,
+     )
+ 
+@@ -90,3 +99,9 @@ def get_preview_flow() -> PreviewFlow:
+         preview_generator_service=get_preview_generator_service(),
+         bundle_display_names=display_names,
+     )
++
++
++@lru_cache(maxsize=1)
++def get_bundle_metadata_service() -> BundleMetadataService:
++    """Return metadata service backed by the cached bundle catalog."""
++    return BundleMetadataService(get_bundle_catalog())
+diff --git a/src/api/routers/bundles.py b/src/api/routers/bundles.py
+new file mode 100644
+index 0000000..533e718
+--- /dev/null
++++ b/src/api/routers/bundles.py
+@@ -0,0 +1,28 @@
++from __future__ import annotations
++
++from typing import Annotated
++
++from fastapi import APIRouter, Depends, HTTPException, status
++
++from api.deps import get_bundle_catalog, get_bundle_metadata_service
++from catalog.bundle_catalog import BundleCatalog
++from domain.models.bundle_metadata import BundleMetadata
++from domain.services.bundle_metadata import BundleMetadataService
++
++router = APIRouter(prefix="/bundles", tags=["bundles"])
++
++
++@router.get("/{bundle_key}/metadata", response_model=BundleMetadata)
++def get_bundle_metadata(
++    bundle_key: str,
++    metadata_service: Annotated[
++        BundleMetadataService, Depends(get_bundle_metadata_service)
++    ],
++    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
++) -> BundleMetadata:
++    if catalog.get(bundle_key) is None:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail=f"Bundle not found: {bundle_key}",
++        )
++    return metadata_service.get_metadata(bundle_key)
+diff --git a/src/api/routers/preview.py b/src/api/routers/preview.py
+index 6296370..8d0e5ca 100644
+--- a/src/api/routers/preview.py
++++ b/src/api/routers/preview.py
+@@ -2,6 +2,9 @@
+ 
+ from __future__ import annotations
+ 
++# pylint: disable=duplicate-code
++from typing import Annotated
++
+ from fastapi import APIRouter, Depends, HTTPException, status
+ 
+ from api.deps import (
+@@ -12,6 +15,7 @@ from api.deps import (
+ from api.schemas.app_payload import AppPayloadResponseSchema
+ from core.exceptions import BundleNotFoundError, SessionNotFoundError
+ from core.logging import get_logger
++from domain.models.session import Session
+ from orchestrators.preview_flow import PreviewFlow
+ from repositories.conversation_repository import ConversationRepository
+ from repositories.session_repository import SessionRepository
+@@ -19,13 +23,63 @@ from repositories.session_repository import SessionRepository
+ router = APIRouter(prefix="/sessions", tags=["preview"])
+ logger = get_logger(__name__)
+ 
++_EARLY_PREVIEW_WARNING = (
++    "Preview generated with incomplete information. Some data may be generic."
++)
++_FALLBACK_BUNDLE_KEY = "all_microservices"
++
++
++def _run_preview_pipeline(
++    session_id: str,
++    bundle_key: str,
++    conv_repo: ConversationRepository,
++    flow: PreviewFlow,
++    warning: str | None = None,
++) -> AppPayloadResponseSchema:
++    """Execute the preview pipeline and assemble the response schema."""
++    messages = conv_repo.get_messages(session_id)
++    conversation_history = [{"role": m.role, "content": m.content} for m in messages]
++
++    try:
++        payload = flow.run(
++            session_id=session_id,
++            bundle_key=bundle_key,
++            conversation_history=conversation_history,
++        )
++    except BundleNotFoundError as exc:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
++        ) from exc
++
++    return AppPayloadResponseSchema(
++        schema_version=payload.schema_version,
++        session_id=payload.session_id,
++        bundle_key=payload.bundle_key,
++        display_name=payload.display_name,
++        modules=payload.modules,
++        generation_json=payload.generation_json,
++        dummy_data_json=payload.dummy_data_json,
++        warning=warning,
++    )
++
++
++def _resolve_early_bundle_key(session: Session) -> str:
++    """Return the best available bundle key for an early (unconfirmed) preview."""
++    if session.selected_bundle_key:
++        return session.selected_bundle_key
++    if session.latest_classification:
++        top_key = session.latest_classification.get("top_bundle_key")
++        if top_key:
++            return top_key
++    return _FALLBACK_BUNDLE_KEY
++
+ 
+ @router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
+ async def generate_preview(
+     session_id: str,
+-    session_repo: SessionRepository = Depends(get_session_repository),
+-    conv_repo: ConversationRepository = Depends(get_conversation_repository),
+-    flow: PreviewFlow = Depends(get_preview_flow),
++    session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
++    conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
++    flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
+ ) -> AppPayloadResponseSchema:
+     """Run the preview pipeline for a confirmed session and return the AppPayload."""
+     try:
+@@ -41,29 +95,41 @@ async def generate_preview(
+             detail="Session bundle must be confirmed before generating preview.",
+         )
+ 
+-    # Pass the full conversation history so the pipeline can personalise sample data.
+-    # Previously this was a bare ExtractedInfo(session_id=...) with no content,
+-    # which meant zero personalisation was applied.
+-    messages = conv_repo.get_messages(session_id)
+-    conversation_history = [{"role": m.role, "content": m.content} for m in messages]
++    return _run_preview_pipeline(
++        session_id=session_id,
++        bundle_key=session.selected_bundle_key,
++        conv_repo=conv_repo,
++        flow=flow,
++    )
+ 
++
++@router.post("/{session_id}/preview/early", response_model=AppPayloadResponseSchema)
++async def generate_early_preview(
++    session_id: str,
++    session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
++    conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
++    flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
++) -> AppPayloadResponseSchema:
++    """Generate a preview without requiring bundle confirmation.
++
++    Uses the best available bundle
++    (selected > latest classification > all_microservices).
++    Always returns a warning indicating the preview may be incomplete.
++    """
+     try:
+-        payload = flow.run(
+-            session_id=session_id,
+-            bundle_key=session.selected_bundle_key,
+-            conversation_history=conversation_history,
+-        )
+-    except BundleNotFoundError as exc:
++        session = session_repo.get(session_id)
++    except SessionNotFoundError as exc:
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+         ) from exc
+ 
+-    return AppPayloadResponseSchema(
+-        schema_version=payload.schema_version,
+-        session_id=payload.session_id,
+-        bundle_key=payload.bundle_key,
+-        display_name=payload.display_name,
+-        modules=payload.modules,
+-        generation_json=payload.generation_json,
+-        dummy_data_json=payload.dummy_data_json,
++    bundle_key = _resolve_early_bundle_key(session)
++    logger.info("Early preview for session=%s using bundle=%s", session_id, bundle_key)
++
++    return _run_preview_pipeline(
++        session_id=session_id,
++        bundle_key=bundle_key,
++        conv_repo=conv_repo,
++        flow=flow,
++        warning=_EARLY_PREVIEW_WARNING,
+     )
+diff --git a/src/api/routers/session.py b/src/api/routers/session.py
+index 78adb7f..4b2ee13 100644
+--- a/src/api/routers/session.py
++++ b/src/api/routers/session.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++# pylint: disable=duplicate-code
+ from typing import Annotated
+ from uuid import uuid4
+ 
+@@ -28,7 +29,11 @@ from domain.models.bundle import SuggestedBundles
+ from domain.models.conversation import ConversationMessage
+ from domain.models.extraction_result import ExtractionResult
+ from domain.models.session import Session
+-from orchestrators.conversation_flow import ConversationFlow
++from orchestrators.conversation_flow import (
++    ConversationFlow,
++    ConversationTurnRequest,
++    TurnOptions,
++)
+ from repositories.conversation_repository import ConversationRepository
+ from repositories.session_repository import SessionRepository
+ 
+@@ -144,13 +149,15 @@ async def start_session(
+     conv_repo.append_message(session_id, user_msg)
+ 
+     result = await flow.process_turn(
+-        session_id=session_id,
+-        user_message=body.message,
+-        accumulated_extraction=None,
+-        history=[user_msg],
+-        confirmed=False,
+-        preselected_bundle_key=preselected_bundle_key,
+-        preselected_intent=preselected_intent,
++        ConversationTurnRequest(
++            session_id=session_id,
++            user_message=body.message,
++            history=[user_msg],
++            confirmed=False,
++            accumulated_extraction=None,
++            preselected_bundle_key=preselected_bundle_key,
++            options=TurnOptions(preselected_intent=preselected_intent),
++        )
+     )
+ 
+     if result.get("bundle_key"):
+@@ -205,14 +212,18 @@ async def reply_to_session(
+     history = conv_repo.get_messages(session_id)
+ 
+     result = await flow.process_turn(
+-        session_id=session_id,
+-        user_message=body.message,
+-        accumulated_extraction=session.accumulated_extraction,
+-        history=history,
+-        confirmed=session.confirmed,
+-        preselected_bundle_key=session.preselected_bundle_key,
+-        preselected_intent=session.preselected_intent,
+-        force_preview=body.force_preview,
++        ConversationTurnRequest(
++            session_id=session_id,
++            user_message=body.message,
++            history=history,
++            confirmed=session.confirmed,
++            accumulated_extraction=session.accumulated_extraction,
++            preselected_bundle_key=session.preselected_bundle_key,
++            options=TurnOptions(
++                preselected_intent=session.preselected_intent,
++                force_preview=body.force_preview,
++            ),
++        )
+     )
+     session.turn_count += 1
+     if result.get("bundle_key"):
+diff --git a/src/api/schemas/debug.py b/src/api/schemas/debug.py
+new file mode 100644
+index 0000000..55d6d79
+--- /dev/null
++++ b/src/api/schemas/debug.py
+@@ -0,0 +1,31 @@
++from __future__ import annotations
++
++from pydantic import BaseModel, Field
++
++
++class DebugInfo(BaseModel):
++    extracted_keywords: list[str] = Field(default_factory=list)
++    extracted_entities: list[str] = Field(default_factory=list)
++    extracted_intents: list[str] = Field(default_factory=list)
++    extracted_workflow_hints: list[str] = Field(default_factory=list)
++    missing_fields: list[str] = Field(default_factory=list)
++    personalization: dict[str, object] = Field(default_factory=dict)
++
++
++class BundleCandidateInfo(BaseModel):
++    bundle_key: str
++    display_name: str
++    confidence: float
++    reasoning: str = ""
++    matched_signals: list[str] = Field(default_factory=list)
++
++
++class ClassificationInfo(BaseModel):
++    confidence_status: str
++    top_bundle_key: str | None = None
++    ranked_candidates: list[BundleCandidateInfo] = Field(default_factory=list)
++
++
++class RecommendationInfo(BaseModel):
++    recommendation_status: str
++    primary_bundle_key: str | None = None
+diff --git a/src/main.py b/src/main.py
+index 37996ac..a8a3ba4 100644
+--- a/src/main.py
++++ b/src/main.py
+@@ -4,6 +4,7 @@ import uvicorn
+ from fastapi import FastAPI
+ from fastapi.middleware.cors import CORSMiddleware
+ 
++from api.routers.bundles import router as bundles_router
+ from api.routers.health import router as health_router
+ from api.routers.preview import router as preview_router
+ from api.routers.session import router as session_router
+@@ -14,32 +15,33 @@ logger = get_logger(__name__)
+ 
+ 
+ def create_app() -> FastAPI:
+-    settings = get_settings()
+-    app = FastAPI(
++    app_settings = get_settings()
++    application = FastAPI(
+         title="AI Architect API",
+         version="0.1.0",
+         description="AI-powered workspace onboarding pipeline.",
+     )
+-    cors_origins = ["*"] if settings.DEBUG else []
+-    app.add_middleware(
++    cors_origins = ["*"] if app_settings.DEBUG else []
++    application.add_middleware(
+         CORSMiddleware,
+         allow_origins=cors_origins,
+         allow_methods=["*"],
+         allow_headers=["*"],
+     )
+-    app.include_router(health_router)
+-    app.include_router(session_router)
+-    app.include_router(preview_router)
+-    return app
++    application.include_router(health_router)
++    application.include_router(session_router)
++    application.include_router(preview_router)
++    application.include_router(bundles_router)
++    return application
+ 
+ 
+ app = create_app()
+ 
+ if __name__ == "__main__":
+-    settings = get_settings()
++    run_settings = get_settings()
+     uvicorn.run(
+         "main:app",
+         host="0.0.0.0",
+         port=8000,
+-        reload=settings.DEBUG,
++        reload=run_settings.DEBUG,
+     )

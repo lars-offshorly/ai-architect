@@ -11,7 +11,6 @@ from core import Database, get_session_logger
 
 from .graph import build_onboarding_graph
 
-
 _CATALOG = BundleCatalog()
 
 
