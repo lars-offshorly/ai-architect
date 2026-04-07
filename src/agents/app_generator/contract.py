@@ -15,9 +15,7 @@ class AppPayloadContract(BaseModel):
     _REQUIRED_GENERATION_KEYS: frozenset[str] = frozenset(
         {"schema_version", "bundle_key", "modules", "config"}
     )
-    _REQUIRED_DUMMY_KEYS: frozenset[str] = frozenset(
-        {"bundle_key", "stores"}
-    )
+    _REQUIRED_DUMMY_KEYS: frozenset[str] = frozenset({"bundle_key", "stores"})
 
     def validate_contract(self) -> list[str]:
         errors: list[str] = []

@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "field_service",
-  "display_name": "Field Service",
-  "modules": ["work_orders", "scheduling", "forms", "dashboard"],
+  "bundle_key": "ticketing",
   "stores": {
     "work_orders": [
       {"id": "wo-001", "title": "AC Repair — {{client_name}}", "status": "dispatched", "priority": "high", "technician": "{{technician}}", "zone": "{{zone}}", "scheduled_date": "2026-01-20T09:00:00Z"},

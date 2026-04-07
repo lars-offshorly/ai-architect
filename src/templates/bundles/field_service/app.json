@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "field_service",
-  "display_name": "Field Service",
-  "modules": ["work_orders", "scheduling", "forms", "dashboard"],
+  "bundle_key": "ticketing",
   "config": {
     "work_order_statuses": ["pending", "dispatched", "in_progress", "completed", "cancelled"],
     "work_order_priorities": ["low", "medium", "high", "emergency"],
