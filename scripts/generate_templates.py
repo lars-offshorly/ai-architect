@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Scaffold a new bundle template directory with empty preview/app/dummy_data JSON files."""
+
 from __future__ import annotations
 
 import json
@@ -33,9 +34,13 @@ _DUMMY_DATA_STUB = {
 }
 
 
-def _fill(stub: dict[str, object], bundle_key: str, display_name: str) -> dict[str, object]:
+def _fill(
+    stub: dict[str, object], bundle_key: str, display_name: str
+) -> dict[str, object]:
     raw = json.dumps(stub)
-    raw = raw.replace("{bundle_key}", bundle_key).replace("{display_name}", display_name)
+    raw = raw.replace("{bundle_key}", bundle_key).replace(
+        "{display_name}", display_name
+    )
     return json.loads(raw)  # type: ignore[return-value]
 
 

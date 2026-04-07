@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Validate all bundle template JSON files against required schema keys."""
+
 from __future__ import annotations
 
 import json

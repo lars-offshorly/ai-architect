@@ -190,9 +190,7 @@ class FakeStructuredModel:
         if self._schema is PersonalisationOutput:
             session_id = _extract_prompt_value(message_text, "session_id: ")
             bundle = _extract_prompt_value(message_text, "bundle: ") or "generic"
-            entity_type = (
-                _extract_prompt_value(message_text, "entity_type: ") or "work"
-            )
+            entity_type = _extract_prompt_value(message_text, "entity_type: ") or "work"
             industry_hint = _extract_prompt_value(message_text, "Industry: ")
             slots_payload = _extract_prompt_value(message_text, "All filled slots: ")
             slots = _load_slots(slots_payload)
@@ -208,7 +206,9 @@ class FakeStructuredModel:
 
 
 class FakeChatModel:
-    def with_structured_output(self, schema: type[object], **kwargs: object) -> FakeStructuredModel:
+    def with_structured_output(
+        self, schema: type[object], **kwargs: object
+    ) -> FakeStructuredModel:
         return FakeStructuredModel(schema)
 
     async def ainvoke(self, messages: list[object]) -> AIMessage:
@@ -324,6 +324,7 @@ def _patch_pipeline_dependencies(
     memory: InMemorySaver,
 ) -> None:
     import sys
+
     cc_mod = sys.modules["onboarding.nodes.conversation_classifier"]
     ie_mod = sys.modules["onboarding.nodes.intent_extraction"]
     cl_mod = sys.modules["onboarding.nodes.clarification"]

@@ -412,7 +412,9 @@ class TestFullHttpFlow:
             assert reply_resp.status_code == 200
             assert reply_resp.json()["status"] == "pending_confirmation"
             assert reply_resp.json()["bundle_key"] == "hr_management"
-            assert get_session_repository().get(sid).selected_bundle_key == "hr_management"
+            assert (
+                get_session_repository().get(sid).selected_bundle_key == "hr_management"
+            )
 
             # Step 3: Confirm
             confirm_resp = await client.post(

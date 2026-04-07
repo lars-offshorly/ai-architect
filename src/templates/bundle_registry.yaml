@@ -16,7 +16,7 @@ bundles:
     display_name: HR Management
     primary_entity: people
     description: Handles employee lifecycle including hiring, onboarding, payroll, attendance, and performance management.
-    template_dir: hr_management
+    template_dir: hr_hub
     dummy_data_template_key: hr_management_base
     customizable_fields:
       - company_name
@@ -141,7 +141,7 @@ bundles:
     display_name: Ticketing Tool
     primary_entity: ticket
     description: Manages support requests and incidents through structured queue-based workflows.
-    template_dir: ticketing
+    template_dir: field_service
     dummy_data_template_key: ticketing_base
     customizable_fields:
       - company_name
@@ -252,7 +252,7 @@ bundles:
     display_name: Project Management
     primary_entity: project
     description: Supports planning, task assignment, progress monitoring, and delivery tracking for projects and teams.
-    template_dir: project_mgmt
+    template_dir: project_ops
     dummy_data_template_key: project_mgmt_base
     customizable_fields:
       - company_name

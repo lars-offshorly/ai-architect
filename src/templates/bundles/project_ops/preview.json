@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_ops",
-  "display_name": "Project Operations",
-  "modules": ["tasks", "timelines", "milestones", "dashboard"],
+  "bundle_key": "project_mgmt",
   "stores": {
     "tasks": [
       {"id": "task-001", "title": "Kickoff Meeting", "status": "done", "priority": "high", "assignee": "{{team_lead}}", "project": "{{project_name}}", "due_date": "2026-01-10T09:00:00Z"},
