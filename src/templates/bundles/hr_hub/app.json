@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
-  "display_name": "HR Hub",
-  "modules": ["tickets", "queues", "kpis", "dashboard"],
+  "bundle_key": "hr_management",
   "config": {
     "ticket_categories": ["leave", "onboarding", "offboarding", "policy", "payroll", "other"],
     "default_statuses": ["pending", "in_progress", "on_hold", "resolved", "closed"],

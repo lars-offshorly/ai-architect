@@ -86,7 +86,6 @@ def _seed_session(
 
 
 class TestEarlyPreviewEndpoint:
-
     @pytest.mark.asyncio
     async def test_early_preview_with_selected_bundle_returns_200(
         self, client: AsyncClient
@@ -183,7 +182,6 @@ class TestEarlyPreviewEndpoint:
 
 
 class TestForcePreviawViaReply:
-
     def _make_mock_flow(self, responses: list[dict]) -> object:
         """Return a mock ConversationFlow that yields from the given response list."""
         call_index = 0

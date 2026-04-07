@@ -1,8 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_ops",
-  "display_name": "Project Operations",
-  "modules": ["tasks", "timelines", "milestones", "dashboard"],
+  "bundle_key": "project_mgmt",
   "config": {
     "task_statuses": ["backlog", "in_progress", "review", "done", "blocked"],
     "task_priorities": ["low", "medium", "high", "critical"],
