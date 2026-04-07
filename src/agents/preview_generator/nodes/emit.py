@@ -108,16 +108,58 @@ def _build_config(
     permission_services: list[str],
     landing_pages: list[dict],
     kpi_metrics: list,
+    sample_tickets: list[dict],
+    sample_employees: list[dict],
 ) -> dict[str, object]:
     """Build the per-bundle config dict for generation_json."""
     config: dict[str, object] = {
         "permission_services": permission_services,
         "landing_pages": landing_pages,
     }
+
+    # Derive sample values from already-generated data
+    ticket_statuses = list(
+        dict.fromkeys(t.get("status", "") for t in sample_tickets if t.get("status"))
+    )
+    ticket_types = list(
+        dict.fromkeys(t.get("type", "") for t in sample_tickets if t.get("type"))
+    )
+    ticket_priorities = list(
+        dict.fromkeys(
+            t.get("priority", "") for t in sample_tickets if t.get("priority")
+        )
+    )
+    dept_names = list(
+        dict.fromkeys(
+            e.get("department", "") for e in sample_employees if e.get("department")
+        )
+    )
+
     fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
     kpi_keys = [k.key for k in kpi_metrics]
+
+    _field_values: dict[str, object] = {
+        "kpi_definitions": kpi_keys,
+        # ticketing bundle
+        "service_types": ticket_types,
+        "work_order_statuses": ticket_statuses,
+        "work_order_priorities": ticket_priorities,
+        # hr_hub bundle
+        "ticket_categories": ticket_types,
+        "default_statuses": ticket_statuses,
+        "default_priorities": ticket_priorities,
+        "queue_names": dept_names,
+        # project_mgmt bundle
+        "task_statuses": ticket_statuses,
+        "task_priorities": ticket_priorities,
+        "milestone_statuses": ["Planning", "In Progress", "Completed", "On Hold"],
+        # generic fallback fields
+        "ticket_statuses": ticket_statuses,
+        "ticket_priorities": ticket_priorities,
+    }
+
     for field in fields:
-        config[field] = kpi_keys if field == "kpi_definitions" else []
+        config[field] = _field_values.get(field, [])
     return config
 
 
@@ -172,6 +214,8 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
             state.permission_services,
             state.landing_pages,
             state.kpi_metrics,
+            state.sample_tickets,
+            state.sample_employees,
         ),
     )
 
