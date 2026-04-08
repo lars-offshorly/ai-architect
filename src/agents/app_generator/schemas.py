@@ -14,6 +14,8 @@ class KpiDefinitionItem(BaseModel):
 
     key: str = Field(description="Stable machine-readable KPI identifier.")
     label: str = Field(description="Human-readable KPI display name.")
+    # Sourced from KpiMetric.type in preview_generator/bundles/registry.py METRICS_CATALOG.
+    # Valid values: "percentage", "count", "duration", "status", "ratio".
     unit: str = Field(description="Display unit suffix, e.g. '%', 'days', 'tickets'.")
 
 
@@ -47,7 +49,7 @@ class HrHubConfig(BaseModel):
     )
 
 
-class ProjectOpsConfig(BaseModel):
+class ProjectMgmtConfig(BaseModel):
     """Config sub-schema for the Project Operations bundle"""
 
     task_statuses: list[str] = Field(
@@ -68,28 +70,7 @@ class ProjectOpsConfig(BaseModel):
     )
 
 
-class AssetMgmtConfig(BaseModel):
-    """Config sub-schema for the Asset Management bundle"""
-
-    asset_statuses: list[str] = Field(
-        min_length=1,
-        description="Asset lifecycle states.",
-    )
-    maintenance_types: list[str] = Field(
-        min_length=1,
-        description="Categories of maintenance activity.",
-    )
-    maintenance_statuses: list[str] = Field(
-        min_length=1,
-        description="Maintenance work order statuses.",
-    )
-    kpi_definitions: list[KpiDefinitionItem] = Field(
-        min_length=1,
-        description="KPI metrics displayed on the asset management dashboard.",
-    )
-
-
-class FieldServiceConfig(BaseModel):
+class TicketingConfig(BaseModel):
     """Config sub-schema for the Field Service bundle"""
 
     work_order_statuses: list[str] = Field(
@@ -159,9 +140,8 @@ class FeatureFlagItem(BaseModel):
 
 _BUNDLE_CONFIG_MODELS: dict[str, type[BaseModel]] = {
     "hr_hub": HrHubConfig,
-    "project_ops": ProjectOpsConfig,
-    "asset_mgmt": AssetMgmtConfig,
-    "field_service": FieldServiceConfig,
+    "project_mgmt": ProjectMgmtConfig,
+    "ticketing": TicketingConfig,
     "generic": GenericConfig,
 }
 
@@ -738,97 +718,6 @@ class WeaveStoreItem(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Asset and Maintenance store entities (Asset Management bundle)
-# ---------------------------------------------------------------------------
-
-
-class AssetStoreItem(BaseModel):
-    """An asset record inside ``stores.assets`` (Asset Management bundle)."""
-
-    id: str | int = Field(description="Asset identifier.")
-    name: str = Field(description="Asset display name.")
-    category: str | None = Field(default=None, description="Asset category slug.")
-    status: str | None = Field(default=None, description="Lifecycle state slug.")
-    location: str | None = Field(default=None, description="Physical location label.")
-    last_service: str | None = Field(
-        default=None, description="ISO 8601 most-recent-service timestamp."
-    )
-
-
-class MaintenanceStoreItem(BaseModel):
-    """A maintenance record inside ``stores.maintenance``"""
-
-    id: str | int = Field(description="Maintenance record identifier.")
-    asset_id: str | int | None = Field(
-        default=None, description="ID of the associated asset."
-    )
-    type: str | None = Field(
-        default=None, description="Maintenance activity type slug."
-    )
-    status: str | None = Field(default=None, description="Job status slug.")
-    technician: str | None = Field(
-        default=None, description="Name of the assigned technician."
-    )
-    scheduled_date: str | None = Field(
-        default=None, description="ISO 8601 scheduled start datetime."
-    )
-    completed_date: str | None = Field(
-        default=None, description="ISO 8601 completion datetime."
-    )
-    notes: str | None = Field(default=None, description="Optional free-text notes.")
-
-
-# ---------------------------------------------------------------------------
-# Work Order and Scheduling store entities (Field Service bundle)
-# ---------------------------------------------------------------------------
-
-
-class WorkOrderStoreItem(BaseModel):
-    """A work order record inside ``stores.work_orders``
-    (Field Service bundle).
-    """
-
-    id: str | int = Field(description="Work order identifier.")
-    title: str = Field(description="Work order description.")
-    status: str | None = Field(default=None, description="Lifecycle status slug.")
-    priority: str | None = Field(default=None, description="Priority level slug.")
-    service_type: str | None = Field(
-        default=None, description="Category of service activity."
-    )
-    technician: str | None = Field(
-        default=None, description="Name of the assigned technician."
-    )
-    zone: str | None = Field(default=None, description="Service zone label.")
-    scheduled_date: str | None = Field(
-        default=None, description="ISO 8601 scheduled datetime."
-    )
-    completed_date: str | None = Field(
-        default=None, description="ISO 8601 completion datetime."
-    )
-    location: str | None = Field(
-        default=None, description="Optional site address or location description."
-    )
-
-
-class SchedulingStoreItem(BaseModel):
-    """A technician scheduling record inside ``stores.scheduling``
-    (Field Service bundle).
-    """
-
-    id: str | int = Field(description="Scheduling record identifier.")
-    technician: str = Field(description="Technician name.")
-    zone: str | None = Field(
-        default=None, description="Service zone this technician covers."
-    )
-    available_slots: int | None = Field(
-        default=None, description="Number of open time slots remaining today."
-    )
-    booked_slots: int | None = Field(
-        default=None, description="Number of already-booked time slots today."
-    )
-
-
-# ---------------------------------------------------------------------------
 # Bundle-specific store container models
 # ---------------------------------------------------------------------------
 
@@ -842,9 +731,9 @@ class HrHubStores(BaseModel):
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
 
 
-class ProjectOpsStores(BaseModel):
-    """Store container for the Project Operations bundle
-    (``bundle_key='project_ops'``).
+class ProjectMgmtStores(BaseModel):
+    """Store container for the Project Management bundle
+    (``bundle_key='project_mgmt'``).
     """
 
     tasks: list[TaskStoreItem] = Field(default_factory=list)
@@ -854,26 +743,11 @@ class ProjectOpsStores(BaseModel):
     projects: list[ProjectStoreItem] = Field(default_factory=list)
     weaves: list[WeaveStoreItem] = Field(default_factory=list)
 
+class TicketingStores(BaseModel):
+    """Store container for the Ticketing bundle (``bundle_key='ticketing'``)."""
 
-class AssetMgmtStores(BaseModel):
-    """Store container for the Asset Management bundle
-    (``bundle_key='asset_mgmt'``).
-    """
-
-    assets: list[AssetStoreItem] = Field(default_factory=list)
-    maintenance: list[MaintenanceStoreItem] = Field(default_factory=list)
-    kpis: list[KpiStoreItem] = Field(default_factory=list)
-    dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
     tickets: list[TicketStoreItem] = Field(default_factory=list)
-
-
-class FieldServiceStores(BaseModel):
-    """Store container for the Field Service bundle
-    (``bundle_key='field_service'``).
-    """
-
-    work_orders: list[WorkOrderStoreItem] = Field(default_factory=list)
-    scheduling: list[SchedulingStoreItem] = Field(default_factory=list)
+    queues: list[QueueStoreItem] = Field(default_factory=list)
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
 
@@ -894,9 +768,8 @@ class GenericStores(BaseModel):
 
 _BUNDLE_STORES_MODELS: dict[str, type[BaseModel]] = {
     "hr_hub": HrHubStores,
-    "project_ops": ProjectOpsStores,
-    "asset_mgmt": AssetMgmtStores,
-    "field_service": FieldServiceStores,
+    "project_mgmt": ProjectMgmtStores,
+    "ticketing": TicketingStores,
     "generic": GenericStores,
 }
 
