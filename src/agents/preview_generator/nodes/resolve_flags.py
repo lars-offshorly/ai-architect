@@ -9,15 +9,12 @@ from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Catalog → registry key translation
-# BundleCatalog uses enriched bundle_registry.yaml at runtime.
-# Map catalog keys to the registry key that should be activated.
-# Keys absent from this map with no direct registry entry fall to Tier 3.
-# ---------------------------------------------------------------------------
-_CATALOG_TO_REGISTRY: dict[str, str] = {
-    "hr_management": "hr_hub",  # Dev A sends "hr_management"; registry key is "hr_hub"
-}
+from functools import lru_cache
+from catalog.bundle_catalog import BundleCatalog
+
+@lru_cache(maxsize=1)
+def _get_catalog_mapping() -> dict[str, str]:
+    return BundleCatalog().catalog_to_render_key()
 
 
 def _collect_bundle_ids(primary_key: str) -> list[str]:
@@ -58,7 +55,8 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
       resolved_bundle_ids, feature_flags, permission_services, landing_pages
     """
     catalog_key = state.bundle_key
-    bundle_key = _CATALOG_TO_REGISTRY.get(catalog_key, catalog_key)
+    mapping = _get_catalog_mapping()
+    bundle_key = mapping.get(catalog_key, catalog_key)
 
     if bundle_key not in BUNDLE_REGISTRY:
         logger.warning(

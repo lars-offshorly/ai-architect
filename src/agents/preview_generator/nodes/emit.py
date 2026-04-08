@@ -136,10 +136,12 @@ def _build_config(
     )
 
     fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
-    kpi_keys = [k.key for k in kpi_metrics]
 
     _field_values: dict[str, object] = {
-        "kpi_definitions": kpi_keys,
+        "kpi_definitions": [
+            {"key": k.key, "label": k.label, "unit": k.type}
+            for k in kpi_metrics
+        ],
         # ticketing bundle
         "service_types": ticket_types,
         "work_order_statuses": ticket_statuses,
@@ -206,7 +208,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     generation_json = GenerationJson(
         schema_version="1.0",
-        bundle_key=state.bundle_key,
+        bundle_key=registry_key,
         feature_flags=flag_list,
         modules=modules,
         config=_build_config(
@@ -222,7 +224,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     stores = _build_stores(registry_key, state)
 
     dummy_data_json = DummyDataJson(
-        bundle_key=state.bundle_key,
+        bundle_key=registry_key,
         session_id=state.session_id,
         company_name=company_name,
         stores=stores,

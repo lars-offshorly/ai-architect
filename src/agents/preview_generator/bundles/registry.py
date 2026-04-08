@@ -710,6 +710,13 @@ BUNDLE_REGISTRY: dict[str, dict] = {
         "compatible_addons": [],
         "default_metrics": [],
     },
+    "generic": {
+        "flags": [],
+        "permission_services": [],
+        "landing_pages": [],
+        "compatible_addons": [],
+        "default_metrics": [],
+    },
 }
 
 
