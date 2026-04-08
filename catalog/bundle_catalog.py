@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -36,6 +37,7 @@ class BundleDefinition(BaseModel):
     required_signals: list[str] = Field(default_factory=list)
     signal_boosts: dict[str, float] = Field(default_factory=dict)
     terminology: dict[str, str] = Field(default_factory=dict)
+    extraction_keywords: dict[str, Any] = Field(default_factory=dict)
 
     metadata: BundleMetadata | None = None
 

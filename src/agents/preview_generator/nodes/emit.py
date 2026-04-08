@@ -64,7 +64,7 @@ def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
 # "weaves"    → sample_weaves   (only included for weaves-enabled bundles)
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
-    "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},
+    "hr_management": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
 }
@@ -76,7 +76,7 @@ _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
 
 
 _BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
-    "hr_hub": [
+    "hr_management": [
         "ticket_categories",
         "default_statuses",
         "default_priorities",
@@ -208,7 +208,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     generation_json = GenerationJson(
         schema_version="1.0",
-        bundle_key=registry_key,
+        bundle_key=state.bundle_key,
         feature_flags=flag_list,
         modules=modules,
         config=_build_config(
@@ -224,7 +224,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     stores = _build_stores(registry_key, state)
 
     dummy_data_json = DummyDataJson(
-        bundle_key=registry_key,
+        bundle_key=state.bundle_key,
         session_id=state.session_id,
         company_name=company_name,
         stores=stores,

@@ -175,6 +175,10 @@ async def start_session(
             "top_bundle_key": (
                 top_candidate.bundle_key if top_candidate is not None else None
             ),
+            "suggestions": [
+                {"bundle_key": s.bundle_key, "confidence": s.confidence}
+                for s in suggested.suggestions
+            ],
         }
     session_repo.save(session)
 
@@ -243,6 +247,10 @@ async def reply_to_session(
             "top_bundle_key": (
                 top_candidate.bundle_key if top_candidate is not None else None
             ),
+            "suggestions": [
+                {"bundle_key": s.bundle_key, "confidence": s.confidence}
+                for s in reply_suggested.suggestions
+            ],
         }
     session_repo.save(session)
 

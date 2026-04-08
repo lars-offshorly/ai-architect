@@ -181,7 +181,7 @@ def test_config_task_statuses_populated():
 
 def test_config_hr_hub_statuses_populated():
     """hr_hub bundle config should have non-empty default_statuses."""
-    state = _make_full_state(bundle_key="hr_management", registry_key="hr_hub")
+    state = _make_full_state(bundle_key="hr_management", registry_key="hr_management")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
@@ -202,19 +202,20 @@ def test_config_milestone_statuses_static_defaults():
 
 
 def test_config_kpi_definitions_unchanged():
-    """kpi_definitions still contains the KPI keys regardless of bundle."""
+    """kpi_definitions contains {key, label, unit} objects for each KPI."""
     state = _make_full_state(bundle_key="ticketing", registry_key="ticketing")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
     assert "kpi_definitions" in config
     kpi_keys = [k.key for k in state.kpi_metrics]
-    assert config["kpi_definitions"] == kpi_keys
+    assert [d["key"] for d in config["kpi_definitions"]] == kpi_keys
+    assert all("label" in d and "unit" in d for d in config["kpi_definitions"])
 
 
 def test_config_queue_names_populated_for_hr():
     """hr_hub queue_names derived from employee departments."""
-    state = _make_full_state(bundle_key="hr_management", registry_key="hr_hub")
+    state = _make_full_state(bundle_key="hr_management", registry_key="hr_management")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]

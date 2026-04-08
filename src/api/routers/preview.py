@@ -14,6 +14,7 @@ from api.deps import (
     get_preview_flow,
     get_session_repository,
 )
+from core.config import get_settings
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.preview import EditPreviewRequestSchema
 from core.exceptions import BundleNotFoundError, SessionNotFoundError
@@ -33,8 +34,7 @@ _EARLY_PREVIEW_WARNING = (
 _FALLBACK_BUNDLE_KEY = "all_microservices"
 
 
-# pylint: disable=too-many-arguments,too-many-positional-arguments
-def _run_preview_pipeline(
+def _execute_preview_pipeline(
     session_id: str,
     bundle_key: str,
     conv_repo: ConversationRepository,
@@ -45,6 +45,12 @@ def _run_preview_pipeline(
 ) -> AppPayloadResponseSchema:
     """Execute the preview pipeline and assemble the response schema."""
     messages = conv_repo.get_messages(session_id)
+    if not messages:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No conversation history found. Preview requires at least one prompt.",
+        )
+
     conversation_history = [{"role": m.role, "content": m.content} for m in messages]
 
     try:
@@ -86,10 +92,17 @@ def _resolve_early_bundle_key(session: Session) -> str:
     if session.preselected_bundle_key:
         return session.preselected_bundle_key
     if session.latest_classification:
-        top_key = session.latest_classification.get("top_bundle_key")
-        if top_key:
-            return top_key
+        # Lars: Use confidence scores to separate "strong matches" from "weak guesses"
+        suggestions = session.latest_classification.get("suggestions", [])
+        if suggestions:
+            top = max(suggestions, key=lambda s: s.get("confidence", 0.0))
+            if top.get("confidence", 0.0) >= get_settings().CONFIDENCE_THRESHOLD:
+                bundle_key = top.get("bundle_key")
+                if bundle_key:
+                    return bundle_key
+
     return _FALLBACK_BUNDLE_KEY
+
 
 
 @router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
@@ -113,7 +126,7 @@ async def generate_preview(
             detail="Session bundle must be confirmed before generating preview.",
         )
 
-    return _run_preview_pipeline(
+    return _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
@@ -147,7 +160,7 @@ async def generate_early_preview(
     bundle_key = _resolve_early_bundle_key(session)
     logger.info("Early preview for session=%s using bundle=%s", session_id, bundle_key)
 
-    return _run_preview_pipeline(
+    return _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=bundle_key,
         conv_repo=conv_repo,

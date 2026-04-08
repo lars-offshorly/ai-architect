@@ -20,7 +20,10 @@ def test_selected_bundle_key_wins() -> None:
     session = _make_session(
         selected_bundle_key="project_mgmt",
         preselected_bundle_key="ticketing",
-        latest_classification={"top_bundle_key": "hr_management"},
+        latest_classification={
+            "top_bundle_key": "hr_management",
+            "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
+        },
     )
     assert _resolve_early_bundle_key(session) == "project_mgmt"
 
@@ -31,7 +34,10 @@ def test_preselected_bundle_key_used_when_no_selected(
     session = _make_session(
         selected_bundle_key=None,
         preselected_bundle_key="ticketing",
-        latest_classification={"top_bundle_key": "hr_management"},
+        latest_classification={
+            "top_bundle_key": "hr_management",
+            "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
+        },
     )
     assert _resolve_early_bundle_key(session) == "ticketing"
 
@@ -41,9 +47,26 @@ def test_latest_classification_used_when_no_preselected() -> None:
     session = _make_session(
         selected_bundle_key=None,
         preselected_bundle_key=None,
-        latest_classification={"top_bundle_key": "hr_management"},
+        latest_classification={
+            "top_bundle_key": "hr_management",
+            "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
+        },
     )
     assert _resolve_early_bundle_key(session) == "hr_management"
+
+
+def test_latest_classification_ignored_when_confidence_low() -> None:
+    """Lars: 0.3 confidence 'guess' should fall back to default."""
+    session = _make_session(
+        selected_bundle_key=None,
+        preselected_bundle_key=None,
+        latest_classification={
+            "top_bundle_key": "hr_management",
+            "suggestions": [{"bundle_key": "hr_management", "confidence": 0.3}],
+        },
+    )
+    # Threshold is 0.6, so 0.3 should fall through to all_microservices
+    assert _resolve_early_bundle_key(session) == "all_microservices"
 
 
 def test_fallback_bundle_key_when_nothing_set() -> None:

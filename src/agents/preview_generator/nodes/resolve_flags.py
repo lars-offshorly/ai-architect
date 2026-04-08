@@ -9,13 +9,6 @@ from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
 
-from functools import lru_cache
-from catalog.bundle_catalog import BundleCatalog
-
-@lru_cache(maxsize=1)
-def _get_catalog_mapping() -> dict[str, str]:
-    return BundleCatalog().catalog_to_render_key()
-
 
 def _collect_bundle_ids(primary_key: str) -> list[str]:
     """Return primary bundle key plus any known compatible addons."""
@@ -54,16 +47,13 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
     Returns updates for:
       resolved_bundle_ids, feature_flags, permission_services, landing_pages
     """
-    catalog_key = state.bundle_key
-    mapping = _get_catalog_mapping()
-    bundle_key = mapping.get(catalog_key, catalog_key)
+    bundle_key = state.bundle_key
 
     if bundle_key not in BUNDLE_REGISTRY:
         logger.warning(
-            "session=%s — bundle_key=%r (catalog=%r) not in registry, resolved nothing",
+            "session=%s — bundle_key=%r not in registry, resolved nothing",
             state.session_id,
             bundle_key,
-            catalog_key,
         )
         return {
             "resolved_bundle_ids": [],
@@ -71,14 +61,6 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
             "permission_services": [],
             "landing_pages": [],
         }
-
-    if bundle_key != catalog_key:
-        logger.info(
-            "session=%s — translated catalog key %r → registry key %r",
-            state.session_id,
-            catalog_key,
-            bundle_key,
-        )
 
     bundle_ids = _collect_bundle_ids(bundle_key)
     flag_names_to_enable, permission_services, landing_pages = _accumulate(bundle_ids)

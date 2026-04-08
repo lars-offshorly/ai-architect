@@ -88,11 +88,15 @@ bundles:
       people ops: 0.20
       recruitment: 0.10
       offboarding: 0.15
-      workforce: 0.10
+      workforce: 0.1
     terminology:
       primary_record_label: employee
       approver_label: manager
       request_label: leave request
+
+    extraction_keywords:
+      industry: ["onboarding", "offboarding", "employee", "headcount", "payroll", "performance review", "hr", "human resources", "leave", "attendance", "recruitment", "hiring", "org chart"]
+      industry_detail: "Human Resources"
 
     metadata:
       kpis:
@@ -212,6 +216,12 @@ bundles:
       handler_label: agent
       request_label: support request
 
+    extraction_keywords:
+      industry: ["support", "helpdesk", "help desk", "ticket", "issue", "request", "incident", "sla", "escalation", "resolution", "service desk"]
+      industry_detail: "IT Support / Service Desk"
+      work_types:
+        support_request: ["support", "helpdesk", "help desk", "ticket", "issue", "request", "incident", "sla", "escalation", "resolution", "service desk"]
+
     metadata:
       kpis:
         - avg_resolution_time
@@ -328,6 +338,13 @@ bundles:
       assignee_label: team member
       item_label: task
 
+    extraction_keywords:
+      industry: ["sprint", "standup", "backlog", "scrum", "kanban", "agile", "developer", "engineer", "software", "deploy", "release", "codebase", "repository", "pull request", "devops", "ci/cd"]
+      industry_detail: "Software / Technology"
+      work_types:
+        sprint: ["sprint", "sprints", "scrum", "kanban", "agile", "backlog", "backlogs", "standup", "standups", "velocity", "story points", "retrospective", "epic", "epics", "iteration", "iterations"]
+        waterfall: ["milestone", "phase", "waterfall", "gantt", "wbs", "work breakdown", "baseline", "deliverable", "gate review"]
+
     metadata:
       kpis:
         - on_time_delivery_rate
@@ -436,6 +453,10 @@ bundles:
       document_label: invoice
       summary_label: report
 
+    extraction_keywords:
+      industry: ["engagement", "consultant", "consulting", "deliverable", "client work", "statement of work", "sow", "retainer", "billable", "advisory"]
+      industry_detail: "Professional Services / Consulting"
+
     metadata:
       kpis:
         - gross_profit_margin
@@ -542,6 +563,10 @@ bundles:
       primary_record_label: campaign
       item_label: content piece
       tracker_label: campaign tracker
+
+    extraction_keywords:
+      industry: ["marketing", "campaign", "branding", "lead generation", "advertising", "digital marketing", "social media"]
+      industry_detail: "Marketing"
 
     metadata:
       kpis:
@@ -653,6 +678,10 @@ bundles:
       owner_label: account owner
       stage_label: pipeline stage
 
+    extraction_keywords:
+      industry: ["sales", "crm", "pipeline", "deal", "opportunity", "prospect"]
+      industry_detail: "Sales"
+
     metadata:
       kpis:
         - active_work_items
@@ -762,6 +791,10 @@ bundles:
       primary_record_label: patient record
       handler_label: healthcare provider
       request_label: appointment
+
+    extraction_keywords:
+      industry: ["patient", "medical", "healthcare", "clinic", "hospital", "appointment", "diagnosis", "treatment", "care plan", "provider"]
+      industry_detail: "Healthcare"
 
     metadata:
       kpis:
@@ -880,6 +913,12 @@ bundles:
       handler_label: attorney
       document_label: legal document
 
+    extraction_keywords:
+      industry: ["litigation", "matter", "attorney", "paralegal", "counsel", "court", "filing", "docket", "case", "law firm", "legal", "lawsuit", "plaintiff", "defendant", "deposition", "arbitration", "settlement"]
+      industry_detail: "Law / Litigation"
+      work_types:
+        litigation: ["litigation", "matter", "attorney", "paralegal", "counsel", "court", "filing", "docket", "case", "law firm", "legal", "lawsuit", "plaintiff", "defendant", "deposition", "arbitration", "settlement", "discovery"]
+
     metadata:
       kpis:
         - avg_case_duration
@@ -989,6 +1028,17 @@ bundles:
       site_label: site
       unit_label: work package
 
+    extraction_keywords:
+      industry:
+        - construction
+        - contractor
+        - building
+        - jobsite
+        - blueprint
+        - renovation
+        - site report
+      industry_detail: "Construction"
+
     metadata:
       kpis:
         - on_time_delivery_rate
@@ -1096,6 +1146,16 @@ bundles:
       primary_record_label: listing
       site_label: property
       unit_label: unit
+
+    extraction_keywords:
+      industry:
+        - real estate
+        - property
+        - listing
+        - tenant
+        - lease
+        - broker
+      industry_detail: "Real Estate"
 
     metadata:
       kpis:
@@ -1209,6 +1269,20 @@ bundles:
       participant_label: student
       facilitator_label: instructor
 
+    extraction_keywords:
+      industry:
+        - education
+        - course
+        - student
+        - learning
+        - training
+        - instructor
+        - curriculum
+        - certificate
+        - enrollment
+        - e-learning
+      industry_detail: "Education"
+
     metadata:
       kpis:
         - active_work_items
@@ -1246,7 +1320,7 @@ bundles:
   # 12. All Microservices
   # ---------------------------------------------------------------------------
   - bundle_key: all_microservices
-    render_key: hr_hub
+    render_key: all_microservices
     display_name: All Microservices
     primary_entity: work
     description: Comprehensive all-in-one operating system combining every available Knit service hub and tool.
@@ -1393,6 +1467,18 @@ bundles:
     signal_boosts: {}
     terminology:
       primary_record_label: work item
+
+    extraction_keywords:
+      features:
+        remote: ["remote", "distributed", "work from home", "wfh", "hybrid", "across time zones", "global team", "different locations"]
+        clients: ["clients", "client", "customers", "external", "client-facing", "customer success", "account"]
+      company_size:
+        small: ["small team", "startup", "just us", "handful", "few of us", "small company", "small business", "solopreneur"]
+        enterprise: ["enterprise", "corporation", "large company", "thousands of employees", "global", "multinational", "conglomerate"]
+      methodologies:
+        agile: ["sprint", "sprints", "scrum", "kanban", "agile", "backlog", "backlogs", "standup", "standups", "velocity", "story points", "retrospective", "epic", "epics", "iteration", "iterations"]
+        waterfall: ["milestone", "phase", "waterfall", "gantt", "wbs", "work breakdown", "baseline", "deliverable", "gate review"]
+        kanban: ["kanban"]
 
     metadata:
       kpis: []

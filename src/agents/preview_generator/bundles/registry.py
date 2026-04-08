@@ -594,7 +594,7 @@ BUNDLE_REGISTRY: dict[str, dict] = {
             "cycle_time",
         ],
     },
-    "hr_hub": {
+    "hr_management": {
         "flags": [
             "hrhub-module",
             "hrhub-overview",
