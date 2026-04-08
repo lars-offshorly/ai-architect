@@ -13,6 +13,7 @@ from api.deps import (
     get_session_repository,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
+from domain.models.extraction_result import ExtractionResult
 from core.exceptions import BundleNotFoundError, SessionNotFoundError
 from core.logging import get_logger
 from domain.models.session import Session
@@ -35,6 +36,8 @@ def _run_preview_pipeline(
     conv_repo: ConversationRepository,
     flow: PreviewFlow,
     warning: str | None = None,
+    extraction_result: ExtractionResult | None = None,
+    preselected_intent: str | None = None,
 ) -> AppPayloadResponseSchema:
     """Execute the preview pipeline and assemble the response schema."""
     messages = conv_repo.get_messages(session_id)
@@ -45,6 +48,8 @@ def _run_preview_pipeline(
             session_id=session_id,
             bundle_key=bundle_key,
             conversation_history=conversation_history,
+            extraction_result=extraction_result,
+            preselected_intent=preselected_intent,
         )
     except BundleNotFoundError as exc:
         raise HTTPException(
@@ -67,6 +72,8 @@ def _resolve_early_bundle_key(session: Session) -> str:
     """Return the best available bundle key for an early (unconfirmed) preview."""
     if session.selected_bundle_key:
         return session.selected_bundle_key
+    if session.preselected_bundle_key:
+        return session.preselected_bundle_key
     if session.latest_classification:
         top_key = session.latest_classification.get("top_bundle_key")
         if top_key:
@@ -100,6 +107,8 @@ async def generate_preview(
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
         flow=flow,
+        extraction_result=session.accumulated_extraction,
+        preselected_intent=session.preselected_intent,
     )
 
 
@@ -131,5 +140,7 @@ async def generate_early_preview(
         bundle_key=bundle_key,
         conv_repo=conv_repo,
         flow=flow,
+        extraction_result=session.accumulated_extraction,
+        preselected_intent=session.preselected_intent,
         warning=_EARLY_PREVIEW_WARNING,
     )
