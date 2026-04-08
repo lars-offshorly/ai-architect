@@ -60,6 +60,17 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
     bundle = BUNDLE_REGISTRY.get(bundle_key, {})
     default_slugs: list[str] = list(bundle.get("default_metrics", []))
 
+    # Boost from classification_signals.metrics in ExtractionResult (priority boost)
+    signal_boost_slugs: list[str] = []
+    if state.extraction_result is not None:
+        for metric in state.extraction_result.classification_signals.metrics:
+            if metric in METRICS_CATALOG:
+                slug = metric
+            else:
+                slug = _PHRASE_TO_METRIC.get(metric)
+            if slug and slug not in default_slugs:
+                signal_boost_slugs.append(slug)
+
     # Boost from key phrases in UserContext
     boost_slugs: list[str] = []
     if state.user_context and state.user_context.key_phrases:
@@ -71,7 +82,7 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
     # Deduplicate while preserving order
     all_slugs: list[str] = []
     seen: set[str] = set()
-    for slug in default_slugs + boost_slugs:
+    for slug in default_slugs + signal_boost_slugs + boost_slugs:
         if slug not in seen and slug in METRICS_CATALOG:
             seen.add(slug)
             all_slugs.append(slug)
@@ -97,11 +108,12 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
         )
 
     logger.info(
-        "session=%s — built %d KPI metrics for bundle=%r (default=%d boost=%d)",
+        "session=%s — built %d KPI metrics for bundle=%r (default=%d signal_boost=%d boost=%d)",
         state.session_id,
         len(kpi_metrics),
         bundle_key,
         len(default_slugs),
+        len(signal_boost_slugs),
         len(boost_slugs),
     )
     return {"kpi_metrics": kpi_metrics}
