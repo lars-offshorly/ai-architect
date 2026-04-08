@@ -13,6 +13,7 @@ bundles:
   # 1. HR Management
   # ---------------------------------------------------------------------------
   - bundle_key: hr_management
+    render_key: hr_hub
     display_name: HR Management
     primary_entity: people
     description: Handles employee lifecycle including hiring, onboarding, payroll, attendance, and performance management.
@@ -138,6 +139,7 @@ bundles:
   # 2. Ticketing Tool
   # ---------------------------------------------------------------------------
   - bundle_key: ticketing
+    render_key: ticketing
     display_name: Ticketing Tool
     primary_entity: ticket
     description: Manages support requests and incidents through structured queue-based workflows.
@@ -249,6 +251,7 @@ bundles:
   # 3. Project Management
   # ---------------------------------------------------------------------------
   - bundle_key: project_mgmt
+    render_key: project_mgmt
     display_name: Project Management
     primary_entity: project
     description: Supports planning, task assignment, progress monitoring, and delivery tracking for projects and teams.
@@ -365,6 +368,7 @@ bundles:
   # 4. Finance
   # ---------------------------------------------------------------------------
   - bundle_key: finance
+    render_key: project_mgmt
     display_name: Finance
     primary_entity: transaction
     description: Covers budgeting, expense tracking, invoicing, and financial reporting for business operations.
@@ -468,6 +472,7 @@ bundles:
   # 5. Marketing
   # ---------------------------------------------------------------------------
   - bundle_key: marketing
+    render_key: project_mgmt
     display_name: Marketing
     primary_entity: campaign
     description: Focuses on marketing campaign management, content planning, branding, and lead generation tracking.
@@ -571,6 +576,7 @@ bundles:
   # 6. Sales
   # ---------------------------------------------------------------------------
   - bundle_key: sales
+    render_key: project_mgmt
     display_name: Sales
     primary_entity: lead
     description: Manages customer acquisition, lead tracking, pipeline management, and sales performance reporting.
@@ -685,6 +691,7 @@ bundles:
   # 7. Healthcare
   # ---------------------------------------------------------------------------
   - bundle_key: healthcare
+    render_key: ticketing
     display_name: Healthcare
     primary_entity: patient
     description: Supports patient records management, billing, care coordination, and appointment workflows.
@@ -795,6 +802,7 @@ bundles:
   # 8. Legal Services
   # ---------------------------------------------------------------------------
   - bundle_key: legal_services
+    render_key: ticketing
     display_name: Legal Services
     primary_entity: case
     description: Handles legal documentation, compliance tracking, case management, and client workflows.
@@ -910,19 +918,19 @@ bundles:
         - ticket counters
 
   # ---------------------------------------------------------------------------
-  # 9. Construction & Real Estate
+  # 9. Construction
   # ---------------------------------------------------------------------------
-  - bundle_key: construction_real_estate
-    display_name: Construction & Real Estate
+  - bundle_key: construction
+    render_key: project_mgmt
+    display_name: Construction
     primary_entity: site
-    description: Manages construction job assignments, site reporting, real estate listings, tenant onboarding, and maintenance ticketing.
-    template_dir: construction_real_estate
-    dummy_data_template_key: construction_real_estate_base
+    description: Manages construction planning, job assignments, site reporting, and project delivery workflows.
+    template_dir: construction
+    dummy_data_template_key: construction_base
     customizable_fields:
       - company_name
       - site_names
       - project_names
-      - unit_names
       - status_labels
 
     default_modules:
@@ -946,46 +954,40 @@ bundles:
 
     synonyms:
       - construction management
-      - real estate management
-      - property management
       - site management
       - facilities management
       - building management
       - contractor management
+      - jobsite management
+      - construction project tracking
     typical_entities:
       - site
-      - unit
-      - tenant
       - contractor
       - project
-      - listing
-      - maintenance request
+      - job assignment
+      - site report
     typical_intents:
       - manage construction projects
       - track site progress
-      - manage properties
-      - handle tenant onboarding
-      - schedule maintenance
       - track job assignments
-      - manage listings
+      - monitor budgets
+      - coordinate contractors
     required_signals:
-      - construction or real estate workflow
-      - site or property management process
+      - construction workflow
+      - site or project management process
     signal_boosts:
       construction: 0.20
-      real estate: 0.20
-      property: 0.20
       site: 0.15
-      tenant: 0.20
       contractor: 0.20
       building: 0.15
       maintenance: 0.10
-      listing: 0.15
+      jobsite: 0.15
+      blueprint: 0.10
       renovation: 0.15
     terminology:
       primary_record_label: project
       site_label: site
-      unit_label: unit
+      unit_label: work package
 
     metadata:
       kpis:
@@ -995,10 +997,9 @@ bundles:
       workflows:
         - project_planning
         - site_report_submission
-        - tenant_onboarding
-        - maintenance_request
-        - listing_management
         - job_assignment
+        - safety_compliance_checks
+        - contractor_coordination
       entity_definitions:
         project:
           label: Project
@@ -1006,24 +1007,134 @@ bundles:
         site:
           label: Site
           plural: Sites
+        contractor:
+          label: Contractor
+          plural: Contractors
+      onboarding_config_requirements:
+        - project_status_definitions
+        - task_status_definitions
+        - site_structure
+      coverage:
+        - job assignments
+        - site reports
+        - construction project tracking
+      settings_configurations:
+        - status for projects and tasks
+
+  # ---------------------------------------------------------------------------
+  # 10. Real Estate
+  # ---------------------------------------------------------------------------
+  - bundle_key: real_estate
+    render_key: project_mgmt
+    display_name: Real Estate
+    primary_entity: listing
+    description: Supports property listings, leasing and sales workflows, tenant onboarding, and maintenance coordination.
+    template_dir: real_estate
+    dummy_data_template_key: real_estate_base
+    customizable_fields:
+      - company_name
+      - property_names
+      - unit_names
+      - tenant_names
+      - status_labels
+
+    default_modules:
+      - projects
+      - chat
+      - video_call
+      - kpi
+      - dashboard
+    optional_modules:
+      - weaves
+      - tickets
+      - announcements
+      - calendar
+      - profile
+    knit_service_bundles:
+      - project_mgmt
+      - chat
+      - video_call
+    required_slots:
+      - primary_use_case
+
+    synonyms:
+      - real estate management
+      - property management
+      - listing management
+      - leasing management
+      - tenant management
+      - broker operations
+      - property sales
+    typical_entities:
+      - listing
+      - property
+      - unit
+      - tenant
+      - lease
+      - maintenance request
+      - contract
+    typical_intents:
+      - manage listings
+      - onboard tenants
+      - track leases
+      - manage maintenance requests
+      - track property sales
+      - manage contracts
+    required_signals:
+      - real estate workflow
+      - property or tenant management process
+    signal_boosts:
+      real estate: 0.20
+      property: 0.20
+      listing: 0.20
+      tenant: 0.20
+      lease: 0.15
+      broker: 0.10
+      maintenance: 0.10
+      contract: 0.10
+    terminology:
+      primary_record_label: listing
+      site_label: property
+      unit_label: unit
+
+    metadata:
+      kpis:
+        - on_time_delivery_rate
+        - project_health_status
+        - active_work_items
+      workflows:
+        - listing_management
+        - tenant_onboarding
+        - lease_tracking
+        - maintenance_request
+        - property_sale_pipeline
+      entity_definitions:
+        listing:
+          label: Listing
+          plural: Listings
+        unit:
+          label: Unit
+          plural: Units
         tenant:
           label: Tenant
           plural: Tenants
       onboarding_config_requirements:
         - project_status_definitions
         - task_status_definitions
-        - site_structure
+        - property_structure
       coverage:
-        - site reports
+        - listings
+        - contracts
         - tenant onboarding
         - maintenance ticketing
       settings_configurations:
         - status for projects and tasks
 
   # ---------------------------------------------------------------------------
-  # 10. Education
+  # 11. Education
   # ---------------------------------------------------------------------------
   - bundle_key: education
+    render_key: project_mgmt
     display_name: Education
     primary_entity: course
     description: Enables digital learning management including course creation, student enrollment, assignment tracking, and certificate issuance.
@@ -1132,9 +1243,10 @@ bundles:
         - status for projects and tasks
 
   # ---------------------------------------------------------------------------
-  # 11. All Microservices
+  # 12. All Microservices
   # ---------------------------------------------------------------------------
   - bundle_key: all_microservices
+    render_key: hr_hub
     display_name: All Microservices
     primary_entity: work
     description: Comprehensive all-in-one operating system combining every available Knit service hub and tool.
@@ -1240,9 +1352,10 @@ bundles:
         - all configurations from all hubs
 
   # ---------------------------------------------------------------------------
-  # 12. Generic (Fallback)
+  # 13. Generic (Fallback)
   # ---------------------------------------------------------------------------
   - bundle_key: generic
+    render_key: generic
     display_name: Custom Workspace
     primary_entity: work
     description: Fallback workspace for requests that do not confidently map to a specialized bundle after clarification budget is exhausted.

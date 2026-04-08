@@ -17,6 +17,7 @@ class BundleCatalogError(AppError):
 
 class BundleDefinition(BaseModel):
     bundle_key: str
+    render_key: str
     display_name: str
     primary_entity: str
     description: str
@@ -154,6 +155,7 @@ class BundleCatalog:
     def validate(self, templates_dir: Path | None = None) -> None:
         required_fields = (
             "bundle_key",
+            "render_key",
             "display_name",
             "primary_entity",
             "description",
@@ -254,6 +256,9 @@ class BundleCatalog:
     def list_all(self) -> list[BundleDefinition]:
         return list(self._bundles.values())
 
+    def catalog_to_render_key(self) -> dict[str, str]:
+        return {key: bundle.render_key for key, bundle in self._bundles.items()}
+
     def get_metadata(self, bundle_key: str) -> BundleMetadata | None:
         bundle = self.get(bundle_key)
         if bundle is None:
@@ -343,3 +348,19 @@ class BundleCatalog:
                 "Catalog is missing required fallback bundle: generic"
             )
         return fallback_bundle
+
+
+def _exported_key_sets() -> tuple[frozenset[str], frozenset[str]]:
+    default_registry = (
+        Path(__file__).resolve().parents[1] / "src/templates/bundle_registry.yaml"
+    )
+    try:
+        catalog = BundleCatalog(default_registry)
+    except BundleCatalogError:
+        return frozenset(), frozenset()
+    return frozenset(catalog.list_keys()), frozenset(
+        catalog.catalog_to_render_key().values()
+    )
+
+
+CANONICAL_BUNDLE_KEYS, RENDER_KEYS = _exported_key_sets()

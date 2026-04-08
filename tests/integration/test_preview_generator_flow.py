@@ -13,8 +13,8 @@ Bundle key mapping under test (catalog → registry):
   hr_management → hr_hub        (Tier 1, key translation)
   project_mgmt  → project_mgmt  (Tier 1)
   ticketing     → ticketing     (Tier 1)
-  asset_mgmt    → (none)        (Tier 3 fallback)
-  generic       → (none)        (Tier 3 fallback)
+  generic       → generic       (Tier 1, fallback bundle)
+  unknown_bundle → (none)       (Tier 3 fallback, non-existent key)
 """
 
 # pylint: disable=missing-class-docstring,missing-function-docstring
@@ -122,7 +122,7 @@ _HISTORY_FIELD_SERVICE: list[dict] = [
     {"role": "user", "content": "Yes. We also need resolution time metrics."},
 ]
 
-_HISTORY_ASSET_MGMT: list[dict] = [
+_HISTORY_UNKNOWN: list[dict] = [
     {"role": "assistant", "content": "What does your organisation manage?"},
     {
         "role": "user",
@@ -134,7 +134,7 @@ _HISTORY_ASSET_MGMT: list[dict] = [
     {
         "role": "assistant",
         "content": (
-            "Asset management with maintenance scheduling. Let me put that together."
+            "Let me see what I can configure for that use case."
         ),
     },
     {"role": "user", "content": "Great."},
@@ -347,31 +347,31 @@ class TestFieldService:
 
 
 # ===========================================================================
-# 4. Asset Mgmt — Tier 3 fallback (no registry entry)
+# 4. Unknown Bundle — Tier 3 fallback (no registry entry)
 # ===========================================================================
 
 
-class TestAssetMgmtTier3:
+class TestUnknownBundleTier3:
     def test_does_not_raise(self, svc: PreviewGeneratorService) -> None:
-        gen, dummy = svc.generate("sess-am-1", "asset_mgmt", _HISTORY_ASSET_MGMT)
+        gen, dummy = svc.generate("sess-unk-1", "unknown_bundle", _HISTORY_UNKNOWN)
         assert gen is not None
         assert dummy is not None
 
     def test_bundle_key_preserved(self, svc: PreviewGeneratorService) -> None:
-        gen, _ = svc.generate("sess-am-2", "asset_mgmt", _HISTORY_ASSET_MGMT)
-        assert gen["bundle_key"] == "asset_mgmt"
+        gen, _ = svc.generate("sess-unk-2", "unknown_bundle", _HISTORY_UNKNOWN)
+        assert gen["bundle_key"] == "unknown_bundle"
 
     def test_no_flags_enabled(self, svc: PreviewGeneratorService) -> None:
-        gen, _ = svc.generate("sess-am-3", "asset_mgmt", _HISTORY_ASSET_MGMT)
+        gen, _ = svc.generate("sess-unk-3", "unknown_bundle", _HISTORY_UNKNOWN)
         enabled = [f for f in gen["feature_flags"] if f["isEnabled"]]
         assert len(enabled) == 0
 
     def test_modules_empty(self, svc: PreviewGeneratorService) -> None:
-        gen, _ = svc.generate("sess-am-4", "asset_mgmt", _HISTORY_ASSET_MGMT)
+        gen, _ = svc.generate("sess-unk-4", "unknown_bundle", _HISTORY_UNKNOWN)
         assert gen["modules"] == []
 
     def test_stores_use_fallback_names(self, svc: PreviewGeneratorService) -> None:
-        _, dummy = svc.generate("sess-am-5", "asset_mgmt", _HISTORY_ASSET_MGMT)
+        _, dummy = svc.generate("sess-unk-5", "unknown_bundle", _HISTORY_UNKNOWN)
         stores = dummy["stores"]
         # Tier 3 fallback schema: items, projects, kpis, dashboard_widgets
         assert "items" in stores
@@ -381,16 +381,16 @@ class TestAssetMgmtTier3:
 
     def test_kpis_still_populated(self, svc: PreviewGeneratorService) -> None:
         # Even Tier 3 should produce some KPI data
-        _, dummy = svc.generate("sess-am-6", "asset_mgmt", _HISTORY_ASSET_MGMT)
+        _, dummy = svc.generate("sess-unk-6", "unknown_bundle", _HISTORY_UNKNOWN)
         assert len(dummy["stores"]["kpis"]) > 0
 
 
 # ===========================================================================
-# 5. Generic — Tier 3 fallback
+# 5. Generic — Tier 1 fallback bundle (valid catalog entry)
 # ===========================================================================
 
 
-class TestGenericTier3:
+class TestGenericTier1:
     def test_does_not_raise(self, svc: PreviewGeneratorService) -> None:
         gen, dummy = svc.generate("sess-gen-1", "generic", _HISTORY_GENERIC)
         assert gen is not None

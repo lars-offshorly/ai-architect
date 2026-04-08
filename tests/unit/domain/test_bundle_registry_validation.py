@@ -18,6 +18,7 @@ def _write_registry(tmp_path: Path, content: str) -> Path:
 
 _VALID_GENERIC_BUNDLE = """
   - bundle_key: generic
+    render_key: generic
     display_name: Custom Workspace
     primary_entity: work
     description: Fallback bundle.
@@ -44,6 +45,7 @@ _VALID_GENERIC_BUNDLE = """
 
 _VALID_HR_BUNDLE = """
   - bundle_key: hr_management
+    render_key: hr_hub
     display_name: HR Management
     primary_entity: people
     description: HR bundle.
@@ -122,6 +124,7 @@ class TestRegistryValidation:
     def test_validate_fails_when_metadata_missing(self, tmp_path: Path) -> None:
         bundle_no_metadata = """
   - bundle_key: generic
+    render_key: generic
     display_name: Custom Workspace
     primary_entity: work
     description: Fallback bundle.
@@ -148,6 +151,7 @@ class TestRegistryValidation:
     def test_validate_fails_when_template_dir_empty(self, tmp_path: Path) -> None:
         bundle_empty_dir = """
   - bundle_key: generic
+    render_key: generic
     display_name: Custom Workspace
     primary_entity: work
     description: Fallback bundle.
@@ -189,6 +193,7 @@ class TestRegistryValidation:
 
 _HR_BUNDLE_NO_TYPICAL_ENTITIES = """
   - bundle_key: hr_management
+    render_key: hr_hub
     display_name: HR Management
     primary_entity: people
     description: HR bundle.
@@ -220,6 +225,7 @@ _HR_BUNDLE_NO_TYPICAL_ENTITIES = """
 
 _HR_BUNDLE_NO_TYPICAL_INTENTS = """
   - bundle_key: hr_management
+    render_key: hr_hub
     display_name: HR Management
     primary_entity: people
     description: HR bundle.
@@ -251,6 +257,7 @@ _HR_BUNDLE_NO_TYPICAL_INTENTS = """
 
 _HR_BUNDLE_NO_REQUIRED_SIGNALS = """
   - bundle_key: hr_management
+    render_key: hr_hub
     display_name: HR Management
     primary_entity: people
     description: HR bundle.
@@ -282,6 +289,7 @@ _HR_BUNDLE_NO_REQUIRED_SIGNALS = """
 
 _GENERIC_BUNDLE_ALL_EMPTY_SIGNALS = """
   - bundle_key: generic
+    render_key: generic
     display_name: Custom Workspace
     primary_entity: work
     description: Fallback bundle.
