@@ -32,16 +32,6 @@ workflow:
     - poetry --version
     - poetry install --with dev
 
-.mr_setup:
-  before_script:
-    - python --version
-    - pip install --upgrade pip setuptools wheel
-    - pip install poetry
-    - poetry --version
-    - poetry install --with dev
-    - git fetch --unshallow 2>/dev/null || true
-    - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
-
 .test_template:
   extends: .base_python
   script:
@@ -64,12 +54,14 @@ workflow:
   allow_failure: false
 
 tests_mr:
-  extends:
-    - .test_template
-    - .mr_setup
+  extends: .test_template
   stage: test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - !reference [.base_python, before_script]
+    - git fetch --unshallow 2>/dev/null || true
+    - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
 
 tests_commit:
   extends: .test_template
@@ -104,12 +96,14 @@ coverage:
       - coverage.xml
 
 lint_mr:
-  extends:
-    - .base_python
-    - .mr_setup
+  extends: .base_python
   stage: quality
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - !reference [.base_python, before_script]
+    - git fetch --unshallow 2>/dev/null || true
+    - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
   script:
     - make lint-mr
   allow_failure: false
