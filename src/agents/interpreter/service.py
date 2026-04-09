@@ -5,7 +5,8 @@ from langchain_openai import ChatOpenAI
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
-from domain.models.bundle import BundleSuggestion, SuggestedBundles
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
@@ -39,7 +40,6 @@ class InterpreterService:
             )
         )
         self._bundle_keys = bundle_keys
-        self._threshold = settings.CONFIDENCE_THRESHOLD
 
     @staticmethod
     def _inject_preselected_intent(
@@ -69,7 +69,7 @@ class InterpreterService:
 
     async def interpret(
         self, request: InterpreterRequest
-    ) -> tuple[ExtractionResult, SuggestedBundles]:
+    ) -> tuple[ExtractionResult, ClassificationResult]:
         session_logger = get_session_logger(__name__, request.session_id)
         session_logger.info("Running interpreter")
 
@@ -86,15 +86,21 @@ class InterpreterService:
             request.session_id,
             request.user_message,
             self._bundle_keys,
+            extracted=extracted,
             preselected_intent=request.preselected_intent,
         )
         session_logger.info(
-            "Interpreter complete: top_bundle=%s", suggested.top_bundle_key
+            "Interpreter complete: top_bundle=%s",
+            (
+                suggested.selected_bundle.bundle_key
+                if suggested.selected_bundle is not None
+                else None
+            ),
         )
         return extracted, suggested
 
-    def top_bundle(self, suggested: SuggestedBundles) -> BundleSuggestion | None:
-        return self._classifier.top_suggestion(suggested, self._threshold)
+    def top_bundle(self, suggested: ClassificationResult) -> BundleSuggestion | None:
+        return suggested.selected_bundle
 
     async def summarize_history(
         self,

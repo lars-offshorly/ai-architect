@@ -91,30 +91,32 @@ def _normalize_keywords(
 
 
 class _ClassificationSignalsOutput(BaseModel):
-    keywords: list[str] = Field(default_factory=list)
-    entities: list[str] = Field(default_factory=list)
-    intents: list[str] = Field(default_factory=list)
-    workflow_hints: list[str] = Field(default_factory=list)
-    domain_hints: list[str] = Field(default_factory=list)
-    metrics: list[str] = Field(default_factory=list)
+    # For OpenAI Structured Outputs, every field must be required in the schema.
+    # We remove default_factory and use ... to mark as required.
+    keywords: list[str] = Field(..., description="Keywords extracted from text")
+    entities: list[str] = Field(..., description="Entity types identified")
+    intents: list[str] = Field(..., description="User business intents")
+    workflow_hints: list[str] = Field(..., description="Specific workflow hints")
+    domain_hints: list[str] = Field(..., description="Business domain hints")
+    metrics: list[str] = Field(..., description="Metrics or KPIs mentioned")
 
 
 class _PersonalizationSignalsOutput(BaseModel):
-    company_name: str | None = None
-    employee_names: list[str] = Field(default_factory=list)
-    role_names: list[str] = Field(default_factory=list)
-    department_names: list[str] = Field(default_factory=list)
-    branch_names: list[str] = Field(default_factory=list)
-    custom_labels: list[str] = Field(default_factory=list)
-    terminology: dict[str, str] = Field(default_factory=dict)
+    company_name: str | None = Field(..., description="Company name if mentioned")
+    employee_names: list[str] = Field(..., description="Names of employees")
+    role_names: list[str] = Field(..., description="Job role names")
+    department_names: list[str] = Field(..., description="Department names")
+    branch_names: list[str] = Field(..., description="Office branch names")
+    custom_labels: list[str] = Field(..., description="Other custom labels")
+    terminology: dict[str, str] = Field(..., description="Custom terminology mapping")
 
 
 class _ExtractionOutput(BaseModel):
     classification_signals: _ClassificationSignalsOutput = Field(
-        default_factory=_ClassificationSignalsOutput
+        ..., description="Signals used for bundle classification"
     )
     personalization_signals: _PersonalizationSignalsOutput = Field(
-        default_factory=_PersonalizationSignalsOutput
+        ..., description="Signals used for workspace personalization"
     )
 
 
@@ -139,6 +141,8 @@ class Extractor:
             summary=summary,
             history=history or [],
         )
+        # Use method="function_calling" if schema issues persist, but first try
+        # making the Pydantic schema strictly required.
         structured = self._model.with_structured_output(_ExtractionOutput)
         try:
             result = await structured.ainvoke(
