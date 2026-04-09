@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from agents.preview_generator.nodes.sample_data import _dept_pool, generate_sample_data
@@ -12,11 +14,21 @@ from agents.preview_generator.schemas import (
     TeamDetail,
     KpiMetric,
 )
+from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import (
     ExtractionResult,
     PersonalizationSignals,
     ClassificationSignals,
 )
+
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
+)
+
+
+@pytest.fixture
+def catalog() -> BundleCatalog:
+    return BundleCatalog(REGISTRY_PATH)
 
 
 # ---------------------------------------------------------------------------
@@ -35,6 +47,7 @@ def _make_kpi(key: str) -> KpiMetric:
 
 
 def _make_full_state(
+    catalog: BundleCatalog,
     bundle_key: str = "ticketing",
     registry_key: str = "ticketing",
     user_context: UserContext | None = None,
@@ -59,6 +72,7 @@ def _make_full_state(
         landing_pages=[{"id": 101, "module": "Tickets", "path": "/tickets"}],
         kpi_metrics=[_make_kpi("avg_resolution_time"), _make_kpi("sla_compliance")],
         schema_valid=True,
+        catalog=catalog,
     )
     # Populate sample data via the node
     sample_updates = generate_sample_data(state)
@@ -103,7 +117,7 @@ def test_dept_pool_bundle_default_for_unknown_bundle():
 # ---------------------------------------------------------------------------
 
 
-def test_branch_names_flow_through_employees():
+def test_branch_names_flow_through_employees(catalog: BundleCatalog):
     """ExtractionResult.personalization_signals.branch_names drives dept assignment."""
     extraction = ExtractionResult(
         session_id="test-session",
@@ -118,6 +132,7 @@ def test_branch_names_flow_through_employees():
         conversation_history=[],
         data_tier="tier_1",
         extraction_result=extraction,
+        catalog=catalog,
     )
     updates = generate_sample_data(state)
     employees = updates["sample_employees"]
@@ -128,7 +143,7 @@ def test_branch_names_flow_through_employees():
         )
 
 
-def test_user_context_teams_override_branch_names():
+def test_user_context_teams_override_branch_names(catalog: BundleCatalog):
     """UserContext.teams beats branch_names from ExtractionResult."""
     extraction = ExtractionResult(
         session_id="test-session",
@@ -145,6 +160,7 @@ def test_user_context_teams_override_branch_names():
         data_tier="tier_1",
         user_context=ctx,
         extraction_result=extraction,
+        catalog=catalog,
     )
     updates = generate_sample_data(state)
     employees = updates["sample_employees"]
@@ -157,9 +173,9 @@ def test_user_context_teams_override_branch_names():
 # ---------------------------------------------------------------------------
 
 
-def test_config_ticket_statuses_populated():
+def test_config_ticket_statuses_populated(catalog: BundleCatalog):
     """ticketing bundle config should have non-empty work_order_statuses."""
-    state = _make_full_state(bundle_key="ticketing", registry_key="ticketing")
+    state = _make_full_state(catalog, bundle_key="ticketing", registry_key="ticketing")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
@@ -168,9 +184,9 @@ def test_config_ticket_statuses_populated():
     assert len(config["work_order_statuses"]) > 0
 
 
-def test_config_task_statuses_populated():
+def test_config_task_statuses_populated(catalog: BundleCatalog):
     """project_mgmt bundle config should have non-empty task_statuses."""
-    state = _make_full_state(bundle_key="project_mgmt", registry_key="project_mgmt")
+    state = _make_full_state(catalog, bundle_key="project_mgmt", registry_key="project_mgmt")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
@@ -179,9 +195,9 @@ def test_config_task_statuses_populated():
     assert len(config["task_statuses"]) > 0
 
 
-def test_config_hr_hub_statuses_populated():
+def test_config_hr_hub_statuses_populated(catalog: BundleCatalog):
     """hr_hub bundle config should have non-empty default_statuses."""
-    state = _make_full_state(bundle_key="hr_management", registry_key="hr_management")
+    state = _make_full_state(catalog, bundle_key="hr_management", registry_key="hr_hub")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
@@ -190,9 +206,9 @@ def test_config_hr_hub_statuses_populated():
     assert len(config["default_statuses"]) > 0
 
 
-def test_config_milestone_statuses_static_defaults():
+def test_config_milestone_statuses_static_defaults(catalog: BundleCatalog):
     """project_mgmt milestone_statuses should be sensible static values."""
-    state = _make_full_state(bundle_key="project_mgmt", registry_key="project_mgmt")
+    state = _make_full_state(catalog, bundle_key="project_mgmt", registry_key="project_mgmt")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
@@ -201,21 +217,26 @@ def test_config_milestone_statuses_static_defaults():
     assert set(config["milestone_statuses"]) == expected
 
 
+<<<<<<< HEAD
 def test_config_kpi_definitions_unchanged():
     """kpi_definitions contains {key, label, unit} objects for each KPI."""
     state = _make_full_state(bundle_key="ticketing", registry_key="ticketing")
+=======
+def test_config_kpi_definitions_unchanged(catalog: BundleCatalog):
+    """kpi_definitions still contains the KPI keys regardless of bundle."""
+    state = _make_full_state(catalog, bundle_key="ticketing", registry_key="ticketing")
+>>>>>>> 3f9b051 (feat(preview): update edit parsing and state handling)
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
     assert "kpi_definitions" in config
     kpi_keys = [k.key for k in state.kpi_metrics]
-    assert [d["key"] for d in config["kpi_definitions"]] == kpi_keys
-    assert all("label" in d and "unit" in d for d in config["kpi_definitions"])
+    assert config["kpi_definitions"] == kpi_keys
 
 
-def test_config_queue_names_populated_for_hr():
+def test_config_queue_names_populated_for_hr(catalog: BundleCatalog):
     """hr_hub queue_names derived from employee departments."""
-    state = _make_full_state(bundle_key="hr_management", registry_key="hr_management")
+    state = _make_full_state(catalog, bundle_key="hr_management", registry_key="hr_hub")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]

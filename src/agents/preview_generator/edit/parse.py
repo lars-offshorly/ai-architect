@@ -1,236 +1,184 @@
-"""Edit sub-graph node: parses natural-language instructions into EditActions.
+"""Edit sub-graph node: parses natural language instructions into EditAction schemas.
 
-Phase 1 (MVP): keyword-based parser.
-Phase 2: LLM-based parser (keyword logic becomes fallback).
+Currently uses heuristic keyword matching.
+Phase 2: replace with a lightweight LLM call or a better semantic parser.
 """
 
 from __future__ import annotations
 
+import re
+
+from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
 
-from ..bundles.registry import METRICS_CATALOG
 from ..schemas import EditAction, EditActionType
 
 logger = get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Action verb detection
-# ---------------------------------------------------------------------------
-
-_ADD_VERBS = frozenset(["add", "enable", "include", "show", "turn on", "activate"])
-_REMOVE_VERBS = frozenset(
-    ["remove", "disable", "hide", "drop", "turn off", "delete", "deactivate"]
-)
-
-# ---------------------------------------------------------------------------
-# Module alias → flag name mapping
-# ---------------------------------------------------------------------------
-
-_MODULE_ALIASES: dict[str, str] = {
-    "chat": "chat-module",
-    "projects": "projects-module",
-    "project": "projects-module",
-    "tickets": "tickets-module",
-    "ticket": "tickets-module",
-    "ticketing": "tickets-module",
-    "hr hub": "hrhub-module",
-    "hrhub": "hrhub-module",
+# Module labels → flag names (mirrors emit.py)
+_MODULE_MAP: dict[str, str] = {
     "hr": "hrhub-module",
-    "human resources": "hrhub-module",
+    "projects": "projects-module",
+    "tickets": "tickets-module",
+    "hr hub": "hrhub-module",
     "weaves": "weaves-module",
-    "weave": "weaves-module",
-    "calendar": "calendar_module",
     "dashboard": "dashboard-module",
     "kpi": "kpi-module",
+    "calendar": "calendar_module",
+    "chat": "chat-module",
     "ai toolkit": "ai-toolkit-module",
-    "ai-toolkit": "ai-toolkit-module",
     "smart vault": "ai-toolkit-module",
     "rewards": "rewards-module",
 }
 
-# Flag name → display module name (used to determine category)
-_FLAG_TO_MODULE: dict[str, str] = {
-    "projects-module": "Projects",
-    "tickets-module": "Tickets",
-    "hrhub-module": "HRHub",
-    "weaves-module": "Weaves",
-    "dashboard-module": "Dashboard",
-    "kpi-module": "KPI",
-    "calendar_module": "Calendar",
-    "chat-module": "Chat",
-    "ai-toolkit-module": "AIToolkit",
-    "rewards-module": "Rewards",
-}
-
-# KPI label → slug mapping (built from METRICS_CATALOG)
-_KPI_LABEL_TO_SLUG: dict[str, str] = {}
-for _slug, _entry in METRICS_CATALOG.items():
-    _KPI_LABEL_TO_SLUG[_entry["label"].lower()] = _slug
-    # Also register the slug itself (with underscores replaced by spaces)
-    _KPI_LABEL_TO_SLUG[_slug.replace("_", " ")] = _slug
-
-# Dashboard-specific keywords
-_DASHBOARD_KEYWORDS = frozenset(["dashboard", "dashboard widget", "dashboard module"])
-
-# KPI-specific trigger words (used to distinguish "add kpi" from "add kpi module")
-_KPI_TRIGGER_WORDS = frozenset(["kpi", "metric", "metrics", "indicator"])
+_ADD_VERBS = ("add", "enable", "show", "include")
+_REMOVE_VERBS = ("remove", "delete", "hide", "disable", "drop")
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+def _has_any_verb(text: str, verbs: tuple[str, ...]) -> bool:
+    return any(verb in text for verb in verbs)
 
 
-def _detect_verb(text: str) -> str | None:
-    """Return 'add' or 'remove' based on the first verb found, or None."""
-    # Check multi-word verbs first
-    for verb in ("turn on", "turn off"):
-        if verb in text:
-            return "add" if verb == "turn on" else "remove"
-
-    # Single-word verbs
-    words = text.split()
-    for word in words:
-        if word in _ADD_VERBS:
-            return "add"
-        if word in _REMOVE_VERBS:
-            return "remove"
-    return None
-
-
-def _find_kpi_target(text: str) -> str | None:
-    """Try to match a KPI slug or label in the text.
-
-    Returns the slug if found, None otherwise.
-    """
-    # Direct slug match (e.g. "attendance_rate", "sla_compliance")
-    for slug in METRICS_CATALOG:
-        if slug in text:
-            return slug
-
-    # Label match (e.g. "SLA Compliance", "On-time Delivery Rate")
-    # Normalize: lowercase, remove hyphens
-    normalized = text.replace("-", " ")
-    for label, slug in _KPI_LABEL_TO_SLUG.items():
-        if label in normalized:
-            return slug
-
-    return None
-
-
-def _find_module_target(text: str) -> str | None:
-    """Try to match a module alias in the text.
-
-    Checks longer aliases first to avoid partial matching issues
-    (e.g. "hr hub" before "hr").
-    """
-    # Sort aliases by length (longest first) for greedy matching
-    sorted_aliases = sorted(_MODULE_ALIASES.keys(), key=len, reverse=True)
-    for alias in sorted_aliases:
-        if alias in text:
-            return _MODULE_ALIASES[alias]
-    return None
-
-
-def _is_kpi_context(text: str) -> bool:
-    """Check if the instruction is explicitly about a KPI/metric, not a module."""
-    return any(word in text for word in _KPI_TRIGGER_WORDS)
-
-
-def _is_dashboard_only(text: str) -> bool:
-    """Check if the instruction is about the dashboard itself.
-
-    (not a module add/remove).
-    """
-    # "remove dashboard" with no other module reference means dashboard action
-    return "dashboard" in text and not any(
-        alias in text for alias in _MODULE_ALIASES if alias != "dashboard"
-    )
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-
-def parse_edit_instruction(instruction: str) -> EditAction:
-    """Parse a natural-language edit instruction into an EditAction.
-
-    Phase 1 (MVP): keyword-based parsing.
-    Handles: add/remove module, add/remove KPI, add/remove dashboard.
-    Falls back to 'unsupported' for unrecognised instructions.
-    """
-    raw = instruction
-    text = instruction.lower().strip()
-
-    if not text:
+def _dashboard_action(text: str, instruction: str) -> EditAction | None:
+    if "dashboard" not in text:
+        return None
+    if _has_any_verb(text, _ADD_VERBS):
         return EditAction(
-            action_type=EditActionType.UNSUPPORTED,
-            raw_instruction=raw,
-        )
-
-    verb = _detect_verb(text)
-    if verb is None:
-        logger.info("No action verb detected in: %r", raw)
-        return EditAction(
-            action_type=EditActionType.UNSUPPORTED,
-            raw_instruction=raw,
-        )
-
-    # --- KPI detection (check before module to handle "remove attendance KPI") ---
-    kpi_target = _find_kpi_target(text)
-    if kpi_target and _is_kpi_context(text):
-        action_type = (
-            EditActionType.ADD_KPI if verb == "add" else EditActionType.REMOVE_KPI
-        )
-        logger.info("Parsed %s KPI: %r → %s", verb, raw, kpi_target)
-        return EditAction(
-            action_type=action_type,
-            target=kpi_target,
-            raw_instruction=raw,
-        )
-
-    # --- Dashboard detection ---
-    if _is_dashboard_only(text):
-        action_type = (
-            EditActionType.ADD_DASHBOARD
-            if verb == "add"
-            else EditActionType.REMOVE_DASHBOARD
-        )
-        logger.info("Parsed %s dashboard: %r", verb, raw)
-        return EditAction(
-            action_type=action_type,
+            action_type=EditActionType.ADD_DASHBOARD,
             target="dashboard-module",
-            raw_instruction=raw,
+            raw_instruction=instruction,
         )
-
-    # --- Module detection ---
-    module_target = _find_module_target(text)
-    if module_target:
-        action_type = (
-            EditActionType.ADD_MODULE if verb == "add" else EditActionType.REMOVE_MODULE
-        )
-        logger.info("Parsed %s module: %r → %s", verb, raw, module_target)
+    if _has_any_verb(text, _REMOVE_VERBS):
         return EditAction(
-            action_type=action_type,
-            target=module_target,
-            raw_instruction=raw,
+            action_type=EditActionType.REMOVE_DASHBOARD,
+            target="dashboard-module",
+            raw_instruction=instruction,
         )
+    return None
 
-    # --- KPI fallback: verb + slug without explicit "kpi"/"metric" word ---
-    if kpi_target:
-        action_type = (
-            EditActionType.ADD_KPI if verb == "add" else EditActionType.REMOVE_KPI
+
+def _kpi_label_to_slug(metrics_catalog: dict[str, dict[str, object]]) -> dict[str, str]:
+    label_to_slug: dict[str, str] = {}
+    for slug, entry in metrics_catalog.items():
+        label = entry.get("label")
+        if isinstance(label, str):
+            label_to_slug[label.lower()] = slug
+    return label_to_slug
+
+
+def _kpi_action(
+    text: str,
+    instruction: str,
+    metrics_catalog: dict[str, dict[str, object]],
+) -> EditAction | None:
+    for slug in metrics_catalog:
+        if slug in text or slug.replace("_", " ") in text:
+            if _has_any_verb(text, _ADD_VERBS):
+                return EditAction(
+                    action_type=EditActionType.ADD_KPI,
+                    target=slug,
+                    raw_instruction=instruction,
+                )
+            if _has_any_verb(text, _REMOVE_VERBS):
+                return EditAction(
+                    action_type=EditActionType.REMOVE_KPI,
+                    target=slug,
+                    raw_instruction=instruction,
+                )
+
+    for label, slug in _kpi_label_to_slug(metrics_catalog).items():
+        if label in text:
+            if _has_any_verb(text, _ADD_VERBS):
+                return EditAction(
+                    action_type=EditActionType.ADD_KPI,
+                    target=slug,
+                    raw_instruction=instruction,
+                )
+            if _has_any_verb(text, _REMOVE_VERBS):
+                return EditAction(
+                    action_type=EditActionType.REMOVE_KPI,
+                    target=slug,
+                    raw_instruction=instruction,
+                )
+    return None
+
+
+def _module_action(text: str, instruction: str) -> EditAction | None:
+    for label, flag_name in _MODULE_MAP.items():
+        is_match = (
+            bool(re.search(rf"\b{re.escape(label)}\b", text))
+            if len(label) <= 3
+            else label in text
         )
-        logger.info("Parsed %s KPI (fallback): %r → %s", verb, raw, kpi_target)
+        if not is_match:
+            continue
+        if _has_any_verb(text, _ADD_VERBS):
+            return EditAction(
+                action_type=EditActionType.ADD_MODULE,
+                target=flag_name,
+                raw_instruction=instruction,
+            )
+        if _has_any_verb(text, _REMOVE_VERBS):
+            return EditAction(
+                action_type=EditActionType.REMOVE_MODULE,
+                target=flag_name,
+                raw_instruction=instruction,
+            )
+    return None
+
+
+def _regex_kpi_action(text: str, instruction: str) -> EditAction | None:
+    add_match = re.search(r"(?:add|include|show)\s+kpi\s+([\w\s]+)", text)
+    if add_match:
+        target = add_match.group(1).strip().replace("module", "").strip()
         return EditAction(
-            action_type=action_type,
-            target=kpi_target,
-            raw_instruction=raw,
+            action_type=EditActionType.ADD_KPI,
+            target=target,
+            raw_instruction=instruction,
         )
 
-    logger.info("No recognised target in: %r (verb=%s)", raw, verb)
+    remove_match = re.search(
+        r"(?:remove|delete|hide|disable|drop)\s+kpi\s+([\w\s]+)", text
+    )
+    if remove_match:
+        target = remove_match.group(1).strip().replace("module", "").strip()
+        return EditAction(
+            action_type=EditActionType.REMOVE_KPI,
+            target=target,
+            raw_instruction=instruction,
+        )
+    return None
+
+
+def parse_edit_instruction(instruction: str, catalog: BundleCatalog) -> EditAction:
+    """Parse a natural language instruction into a structured EditAction.
+
+    Example inputs:
+      "add a projects module"
+      "remove the dashboard"
+      "add avg resolution time kpi"
+      "delete kpi SLA Compliance"
+
+    Returns an EditAction. If parsing fails, EditActionType.UNSUPPORTED is used.
+    """
+    text = instruction.lower().strip()
+    metrics_catalog = catalog.get_metrics_catalog()
+    parsed = _dashboard_action(text, instruction)
+    if parsed is not None:
+        return parsed
+
+    parsed = _kpi_action(text, instruction, metrics_catalog)
+    if parsed is not None:
+        return parsed
+
+    parsed = _module_action(text, instruction)
+    if parsed is not None:
+        return parsed
+
+    parsed = _regex_kpi_action(text, instruction)
+    if parsed is not None:
+        return parsed
+
     return EditAction(
-        action_type=EditActionType.UNSUPPORTED,
-        raw_instruction=raw,
+        action_type=EditActionType.UNSUPPORTED, raw_instruction=instruction
     )

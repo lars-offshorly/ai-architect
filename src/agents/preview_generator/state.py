@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import ExtractionResult
 
 from .schemas import KpiMetric, PreviewOutput, UserContext
@@ -16,7 +17,7 @@ class PreviewGeneratorState(BaseModel):
 
     Set at graph entry:
       session_id, bundle_key, conversation_history,
-      extraction_result, preselected_intent
+      extraction_result, preselected_intent, catalog
 
     Populated by nodes in execution order:
       user_context        ← extract_user_context
@@ -46,6 +47,9 @@ class PreviewGeneratorState(BaseModel):
     bundle_key: str
     conversation_history: list[dict] = Field(default_factory=list)
     # conversation_history items: {"role": "user"|"assistant", "content": str}
+
+    # Canonical catalog resource used by resolve_flags and kpi nodes.
+    catalog: BundleCatalog | None = None
 
     # Dev A's accumulated extraction — when present, extract_user_context maps
     # its fields directly to UserContext instead of re-running keyword scan or LLM.
@@ -85,3 +89,6 @@ class PreviewGeneratorState(BaseModel):
 
     # --- emit_preview ---
     output: PreviewOutput | None = None
+
+    class Config:
+        arbitrary_types_allowed = True
