@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import PreviewGenerationError
 from core.logging import get_logger, get_session_logger
 from domain.models.extraction_result import ExtractionResult
@@ -22,6 +23,9 @@ class PreviewGeneratorService:
     No TemplateRepository dependency. All data is generated programmatically
     inside the pipeline nodes.
     """
+
+    def __init__(self, catalog: BundleCatalog) -> None:
+        self._catalog = catalog
 
     def generate(
         self,
@@ -58,6 +62,7 @@ class PreviewGeneratorService:
             conversation_history=conversation_history,
             extraction_result=extraction_result,
             preselected_intent=preselected_intent,
+            catalog=self._catalog,
         )
 
         result: dict = compiled_graph.invoke(initial_state)

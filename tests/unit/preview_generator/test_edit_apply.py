@@ -3,10 +3,23 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 from typing import Any
+
+import pytest
 
 from agents.preview_generator.edit.apply import apply_edit
 from agents.preview_generator.schemas import EditAction, EditActionType
+from catalog.bundle_catalog import BundleCatalog
+
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
+)
+
+
+@pytest.fixture
+def catalog() -> BundleCatalog:
+    return BundleCatalog(REGISTRY_PATH)
 
 # ---------------------------------------------------------------------------
 # Fixtures — minimal AppPayloadResponseSchema dict
@@ -150,10 +163,10 @@ def _action(action_type: EditActionType, target: str | None = None) -> EditActio
 
 
 class TestRemoveModule:
-    def test_flag_disabled(self) -> None:
+    def test_flag_disabled(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "chat-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "chat-module"), catalog
         )
         flag = next(
             f
@@ -162,15 +175,15 @@ class TestRemoveModule:
         )
         assert flag["isEnabled"] is False
 
-    def test_module_removed_from_list(self) -> None:
+    def test_module_removed_from_list(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "chat-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "chat-module"), catalog
         )
         assert "Chat" not in result["generation_json"]["modules"]
         assert "Chat" not in result["modules"]
 
-    def test_cascading_kpi_removal(self) -> None:
+    def test_cascading_kpi_removal(self, catalog: BundleCatalog) -> None:
         """Removing tickets-module should remove KPIs sourced from 'tickets'."""
         payload = _make_payload(
             kpi_keys=["avg_resolution_time", "capacity_utilization"],
@@ -180,45 +193,45 @@ class TestRemoveModule:
         payload["dummy_data_json"]["stores"]["kpis"][1]["source_service"] = "hr_hub"
 
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module"), catalog
         )
         remaining_kpis = result["dummy_data_json"]["stores"]["kpis"]
         kpi_keys = [k["key"] for k in remaining_kpis]
         assert "avg_resolution_time" not in kpi_keys
         assert "capacity_utilization" in kpi_keys
 
-    def test_cascading_store_removal_tickets(self) -> None:
+    def test_cascading_store_removal_tickets(self, catalog: BundleCatalog) -> None:
         """Removing tickets-module removes the 'tickets' store."""
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module"), catalog
         )
         assert "tickets" not in result["dummy_data_json"]["stores"]
 
-    def test_cascading_store_removal_projects(self) -> None:
+    def test_cascading_store_removal_projects(self, catalog: BundleCatalog) -> None:
         """Removing projects-module removes project-related stores."""
         payload = _make_payload()
         payload["dummy_data_json"]["stores"]["tasks"] = [{"id": 1}]
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "projects-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "projects-module"), catalog
         )
         assert "tasks" not in result["dummy_data_json"]["stores"]
         assert "milestones" not in result["dummy_data_json"]["stores"]
 
-    def test_idempotent_remove_already_disabled(self) -> None:
+    def test_idempotent_remove_already_disabled(self, catalog: BundleCatalog) -> None:
         """Removing a module that's already disabled is a no-op."""
         payload = _make_payload(flag_overrides={"calendar_module": False})
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_MODULE, "calendar_module")
+            payload, _action(EditActionType.REMOVE_MODULE, "calendar_module"), catalog
         )
         # Should not error, payload essentially unchanged structurally
         assert result["generation_json"]["feature_flags"] is not None
 
-    def test_does_not_mutate_input(self) -> None:
+    def test_does_not_mutate_input(self, catalog: BundleCatalog) -> None:
         """apply_edit must not mutate the input payload dict."""
         payload = _make_payload()
         original = copy.deepcopy(payload)
-        apply_edit(payload, _action(EditActionType.REMOVE_MODULE, "chat-module"))
+        apply_edit(payload, _action(EditActionType.REMOVE_MODULE, "chat-module"), catalog)
         assert payload == original
 
 
@@ -228,10 +241,10 @@ class TestRemoveModule:
 
 
 class TestAddModule:
-    def test_flag_enabled(self) -> None:
+    def test_flag_enabled(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(flag_overrides={"calendar_module": False})
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_MODULE, "calendar_module")
+            payload, _action(EditActionType.ADD_MODULE, "calendar_module"), catalog
         )
         flag = next(
             f
@@ -240,19 +253,19 @@ class TestAddModule:
         )
         assert flag["isEnabled"] is True
 
-    def test_module_added_to_list(self) -> None:
+    def test_module_added_to_list(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(modules=["Projects"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_MODULE, "calendar_module")
+            payload, _action(EditActionType.ADD_MODULE, "calendar_module"), catalog
         )
         assert "Calendar" in result["generation_json"]["modules"]
         assert "Calendar" in result["modules"]
 
-    def test_idempotent_add_already_enabled(self) -> None:
+    def test_idempotent_add_already_enabled(self, catalog: BundleCatalog) -> None:
         """Adding a module already in the list doesn't duplicate it."""
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_MODULE, "chat-module")
+            payload, _action(EditActionType.ADD_MODULE, "chat-module"), catalog
         )
         assert result["generation_json"]["modules"].count("Chat") == 1
 
@@ -263,29 +276,29 @@ class TestAddModule:
 
 
 class TestRemoveKpi:
-    def test_kpi_removed_from_stores(self) -> None:
+    def test_kpi_removed_from_stores(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization")
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" not in kpi_keys
         assert "active_work_items" in kpi_keys
 
-    def test_kpi_removed_from_config(self) -> None:
+    def test_kpi_removed_from_config(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization")
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
         )
         assert (
             "capacity_utilization"
             not in result["generation_json"]["config"]["kpi_definitions"]
         )
 
-    def test_remove_nonexistent_kpi_is_noop(self) -> None:
+    def test_remove_nonexistent_kpi_is_noop(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_KPI, "nonexistent_metric")
+            payload, _action(EditActionType.REMOVE_KPI, "nonexistent_metric"), catalog
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_keys
@@ -297,35 +310,35 @@ class TestRemoveKpi:
 
 
 class TestAddKpi:
-    def test_kpi_added_to_stores(self) -> None:
+    def test_kpi_added_to_stores(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_KPI, "sla_compliance")
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "sla_compliance" in kpi_keys
 
-    def test_kpi_added_to_config(self) -> None:
+    def test_kpi_added_to_config(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_KPI, "sla_compliance")
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
         )
         assert (
             "sla_compliance" in result["generation_json"]["config"]["kpi_definitions"]
         )
 
-    def test_add_unknown_kpi_returns_warning(self) -> None:
+    def test_add_unknown_kpi_returns_warning(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()
         result, warning = apply_edit(
-            payload, _action(EditActionType.ADD_KPI, "nonexistent_metric")
+            payload, _action(EditActionType.ADD_KPI, "nonexistent_metric"), catalog
         )
         assert warning is not None
         assert "not found" in warning.lower() or "unknown" in warning.lower()
 
-    def test_add_duplicate_kpi_is_noop(self) -> None:
+    def test_add_duplicate_kpi_is_noop(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_KPI, "capacity_utilization")
+            payload, _action(EditActionType.ADD_KPI, "capacity_utilization"), catalog
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert kpi_keys.count("capacity_utilization") == 1
@@ -337,10 +350,10 @@ class TestAddKpi:
 
 
 class TestDashboard:
-    def test_remove_dashboard(self) -> None:
+    def test_remove_dashboard(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.REMOVE_DASHBOARD, "dashboard-module")
+            payload, _action(EditActionType.REMOVE_DASHBOARD, "dashboard-module"), catalog
         )
         flag = next(
             f
@@ -350,13 +363,13 @@ class TestDashboard:
         assert flag["isEnabled"] is False
         assert "Dashboard" not in result["generation_json"]["modules"]
 
-    def test_add_dashboard(self) -> None:
+    def test_add_dashboard(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(
             modules=["Projects"],
             flag_overrides={"dashboard-module": False},
         )
         result, _ = apply_edit(
-            payload, _action(EditActionType.ADD_DASHBOARD, "dashboard-module")
+            payload, _action(EditActionType.ADD_DASHBOARD, "dashboard-module"), catalog
         )
         flag = next(
             f
@@ -373,9 +386,9 @@ class TestDashboard:
 
 
 class TestUnsupported:
-    def test_returns_original_with_warning(self) -> None:
+    def test_returns_original_with_warning(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()
-        result, warning = apply_edit(payload, _action(EditActionType.UNSUPPORTED))
+        result, warning = apply_edit(payload, _action(EditActionType.UNSUPPORTED), catalog)
         assert warning is not None
         assert "unsupported" in warning.lower() or "not supported" in warning.lower()
         # Payload structure preserved

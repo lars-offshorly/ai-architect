@@ -21,9 +21,16 @@ Bundle key mapping under test (catalog → registry):
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from agents.preview_generator.service import PreviewGeneratorService
+from catalog.bundle_catalog import BundleCatalog
+
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[2] / "src/templates/bundle_registry.yaml"
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixture
@@ -32,7 +39,8 @@ from agents.preview_generator.service import PreviewGeneratorService
 
 @pytest.fixture(name="svc")
 def fixture_service() -> PreviewGeneratorService:
-    return PreviewGeneratorService()
+    catalog = BundleCatalog(REGISTRY_PATH)
+    return PreviewGeneratorService(catalog)
 
 
 # ---------------------------------------------------------------------------
