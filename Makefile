@@ -226,7 +226,7 @@ ci-security:
 	@$(POETRY) self add poetry-plugin-export || true
 	@$(POETRY) export --without-hashes --with dev -f requirements.txt -o ci-requirements.txt
 	@echo "Running safety scan (non-blocking, same as CI)..."
-	@safety check -r ci-requirements.txt --full-report || true
+	@safety scan -r ci-requirements.txt --full-report || true
 
 validate-templates:
 	$(POETRY) run python scripts/validate_templates.py
