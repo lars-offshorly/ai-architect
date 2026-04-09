@@ -86,6 +86,7 @@ class TestExtractorSynonymNormalization:
         bundles = [
             BundleDefinition(
                 bundle_key="hr_management",
+                render_key="hr_hub",
                 display_name="HR Management",
                 primary_entity="people",
                 description="HR bundle",
@@ -106,6 +107,7 @@ class TestExtractorSynonymNormalization:
         bundles = [
             BundleDefinition(
                 bundle_key="ticketing",
+                render_key="ticketing",
                 display_name="Ticketing",
                 primary_entity="ticket",
                 description="Ticket bundle",
@@ -126,6 +128,7 @@ class TestExtractorSynonymNormalization:
         bundles = [
             BundleDefinition(
                 bundle_key="hr_management",
+                render_key="hr_hub",
                 display_name="HR Management",
                 primary_entity="people",
                 description="HR bundle",
@@ -147,6 +150,7 @@ class TestExtractorSynonymNormalization:
         bundles = [
             BundleDefinition(
                 bundle_key="hr_management",
+                render_key="hr_hub",
                 display_name="HR Management",
                 primary_entity="people",
                 description="HR bundle",

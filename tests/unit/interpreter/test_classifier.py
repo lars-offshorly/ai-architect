@@ -10,6 +10,7 @@ from catalog.bundle_catalog import BundleDefinition
 def _hr_bundle() -> BundleDefinition:
     return BundleDefinition(
         bundle_key="hr_management",
+        render_key="hr_hub",
         display_name="HR Management",
         primary_entity="people",
         description="HR bundle",
@@ -25,6 +26,7 @@ def _hr_bundle() -> BundleDefinition:
 def _project_bundle() -> BundleDefinition:
     return BundleDefinition(
         bundle_key="project_mgmt",
+        render_key="project_mgmt",
         display_name="Project Management",
         primary_entity="project",
         description="Project bundle",
