@@ -12,3 +12,4 @@ test-results/
 .coverage
 coverage.xml
 coverage*.xml 
+AGENTS.md 
