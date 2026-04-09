@@ -16,7 +16,8 @@ import pytest
 
 from catalog.bundle_catalog import BundleCatalog
 from domain.enums.missing_field_type import MissingFieldType
-from domain.models.bundle import BundleSuggestion, SuggestedBundles
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import (
     ClassificationSignals,
@@ -53,7 +54,19 @@ def _make_interpreter_mock(extraction: ExtractionResult) -> MagicMock:
     interpreter = MagicMock()
     interpreter.summarize_history = AsyncMock(return_value="")
     interpreter.interpret = AsyncMock(
-        return_value=(extraction, SuggestedBundles(session_id="s1", suggestions=[]))
+        return_value=(
+            extraction,
+            ClassificationResult(
+                session_id="s1",
+                selected_bundle=None,
+                ranked_candidates=[],
+                confidence_status="clarify",
+                top_confidence=0.0,
+                score_gap=0.0,
+                missing_context=["primary_use_case"],
+                reasoning="No bundles classified",
+            ),
+        )
     )
     interpreter.extract_only = AsyncMock(return_value=extraction)
     interpreter.top_bundle = MagicMock(return_value=None)
@@ -139,7 +152,16 @@ class TestMultiTurnAccumulatedExtractionPassing:
         interpreter.interpret = AsyncMock(
             return_value=(
                 turn2_extraction,
-                SuggestedBundles(session_id="s1", suggestions=[]),
+                ClassificationResult(
+                    session_id="s1",
+                    selected_bundle=None,
+                    ranked_candidates=[],
+                    confidence_status="clarify",
+                    top_confidence=0.0,
+                    score_gap=0.0,
+                    missing_context=["primary_use_case"],
+                    reasoning="No bundles classified",
+                ),
             )
         )
 
@@ -304,12 +326,17 @@ class TestMissingFieldsRecomputedPerTurn:
             matched_signals=["employee", "leave"],
         )
         interpreter.top_bundle = MagicMock(return_value=top_bundle)
-        suggested = SuggestedBundles(
+        classification = ClassificationResult(
             session_id="s1",
-            suggestions=[top_bundle],
-            top_bundle_key="hr_management",
+            selected_bundle=top_bundle,
+            ranked_candidates=[top_bundle],
+            confidence_status="proceed",
+            top_confidence=0.9,
+            score_gap=0.0,
+            missing_context=[],
+            reasoning="Strong match",
         )
-        interpreter.interpret = AsyncMock(return_value=(extraction, suggested))
+        interpreter.interpret = AsyncMock(return_value=(extraction, classification))
         replier = _make_replier_no_missing_mock()
         flow = _make_flow(interpreter, replier)
 
@@ -364,7 +391,16 @@ class TestSessionStatePersistenceSimulation:
         interpreter.interpret = AsyncMock(
             return_value=(
                 turn2_extraction,
-                SuggestedBundles(session_id="s1", suggestions=[]),
+                ClassificationResult(
+                    session_id="s1",
+                    selected_bundle=None,
+                    ranked_candidates=[],
+                    confidence_status="clarify",
+                    top_confidence=0.0,
+                    score_gap=0.0,
+                    missing_context=["primary_use_case"],
+                    reasoning="No bundles classified",
+                ),
             )
         )
 
@@ -392,12 +428,21 @@ class TestSessionStatePersistenceSimulation:
 
         turn3_extraction = ExtractionResult(
             session_id="s1",
-            classification_signals=ClassificationSignals(keywords=["approval"]),
+            classification_signals=ClassificationSignals(keywords=["calendar"]),
         )
         interpreter.interpret = AsyncMock(
             return_value=(
                 turn3_extraction,
-                SuggestedBundles(session_id="s1", suggestions=[]),
+                ClassificationResult(
+                    session_id="s1",
+                    selected_bundle=None,
+                    ranked_candidates=[],
+                    confidence_status="clarify",
+                    top_confidence=0.0,
+                    score_gap=0.0,
+                    missing_context=["primary_use_case"],
+                    reasoning="No bundles classified",
+                ),
             )
         )
 

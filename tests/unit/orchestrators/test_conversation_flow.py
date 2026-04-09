@@ -8,7 +8,8 @@ import pytest
 
 from catalog.bundle_catalog import BundleCatalog
 from domain.enums.missing_field_type import MissingFieldType
-from domain.models.bundle import SuggestedBundles
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from orchestrators.conversation_flow import ConversationFlow, ConversationTurnRequest
@@ -30,7 +31,16 @@ async def test_process_turn_summarizes_prior_history_and_forwards_summary() -> N
     interpreter.interpret = AsyncMock(
         return_value=(
             ExtractionResult(session_id="s1"),
-            SuggestedBundles(session_id="s1", suggestions=[]),
+            ClassificationResult(
+                session_id="s1",
+                selected_bundle=None,
+                ranked_candidates=[],
+                confidence_status="clarify",
+                top_confidence=0.0,
+                score_gap=0.0,
+                missing_context=["primary_use_case"],
+                reasoning="No bundles classified",
+            ),
         )
     )
     interpreter.top_bundle = MagicMock(return_value=None)
@@ -62,7 +72,5 @@ async def test_process_turn_summarizes_prior_history_and_forwards_summary() -> N
         )
     )
 
-    interpreter.summarize_history.assert_awaited_once_with(
-        "s1", history[:-1], None
-    )
+    interpreter.summarize_history.assert_awaited_once_with("s1", history[:-1], None)
     assert interpreter.interpret.call_args.args[0].summary == "prior summary"

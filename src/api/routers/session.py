@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # pylint: disable=duplicate-code
-from typing import Annotated, cast
+from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,20 +14,25 @@ from api.deps import (
     get_conversation_repository,
     get_session_repository,
 )
-from api.schemas.debug import BundleCandidateInfo, ClassificationInfo, DebugInfo
+from api.schemas.debug import (
+    BundleCandidateInfo,
+    ClassificationInfo,
+    DebugInfo,
+    RecommendationInfo,
+)
 from api.schemas.request import ConfirmBundleRequest, ReplyRequest, StartSessionRequest
 from api.schemas.response import (
     ConversationTurnResponse,
     SessionStartedResponse,
 )
 from catalog.bundle_catalog import BundleCatalog
-from core.config import get_settings
 from core.exceptions import SessionNotFoundError
 from core.logging import get_logger
 from core.sanitize import sanitize_text
-from domain.models.bundle import SuggestedBundles
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
+from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
 from orchestrators.conversation_flow import (
     ConversationFlow,
@@ -41,11 +46,11 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 logger = get_logger(__name__)
 
 
-def _get_confidence_threshold() -> float:
-    try:
-        return get_settings().CONFIDENCE_THRESHOLD
-    except Exception:  # pylint: disable=broad-exception-caught
-        return 0.6
+def _persist_result_bundle_key(session: Session, result: dict[str, object]) -> None:
+    """Persist bundle_key from flow responses for pending/preview handoff flows."""
+    bundle_key = result.get("bundle_key")
+    if isinstance(bundle_key, str) and bundle_key:
+        session.selected_bundle_key = bundle_key
 
 
 def _build_debug_info(extracted: ExtractionResult | None) -> DebugInfo | None:
@@ -72,20 +77,25 @@ def _build_debug_info(extracted: ExtractionResult | None) -> DebugInfo | None:
     )
 
 
-def _build_classification_info(suggested: object) -> ClassificationInfo | None:
-    if not isinstance(suggested, SuggestedBundles):
+def _build_classification_info(
+    classification: ClassificationResult | None,
+) -> ClassificationInfo | None:
+    if classification is None:
         return None
-    threshold = _get_confidence_threshold()
-    top = suggested.top()
-    confidence_status = (
-        "proceed" if top is not None and top.confidence >= threshold else "clarify"
-    )
     ranked = sorted(
-        suggested.suggestions, key=lambda item: item.confidence, reverse=True
+        classification.ranked_candidates, key=lambda item: item.confidence, reverse=True
     )
     return ClassificationInfo(
-        confidence_status=confidence_status,
-        top_bundle_key=top.bundle_key if top is not None else None,
+        confidence_status=classification.confidence_status,
+        top_bundle_key=(
+            classification.selected_bundle.bundle_key
+            if classification.selected_bundle is not None
+            else None
+        ),
+        top_confidence=classification.top_confidence,
+        score_gap=classification.score_gap,
+        missing_context=classification.missing_context,
+        reasoning=classification.reasoning,
         ranked_candidates=[
             BundleCandidateInfo(
                 bundle_key=item.bundle_key,
@@ -96,6 +106,26 @@ def _build_classification_info(suggested: object) -> ClassificationInfo | None:
             )
             for item in ranked
         ],
+    )
+
+
+def _build_recommendation_info(
+    recommendation: RecommendationResult | None,
+) -> RecommendationInfo | None:
+    if recommendation is None:
+        return None
+    return RecommendationInfo(
+        recommendation_status=recommendation.recommendation_status,
+        primary_bundle_key=(
+            recommendation.primary_bundle.bundle_key
+            if recommendation.primary_bundle is not None
+            else None
+        ),
+        fallback_bundle_keys=[
+            candidate.bundle_key for candidate in recommendation.fallback_bundles
+        ],
+        inferred_modules=recommendation.inferred_modules,
+        reasoning=recommendation.reasoning,
     )
 
 
@@ -153,33 +183,28 @@ async def start_session(
             session_id=session_id,
             user_message=body.message,
             history=[user_msg],
-            confirmed=False,
-            accumulated_extraction=None,
-            preselected_bundle_key=preselected_bundle_key,
+            session=session,
             options=TurnOptions(preselected_intent=preselected_intent),
         )
     )
-
-    if result.get("bundle_key"):
-        session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
-    if result.get("extracted") is not None:
-        session.accumulated_extraction = cast(
-            ExtractionResult | None, result["extracted"]
-        )
+    latest_classification = session.latest_classification
+    if isinstance(
+        result.get("classification"), ClassificationResult
+    ):
+        latest_classification = result["classification"]  # type: ignore[assignment]
+    latest_recommendation = session.latest_recommendation
+    if isinstance(
+        result.get("recommendation"), RecommendationResult
+    ):
+        latest_recommendation = result["recommendation"]  # type: ignore[assignment]
+    extracted = result.get("extracted")
+    if isinstance(extracted, ExtractionResult):
+        session.accumulated_extraction = extracted
     if result.get("status") == "awaiting_input":
         session.clarification_turn_count += 1
-    suggested = result.get("suggested")
-    if isinstance(suggested, SuggestedBundles):
-        top_candidate = suggested.top()
-        session.latest_classification = {
-            "top_bundle_key": (
-                top_candidate.bundle_key if top_candidate is not None else None
-            ),
-            "suggestions": [
-                {"bundle_key": s.bundle_key, "confidence": s.confidence}
-                for s in suggested.suggestions
-            ],
-        }
+    session.latest_classification = latest_classification
+    session.latest_recommendation = latest_recommendation
+    _persist_result_bundle_key(session, result)
     session_repo.save(session)
 
     return SessionStartedResponse(
@@ -192,8 +217,8 @@ async def start_session(
         warning=result.get("warning"),  # type: ignore[arg-type]
         preview_type=result.get("preview_type"),  # type: ignore[arg-type]
         debug=_build_debug_info(result.get("extracted")),  # type: ignore[arg-type]
-        classification=_build_classification_info(result.get("suggested")),
-        recommendation=None,
+        classification=_build_classification_info(latest_classification),
+        recommendation=_build_recommendation_info(latest_recommendation),
     )
 
 
@@ -222,9 +247,7 @@ async def reply_to_session(
             session_id=session_id,
             user_message=body.message,
             history=history,
-            confirmed=session.confirmed,
-            accumulated_extraction=session.accumulated_extraction,
-            preselected_bundle_key=session.preselected_bundle_key,
+            session=session,
             options=TurnOptions(
                 preselected_intent=session.preselected_intent,
                 force_preview=body.force_preview,
@@ -232,26 +255,24 @@ async def reply_to_session(
         )
     )
     session.turn_count += 1
-    if result.get("bundle_key"):
-        session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
-    if result.get("extracted") is not None:
-        session.accumulated_extraction = cast(
-            ExtractionResult | None, result["extracted"]
-        )
+    latest_classification = session.latest_classification
+    if isinstance(
+        result.get("classification"), ClassificationResult
+    ):
+        latest_classification = result["classification"]  # type: ignore[assignment]
+    latest_recommendation = session.latest_recommendation
+    if isinstance(
+        result.get("recommendation"), RecommendationResult
+    ):
+        latest_recommendation = result["recommendation"]  # type: ignore[assignment]
+    extracted = result.get("extracted")
+    if isinstance(extracted, ExtractionResult):
+        session.accumulated_extraction = extracted
     if result.get("status") == "awaiting_input":
         session.clarification_turn_count += 1
-    reply_suggested = result.get("suggested")
-    if isinstance(reply_suggested, SuggestedBundles):
-        top_candidate = reply_suggested.top()
-        session.latest_classification = {
-            "top_bundle_key": (
-                top_candidate.bundle_key if top_candidate is not None else None
-            ),
-            "suggestions": [
-                {"bundle_key": s.bundle_key, "confidence": s.confidence}
-                for s in reply_suggested.suggestions
-            ],
-        }
+    session.latest_classification = latest_classification
+    session.latest_recommendation = latest_recommendation
+    _persist_result_bundle_key(session, result)
     session_repo.save(session)
 
     return ConversationTurnResponse(
@@ -264,8 +285,8 @@ async def reply_to_session(
         warning=result.get("warning"),  # type: ignore[arg-type]
         preview_type=result.get("preview_type"),  # type: ignore[arg-type]
         debug=_build_debug_info(result.get("extracted")),  # type: ignore[arg-type]
-        classification=_build_classification_info(result.get("suggested")),
-        recommendation=None,
+        classification=_build_classification_info(latest_classification),
+        recommendation=_build_recommendation_info(latest_recommendation),
     )
 
 

@@ -10,13 +10,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from agents.preview_generator.edit.apply import apply_edit
 from agents.preview_generator.edit.parse import parse_edit_instruction
 from api.deps import (
+    get_bundle_catalog,
     get_conversation_repository,
     get_preview_flow,
     get_session_repository,
 )
-from core.config import get_settings
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.preview import EditPreviewRequestSchema
+from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import BundleNotFoundError, SessionNotFoundError
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
@@ -32,6 +33,7 @@ _EARLY_PREVIEW_WARNING = (
     "Preview generated with incomplete information. Some data may be generic."
 )
 _FALLBACK_BUNDLE_KEY = "all_microservices"
+_PREVIEW_FALLBACK_BUNDLE_KEY = "generic"
 
 
 def _execute_preview_pipeline(
@@ -84,23 +86,27 @@ def _resolve_early_bundle_key(session: Session) -> str:
     Priority order:
       1. selected_bundle_key  — confirmed after conversation
       2. preselected_bundle_key — user chose before chatting (Lars scenario #1)
-      3. latest_classification.top_bundle_key — classifier's best guess mid-conversation
-      4. _FALLBACK_BUNDLE_KEY — "preview system now" with no classification yet (#3)
+      3. latest_recommendation.primary_bundle — best recommendation mid-conversation
+      4. latest_classification.selected_bundle — classifier's best guess
+      5. _FALLBACK_BUNDLE_KEY — helper-level fallback for legacy tests.
     """
     if session.selected_bundle_key:
         return session.selected_bundle_key
     if session.preselected_bundle_key:
         return session.preselected_bundle_key
+    if (
+        session.latest_recommendation is not None
+        and session.latest_recommendation.primary_bundle is not None
+    ):
+        return session.latest_recommendation.primary_bundle.bundle_key
     if session.latest_classification:
-        # Lars: Use confidence scores to separate "strong matches" from "weak guesses"
-        suggestions = session.latest_classification.get("suggestions", [])
-        if suggestions:
-            top = max(suggestions, key=lambda s: s.get("confidence", 0.0))
-            if top.get("confidence", 0.0) >= get_settings().CONFIDENCE_THRESHOLD:
-                bundle_key = top.get("bundle_key")
-                if bundle_key:
-                    return bundle_key
-
+        top_key = (
+            session.latest_classification.selected_bundle.bundle_key
+            if session.latest_classification.selected_bundle is not None
+            else None
+        )
+        if top_key:
+            return top_key
     return _FALLBACK_BUNDLE_KEY
 
 
@@ -158,6 +164,8 @@ async def generate_early_preview(
         ) from exc
 
     bundle_key = _resolve_early_bundle_key(session)
+    if bundle_key == _FALLBACK_BUNDLE_KEY:
+        bundle_key = _PREVIEW_FALLBACK_BUNDLE_KEY
     logger.info("Early preview for session=%s using bundle=%s", session_id, bundle_key)
 
     return _execute_preview_pipeline(
@@ -176,6 +184,7 @@ async def edit_preview(
     session_id: str,
     body: EditPreviewRequestSchema,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
 ) -> AppPayloadResponseSchema:
     """Apply a natural-language edit to an existing preview payload.
 
@@ -192,8 +201,8 @@ async def edit_preview(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
 
-    action = parse_edit_instruction(body.instruction)
-    updated, warning = apply_edit(dict(body.current_preview), action)
+    action = parse_edit_instruction(body.instruction, catalog)
+    updated, warning = apply_edit(dict(body.current_preview), action, catalog)
 
     logger.info(
         "Edit preview session=%s action=%s target=%s warning=%s",
