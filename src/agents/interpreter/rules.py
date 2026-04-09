@@ -3,14 +3,21 @@ from __future__ import annotations
 from catalog.bundle_catalog import BundleDefinition
 
 
-def detect_signals(text: str, bundles: list[BundleDefinition]) -> list[str]:
-    if not text or not bundles:
+def detect_signals(
+    text_fragments: list[str], bundles: list[BundleDefinition]
+) -> list[str]:
+    if not text_fragments or not bundles:
         return []
-    lowered = text.lower()
+    lowered = " ".join(text_fragments).lower()
     detected: list[str] = []
     seen: set[str] = set()
     for bundle in bundles:
-        for term in (*bundle.synonyms, *bundle.typical_entities):
+        for term in (
+            *bundle.synonyms,
+            *bundle.typical_entities,
+            *bundle.typical_intents,
+            *bundle.required_signals,
+        ):
             t = term.casefold()
             if t not in seen and t in lowered:
                 detected.append(term)

@@ -46,7 +46,7 @@ def _confidence(candidate: dict[str, object]) -> float:
 def test_detect_signals_finds_hr_terms() -> None:
     bundles = [_hr_bundle()]
     signals = detect_signals(
-        "We need to manage employee leave requests and onboarding", bundles
+        ["We need to manage employee leave requests and onboarding"], bundles
     )
     assert "employee" in signals
     assert "leave request" in signals
@@ -54,24 +54,26 @@ def test_detect_signals_finds_hr_terms() -> None:
 
 def test_detect_signals_finds_project_terms() -> None:
     bundles = [_project_bundle()]
-    signals = detect_signals("We work on projects with milestones and sprints", bundles)
+    signals = detect_signals(
+        ["We work on projects with milestones and sprints"], bundles
+    )
     assert "project" in signals
     assert "milestone" in signals
 
 
 def test_detect_signals_matches_synonyms() -> None:
     bundles = [_hr_bundle()]
-    signals = detect_signals("We need a human resources tracking system", bundles)
+    signals = detect_signals(["We need a human resources tracking system"], bundles)
     assert "human resources" in signals
 
 
 def test_detect_signals_empty_text() -> None:
-    signals = detect_signals("", [_hr_bundle()])
+    signals = detect_signals([], [_hr_bundle()])
     assert not signals
 
 
 def test_detect_signals_empty_bundles() -> None:
-    signals = detect_signals("employee leave request", [])
+    signals = detect_signals(["employee leave request"], [])
     assert not signals
 
 
