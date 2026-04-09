@@ -27,6 +27,8 @@ from api.deps import (
     get_conversation_repository,
     get_session_repository,
 )
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.session import Session
@@ -65,7 +67,7 @@ def _seed_session(
     *,
     confirmed: bool = False,
     selected_bundle_key: str | None = None,
-    latest_classification: dict | None = None,
+    latest_classification: ClassificationResult | None = None,
     history: list[tuple[str, str]] | None = None,
 ) -> None:
     session_repo = get_session_repository()
@@ -131,23 +133,32 @@ class TestEarlyPreviewEndpoint:
         sid = _unique_id()
         _seed_session(
             sid,
-            latest_classification={
-                "suggestions": [{"bundle_key": "project_mgmt", "confidence": 0.9}]
-            },
+            latest_classification=ClassificationResult(
+                session_id=sid,
+                selected_bundle=BundleSuggestion(
+                    bundle_key="project_mgmt",
+                    display_name="Project Management",
+                    confidence=0.8,
+                ),
+                ranked_candidates=[],
+                confidence_status="proceed",
+                top_confidence=0.8,
+                score_gap=0.8,
+            ),
         )
 
         data = (await client.post(f"/sessions/{sid}/preview/early")).json()
         assert data["bundle_key"] == "project_mgmt"
 
     @pytest.mark.asyncio
-    async def test_early_preview_falls_back_to_all_microservices_when_no_bundle(
+    async def test_early_preview_falls_back_to_generic_when_no_bundle(
         self, client: AsyncClient
     ) -> None:
         sid = _unique_id()
         _seed_session(sid)
 
         data = (await client.post(f"/sessions/{sid}/preview/early")).json()
-        assert data["bundle_key"] == "all_microservices"
+        assert data["bundle_key"] == "generic"
         assert data["warning"] is not None
 
     @pytest.mark.asyncio

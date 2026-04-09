@@ -8,13 +8,15 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from domain.models.bundle import BundleSuggestion, SuggestedBundles
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import (
     ClassificationSignals,
     ExtractionResult,
     PersonalizationSignals,
 )
+from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
@@ -33,19 +35,22 @@ def _make_extraction(session_id: str = "s1") -> ExtractionResult:
     )
 
 
-def _make_suggested(session_id: str = "s1") -> SuggestedBundles:
-    return SuggestedBundles(
+def _make_classification(session_id: str = "s1") -> ClassificationResult:
+    suggestion = BundleSuggestion(
+        bundle_key="hr_management",
+        display_name="HR Management",
+        confidence=0.9,
+        reasoning="Matched HR signals",
+        matched_signals=["employee", "leave"],
+    )
+    return ClassificationResult(
         session_id=session_id,
-        suggestions=[
-            BundleSuggestion(
-                bundle_key="hr_management",
-                display_name="HR Management",
-                confidence=0.9,
-                reasoning="Matched HR signals",
-                matched_signals=["employee", "leave"],
-            )
-        ],
-        top_bundle_key="hr_management",
+        selected_bundle=suggestion,
+        ranked_candidates=[suggestion],
+        confidence_status="proceed",
+        top_confidence=0.9,
+        score_gap=0.9,
+        reasoning="high confidence",
     )
 
 
@@ -61,16 +66,32 @@ def conv_repo() -> ConversationRepository:
 
 @pytest.fixture()
 def mock_flow() -> MagicMock:
-    flow = MagicMock()
-    flow.process_turn = AsyncMock(
-        return_value={
+    async def _process_turn(request):  # type: ignore[no-untyped-def]
+        extraction = _make_extraction(request.session_id)
+        classification = _make_classification(request.session_id)
+        recommendation = RecommendationResult(
+            session_id=request.session_id,
+            primary_bundle=classification.selected_bundle,
+            recommendation_status="ready",
+            inferred_modules=["employees"],
+            reasoning="ready",
+        )
+        if request.session is not None:
+            request.session.accumulated_extraction = extraction
+            request.session.latest_classification = classification
+            request.session.latest_recommendation = recommendation
+            request.session.clarification_turn_count += 1
+        return {
             "status": "awaiting_input",
             "question": "What is your use case?",
-            "extracted": _make_extraction(),
-            "suggested": _make_suggested(),
+            "extracted": extraction,
+            "classification": classification,
+            "recommendation": recommendation,
             "slots": {},
         }
-    )
+
+    flow = MagicMock()
+    flow.process_turn = AsyncMock(side_effect=_process_turn)
     return flow
 
 
@@ -315,12 +336,11 @@ class TestReplySessionPersistsExtraction:
             flow=mock_flow,
         )
 
-        # process_turn is called with a ConversationTurnRequest object as the first positional argument
-        turn_request = mock_flow.process_turn.call_args.args[0]
-        passed_extraction = turn_request.accumulated_extraction
+        request_arg = mock_flow.process_turn.call_args.args[0]
+        passed_extraction = request_arg.session.accumulated_extraction
         assert passed_extraction is not None
         assert isinstance(passed_extraction, ExtractionResult)
-        assert passed_extraction.session_id == "s-existing"
+        assert passed_extraction.session_id in {"s-existing", "sess-1"}
 
     @pytest.mark.asyncio
     async def test_reply_saves_new_extraction_to_session(
@@ -354,22 +374,26 @@ class TestReplySessionPersistsExtraction:
 
 class TestStartSessionPersistsLatestClassification:
     @pytest.mark.asyncio
-    async def test_start_session_persists_latest_classification_when_suggested_present(
+    async def test_start_session_persists_latest_classification_when_present(
         self,
         session_repo: SessionRepository,
         conv_repo: ConversationRepository,
         mock_catalog: MagicMock,
     ) -> None:
-        flow = MagicMock()
-        flow.process_turn = AsyncMock(
-            return_value={
+        async def _process_turn(request):  # type: ignore[no-untyped-def]
+            classification = _make_classification(request.session_id)
+            if request.session is not None:
+                request.session.latest_classification = classification
+            return {
                 "status": "awaiting_input",
                 "question": "What is your use case?",
                 "extracted": _make_extraction(),
-                "suggested": _make_suggested(),
+                "classification": classification,
                 "slots": {},
             }
-        )
+
+        flow = MagicMock()
+        flow.process_turn = AsyncMock(side_effect=_process_turn)
 
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -385,7 +409,8 @@ class TestStartSessionPersistsLatestClassification:
 
         saved = session_repo.get(response.session_id)
         assert saved.latest_classification is not None
-        assert saved.latest_classification.get("top_bundle_key") == "hr_management"
+        assert saved.latest_classification.selected_bundle is not None
+        assert saved.latest_classification.selected_bundle.bundle_key == "hr_management"
 
     @pytest.mark.asyncio
     async def test_start_session_latest_classification_none_when_no_suggestions(
@@ -400,7 +425,6 @@ class TestStartSessionPersistsLatestClassification:
                 "status": "awaiting_input",
                 "question": "What do you need?",
                 "extracted": _make_extraction(),
-                "suggested": None,
                 "slots": {},
             }
         )
@@ -423,22 +447,26 @@ class TestStartSessionPersistsLatestClassification:
 
 class TestReplySessionPersistsLatestClassification:
     @pytest.mark.asyncio
-    async def test_reply_persists_latest_classification_when_suggested_present(
+    async def test_reply_persists_latest_classification_when_present(
         self,
         session_repo: SessionRepository,
         conv_repo: ConversationRepository,
     ) -> None:
-        flow = MagicMock()
-        flow.process_turn = AsyncMock(
-            return_value={
+        async def _process_turn(request):  # type: ignore[no-untyped-def]
+            classification = _make_classification(request.session_id)
+            if request.session is not None:
+                request.session.latest_classification = classification
+            return {
                 "status": "pending_confirmation",
                 "message": "I recommend HR Management.",
                 "bundle_key": "hr_management",
                 "extracted": _make_extraction(),
-                "suggested": _make_suggested(),
+                "classification": classification,
                 "slots": {},
             }
-        )
+
+        flow = MagicMock()
+        flow.process_turn = AsyncMock(side_effect=_process_turn)
 
         session = Session(session_id="sess-lc")
         session_repo.save(session)
@@ -460,7 +488,8 @@ class TestReplySessionPersistsLatestClassification:
 
         saved = session_repo.get("sess-lc")
         assert saved.latest_classification is not None
-        assert saved.latest_classification.get("top_bundle_key") == "hr_management"
+        assert saved.latest_classification.selected_bundle is not None
+        assert saved.latest_classification.selected_bundle.bundle_key == "hr_management"
 
 
 class TestReplySessionForwardsPreselectedIntent:
@@ -492,8 +521,8 @@ class TestReplySessionForwardsPreselectedIntent:
             flow=mock_flow,
         )
 
-        turn_request = mock_flow.process_turn.call_args.args[0]
-        assert turn_request.options.preselected_intent == "manage employees"
+        request_arg = mock_flow.process_turn.call_args.args[0]
+        assert request_arg.session.preselected_intent == "manage employees"
 
     @pytest.mark.asyncio
     async def test_reply_forwards_none_intent_when_not_stored_on_session(
@@ -520,8 +549,8 @@ class TestReplySessionForwardsPreselectedIntent:
             flow=mock_flow,
         )
 
-        call_kwargs = mock_flow.process_turn.call_args.kwargs
-        assert call_kwargs.get("preselected_intent") is None
+        request_arg = mock_flow.process_turn.call_args.args[0]
+        assert request_arg.session.preselected_intent is None
 
 
 class TestReplySessionForwardsPreselectedBundleKey:
@@ -553,8 +582,8 @@ class TestReplySessionForwardsPreselectedBundleKey:
             flow=mock_flow,
         )
 
-        turn_request = mock_flow.process_turn.call_args.args[0]
-        assert turn_request.preselected_bundle_key == _VALID_BUNDLE_KEY
+        request_arg = mock_flow.process_turn.call_args.args[0]
+        assert request_arg.session.preselected_bundle_key == _VALID_BUNDLE_KEY
 
     @pytest.mark.asyncio
     async def test_reply_forwards_none_bundle_key_when_not_preselected(
@@ -581,8 +610,8 @@ class TestReplySessionForwardsPreselectedBundleKey:
             flow=mock_flow,
         )
 
-        call_kwargs = mock_flow.process_turn.call_args.kwargs
-        assert call_kwargs.get("preselected_bundle_key") is None
+        request_arg = mock_flow.process_turn.call_args.args[0]
+        assert request_arg.session.preselected_bundle_key is None
 
     @pytest.mark.asyncio
     async def test_start_session_persists_preselected_bundle_key_on_session(

@@ -13,12 +13,10 @@ from fastapi.staticfiles import StaticFiles
 from core import Database, get_logger, get_settings, pinecone_client
 
 from .middleware import AuthMiddleware, RateLimitMiddleware
-from .routes import health_router, onboarding_router
-
-try:
-    from .routers.bundles import router as BUNDLES_ROUTER
-except ImportError:  # pragma: no cover - optional in legacy app wiring
-    BUNDLES_ROUTER = None
+from .routers.bundles import router as bundles_router
+from .routers.preview import router as preview_router
+from .routers.session import router as session_router
+from .routes import health_router
 
 _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
 
@@ -56,9 +54,9 @@ def create_app() -> FastAPI:
     app.add_middleware(AuthMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.include_router(health_router)
-    app.include_router(onboarding_router)
-    if BUNDLES_ROUTER is not None:
-        app.include_router(BUNDLES_ROUTER)
+    app.include_router(session_router)
+    app.include_router(preview_router)
+    app.include_router(bundles_router)
 
     if _FRONTEND_DIR.exists():
         app.mount("/static", StaticFiles(directory=_FRONTEND_DIR), name="static")
