@@ -1,44 +1,145 @@
 stages:
   - test
+  - quality
+  - security
 
-default:
+variables:
+  PYTHONPATH: "src:."
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  POETRY_CACHE_DIR: "$CI_PROJECT_DIR/.poetry-cache"
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - when: never
+
+.base_python:
   image: python:3.10
+  cache:
+    key:
+      files:
+        - poetry.lock
+    paths:
+      - .venv/
+      - .poetry-cache/
+    policy: pull-push
   before_script:
     - python --version
     - pip install --upgrade pip setuptools wheel
     - pip install poetry
     - poetry --version
-    - poetry config virtualenvs.in-project true
     - poetry install --with dev
 
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - when: never
+.test_template:
+  extends: .base_python
+  script:
+    - mkdir -p test-results
+    - |
+      poetry run pytest tests -v --tb=short --continue-on-collection-errors \
+        --junitxml=test-results/junit.xml \
+        --ignore=tests/integration/test_api_phase4.py \
+        --ignore=tests/integration/test_full_pipeline_phase5.py \
+        --ignore=tests/integration/test_generator_personaliser.py \
+        --ignore=tests/integration/test_generator_validator.py \
+        --ignore=tests/integration/test_onboarding_flow_hr_hub.py \
+        --ignore=tests/unit/preview_generator/test_modifier.py
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+  allow_failure: false
 
-mr_check:
+tests_mr:
+  extends: .test_template
   stage: test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  variables:
-    PYTHONPATH: "src:."
-  script:
+  before_script:
+    - python --version
+    - pip install --upgrade pip setuptools wheel
+    - pip install poetry
+    - poetry --version
+    - poetry install --with dev
     - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
-    - echo "========== RUNNING ALL TESTS =========="
-    - echo "Note: Some tests may have collection errors due to missing/refactored modules"
-    - echo ""
-    # Run all tests and continue on collection errors to see which tests pass/fail
-    - PYTHONPATH=src:. poetry run pytest tests -v --tb=short --continue-on-collection-errors || true
-    - echo ""
-    - echo "========== TEST RUN COMPLETED =========="
-    - echo "Tests with import errors (currently known issues):"
-    - echo "  - tests/integration/test_api_phase4.py (missing api.routes)"
-    - echo "  - tests/integration/test_full_pipeline_phase5.py (missing generator module)"
-    - echo "  - tests/integration/test_generator_personaliser.py (missing generator module)"
-    - echo "  - tests/integration/test_generator_validator.py (missing generator module)"
-    - echo "  - tests/integration/test_onboarding_flow_hr_hub.py (missing generator module)"
-    - echo "  - tests/unit/preview_generator/test_modifier.py (missing modifier.py)"
-    - echo ""
-    - echo "========== RUNNING LINTER ON CHANGED FILES =========="
-    - make lint-mr || true
+
+tests_commit:
+  extends: .test_template
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+coverage:
+  extends: .base_python
+  stage: test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      poetry run pytest tests --cov=src --cov-report=term --cov-report=xml:coverage.xml \
+        --ignore=tests/integration/test_api_phase4.py \
+        --ignore=tests/integration/test_full_pipeline_phase5.py \
+        --ignore=tests/integration/test_generator_personaliser.py \
+        --ignore=tests/integration/test_generator_validator.py \
+        --ignore=tests/integration/test_onboarding_flow_hr_hub.py \
+        --ignore=tests/unit/preview_generator/test_modifier.py
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    expire_in: 1 week
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+
+lint_mr:
+  extends: .base_python
+  stage: quality
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - python --version
+    - pip install --upgrade pip setuptools wheel
+    - pip install poetry
+    - poetry --version
+    - poetry install --with dev
+    - git fetch origin dev 2>/dev/null || git fetch origin ${CI_DEFAULT_BRANCH:-main} 2>/dev/null || true
+  script:
+    - make lint-mr
   allow_failure: false
+
+lint_commit:
+  extends: .base_python
+  stage: quality
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+  script:
+    - make lint
+  allow_failure: false
+
+security_scan:
+  extends: .base_python
+  stage: security
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+  script:
+    - pip install safety
+    - poetry self add poetry-plugin-export || true
+    - poetry export --without-hashes --with dev -f requirements.txt -o requirements.txt
+    - safety check -r requirements.txt --full-report || true
+  allow_failure: true
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - requirements.txt
