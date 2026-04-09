@@ -8,8 +8,17 @@ from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
 
+# Only these catalog keys have dedicated flag/store schemas and should have
+# their flags enabled. All other bundles (e.g. sales, finance, real_estate)
+# share a render_key but are not full preview bundles — they use fallback behavior.
+_TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
+    {"hr_management", "project_mgmt", "ticketing", "generic", "all_microservices"}
+)
 
-def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
+
+def resolve_bundles_to_flags(
+    state: PreviewGeneratorState,
+) -> dict:  # pylint: disable=too-many-branches
     """Resolve bundle_key → feature flags, permission_services, landing_pages.
 
     Uses the canonical BundleCatalog from state to resolve definitions.
@@ -30,6 +39,23 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
         }
 
     bundle_key = state.bundle_key
+
+    if bundle_key not in _TIER1_CANONICAL_KEYS:
+        logger.info(
+            "session=%s — bundle_key=%r is not a tier-1 bundle, "
+            "skipping flag resolution",
+            state.session_id,
+            bundle_key,
+        )
+        return {
+            "resolved_bundle_ids": [],
+            "feature_flags": {
+                e["name"]: False for e in state.catalog.get_feature_flags()
+            },
+            "permission_services": [],
+            "landing_pages": [],
+        }
+
     bundle = state.catalog.get(bundle_key)
 
     if bundle is None:

@@ -188,20 +188,14 @@ async def start_session(
         )
     )
     latest_classification = session.latest_classification
-    if isinstance(
-        result.get("classification"), ClassificationResult
-    ):
+    if isinstance(result.get("classification"), ClassificationResult):
         latest_classification = result["classification"]  # type: ignore[assignment]
     latest_recommendation = session.latest_recommendation
-    if isinstance(
-        result.get("recommendation"), RecommendationResult
-    ):
+    if isinstance(result.get("recommendation"), RecommendationResult):
         latest_recommendation = result["recommendation"]  # type: ignore[assignment]
     extracted = result.get("extracted")
     if isinstance(extracted, ExtractionResult):
         session.accumulated_extraction = extracted
-    if result.get("status") == "awaiting_input":
-        session.clarification_turn_count += 1
     session.latest_classification = latest_classification
     session.latest_recommendation = latest_recommendation
     _persist_result_bundle_key(session, result)
@@ -256,14 +250,10 @@ async def reply_to_session(
     )
     session.turn_count += 1
     latest_classification = session.latest_classification
-    if isinstance(
-        result.get("classification"), ClassificationResult
-    ):
+    if isinstance(result.get("classification"), ClassificationResult):
         latest_classification = result["classification"]  # type: ignore[assignment]
     latest_recommendation = session.latest_recommendation
-    if isinstance(
-        result.get("recommendation"), RecommendationResult
-    ):
+    if isinstance(result.get("recommendation"), RecommendationResult):
         latest_recommendation = result["recommendation"]  # type: ignore[assignment]
     extracted = result.get("extracted")
     if isinstance(extracted, ExtractionResult):

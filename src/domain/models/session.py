@@ -68,12 +68,19 @@ class Session(BaseModel):
         if confidence_status not in valid_statuses:
             confidence_status = "proceed" if selected_bundle is not None else "clarify"
 
+        suggestions = list(value.get("suggestions") or [])
+        top_confidence_raw = value.get("top_confidence")
+        if top_confidence_raw is None and suggestions:
+            first = suggestions[0]
+            if isinstance(first, dict):
+                top_confidence_raw = first.get("confidence")
+
         return ClassificationResult(
             session_id=session_id,
             selected_bundle=selected_bundle,
             ranked_candidates=list(value.get("ranked_candidates") or []),
             confidence_status=confidence_status,
-            top_confidence=float(value.get("top_confidence") or 0.0),
+            top_confidence=float(top_confidence_raw or 0.0),
             score_gap=float(value.get("score_gap") or 0.0),
             missing_context=list(value.get("missing_context") or []),
             reasoning=str(value.get("reasoning") or ""),

@@ -69,9 +69,17 @@ def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
     "hr_management": {"primary": "tickets", "secondary": "queues", "weaves": None},
+    "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
 }
+
+# Only these canonical tier-1 bundle keys should have their render_key applied
+# for store/config schema derivation. Other bundles that share a render_key
+# (e.g. sales -> project_mgmt) must not inherit the tier-1 schema.
+_TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
+    {"hr_management", "project_mgmt", "ticketing"}
+)
 _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
     "primary": "items",
     "secondary": "projects",
@@ -81,6 +89,13 @@ _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
 
 _BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
     "hr_management": [
+        "ticket_categories",
+        "default_statuses",
+        "default_priorities",
+        "queue_names",
+        "kpi_definitions",
+    ],
+    "hr_hub": [
         "ticket_categories",
         "default_statuses",
         "default_priorities",
@@ -142,10 +157,7 @@ def _build_config(
     fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
 
     _field_values: dict[str, object] = {
-        "kpi_definitions": [
-            {"key": k.key, "label": k.label, "unit": k.type}
-            for k in kpi_metrics
-        ],
+        "kpi_definitions": [k.key for k in kpi_metrics],
         # ticketing bundle
         "service_types": ticket_types,
         "work_order_statuses": ticket_statuses,
@@ -205,16 +217,14 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         else None
     )
 
-    # Use render_key for AD-2 mapped bundles that define preview flags.
-    # Bundles without flag metadata (e.g. finance) should keep bundle_key so
-    # they naturally fall back to generic store/config schema.
+    # Use render_key only for canonical tier-1 bundles (hr_management, project_mgmt,
+    # ticketing). Other bundles that share a render_key (e.g. sales -> project_mgmt)
+    # must not inherit the tier-1 store/config schema — they use the fallback.
     registry_key = state.bundle_key
-    if state.catalog is not None:
+    if state.bundle_key in _TIER1_CANONICAL_KEYS and state.catalog is not None:
         bundle = state.catalog.get(state.bundle_key)
-        if bundle is not None and bundle.render_key and bundle.flags:
+        if bundle is not None and bundle.render_key:
             registry_key = bundle.render_key
-    elif state.resolved_bundle_ids:
-        registry_key = state.resolved_bundle_ids[0]
 
     generation_json = GenerationJson(
         schema_version="1.0",

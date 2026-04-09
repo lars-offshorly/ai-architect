@@ -6,7 +6,6 @@ import re
 
 from catalog.bundle_catalog import BundleCatalog, BundleCatalogError
 from core.logging import get_logger
-
 from domain.models.extraction_result import ExtractionResult
 
 from ..schemas import PersonDetail, TeamDetail, UserContext, WorkItemDetail
@@ -26,8 +25,6 @@ def _get_catalog() -> BundleCatalog:
         return BundleCatalog()
     except BundleCatalogError as exc:
         raise RuntimeError(f"Failed to load bundle catalog: {exc}") from exc
-
-
 
 
 # Patterns for named-entity extraction
@@ -108,18 +105,22 @@ def _raw_user_text(conversation_history: list[dict]) -> str:
     )
 
 
-def _detect_industry(text: str, catalog: BundleCatalog) -> tuple[str | None, str | None]:
+def _detect_industry(
+    text: str, catalog: BundleCatalog
+) -> tuple[str | None, str | None]:
     """Returns (bundle_key, industry_detail) by scanning catalog extraction_keywords.
 
     Each bundle in bundle_registry.yaml declares extraction_keywords.industry —
-    a list of keywords that signal its industry vertical. The first bundle whose keywords
-    match wins. Falls back to (None, None).
+    a list of keywords that signal its industry vertical. The first bundle
+    whose keywords match wins. Falls back to (None, None).
     """
     for bundle in catalog.list_all():
         raw_kws = bundle.extraction_keywords.get("industry", [])
         keywords = raw_kws if isinstance(raw_kws, list) else []
         if keywords and _any_kw_in(text, frozenset(keywords)):
-            detail = bundle.extraction_keywords.get("industry_detail") or bundle.display_name
+            detail = (
+                bundle.extraction_keywords.get("industry_detail") or bundle.display_name
+            )
             return bundle.bundle_key, str(detail)
     return None, None
 
@@ -235,7 +236,8 @@ def _extract_teams(_raw_text: str, lower_text: str) -> list[TeamDetail]:
 
 
 def _detect_company_size(text: str, catalog: BundleCatalog) -> str | None:
-    """Detect company size using numeric patterns and keywords from the generic bundle."""
+    """Detect company size using numeric patterns and keywords from the
+    generic bundle."""
     # 1. Numeric signals
     for pattern in _SIZE_PATTERNS:
         match = pattern.search(text)
@@ -358,7 +360,7 @@ def _map_extraction_result(  # pylint: disable=too-many-locals
 
 def _keyword_fill(
     ctx: UserContext, history: list[dict], catalog: BundleCatalog
-) -> UserContext:
+) -> UserContext:  # pylint: disable=too-many-locals
     """Run keyword scan and fill any UserContext fields still None.
 
     Returns a new UserContext with gaps filled; fields already set are preserved.
@@ -521,7 +523,7 @@ def extract_user_context(  # pylint: disable=too-many-locals
         intent_lower = preselected_intent.lower()
         is_methodology = any(kw in intent_lower for kw in _METHODOLOGY_HINTS)
         if not is_methodology and preselected_intent not in ctx.key_phrases:
-            ctx.key_phrases.append(preselected_intent)
+            ctx.key_phrases.append(preselected_intent)  # pylint: disable=no-member
 
     logger.info(
         "session=%s — Tier 2 context: company=%r size=%r industry=%r "

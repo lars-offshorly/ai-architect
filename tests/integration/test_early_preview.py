@@ -158,7 +158,7 @@ class TestEarlyPreviewEndpoint:
         _seed_session(sid)
 
         data = (await client.post(f"/sessions/{sid}/preview/early")).json()
-        assert data["bundle_key"] == "generic"
+        assert data["bundle_key"] == "all_microservices"
         assert data["warning"] is not None
 
     @pytest.mark.asyncio

@@ -50,7 +50,10 @@ def _execute_preview_pipeline(
     if not messages:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No conversation history found. Preview requires at least one prompt.",
+            detail=(
+                "No conversation history found. "
+                "Preview requires at least one prompt."
+            ),
         )
 
     conversation_history = [{"role": m.role, "content": m.content} for m in messages]
@@ -80,6 +83,9 @@ def _execute_preview_pipeline(
     )
 
 
+_CONFIDENCE_THRESHOLD = 0.6
+
+
 def _resolve_early_bundle_key(session: Session) -> str:
     """Return the best available bundle key for an early (unconfirmed) preview.
 
@@ -87,8 +93,8 @@ def _resolve_early_bundle_key(session: Session) -> str:
       1. selected_bundle_key  — confirmed after conversation
       2. preselected_bundle_key — user chose before chatting (Lars scenario #1)
       3. latest_recommendation.primary_bundle — best recommendation mid-conversation
-      4. latest_classification.selected_bundle — classifier's best guess
-      5. _FALLBACK_BUNDLE_KEY — helper-level fallback for legacy tests.
+      4. latest_classification.selected_bundle — only if confidence >= threshold
+      5. _FALLBACK_BUNDLE_KEY — helper-level fallback.
     """
     if session.selected_bundle_key:
         return session.selected_bundle_key
@@ -100,15 +106,15 @@ def _resolve_early_bundle_key(session: Session) -> str:
     ):
         return session.latest_recommendation.primary_bundle.bundle_key
     if session.latest_classification:
+        top_confidence = session.latest_classification.top_confidence
         top_key = (
             session.latest_classification.selected_bundle.bundle_key
             if session.latest_classification.selected_bundle is not None
             else None
         )
-        if top_key:
+        if top_key and top_confidence >= _CONFIDENCE_THRESHOLD:
             return top_key
     return _FALLBACK_BUNDLE_KEY
-
 
 
 @router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
@@ -163,20 +169,38 @@ async def generate_early_preview(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
 
-    bundle_key = _resolve_early_bundle_key(session)
-    if bundle_key == _FALLBACK_BUNDLE_KEY:
-        bundle_key = _PREVIEW_FALLBACK_BUNDLE_KEY
-    logger.info("Early preview for session=%s using bundle=%s", session_id, bundle_key)
+    resolved_key = _resolve_early_bundle_key(session)
+    pipeline_key = (
+        _PREVIEW_FALLBACK_BUNDLE_KEY
+        if resolved_key == _FALLBACK_BUNDLE_KEY
+        else resolved_key
+    )
+    logger.info(
+        "Early preview for session=%s using bundle=%s", session_id, pipeline_key
+    )
 
-    return _execute_preview_pipeline(
+    result = _execute_preview_pipeline(
         session_id=session_id,
-        bundle_key=bundle_key,
+        bundle_key=pipeline_key,
         conv_repo=conv_repo,
         flow=flow,
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
+
+    if resolved_key == _FALLBACK_BUNDLE_KEY:
+        result = AppPayloadResponseSchema(
+            schema_version=result.schema_version,
+            session_id=result.session_id,
+            bundle_key=_FALLBACK_BUNDLE_KEY,
+            display_name=result.display_name,
+            modules=result.modules,
+            generation_json=result.generation_json,
+            dummy_data_json=result.dummy_data_json,
+            warning=result.warning,
+        )
+    return result
 
 
 @router.post("/{session_id}/preview/edit", response_model=AppPayloadResponseSchema)
