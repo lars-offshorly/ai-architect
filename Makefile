@@ -4,7 +4,7 @@ POETRY := poetry
 POETRY_QUIET := env PYTHONWARNINGS="ignore::Warning" $(POETRY)
 SRC_DIR := src
 TEST_DIR := tests
-LINT_PATHS := src onboarding catalog scripts
+LINT_PATHS := $(wildcard src onboarding catalog scripts)
 FLAKE8_FLAGS := --max-line-length=88
 PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,too-few-public-methods,too-many-arguments,too-many-positional-arguments,too-many-return-statements,duplicate-code,import-outside-toplevel,fixme
 CI_PYTEST_IGNORES := \
