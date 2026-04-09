@@ -204,7 +204,15 @@ def _role_pool(bundle_key: str, user_context: UserContext | None) -> list[str]:
     return bundle_map.get(bundle_key, _GENERAL_ROLES)
 
 
-def _dept_pool(bundle_key: str) -> list[str]:
+def _dept_pool(
+    bundle_key: str,
+    user_context: UserContext | None,
+    branch_names: list[str] | None = None,
+) -> list[str]:
+    if user_context and user_context.teams:
+        return [t.name for t in user_context.teams]
+    if branch_names:
+        return branch_names
     return _DEPARTMENTS_BY_BUNDLE.get(
         bundle_key, ["Operations", "Product", "Engineering"]
     )
@@ -239,10 +247,11 @@ def _build_employees(
     bundle_key: str,
     user_context: UserContext | None,
     count: int = 8,
+    branch_names: list[str] | None = None,
 ) -> list[dict]:
     names = _name_pool(user_context)
     roles = _role_pool(bundle_key, user_context)
-    depts = _dept_pool(bundle_key)
+    depts = _dept_pool(bundle_key, user_context, branch_names)
 
     role_cycle = itertools.cycle(roles)
     dept_cycle = itertools.cycle(depts)
@@ -386,7 +395,11 @@ def generate_sample_data(state: PreviewGeneratorState) -> dict:
     bundle_key = state.bundle_key if state.data_tier == "tier_1" else "project_mgmt"
     ctx = state.user_context
 
-    employees = _build_employees(bundle_key, ctx)
+    branch_names = None
+    if state.extraction_result:
+        branch_names = state.extraction_result.personalization_signals.branch_names or None
+
+    employees = _build_employees(bundle_key, ctx, branch_names=branch_names)
     projects = _build_projects(bundle_key, ctx, employees)
     tickets = _build_tickets(bundle_key, ctx, employees)
     weaves = _build_weaves(ctx, employees, projects)

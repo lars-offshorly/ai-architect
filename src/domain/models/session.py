@@ -5,6 +5,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from domain.models.extraction_result import ExtractionResult
+
 
 class Session(BaseModel):
     session_id: str = Field(default_factory=lambda: str(uuid4()))
@@ -16,7 +18,9 @@ class Session(BaseModel):
     selected_bundle_key: str | None = None
     auth_token: str | None = None
 
-    accumulated_extraction: dict | None = None
+    accumulated_extraction: ExtractionResult | None = None
     latest_classification: dict | None = None
     latest_recommendation: dict | None = None
     clarification_turn_count: int = 0
+    preselected_intent: str | None = None
+    preselected_bundle_key: str | None = None

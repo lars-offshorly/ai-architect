@@ -35,7 +35,7 @@ from api.deps import (
     get_session_repository,
 )
 from domain.models.conversation import ConversationMessage
-from domain.models.extracted_info import ExtractedInfo
+from domain.models.extraction_result import ExtractionResult
 from domain.models.session import Session
 
 # ---------------------------------------------------------------------------
@@ -316,7 +316,7 @@ class TestFullHttpFlow:
                     "status": "pending_confirmation",
                     "message": "I recommend HR Management. Does this look right?",
                     "bundle_key": "hr_management",
-                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "extracted": ExtractionResult(session_id="placeholder"),
                     "slots": {"team_size": "12"},
                 }
             ]
@@ -379,14 +379,14 @@ class TestFullHttpFlow:
                     "status": "awaiting_input",
                     "question": "How many people are on your HR team?",
                     "bundle_key": None,
-                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "extracted": ExtractionResult(session_id="placeholder"),
                     "slots": {},
                 },
                 {
                     "status": "pending_confirmation",
                     "message": "I recommend HR Management. Does this look right?",
                     "bundle_key": "hr_management",
-                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "extracted": ExtractionResult(session_id="placeholder"),
                     "slots": {"team_size": "12"},
                 },
             ]
@@ -412,7 +412,9 @@ class TestFullHttpFlow:
             assert reply_resp.status_code == 200
             assert reply_resp.json()["status"] == "pending_confirmation"
             assert reply_resp.json()["bundle_key"] == "hr_management"
-            assert get_session_repository().get(sid).selected_bundle_key == "hr_management"
+            assert (
+                get_session_repository().get(sid).selected_bundle_key == "hr_management"
+            )
 
             # Step 3: Confirm
             confirm_resp = await client.post(
@@ -441,7 +443,7 @@ class TestFullHttpFlow:
                     "status": "pending_confirmation",
                     "message": "I recommend Project Management.",
                     "bundle_key": "project_mgmt",
-                    "extracted": ExtractedInfo(session_id="placeholder"),
+                    "extracted": ExtractionResult(session_id="placeholder"),
                     "slots": {},
                 }
             ]

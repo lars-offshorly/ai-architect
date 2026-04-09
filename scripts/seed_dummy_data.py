@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Print or write seed dummy data for a specific bundle to stdout or a file."""
+
 from __future__ import annotations
 
 import json
@@ -12,7 +13,9 @@ BUNDLES_DIR = Path(__file__).parent.parent / "src" / "templates" / "bundles"
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print("Usage: seed_dummy_data.py <bundle_key> [output_path]")
-        print(f"Available bundles: {[d.name for d in BUNDLES_DIR.iterdir() if d.is_dir()]}")
+        print(
+            f"Available bundles: {[d.name for d in BUNDLES_DIR.iterdir() if d.is_dir()]}"
+        )
         return 1
 
     bundle_key = argv[1]

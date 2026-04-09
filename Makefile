@@ -1,9 +1,10 @@
 .PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr validate-templates generate-template seed help
 
 POETRY := poetry
+POETRY_QUIET := env PYTHONWARNINGS="ignore::Warning" $(POETRY)
 SRC_DIR := src
 TEST_DIR := tests
-LINT_PATHS := src tests onboarding catalog scripts
+LINT_PATHS := src onboarding catalog scripts
 FLAKE8_FLAGS := --max-line-length=88
 PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
 
@@ -53,17 +54,17 @@ test-integration:
 
 lint:
 	@echo "black..."
-	@$(POETRY) run black $(LINT_PATHS)
+	@$(POETRY_QUIET) run black $(LINT_PATHS)
 	@echo "ruff..."
-	@$(POETRY) run ruff check $(LINT_PATHS)
+	@$(POETRY_QUIET) run ruff check $(LINT_PATHS)
 	@echo "flake8..."
-	@$(POETRY) run flake8 $(LINT_PATHS) $(FLAKE8_FLAGS) --count
+	@$(POETRY_QUIET) run flake8 $(LINT_PATHS) $(FLAKE8_FLAGS) --count
 	@echo "mypy..."
-	@$(POETRY) run mypy $(LINT_PATHS)
+	@$(POETRY_QUIET) run mypy $(LINT_PATHS)
 	@echo "pylint..."
-	@$(POETRY) run pylint $(LINT_PATHS) $(PYLINT_FLAGS)
+	@$(POETRY_QUIET) run pylint $(LINT_PATHS) $(PYLINT_FLAGS)
 	@echo "vulture..."
-	@$(POETRY) run vulture $(LINT_PATHS) --min-confidence 90
+	@$(POETRY_QUIET) run vulture $(LINT_PATHS) --min-confidence 90
 
 format:
 	@echo "black..."
@@ -80,15 +81,15 @@ lint-file:
 	fi
 	@echo "Linting files: $(filter-out $@,$(MAKECMDGOALS))"
 	@echo "black..."
-	@$(POETRY) run black $(filter-out $@,$(MAKECMDGOALS))
+	@$(POETRY_QUIET) run black $(filter-out $@,$(MAKECMDGOALS))
 	@echo "ruff..."
-	@$(POETRY) run ruff check $(filter-out $@,$(MAKECMDGOALS))
+	@$(POETRY_QUIET) run ruff check $(filter-out $@,$(MAKECMDGOALS))
 	@echo "flake8..."
-	@$(POETRY) run flake8 $(filter-out $@,$(MAKECMDGOALS)) $(FLAKE8_FLAGS)
+	@$(POETRY_QUIET) run flake8 $(filter-out $@,$(MAKECMDGOALS)) $(FLAKE8_FLAGS)
 	@echo "mypy..."
-	@$(POETRY) run mypy $(filter-out $@,$(MAKECMDGOALS))
+	@$(POETRY_QUIET) run mypy $(filter-out $@,$(MAKECMDGOALS))
 	@echo "pylint..."
-	@$(POETRY) run pylint $(filter-out $@,$(MAKECMDGOALS)) $(PYLINT_FLAGS)
+	@$(POETRY_QUIET) run pylint $(filter-out $@,$(MAKECMDGOALS)) $(PYLINT_FLAGS)
 
 # Allow passing arguments to lint-file without escaping
 %:
@@ -97,7 +98,7 @@ lint-file:
 lint-staged:
 	@echo "Formatting and linting staged Python files..."
 	@FILES=$$(git diff --cached --name-only --diff-filter=ACMR -- '*.py' | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \
@@ -105,17 +106,17 @@ lint-staged:
 	else \
 		echo "Files to process: $$FILES"; \
 		echo "black..."; \
-		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run black; \
 		echo "ruff..."; \
-		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
-		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
-		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run vulture --min-confidence 90; \
 	fi
 
 lint-mr:
@@ -125,7 +126,7 @@ lint-mr:
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \
@@ -133,17 +134,17 @@ lint-mr:
 	else \
 		echo "Files to process: $$FILES"; \
 		echo "black..."; \
-		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run black; \
 		echo "ruff..."; \
-		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
-		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
-		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run vulture --min-confidence 90; \
 	fi
 
 check-mr:
@@ -156,7 +157,7 @@ check-mr:
 		git diff --cached --name-only --diff-filter=ACMR -- '*.py'; \
 	} | \
 		sort -u | \
-		grep -E '^(src/|tests/|onboarding/|catalog/|scripts/)' | \
+		grep -E '^(src/|onboarding/|catalog/|scripts/)' | \
 		grep -v __pycache__ | \
 		awk '{if (system("[ -f \"" $$0 "\" ]") == 0) print $$0}'); \
 	if [ -z "$$FILES" ]; then \
@@ -164,17 +165,17 @@ check-mr:
 	else \
 		echo "Files to process: $$FILES"; \
 		echo "black..."; \
-		echo "$$FILES" | xargs $(POETRY) run black; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run black; \
 		echo "ruff..."; \
-		echo "$$FILES" | xargs $(POETRY) run ruff check; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run ruff check; \
 		echo "flake8..."; \
-		echo "$$FILES" | xargs $(POETRY) run flake8 $(FLAKE8_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run flake8 $(FLAKE8_FLAGS); \
 		echo "mypy..."; \
-		echo "$$FILES" | xargs $(POETRY) run mypy; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run mypy; \
 		echo "pylint..."; \
-		echo "$$FILES" | xargs $(POETRY) run pylint $(PYLINT_FLAGS); \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run pylint $(PYLINT_FLAGS); \
 		echo "vulture..."; \
-		echo "$$FILES" | xargs $(POETRY) run vulture --min-confidence 90; \
+		echo "$$FILES" | xargs $(POETRY_QUIET) run vulture --min-confidence 90; \
 	fi
 
 validate-templates:

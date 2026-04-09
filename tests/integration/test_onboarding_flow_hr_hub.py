@@ -88,6 +88,7 @@ def _patch_onboarding_dependencies(
     memory: InMemorySaver,
 ) -> None:
     import sys
+
     cc_mod = sys.modules["onboarding.nodes.conversation_classifier"]
     ie_mod = sys.modules["onboarding.nodes.intent_extraction"]
     cl_mod = sys.modules["onboarding.nodes.clarification"]

@@ -115,7 +115,9 @@ def test_merge_templates_overlay_takes_precedence() -> None:
 def test_build_user_prompt_includes_slots_and_bundle() -> None:
     input_data = _personalisation_input()
 
-    prompt = _build_user_prompt(input_data, "Merged template content", "2026-02-25T11:00:00+08:00")
+    prompt = _build_user_prompt(
+        input_data, "Merged template content", "2026-02-25T11:00:00+08:00"
+    )
 
     assert "bundle: hr_hub" in prompt
     assert '"team_size": 12' in prompt

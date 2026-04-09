@@ -1,56 +1,185 @@
 from __future__ import annotations
 
+# pylint: disable=too-few-public-methods,duplicate-code
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
+from catalog.bundle_catalog import BundleCatalog, BundleDefinition
 from core.logging import get_logger
-from domain.models.extracted_info import ExtractedInfo
+from domain.models.conversation import ConversationMessage
+from domain.models.extraction_result import (
+    ClassificationSignals,
+    ExtractionResult,
+    PersonalizationSignals,
+)
 
 from .prompts import EXTRACTION_SYSTEM_PROMPT
 
 logger = get_logger(__name__)
 
+_HISTORY_WINDOW = 5
 
-class _ExtractionOutput(BaseModel):
+
+def _build_extraction_context(
+    user_message: str,
+    summary: str,
+    history: list[ConversationMessage],
+) -> str:
+    parts: list[str] = []
+    if summary:
+        parts.append(f"Conversation summary:\n{summary}")
+    recent = history[-_HISTORY_WINDOW:]
+    if recent:
+        lines = []
+        for msg in recent:
+            prefix = "User" if msg.role == "user" else "Assistant"
+            lines.append(f"{prefix}: {msg.content}")
+        parts.append("Recent conversation:\n" + "\n".join(lines))
+    parts.append(f"Latest message:\n{user_message}")
+    return "\n\n".join(parts)
+
+
+def _build_synonym_index(
+    bundles: list[BundleDefinition],
+) -> tuple[dict[str, str], list[tuple[str, str]]]:
+    exact_match_index: dict[str, str] = {}
+    phrase_match_index: list[tuple[str, str]] = []
+
+    for bundle in bundles:
+        for synonym in bundle.synonyms:
+            normalized = synonym.strip().casefold()
+            if not normalized:
+                continue
+            if normalized not in exact_match_index:
+                exact_match_index[normalized] = synonym
+                phrase_match_index.append((normalized, synonym))
+
+    phrase_match_index.sort(key=lambda item: len(item[0]), reverse=True)
+    return exact_match_index, phrase_match_index
+
+
+def _normalize_keywords(
+    keywords: list[str],
+    exact_match_index: dict[str, str],
+    phrase_match_index: list[tuple[str, str]],
+) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+
+    for kw in keywords:
+        stripped = kw.strip()
+        if not stripped:
+            continue
+
+        normalized = stripped.casefold()
+        canonical = exact_match_index.get(normalized)
+        if canonical is None:
+            for phrase, mapped in phrase_match_index:
+                if phrase in normalized or normalized in phrase:
+                    canonical = mapped
+                    break
+        if canonical is None:
+            canonical = stripped
+
+        canonical_key = canonical.casefold()
+        if canonical_key in seen:
+            continue
+        result.append(canonical)
+        seen.add(canonical_key)
+    return result
+
+
+class _ClassificationSignalsOutput(BaseModel):
+    keywords: list[str] = Field(default_factory=list)
+    entities: list[str] = Field(default_factory=list)
+    intents: list[str] = Field(default_factory=list)
+    workflow_hints: list[str] = Field(default_factory=list)
+    domain_hints: list[str] = Field(default_factory=list)
+    metrics: list[str] = Field(default_factory=list)
+
+
+class _PersonalizationSignalsOutput(BaseModel):
     company_name: str | None = None
-    industry_hint: str | None = None
-    primary_use_case: str | None = None
-    entity_type: str | None = None
     employee_names: list[str] = Field(default_factory=list)
     role_names: list[str] = Field(default_factory=list)
     department_names: list[str] = Field(default_factory=list)
-    metrics: list[str] = Field(default_factory=list)
-    status_labels: list[str] = Field(default_factory=list)
+    branch_names: list[str] = Field(default_factory=list)
+    custom_labels: list[str] = Field(default_factory=list)
+    terminology: dict[str, str] = Field(default_factory=dict)
+
+
+class _ExtractionOutput(BaseModel):
+    classification_signals: _ClassificationSignalsOutput = Field(
+        default_factory=_ClassificationSignalsOutput
+    )
+    personalization_signals: _PersonalizationSignalsOutput = Field(
+        default_factory=_PersonalizationSignalsOutput
+    )
 
 
 class Extractor:
-    def __init__(self, model: ChatOpenAI) -> None:
+    def __init__(self, model: ChatOpenAI, catalog: BundleCatalog) -> None:
         self._model = model
+        self._catalog = catalog
+        self._bundles = catalog.list_all()
+        self._exact_synonym_index, self._phrase_synonym_index = _build_synonym_index(
+            self._bundles
+        )
 
-    async def extract(self, session_id: str, user_message: str) -> ExtractedInfo:
+    async def extract(
+        self,
+        session_id: str,
+        user_message: str,
+        history: list[ConversationMessage] | None = None,
+        summary: str = "",
+    ) -> ExtractionResult:
+        context = _build_extraction_context(
+            user_message=user_message,
+            summary=summary,
+            history=history or [],
+        )
         structured = self._model.with_structured_output(_ExtractionOutput)
         try:
             result = await structured.ainvoke(
                 [
                     SystemMessage(content=EXTRACTION_SYSTEM_PROMPT),
-                    HumanMessage(content=user_message),
+                    HumanMessage(content=context),
                 ]
             )
         except (RuntimeError, ValueError, TypeError) as exc:
             logger.error("Extraction failed for session=%s: %s", session_id, exc)
-            return ExtractedInfo(session_id=session_id)
+            return ExtractionResult(session_id=session_id)
 
-        output = result if isinstance(result, _ExtractionOutput) else _ExtractionOutput.model_validate(result)
-        return ExtractedInfo(
+        output = (
+            result
+            if isinstance(result, _ExtractionOutput)
+            else _ExtractionOutput.model_validate(result)
+        )
+        normalized_keywords = _normalize_keywords(
+            output.classification_signals.keywords,
+            self._exact_synonym_index,
+            self._phrase_synonym_index,
+        )
+        cs = output.classification_signals
+        ps = output.personalization_signals
+        return ExtractionResult(
             session_id=session_id,
-            company_name=output.company_name,
-            industry_hint=output.industry_hint,
-            primary_use_case=output.primary_use_case,
-            entity_type=output.entity_type,
-            employee_names=output.employee_names,
-            role_names=output.role_names,
-            department_names=output.department_names,
-            metrics=output.metrics,
-            status_labels=output.status_labels,
+            classification_signals=ClassificationSignals(
+                keywords=normalized_keywords,
+                entities=cs.entities,
+                intents=cs.intents,
+                workflow_hints=cs.workflow_hints,
+                domain_hints=cs.domain_hints,
+                metrics=cs.metrics,
+            ),
+            personalization_signals=PersonalizationSignals(
+                company_name=ps.company_name,
+                employee_names=ps.employee_names,
+                role_names=ps.role_names,
+                department_names=ps.department_names,
+                branch_names=ps.branch_names,
+                custom_labels=ps.custom_labels,
+                terminology=ps.terminology,
+            ),
         )

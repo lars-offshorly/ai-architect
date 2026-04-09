@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Catalog → registry key translation
-# BundleCatalog uses the BundleType enum keys; BUNDLE_REGISTRY uses its own keys.
-# Only keys that differ between catalog and registry need an entry here.
+# BundleCatalog uses enriched bundle_registry.yaml at runtime.
+# Map catalog keys to the registry key that should be activated.
 # Keys absent from this map with no direct registry entry fall to Tier 3.
 # ---------------------------------------------------------------------------
 _CATALOG_TO_REGISTRY: dict[str, str] = {

@@ -14,6 +14,11 @@ class AppPayloadContract(BaseModel):
     generation_json: dict[str, object]
     dummy_data_json: dict[str, object]
 
+    _REQUIRED_GENERATION_KEYS: frozenset[str] = frozenset(
+        {"schema_version", "bundle_key", "modules", "config"}
+    )
+    _REQUIRED_DUMMY_KEYS: frozenset[str] = frozenset({"bundle_key", "stores"})
+
     def validate_contract(self) -> list[str]:
         """Return a list of human-readable error strings.
 

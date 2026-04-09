@@ -134,7 +134,7 @@ _HISTORY_ASSET_MGMT: list[dict] = [
     {
         "role": "assistant",
         "content": (
-            "Asset management with maintenance scheduling." " Let me put that together."
+            "Asset management with maintenance scheduling. Let me put that together."
         ),
     },
     {"role": "user", "content": "Great."},
