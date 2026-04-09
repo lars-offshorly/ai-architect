@@ -26,6 +26,46 @@ bundles:
       - role_names
       - leave_types
       - status_labels
+    flags:
+      - hrhub-module
+      - hrhub-overview
+      - hrhub-employee-movement
+      - hrhub-onboarding
+      - hrhub-employee-handbook
+      - hrhub-admin-hangout
+      - hrhub-tasks
+      - hrhub-my-tasks
+      - hrhub-live-feed
+      - app-homepage-hr-hub
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-hrhub
+      - activity-feed-filter-dashboard
+      - profile-module
+      - rewards-module
+    permission_services:
+      - hr_hub
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - weaves
 
     default_modules:
       - hr_hub
@@ -155,6 +195,41 @@ bundles:
       - ticket_categories
       - status_labels
       - priority_labels
+    flags:
+      - tickets-module
+      - tickets-unread-count
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-tickets
+      - profile-module
+    permission_services:
+      - tickets
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 321
+        module: Tickets
+        selectionAutoShow: true
+        default: Ticket
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - weaves
 
     default_modules:
       - tickets
@@ -273,6 +348,40 @@ bundles:
       - team_names
       - milestone_labels
       - status_labels
+    flags:
+      - projects-module
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-dashboard
+      - activity-feed-filter-todo
+      - profile-module
+    permission_services:
+      - projects
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
 
     default_modules:
       - projects
@@ -613,6 +722,41 @@ bundles:
       - product_names
       - account_names
       - status_labels
+    flags:
+      - projects-module
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-dashboard
+      - activity-feed-filter-todo
+      - profile-module
+    permission_services:
+      - projects
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - weaves
 
     default_modules:
       - projects
@@ -847,6 +991,41 @@ bundles:
       - attorney_names
       - case_types
       - status_labels
+    flags:
+      - tickets-module
+      - tickets-unread-count
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-tickets
+      - profile-module
+    permission_services:
+      - tickets
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 321
+        module: Tickets
+        selectionAutoShow: true
+        default: Ticket
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - weaves
+      - smart_vault
+      - announcements
 
     default_modules:
       - tickets
@@ -1206,6 +1385,41 @@ bundles:
       - instructor_names
       - subject_names
       - status_labels
+    flags:
+      - projects-module
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-dashboard
+      - activity-feed-filter-todo
+      - profile-module
+    permission_services:
+      - projects
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - weaves
 
     default_modules:
       - projects
@@ -1331,6 +1545,63 @@ bundles:
       - primary_use_case
       - department_names
       - status_labels
+    flags:
+      - hrhub-module
+      - hrhub-overview
+      - hrhub-employee-movement
+      - hrhub-onboarding
+      - hrhub-employee-handbook
+      - hrhub-admin-hangout
+      - hrhub-tasks
+      - hrhub-my-tasks
+      - hrhub-live-feed
+      - app-homepage-hr-hub
+      - projects-module
+      - tickets-module
+      - tickets-unread-count
+      - dashboard-module
+      - menu-dashboard-nav
+      - kpi-module
+      - menu-kpi-nav
+      - push-notification
+      - activity-feed-module
+      - activity-feed-notification
+      - activity-feed-notifications-toast
+      - activity-feed-unread-count
+      - activity-feed-filter-hrhub
+      - activity-feed-filter-tickets
+      - activity-feed-filter-dashboard
+      - activity-feed-filter-todo
+      - profile-module
+      - rewards-module
+    permission_services:
+      - hr_hub
+      - projects
+      - tickets
+      - kpi
+      - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 321
+        module: Tickets
+        selectionAutoShow: true
+        default: Ticket
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
+    compatible_addons:
+      - chat
+      - video_call
+      - smart_vault
+      - announcements
+      - weaves
 
     default_modules:
       - hr_hub
