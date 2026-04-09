@@ -360,7 +360,8 @@ def _map_extraction_result(  # pylint: disable=too-many-locals
 
 def _keyword_fill(
     ctx: UserContext, history: list[dict], catalog: BundleCatalog
-) -> UserContext:  # pylint: disable=too-many-locals
+) -> UserContext:
+    # pylint: disable=too-many-locals
     """Run keyword scan and fill any UserContext fields still None.
 
     Returns a new UserContext with gaps filled; fields already set are preserved.

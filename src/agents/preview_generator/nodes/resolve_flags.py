@@ -16,9 +16,8 @@ _TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
 )
 
 
-def resolve_bundles_to_flags(
-    state: PreviewGeneratorState,
-) -> dict:  # pylint: disable=too-many-branches
+def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
+    # pylint: disable=too-many-branches
     """Resolve bundle_key → feature flags, permission_services, landing_pages.
 
     Uses the canonical BundleCatalog from state to resolve definitions.
