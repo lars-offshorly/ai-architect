@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from domain.models.bundle import BundleSuggestion
+from domain.models.classification_result import ClassificationResult
 from domain.models.extraction_result import (
     ClassificationSignals,
     ExtractionResult,
     PersonalizationSignals,
 )
+from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
 
 
@@ -50,13 +53,27 @@ class TestSessionPipelineStateFields:
         assert restored.accumulated_extraction.session_id == "s1"
 
     def test_session_accepts_latest_classification(self) -> None:
-        payload = {"confidence_status": "clarify", "top_bundle_key": None}
+        payload = ClassificationResult(
+            session_id="s1",
+            confidence_status="clarify",
+            top_confidence=0.2,
+            score_gap=0.1,
+        )
         session = Session(latest_classification=payload)
 
         assert session.latest_classification == payload
 
     def test_session_accepts_latest_recommendation(self) -> None:
-        payload = {"primary_bundle": "hr_management", "fallback_bundles": []}
+        payload = RecommendationResult(
+            session_id="s1",
+            primary_bundle=BundleSuggestion(
+                bundle_key="hr_management",
+                display_name="HR Management",
+                confidence=0.8,
+            ),
+            recommendation_status="ready",
+            inferred_modules=["employees"],
+        )
         session = Session(latest_recommendation=payload)
 
         assert session.latest_recommendation == payload
