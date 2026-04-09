@@ -44,6 +44,53 @@ make test-unit
 make test-integration
 ```
 
+## Makefile Walkthrough
+
+Use `make help` to see all targets. The most useful ones are grouped below.
+
+### 1. Environment and app runtime
+
+- `make install`: install project + dev dependencies with Poetry.
+- `make dev`: run FastAPI with auto-reload for local development.
+- `make run`: run FastAPI in non-reload mode.
+
+### 2. Day-to-day local checks (developer convenience)
+
+- `make test`: run all tests (continues even if tests fail).
+- `make test-unit`: run `tests/unit` only (continues on failures).
+- `make test-integration`: run `tests/integration` only (continues on failures).
+- `make lint`: run full lint stack (`black`, `ruff`, `flake8`, `mypy`, `pylint`, `vulture`).
+- `make format`: auto-format code with `black` + `ruff format`.
+- `make lint-file ...`: lint only specific files/folders.
+- `make lint-staged`: lint staged Python files only.
+- `make lint-mr`: lint Python files changed versus `origin/dev` plus staged changes.
+- `make check-mr`: convenience command for tests + MR-style linting (tests are non-blocking).
+
+These are optimized for fast iteration and may not mirror CI pass/fail behavior exactly.
+
+### 3. CI preflight checks (pipeline-aligned)
+
+- `make ci-preflight`: alias for commit-style preflight.
+- `make ci-preflight-commit`: mirrors commit pipeline checks:
+  - test run with CI ignore list and JUnit output (`test-results/junit.xml`)
+  - coverage run with CI ignore list (`coverage.xml`)
+  - full `make lint`
+  - security scan via `make ci-security` (non-blocking, same as CI `allow_failure`)
+- `make ci-preflight-mr`: same as above but uses `make lint-mr` to match MR lint behavior.
+- `make ci-security`: exports requirements and runs `safety check` (non-blocking).
+
+If you want to know "will this pass pipeline before I push?", run:
+
+```bash
+make ci-preflight
+```
+
+For merge-request style lint scope, run:
+
+```bash
+make ci-preflight-mr
+```
+
 ## Lint and Format
 
 Run full lint pipeline (`black + ruff + flake8 + mypy + pylint + vulture`):
@@ -77,6 +124,7 @@ Lint files changed against `dev` branch:
 ```bash
 make lint-mr
 make check-mr
+make ci-preflight-mr
 ```
 
 ## Utility Commands

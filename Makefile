@@ -1,4 +1,4 @@
-.PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr validate-templates generate-template seed help
+.PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr ci-preflight ci-preflight-commit ci-preflight-mr ci-security validate-templates generate-template seed help
 
 POETRY := poetry
 POETRY_QUIET := env PYTHONWARNINGS="ignore::Warning" $(POETRY)
@@ -7,6 +7,12 @@ TEST_DIR := tests
 LINT_PATHS := src onboarding catalog scripts
 FLAKE8_FLAGS := --max-line-length=88
 PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
+CI_PYTEST_IGNORES := \
+	--ignore=tests/integration/test_api_phase4.py \
+	--ignore=tests/integration/test_full_pipeline_phase5.py \
+	--ignore=tests/integration/test_generator_personaliser.py \
+	--ignore=tests/integration/test_generator_validator.py \
+	--ignore=tests/integration/test_onboarding_flow_hr_hub.py
 
 export PYTHONPATH := $(SRC_DIR):.
 
@@ -24,6 +30,10 @@ help:
 	@echo "  lint-staged           Lint staged Python files"
 	@echo "  lint-mr               Lint changed Python files vs dev branch"
 	@echo "  check-mr              Run tests + lint changed Python files vs dev branch"
+	@echo "  ci-preflight          Run local preflight for commit pipeline (tests + coverage + lint + security scan)"
+	@echo "  ci-preflight-commit   Same checks as ci-preflight"
+	@echo "  ci-preflight-mr       Local preflight for MR pipeline (tests + coverage + lint-mr + security scan)"
+	@echo "  ci-security           Run CI-aligned security scan (non-blocking, like GitLab allow_failure)"
 	@echo "  validate-templates    Validate all bundle template JSON files"
 	@echo "  generate-template     Scaffold a new bundle (usage: make generate-template BUNDLE=my_bundle)"
 	@echo "  seed BUNDLE=<key>     Print dummy data for a bundle to stdout"
@@ -177,6 +187,46 @@ check-mr:
 		echo "vulture..."; \
 		echo "$$FILES" | xargs $(POETRY_QUIET) run vulture --min-confidence 90; \
 	fi
+
+ci-preflight: ci-preflight-commit
+
+ci-preflight-commit:
+	@echo "========== CI PREFLIGHT (COMMIT) =========="
+	@mkdir -p test-results
+	@echo "tests..."
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors \
+		--junitxml=test-results/junit.xml \
+		$(CI_PYTEST_IGNORES)
+	@echo "coverage..."
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) --cov=src --cov-report=term --cov-report=xml:coverage.xml \
+		$(CI_PYTEST_IGNORES)
+	@echo "lint..."
+	@$(MAKE) lint
+	@echo "security (non-blocking)..."
+	@$(MAKE) ci-security
+
+ci-preflight-mr:
+	@echo "========== CI PREFLIGHT (MR) =========="
+	@mkdir -p test-results
+	@echo "tests..."
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors \
+		--junitxml=test-results/junit.xml \
+		$(CI_PYTEST_IGNORES)
+	@echo "coverage..."
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) --cov=src --cov-report=term --cov-report=xml:coverage.xml \
+		$(CI_PYTEST_IGNORES)
+	@echo "lint-mr..."
+	@$(MAKE) lint-mr
+	@echo "security (non-blocking)..."
+	@$(MAKE) ci-security
+
+ci-security:
+	@echo "Installing safety and exporting requirements..."
+	@pip install safety
+	@$(POETRY) self add poetry-plugin-export || true
+	@$(POETRY) export --without-hashes --with dev -f requirements.txt -o ci-requirements.txt
+	@echo "Running safety scan (non-blocking, same as CI)..."
+	@safety check -r ci-requirements.txt --full-report || true
 
 validate-templates:
 	$(POETRY) run python scripts/validate_templates.py
