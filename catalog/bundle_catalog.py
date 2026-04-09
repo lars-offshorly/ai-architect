@@ -86,6 +86,7 @@ class BundleCatalog:
             return
         self._bundles["hr_hub"] = BundleDefinition(
             bundle_key="hr_hub",
+            render_key=base.render_key,
             display_name="HR Hub",
             primary_entity="people",
             description=base.description,

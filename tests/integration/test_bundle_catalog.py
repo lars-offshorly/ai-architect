@@ -54,7 +54,7 @@ def test_catalog_to_render_key_mapping(catalog: BundleCatalog) -> None:
     assert mapping["healthcare"] == "ticketing"
     assert mapping["construction"] == "project_mgmt"
     assert mapping["real_estate"] == "project_mgmt"
-    assert mapping["all_microservices"] == "hr_hub"
+    assert mapping["all_microservices"] == "all_microservices"
     assert mapping["generic"] == "generic"
 
 

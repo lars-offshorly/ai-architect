@@ -54,6 +54,12 @@ def _unique_id() -> str:
     return str(uuid.uuid4())
 
 
+_DEFAULT_HISTORY = [
+    ("user", "We need a workspace for our team."),
+    ("assistant", "Got it. Let me set that up."),
+]
+
+
 def _seed_session(
     session_id: str,
     *,
@@ -73,7 +79,8 @@ def _seed_session(
     )
     session_repo.save(session)
 
-    for role, content in history or []:
+    effective_history = history if history is not None else _DEFAULT_HISTORY
+    for role, content in effective_history:
         conv_repo.append_message(
             session_id,
             ConversationMessage(role=role, content=content),  # type: ignore[arg-type]
@@ -124,7 +131,9 @@ class TestEarlyPreviewEndpoint:
         sid = _unique_id()
         _seed_session(
             sid,
-            latest_classification={"top_bundle_key": "project_mgmt"},
+            latest_classification={
+                "suggestions": [{"bundle_key": "project_mgmt", "confidence": 0.9}]
+            },
         )
 
         data = (await client.post(f"/sessions/{sid}/preview/early")).json()
