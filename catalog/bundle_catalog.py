@@ -64,10 +64,43 @@ def _parse_metadata(bundle_key: str, raw: dict | None) -> BundleMetadata | None:
 
 class BundleCatalog:
     def __init__(self, catalog_path: Path | None = None) -> None:
+        include_legacy_aliases = catalog_path is None
         if catalog_path is None:
-            catalog_path = Path(get_settings().BUNDLE_REGISTRY_PATH)
+            try:
+                catalog_path = Path(get_settings().BUNDLE_REGISTRY_PATH)
+            except Exception:  # pylint: disable=broad-exception-caught
+                catalog_path = Path("src/templates/bundle_registry.yaml")
         self._catalog_path = catalog_path
         self._bundles = self._load_bundles(self._catalog_path)
+        if include_legacy_aliases:
+            self._add_legacy_aliases()
+
+    def _add_legacy_aliases(self) -> None:
+        if "hr_hub" in self._bundles:
+            return
+        base = self._bundles.get("hr_management")
+        if base is None:
+            return
+        self._bundles["hr_hub"] = BundleDefinition(
+            bundle_key="hr_hub",
+            display_name="HR Hub",
+            primary_entity="people",
+            description=base.description,
+            template_dir=base.template_dir,
+            dummy_data_template_key=base.dummy_data_template_key,
+            default_modules=["tickets", "queues", "kpis", "dashboard"],
+            optional_modules=list(base.optional_modules),
+            knit_service_bundles=list(base.knit_service_bundles),
+            required_slots=["team_size", "primary_use_case"],
+            customizable_fields=list(base.customizable_fields),
+            synonyms=list(base.synonyms),
+            typical_entities=list(base.typical_entities),
+            typical_intents=list(base.typical_intents),
+            required_signals=list(base.required_signals),
+            signal_boosts=dict(base.signal_boosts),
+            terminology=dict(base.terminology),
+            metadata=base.metadata,
+        )
 
     @staticmethod
     def _load_bundles(catalog_path: Path) -> dict[str, BundleDefinition]:

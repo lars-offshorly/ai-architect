@@ -1,6 +1,26 @@
 from __future__ import annotations
 
+# pylint: disable=duplicate-code
+from collections.abc import Sequence
+
 from ..models.bundle import BundleSuggestion, SuggestedBundles
+
+
+def _to_float(value: object, default: float = 0.0) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return default
+    return default
+
+
+def _to_str_list(value: object) -> list[str]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return [str(item) for item in value]
+    return []
 
 
 class BundleResolutionService:
@@ -13,9 +33,9 @@ class BundleResolutionService:
             BundleSuggestion(
                 bundle_key=str(c["bundle_key"]),
                 display_name=str(c.get("display_name", c["bundle_key"])),
-                confidence=float(c.get("confidence", 0.0)),
+                confidence=_to_float(c.get("confidence", 0.0)),
                 reasoning=str(c.get("reasoning", "")),
-                matched_signals=list(c.get("matched_signals", [])),  # type: ignore[arg-type]
+                matched_signals=_to_str_list(c.get("matched_signals", [])),
             )
             for c in scored_candidates
         ]
@@ -36,7 +56,7 @@ class BundleResolutionService:
         boosted = []
         for candidate in candidates:
             key = str(candidate["bundle_key"])
-            confidence = float(candidate.get("confidence", 0.0))
+            confidence = _to_float(candidate.get("confidence", 0.0))
             boosts_for_bundle = signal_boosts.get(key, {})
             total_boost = sum(
                 boosts_for_bundle[signal]

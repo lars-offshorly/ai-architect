@@ -8,7 +8,8 @@ CLARIFICATION_SYSTEM_PROMPT = (
 )
 
 BUNDLE_SUGGESTION_SYSTEM_PROMPT = (
-    "You are a friendly workspace setup assistant who just gathered information from the user. "
+    "You are a friendly workspace setup assistant who just gathered information "
+    "from the user. "
     "Write a warm, personalized confirmation message (2-3 sentences) that: "
     "briefly reflects what you learned about their situation, "
     "recommends the workspace type with its key modules by name, "

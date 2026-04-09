@@ -9,12 +9,12 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState
 
-
 SYSTEM_PROMPT = (
     "You are a friendly assistant helping someone configure their team's workspace. "
     "Ask ONE natural, conversational question to learn the missing detail. "
     "Reference what you already know about their situation when relevant. "
-    "Be warm and concise — 1-2 sentences max. No bullet lists, no multiple questions, no explanations."
+    "Be warm and concise — 1-2 sentences max. "
+    "No bullet lists, no multiple questions, no explanations."
 )
 
 
@@ -59,7 +59,7 @@ async def _generate_question(state: OnboardingState, slot_key: str) -> str:
                     content=(
                         f"Workspace type being set up: {bundle}\n"
                         f"Already collected: {slots}\n"
-                        f"Still need: {slot_key.replace('_', ' ')}\n"
+                        f"Target slot: {slot_key}\n"
                         f"\nRecent conversation:\n{conversation}"
                     ),
                 ),
@@ -88,5 +88,8 @@ async def clarification(state: OnboardingState, config: RunnableConfig) -> Comma
     answer = str(user_reply).strip() if user_reply else ""
     return Command(
         goto="conversation_classifier",
-        update={"messages": [HumanMessage(content=answer, name="user")], "thinking_trace": [step]},
+        update={
+            "messages": [HumanMessage(content=answer, name="user")],
+            "thinking_trace": [step],
+        },
     )

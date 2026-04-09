@@ -397,7 +397,9 @@ def generate_sample_data(state: PreviewGeneratorState) -> dict:
 
     branch_names = None
     if state.extraction_result:
-        branch_names = state.extraction_result.personalization_signals.branch_names or None
+        branch_names = (
+            state.extraction_result.personalization_signals.branch_names or None
+        )
 
     employees = _build_employees(bundle_key, ctx, branch_names=branch_names)
     projects = _build_projects(bundle_key, ctx, employees)

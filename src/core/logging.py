@@ -24,6 +24,9 @@ def get_logger(name: str, level: str = "INFO") -> logging.Logger:
     return logging.getLogger(name)
 
 
-def get_session_logger(name: str, session_id: str) -> logging.LoggerAdapter:  # type: ignore[type-arg]
+def get_session_logger(
+    name: str,
+    session_id: str,
+) -> logging.LoggerAdapter:  # type: ignore[type-arg]
     logger = logging.getLogger(name)
     return logging.LoggerAdapter(logger, {"session_id": session_id})

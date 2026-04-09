@@ -12,10 +12,9 @@ BUNDLES_DIR = Path(__file__).parent.parent / "src" / "templates" / "bundles"
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
+        available_bundles = [d.name for d in BUNDLES_DIR.iterdir() if d.is_dir()]
         print("Usage: seed_dummy_data.py <bundle_key> [output_path]")
-        print(
-            f"Available bundles: {[d.name for d in BUNDLES_DIR.iterdir() if d.is_dir()]}"
-        )
+        print(f"Available bundles: {available_bundles}")
         return 1
 
     bundle_key = argv[1]

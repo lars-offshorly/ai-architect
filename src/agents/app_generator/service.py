@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from repositories.template_repository import TemplateRepository
@@ -21,7 +23,6 @@ class AppGeneratorService:
         session_id: str,
         bundle_key: str,
         display_name: str,
-        preview_data: dict[str, object],
         dummy_data: dict[str, object],
     ) -> AppPayload:
         session_logger = get_session_logger(__name__, session_id)
@@ -38,7 +39,7 @@ class AppGeneratorService:
             session_id=session_id,
             bundle_key=bundle_key,
             display_name=display_name,
-            modules=list(generation_json.get("modules", [])),  # type: ignore[arg-type]
+            modules=list(cast(list[object], generation_json.get("modules", []))),
             generation_json=generation_json,
             dummy_data_json=dummy_data,
         )

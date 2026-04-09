@@ -10,14 +10,17 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingIntents, OnboardingState
 
-
 CATALOG = BundleCatalog()
 SYSTEM_PROMPT = (
-    "Extract onboarding intent from the user's message about setting up their team workspace.\n"
+    "Extract onboarding intent from the user's message about setting up their "
+    "team workspace.\n"
     "Determine:\n"
-    "- entity_type: 'people' for HR/team management, 'work' for projects/tasks, 'asset' for equipment/physical items\n"
-    "- bundle: best matching workspace type from the catalog (null if genuinely unclear)\n"
-    "- industry_hint: user's industry or domain (e.g. 'marketing_agency', 'healthcare', 'logistics')\n"
+    "- entity_type: 'people' for HR/team management, 'work' for projects/tasks, "
+    "'asset' for equipment/physical items\n"
+    "- bundle: best matching workspace type from the catalog "
+    "(null if genuinely unclear)\n"
+    "- industry_hint: user's industry or domain "
+    "(e.g. 'marketing_agency', 'healthcare', 'logistics')\n"
     "- confidence: 0.0-1.0 confidence in bundle selection\n"
     "- raw_intent: one-sentence summary of what they want to manage\n"
     "Prefer a specific bundle over null when context gives reasonable signal."
@@ -28,7 +31,8 @@ _TEAM_SIZE_RE = re.compile(
     r"\b(\d+)[- ](?:person|people|employee|employees|staff|member|members|strong)\b"
     r"|\b(?:team|org|company|organization|firm)\s+of\s+(\d+)\b"
     r"|\bwe\s+(?:are|have)\s+(\d+)\s+(?:people|employees|staff)\b"
-    r"|\bi\s+(?:run|have|manage)\s+(?:a\s+)?(\d+)[- ](?:person|people|employee|employees|member)\b",
+    r"|\bi\s+(?:run|have|manage)\s+(?:a\s+)?(\d+)[- ]"
+    r"(?:person|people|employee|employees|member)\b",
     re.IGNORECASE,
 )
 
@@ -52,8 +56,7 @@ def _extract_team_size(message: str) -> int | None:
 
 def _catalog_context() -> str:
     entries = [
-        f"- {bundle.bundle_key}: {bundle.description}"
-        for bundle in CATALOG.list_all()
+        f"- {bundle.bundle_key}: {bundle.description}" for bundle in CATALOG.list_all()
     ]
     return "\n".join(entries)
 
@@ -95,11 +98,6 @@ async def intent_extraction(state: OnboardingState) -> Command:
         slots["industry_hint"] = intents.industry_hint
     if intents.raw_intent and "primary_use_case" not in slots:
         slots["primary_use_case"] = intents.raw_intent
-    if "team_size" not in slots:
-        extracted_size = _extract_team_size(user_message)
-        if extracted_size is not None:
-            slots["team_size"] = extracted_size
-
     conf_pct = f"{intents.confidence:.0%}" if intents.confidence is not None else "?"
     industry = intents.industry_hint or "—"
     step = (
@@ -113,12 +111,20 @@ async def intent_extraction(state: OnboardingState) -> Command:
         bundle_step = f"Bundle detected: **{intents.bundle}** ({conf_pct} confidence)"
         return Command(
             goto="slot_filler",
-            update={"onboarding_intents": intents, "slots": slots, "thinking_trace": [step, bundle_step]},
+            update={
+                "onboarding_intents": intents,
+                "slots": slots,
+                "thinking_trace": [step, bundle_step],
+            },
         )
 
     session_logger.warning("Intent extraction could not determine a valid bundle")
     bundle_step = f"Bundle unclear ({conf_pct} confidence) — asking for more context"
     return Command(
         goto="clarification",
-        update={"onboarding_intents": intents, "slots": slots, "thinking_trace": [step, bundle_step]},
+        update={
+            "onboarding_intents": intents,
+            "slots": slots,
+            "thinking_trace": [step, bundle_step],
+        },
     )

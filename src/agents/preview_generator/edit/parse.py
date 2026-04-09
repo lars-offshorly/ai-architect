@@ -165,7 +165,7 @@ def parse_edit_instruction(instruction: str) -> EditAction:
 
     if not text:
         return EditAction(
-            action_type=EditActionType.unsupported,
+            action_type=EditActionType.UNSUPPORTED,
             raw_instruction=raw,
         )
 
@@ -173,7 +173,7 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     if verb is None:
         logger.info("No action verb detected in: %r", raw)
         return EditAction(
-            action_type=EditActionType.unsupported,
+            action_type=EditActionType.UNSUPPORTED,
             raw_instruction=raw,
         )
 
@@ -181,7 +181,7 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     kpi_target = _find_kpi_target(text)
     if kpi_target and _is_kpi_context(text):
         action_type = (
-            EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+            EditActionType.ADD_KPI if verb == "add" else EditActionType.REMOVE_KPI
         )
         logger.info("Parsed %s KPI: %r → %s", verb, raw, kpi_target)
         return EditAction(
@@ -193,9 +193,9 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     # --- Dashboard detection ---
     if _is_dashboard_only(text):
         action_type = (
-            EditActionType.add_dashboard
+            EditActionType.ADD_DASHBOARD
             if verb == "add"
-            else EditActionType.remove_dashboard
+            else EditActionType.REMOVE_DASHBOARD
         )
         logger.info("Parsed %s dashboard: %r", verb, raw)
         return EditAction(
@@ -208,7 +208,7 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     module_target = _find_module_target(text)
     if module_target:
         action_type = (
-            EditActionType.add_module if verb == "add" else EditActionType.remove_module
+            EditActionType.ADD_MODULE if verb == "add" else EditActionType.REMOVE_MODULE
         )
         logger.info("Parsed %s module: %r → %s", verb, raw, module_target)
         return EditAction(
@@ -220,7 +220,7 @@ def parse_edit_instruction(instruction: str) -> EditAction:
     # --- KPI fallback: verb + slug without explicit "kpi"/"metric" word ---
     if kpi_target:
         action_type = (
-            EditActionType.add_kpi if verb == "add" else EditActionType.remove_kpi
+            EditActionType.ADD_KPI if verb == "add" else EditActionType.REMOVE_KPI
         )
         logger.info("Parsed %s KPI (fallback): %r → %s", verb, raw, kpi_target)
         return EditAction(
@@ -231,6 +231,6 @@ def parse_edit_instruction(instruction: str) -> EditAction:
 
     logger.info("No recognised target in: %r (verb=%s)", raw, verb)
     return EditAction(
-        action_type=EditActionType.unsupported,
+        action_type=EditActionType.UNSUPPORTED,
         raw_instruction=raw,
     )

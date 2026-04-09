@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from logging import Logger
-from typing import Protocol, cast
+from logging import LoggerAdapter
+from typing import Any, Protocol, cast
 
 from agents.interpreter.missing_fields import MissingFieldDetector
 from catalog.bundle_catalog import BundleCatalog
@@ -266,7 +266,7 @@ class ConversationFlow:
     def _build_early_preview_response(
         self,
         context: _TurnContext,
-        session_logger: Logger,
+        session_logger: LoggerAdapter[Any],
     ) -> _FlowResult:
         bundle_key_for_preview = self._resolve_preview_bundle_key(context)
         session_logger.info(

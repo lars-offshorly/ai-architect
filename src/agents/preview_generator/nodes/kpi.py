@@ -47,7 +47,9 @@ def _pick_value(metric_type: str, index: int) -> float | int | str:
     return pool[index % len(pool)]
 
 
-def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
+def build_kpi_metrics(  # pylint: disable=too-many-branches
+    state: PreviewGeneratorState,
+) -> dict:
     """Assemble KPI metrics for the resolved bundle.
 
     Starts from bundle's default_metrics list, then boosts with any
@@ -64,6 +66,7 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
     signal_boost_slugs: list[str] = []
     if state.extraction_result is not None:
         for metric in state.extraction_result.classification_signals.metrics:
+            slug: str | None
             if metric in METRICS_CATALOG:
                 slug = metric
             else:
@@ -75,9 +78,9 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
     boost_slugs: list[str] = []
     if state.user_context and state.user_context.key_phrases:
         for phrase in state.user_context.key_phrases:
-            slug = _PHRASE_TO_METRIC.get(phrase)
-            if slug and slug not in default_slugs:
-                boost_slugs.append(slug)
+            phrase_slug = _PHRASE_TO_METRIC.get(phrase)
+            if phrase_slug and phrase_slug not in default_slugs:
+                boost_slugs.append(phrase_slug)
 
     # Deduplicate while preserving order
     all_slugs: list[str] = []
@@ -108,7 +111,8 @@ def build_kpi_metrics(state: PreviewGeneratorState) -> dict:
         )
 
     logger.info(
-        "session=%s — built %d KPI metrics for bundle=%r (default=%d signal_boost=%d boost=%d)",
+        "session=%s — built %d KPI metrics for bundle=%r "
+        "(default=%d signal_boost=%d boost=%d)",
         state.session_id,
         len(kpi_metrics),
         bundle_key,

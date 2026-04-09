@@ -153,7 +153,7 @@ class TestRemoveModule:
     def test_flag_disabled(self) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "chat-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "chat-module")
         )
         flag = next(
             f
@@ -165,7 +165,7 @@ class TestRemoveModule:
     def test_module_removed_from_list(self) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "chat-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "chat-module")
         )
         assert "Chat" not in result["generation_json"]["modules"]
         assert "Chat" not in result["modules"]
@@ -180,7 +180,7 @@ class TestRemoveModule:
         payload["dummy_data_json"]["stores"]["kpis"][1]["source_service"] = "hr_hub"
 
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "tickets-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module")
         )
         remaining_kpis = result["dummy_data_json"]["stores"]["kpis"]
         kpi_keys = [k["key"] for k in remaining_kpis]
@@ -191,7 +191,7 @@ class TestRemoveModule:
         """Removing tickets-module removes the 'tickets' store."""
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "tickets-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module")
         )
         assert "tickets" not in result["dummy_data_json"]["stores"]
 
@@ -200,7 +200,7 @@ class TestRemoveModule:
         payload = _make_payload()
         payload["dummy_data_json"]["stores"]["tasks"] = [{"id": 1}]
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "projects-module")
+            payload, _action(EditActionType.REMOVE_MODULE, "projects-module")
         )
         assert "tasks" not in result["dummy_data_json"]["stores"]
         assert "milestones" not in result["dummy_data_json"]["stores"]
@@ -209,7 +209,7 @@ class TestRemoveModule:
         """Removing a module that's already disabled is a no-op."""
         payload = _make_payload(flag_overrides={"calendar_module": False})
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_module, "calendar_module")
+            payload, _action(EditActionType.REMOVE_MODULE, "calendar_module")
         )
         # Should not error, payload essentially unchanged structurally
         assert result["generation_json"]["feature_flags"] is not None
@@ -218,7 +218,7 @@ class TestRemoveModule:
         """apply_edit must not mutate the input payload dict."""
         payload = _make_payload()
         original = copy.deepcopy(payload)
-        apply_edit(payload, _action(EditActionType.remove_module, "chat-module"))
+        apply_edit(payload, _action(EditActionType.REMOVE_MODULE, "chat-module"))
         assert payload == original
 
 
@@ -231,7 +231,7 @@ class TestAddModule:
     def test_flag_enabled(self) -> None:
         payload = _make_payload(flag_overrides={"calendar_module": False})
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_module, "calendar_module")
+            payload, _action(EditActionType.ADD_MODULE, "calendar_module")
         )
         flag = next(
             f
@@ -243,7 +243,7 @@ class TestAddModule:
     def test_module_added_to_list(self) -> None:
         payload = _make_payload(modules=["Projects"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_module, "calendar_module")
+            payload, _action(EditActionType.ADD_MODULE, "calendar_module")
         )
         assert "Calendar" in result["generation_json"]["modules"]
         assert "Calendar" in result["modules"]
@@ -252,7 +252,7 @@ class TestAddModule:
         """Adding a module already in the list doesn't duplicate it."""
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_module, "chat-module")
+            payload, _action(EditActionType.ADD_MODULE, "chat-module")
         )
         assert result["generation_json"]["modules"].count("Chat") == 1
 
@@ -266,7 +266,7 @@ class TestRemoveKpi:
     def test_kpi_removed_from_stores(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_kpi, "capacity_utilization")
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization")
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" not in kpi_keys
@@ -275,7 +275,7 @@ class TestRemoveKpi:
     def test_kpi_removed_from_config(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization", "active_work_items"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_kpi, "capacity_utilization")
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization")
         )
         assert (
             "capacity_utilization"
@@ -285,7 +285,7 @@ class TestRemoveKpi:
     def test_remove_nonexistent_kpi_is_noop(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_kpi, "nonexistent_metric")
+            payload, _action(EditActionType.REMOVE_KPI, "nonexistent_metric")
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_keys
@@ -300,7 +300,7 @@ class TestAddKpi:
     def test_kpi_added_to_stores(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_kpi, "sla_compliance")
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance")
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "sla_compliance" in kpi_keys
@@ -308,7 +308,7 @@ class TestAddKpi:
     def test_kpi_added_to_config(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_kpi, "sla_compliance")
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance")
         )
         assert (
             "sla_compliance" in result["generation_json"]["config"]["kpi_definitions"]
@@ -317,7 +317,7 @@ class TestAddKpi:
     def test_add_unknown_kpi_returns_warning(self) -> None:
         payload = _make_payload()
         result, warning = apply_edit(
-            payload, _action(EditActionType.add_kpi, "nonexistent_metric")
+            payload, _action(EditActionType.ADD_KPI, "nonexistent_metric")
         )
         assert warning is not None
         assert "not found" in warning.lower() or "unknown" in warning.lower()
@@ -325,7 +325,7 @@ class TestAddKpi:
     def test_add_duplicate_kpi_is_noop(self) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_kpi, "capacity_utilization")
+            payload, _action(EditActionType.ADD_KPI, "capacity_utilization")
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert kpi_keys.count("capacity_utilization") == 1
@@ -340,7 +340,7 @@ class TestDashboard:
     def test_remove_dashboard(self) -> None:
         payload = _make_payload()
         result, _ = apply_edit(
-            payload, _action(EditActionType.remove_dashboard, "dashboard-module")
+            payload, _action(EditActionType.REMOVE_DASHBOARD, "dashboard-module")
         )
         flag = next(
             f
@@ -356,7 +356,7 @@ class TestDashboard:
             flag_overrides={"dashboard-module": False},
         )
         result, _ = apply_edit(
-            payload, _action(EditActionType.add_dashboard, "dashboard-module")
+            payload, _action(EditActionType.ADD_DASHBOARD, "dashboard-module")
         )
         flag = next(
             f
@@ -375,7 +375,7 @@ class TestDashboard:
 class TestUnsupported:
     def test_returns_original_with_warning(self) -> None:
         payload = _make_payload()
-        result, warning = apply_edit(payload, _action(EditActionType.unsupported))
+        result, warning = apply_edit(payload, _action(EditActionType.UNSUPPORTED))
         assert warning is not None
         assert "unsupported" in warning.lower() or "not supported" in warning.lower()
         # Payload structure preserved

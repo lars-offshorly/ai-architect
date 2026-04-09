@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# pylint: disable=duplicate-code
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.runnables.config import var_child_runnable_config
@@ -10,10 +11,10 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState
 
-
 CATALOG = BundleCatalog()
 SYSTEM_PROMPT = (
-    "You are a friendly workspace setup assistant who just gathered information from the user. "
+    "You are a friendly workspace setup assistant who just gathered information "
+    "from the user. "
     "Write a warm, personalized confirmation message (2-3 sentences) that: "
     "briefly reflects what you learned about their situation, "
     "recommends the workspace type with its key modules by name, "
@@ -30,7 +31,9 @@ def _message_text(payload: object) -> str:
     return ""
 
 
-async def bundle_confirmer(state: OnboardingState, config: RunnableConfig) -> Command:
+async def bundle_confirmer(  # pylint: disable=too-many-locals
+    state: OnboardingState, config: RunnableConfig
+) -> Command:
     session_id = state.get("session_id", "")
     session_logger = get_session_logger(__name__, session_id)
     if state.get("confirmed", False):
@@ -39,9 +42,7 @@ async def bundle_confirmer(state: OnboardingState, config: RunnableConfig) -> Co
     intents = state.get("onboarding_intents")
     fallback_bundle = CATALOG.get_fallback()
     bundle_key = (
-        intents.bundle
-        if intents and intents.bundle
-        else fallback_bundle.bundle_key
+        intents.bundle if intents and intents.bundle else fallback_bundle.bundle_key
     )
     bundle = CATALOG.get(bundle_key) or CATALOG.get_fallback()
     slots = dict(state.get("slots", {}))
@@ -54,7 +55,8 @@ async def bundle_confirmer(state: OnboardingState, config: RunnableConfig) -> Co
                 SystemMessage(content=SYSTEM_PROMPT),
                 HumanMessage(
                     content=(
-                        f"Recommended workspace: {bundle.display_name} ({bundle.bundle_key})\n"
+                        f"Recommended workspace: {bundle.display_name} "
+                        f"({bundle.bundle_key})\n"
                         f"Modules included: {', '.join(bundle.default_modules)}\n"
                         f"What we know about the user: {slots}"
                     ),

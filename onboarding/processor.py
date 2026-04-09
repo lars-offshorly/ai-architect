@@ -11,7 +11,6 @@ from core import Database, get_session_logger
 
 from .graph import build_onboarding_graph
 
-
 _CATALOG = BundleCatalog()
 
 
@@ -80,7 +79,7 @@ class OnboardingProcessor:
         await Database.initialize()
         config = _thread_config(session_id)
         session_logger = get_session_logger(__name__, session_id)
-        initial_state = {
+        initial_state: dict[str, object] = {
             "session_id": session_id,
             "messages": [HumanMessage(content=message, name="user")],
             "slots": {},

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # pylint: disable=duplicate-code
-from typing import Annotated
+from typing import Annotated, cast
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -163,7 +163,9 @@ async def start_session(
     if result.get("bundle_key"):
         session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
     if result.get("extracted") is not None:
-        session.accumulated_extraction = result["extracted"]  # type: ignore[assignment]
+        session.accumulated_extraction = cast(
+            ExtractionResult | None, result["extracted"]
+        )
     if result.get("status") == "awaiting_input":
         session.clarification_turn_count += 1
     suggested = result.get("suggested")
@@ -229,7 +231,9 @@ async def reply_to_session(
     if result.get("bundle_key"):
         session.selected_bundle_key = result["bundle_key"]  # type: ignore[assignment]
     if result.get("extracted") is not None:
-        session.accumulated_extraction = result["extracted"]
+        session.accumulated_extraction = cast(
+            ExtractionResult | None, result["extracted"]
+        )
     if result.get("status") == "awaiting_input":
         session.clarification_turn_count += 1
     reply_suggested = result.get("suggested")

@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Scaffold a new bundle template directory with empty preview/app/dummy_data JSON files."""
+"""Scaffold a new bundle template directory with empty JSON template files."""
 
 from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Mapping
 from pathlib import Path
+from typing import cast
 
 BUNDLES_DIR = Path(__file__).parent.parent / "src" / "templates" / "bundles"
 
-_PREVIEW_STUB = {
+_PREVIEW_STUB: dict[str, object] = {
     "schema_version": "1.0",
     "bundle_key": "{bundle_key}",
     "display_name": "{display_name}",
@@ -18,7 +20,7 @@ _PREVIEW_STUB = {
     "metadata": {"customizable_fields": []},
 }
 
-_APP_STUB = {
+_APP_STUB: dict[str, object] = {
     "schema_version": "1.0",
     "bundle_key": "{bundle_key}",
     "display_name": "{display_name}",
@@ -27,7 +29,7 @@ _APP_STUB = {
     "slots_used": [],
 }
 
-_DUMMY_DATA_STUB = {
+_DUMMY_DATA_STUB: dict[str, object] = {
     "schema_version": "1.0",
     "bundle_key": "{bundle_key}",
     "stores": {},
@@ -35,13 +37,13 @@ _DUMMY_DATA_STUB = {
 
 
 def _fill(
-    stub: dict[str, object], bundle_key: str, display_name: str
+    stub: Mapping[str, object], bundle_key: str, display_name: str
 ) -> dict[str, object]:
     raw = json.dumps(stub)
     raw = raw.replace("{bundle_key}", bundle_key).replace(
         "{display_name}", display_name
     )
-    return json.loads(raw)  # type: ignore[return-value]
+    return cast(dict[str, object], json.loads(raw))
 
 
 def main(argv: list[str]) -> int:

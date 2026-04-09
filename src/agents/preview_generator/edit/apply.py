@@ -97,7 +97,7 @@ def _set_flag(flags: list[dict], flag_name: str, enabled: bool) -> None:
             return
 
 
-def _remove_module(payload: dict, flag_name: str) -> str | None:
+def _remove_module(payload: dict, flag_name: str) -> None:
     """Remove a module: disable flag, remove from modules[], cascade."""
     gen = payload["generation_json"]
     dummy = payload["dummy_data_json"]
@@ -128,10 +128,9 @@ def _remove_module(payload: dict, flag_name: str) -> str | None:
             dummy["stores"].pop(key, None)
 
     logger.info("Removed module %s (display=%s)", flag_name, display_name)
-    return None
 
 
-def _add_module(payload: dict, flag_name: str) -> str | None:
+def _add_module(payload: dict, flag_name: str) -> None:
     """Add a module: enable flag, add to modules[] (no data generation)."""
     gen = payload["generation_json"]
 
@@ -147,10 +146,9 @@ def _add_module(payload: dict, flag_name: str) -> str | None:
             payload["modules"].append(display_name)
 
     logger.info("Added module %s (display=%s)", flag_name, display_name)
-    return None
 
 
-def _remove_kpi(payload: dict, kpi_key: str) -> str | None:
+def _remove_kpi(payload: dict, kpi_key: str) -> None:
     """Remove a KPI by slug from stores.kpis and config.kpi_definitions."""
     dummy = payload["dummy_data_json"]
     gen = payload["generation_json"]
@@ -169,7 +167,6 @@ def _remove_kpi(payload: dict, kpi_key: str) -> str | None:
         ]
 
     logger.info("Removed KPI %s", kpi_key)
-    return None
 
 
 def _add_kpi(payload: dict, kpi_key: str) -> str | None:
@@ -213,7 +210,7 @@ def _add_kpi(payload: dict, kpi_key: str) -> str | None:
     return None
 
 
-def _remove_dashboard(payload: dict) -> str | None:
+def _remove_dashboard(payload: dict) -> None:
     """Remove dashboard: disable flag, remove module, clear widgets."""
     _set_flag(payload["generation_json"]["feature_flags"], "dashboard-module", False)
 
@@ -226,10 +223,9 @@ def _remove_dashboard(payload: dict) -> str | None:
         dummy["stores"].pop("dashboard_widgets", None)
 
     logger.info("Removed dashboard")
-    return None
 
 
-def _add_dashboard(payload: dict) -> str | None:
+def _add_dashboard(payload: dict) -> None:
     """Add dashboard: enable flag, add module."""
     _set_flag(payload["generation_json"]["feature_flags"], "dashboard-module", True)
 
@@ -240,7 +236,6 @@ def _add_dashboard(payload: dict) -> str | None:
         payload["modules"].append("Dashboard")
 
     logger.info("Added dashboard")
-    return None
 
 
 # ---------------------------------------------------------------------------
@@ -263,7 +258,7 @@ def apply_edit(
     result = copy.deepcopy(payload)
     warning: str | None = None
 
-    if action.action_type == EditActionType.unsupported:
+    if action.action_type == EditActionType.UNSUPPORTED:
         warning = (
             f"Unsupported edit instruction: '{action.raw_instruction}'. "
             "No changes were applied."
@@ -273,29 +268,29 @@ def apply_edit(
 
     target = action.target
 
-    if action.action_type == EditActionType.remove_module and target:
-        warning = _remove_module(result, target)
-        return result, warning
+    if action.action_type == EditActionType.REMOVE_MODULE and target:
+        _remove_module(result, target)
+        return result, None
 
-    if action.action_type == EditActionType.add_module and target:
-        warning = _add_module(result, target)
-        return result, warning
+    if action.action_type == EditActionType.ADD_MODULE and target:
+        _add_module(result, target)
+        return result, None
 
-    if action.action_type == EditActionType.remove_kpi and target:
-        warning = _remove_kpi(result, target)
-        return result, warning
+    if action.action_type == EditActionType.REMOVE_KPI and target:
+        _remove_kpi(result, target)
+        return result, None
 
-    if action.action_type == EditActionType.add_kpi and target:
+    if action.action_type == EditActionType.ADD_KPI and target:
         warning = _add_kpi(result, target)
         return result, warning
 
-    if action.action_type == EditActionType.remove_dashboard:
-        warning = _remove_dashboard(result)
-        return result, warning
+    if action.action_type == EditActionType.REMOVE_DASHBOARD:
+        _remove_dashboard(result)
+        return result, None
 
-    if action.action_type == EditActionType.add_dashboard:
-        warning = _add_dashboard(result)
-        return result, warning
+    if action.action_type == EditActionType.ADD_DASHBOARD:
+        _add_dashboard(result)
+        return result, None
 
     # Fallback — shouldn't reach here if EditActionType is exhaustive
     logger.warning("Unhandled action type: %s", action.action_type)

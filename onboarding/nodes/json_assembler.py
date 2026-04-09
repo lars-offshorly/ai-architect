@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from langgraph.graph import END
+from langgraph.types import Command
+
 from catalog import BundleCatalog
 from core import get_session_logger
 from generator import (
@@ -9,11 +12,7 @@ from generator import (
     validate_output,
 )
 
-from langgraph.types import Command
-from langgraph.graph import END
-
 from ..states import OnboardingState
-
 
 CATALOG = BundleCatalog()
 
@@ -36,7 +35,13 @@ async def json_assembler(state: OnboardingState) -> Command:
     slots = dict(state.get("slots", {}))
     try:
         templates = await retrieve_template(bundle_key, industry_hint)
-        template_source = templates[0].source if templates else "none"
+        template_source = "none"
+        if templates:
+            first = templates[0]
+            if isinstance(first, dict):
+                template_source = str(first.get("source", "fetch"))
+            else:
+                template_source = str(getattr(first, "source", "fetch"))
         session_logger.info(
             "Retrieved %d template(s) for bundle=%s via %s",
             len(templates),
@@ -75,5 +80,5 @@ async def json_assembler(state: OnboardingState) -> Command:
             "generation_json": output.generation_json.model_dump(),
             "dummy_data_json": output.dummy_data_json.model_dump(),
             "thinking_trace": [step],
-        }
+        },
     )

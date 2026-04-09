@@ -7,7 +7,6 @@ from core import get_openai_chat_model, get_session_logger, get_settings
 
 from ..states import OnboardingState, TurnClassification
 
-
 TURN_ROUTING: dict[str, str] = {
     "new_onboarding": "intent_extraction",
     "clarification_answer": "slot_filler",
@@ -20,9 +19,12 @@ TURN_ROUTING: dict[str, str] = {
 SYSTEM_PROMPT = (
     "Classify a user's message in a workspace onboarding conversation.\n"
     "Categories:\n"
-    "- new_onboarding: User is describing their team/business situation for the first time\n"
-    "- clarification_answer: User is responding to a specific question (a detail, number, or short reply)\n"
-    "- bundle_confirmation: User agrees to a suggested workspace type (e.g. 'yes', 'confirm', 'sounds good', 'that works', 'go ahead')\n"
+    "- new_onboarding: User is describing their team/business situation for the "
+    "first time\n"
+    "- clarification_answer: User is responding to a specific question "
+    "(a detail, number, or short reply)\n"
+    "- bundle_confirmation: User agrees to a suggested workspace type "
+    "(e.g. 'yes', 'confirm', 'sounds good', 'that works', 'go ahead')\n"
     "- bundle_rejection: User rejects the suggestion or wants something different\n"
     "- out_of_scope: Message is unrelated to workspace setup\n"
     "- harmful: Dangerous or inappropriate content\n"
@@ -70,9 +72,14 @@ async def conversation_classifier(state: OnboardingState) -> Command:
     except (RuntimeError, TypeError, ValueError) as exc:
         session_logger.error("Turn classification failed: %s", exc)
         step = f"Turn #{turn_count}: classification failed — routing to clarification"
-        return Command(goto="clarification", update={"turn_count": turn_count, "thinking_trace": [step]})
+        return Command(
+            goto="clarification",
+            update={"turn_count": turn_count, "thinking_trace": [step]},
+        )
 
     target_node = TURN_ROUTING.get(classification.turn_type, "clarification")
     session_logger.info("Turn classified as %s", classification.turn_type)
     step = f"Turn #{turn_count}: classified as **{classification.turn_type}**"
-    return Command(goto=target_node, update={"turn_count": turn_count, "thinking_trace": [step]})
+    return Command(
+        goto=target_node, update={"turn_count": turn_count, "thinking_trace": [step]}
+    )

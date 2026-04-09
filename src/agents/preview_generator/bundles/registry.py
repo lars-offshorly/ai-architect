@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+
 # ---------------------------------------------------------------------------
 # ALL_FEATURE_FLAGS
 # Seeded verbatim from docs/api-mocks.json orchestration.GET./feature_flags.
@@ -714,7 +716,7 @@ BUNDLE_REGISTRY: dict[str, dict] = {
 # ---------------------------------------------------------------------------
 # METRICS_CATALOG
 # 17 KPI metrics keyed by slug.
-# type: "percentage" | "count" | "duration" | "status" | "ratio"
+# value types: "percentage" | "count" | "duration" | "status" | "ratio"
 # ---------------------------------------------------------------------------
 
 METRICS_CATALOG: dict[str, dict] = {
@@ -830,6 +832,4 @@ METRICS_CATALOG: dict[str, dict] = {
 def get_flag_snapshot() -> list[dict]:
     """Return a deep copy of ALL_FEATURE_FLAGS with all flags disabled.
     Callers mutate this copy — the source list is never modified."""
-    import copy
-
     return copy.deepcopy(ALL_FEATURE_FLAGS)

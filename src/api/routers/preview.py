@@ -33,6 +33,7 @@ _EARLY_PREVIEW_WARNING = (
 _FALLBACK_BUNDLE_KEY = "all_microservices"
 
 
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 def _run_preview_pipeline(
     session_id: str,
     bundle_key: str,
@@ -91,8 +92,8 @@ def _resolve_early_bundle_key(session: Session) -> str:
     return _FALLBACK_BUNDLE_KEY
 
 
-
-def _run_preview_pipeline(
+@router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
+async def generate_preview(
     session_id: str,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],

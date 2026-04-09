@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from core.logging import get_logger
+from domain.models.extraction_result import ExtractionResult
 
 from ..schemas import PersonDetail, TeamDetail, UserContext, WorkItemDetail
 from ..state import PreviewGeneratorState
@@ -447,8 +448,8 @@ def _methodology_from_hints(hints: list[str], intent: str | None) -> str | None:
     return None
 
 
-def _map_extraction_result(
-    extraction_result: "ExtractionResult",  # noqa: F821 — forward ref for clarity
+def _map_extraction_result(  # pylint: disable=too-many-locals
+    extraction_result: ExtractionResult,
     preselected_intent: str | None,
 ) -> UserContext:
     """Map Dev A's ExtractionResult directly to UserContext (no LLM call).
@@ -472,9 +473,7 @@ def _map_extraction_result(
 
     # Teams: department names → TeamDetail
     teams: list[TeamDetail] = [
-        TeamDetail(name=dept, function=dept)
-        for dept in ps.department_names
-        if dept
+        TeamDetail(name=dept, function=dept) for dept in ps.department_names if dept
     ]
 
     # Key phrases: interpreter metrics + custom terminology values
@@ -498,7 +497,9 @@ def _map_extraction_result(
     )
 
 
-def _keyword_fill(ctx: UserContext, history: list[dict]) -> UserContext:
+def _keyword_fill(  # pylint: disable=too-many-locals
+    ctx: UserContext, history: list[dict]
+) -> UserContext:
     """Run keyword scan and fill any UserContext fields still None.
 
     Returns a new UserContext with gaps filled; fields already set are preserved.
@@ -547,8 +548,14 @@ def _keyword_fill(ctx: UserContext, history: list[dict]) -> UserContext:
     primary_concern = ctx.primary_concern
     if not primary_concern:
         pain_words = [
-            "struggle", "difficult", "hard to", "problem",
-            "issue", "can't", "cannot", "need to",
+            "struggle",
+            "difficult",
+            "hard to",
+            "problem",
+            "issue",
+            "can't",
+            "cannot",
+            "need to",
         ]
         for msg in history:
             if msg.get("role") != "user":
@@ -580,7 +587,9 @@ def _keyword_fill(ctx: UserContext, history: list[dict]) -> UserContext:
 # ---------------------------------------------------------------------------
 
 
-def extract_user_context(state: PreviewGeneratorState) -> dict:
+def extract_user_context(  # pylint: disable=too-many-locals
+    state: PreviewGeneratorState,
+) -> dict:
     """Extract structured UserContext from available signals.
 
     Three-tier resolution — NO redundant LLM call when Dev A's data is present:
@@ -665,8 +674,14 @@ def extract_user_context(state: PreviewGeneratorState) -> dict:
     ]
 
     pain_words = [
-        "struggle", "difficult", "hard to", "problem",
-        "issue", "can't", "cannot", "need to",
+        "struggle",
+        "difficult",
+        "hard to",
+        "problem",
+        "issue",
+        "can't",
+        "cannot",
+        "need to",
     ]
     primary_concern: str | None = None
     for msg in history:

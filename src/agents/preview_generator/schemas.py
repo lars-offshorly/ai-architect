@@ -114,13 +114,13 @@ class UserContext(BaseModel):
 
 
 class EditActionType(str, Enum):
-    add_module = "add_module"
-    remove_module = "remove_module"
-    add_kpi = "add_kpi"
-    remove_kpi = "remove_kpi"
-    add_dashboard = "add_dashboard"
-    remove_dashboard = "remove_dashboard"
-    unsupported = "unsupported"
+    ADD_MODULE = "add_module"
+    REMOVE_MODULE = "remove_module"
+    ADD_KPI = "add_kpi"
+    REMOVE_KPI = "remove_kpi"
+    ADD_DASHBOARD = "add_dashboard"
+    REMOVE_DASHBOARD = "remove_dashboard"
+    UNSUPPORTED = "unsupported"
 
 
 class EditAction(BaseModel):
