@@ -217,15 +217,9 @@ def test_config_milestone_statuses_static_defaults(catalog: BundleCatalog):
     assert set(config["milestone_statuses"]) == expected
 
 
-<<<<<<< HEAD
-def test_config_kpi_definitions_unchanged():
-    """kpi_definitions contains {key, label, unit} objects for each KPI."""
-    state = _make_full_state(bundle_key="ticketing", registry_key="ticketing")
-=======
 def test_config_kpi_definitions_unchanged(catalog: BundleCatalog):
     """kpi_definitions still contains the KPI keys regardless of bundle."""
     state = _make_full_state(catalog, bundle_key="ticketing", registry_key="ticketing")
->>>>>>> 3f9b051 (feat(preview): update edit parsing and state handling)
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]

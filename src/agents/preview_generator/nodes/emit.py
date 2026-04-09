@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from core.logging import get_logger
 
-from ..bundles.registry import ALL_FEATURE_FLAGS
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
 
@@ -26,14 +25,19 @@ _FLAG_TO_MODULE: dict[str, str] = {
 }
 
 
-def _build_flag_list(feature_flags: dict[str, bool]) -> list[dict]:
+def _build_flag_list(
+    feature_flags: dict[str, bool], state: PreviewGeneratorState
+) -> list[dict]:
     """Reconstruct the full feature flags array in api-mocks format.
 
-    Preserves id and module from ALL_FEATURE_FLAGS; sets isEnabled
-    from the resolved dict.
+    Preserves id and module from canonical catalog; sets isEnabled
+    from the resolved dict in state.
     """
+    if state.catalog is None:
+        return []
+
     result = []
-    for entry in ALL_FEATURE_FLAGS:
+    for entry in state.catalog.get_feature_flags():
         name = entry["name"]
         result.append(
             {
@@ -192,7 +196,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     Both are placed in state.output so service.py can unpack them.
     """
-    flag_list = _build_flag_list(state.feature_flags)
+    flag_list = _build_flag_list(state.feature_flags, state)
     modules = _derive_modules(state.feature_flags)
 
     company_name = (
@@ -201,10 +205,16 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         else None
     )
 
-    # resolved_bundle_ids[0] is the registry key (already translated from catalog key)
-    registry_key = (
-        state.resolved_bundle_ids[0] if state.resolved_bundle_ids else state.bundle_key
-    )
+    # Use render_key for AD-2 mapped bundles that define preview flags.
+    # Bundles without flag metadata (e.g. finance) should keep bundle_key so
+    # they naturally fall back to generic store/config schema.
+    registry_key = state.bundle_key
+    if state.catalog is not None:
+        bundle = state.catalog.get(state.bundle_key)
+        if bundle is not None and bundle.render_key and bundle.flags:
+            registry_key = bundle.render_key
+    elif state.resolved_bundle_ids:
+        registry_key = state.resolved_bundle_ids[0]
 
     generation_json = GenerationJson(
         schema_version="1.0",
