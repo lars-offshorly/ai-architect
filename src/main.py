@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import pathlib
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from api.routers.bundles import router as bundles_router
 from api.routers.health import router as health_router
@@ -12,6 +16,7 @@ from core.config import get_settings
 from core.logging import get_logger
 
 logger = get_logger(__name__)
+_FRONTEND_DIR = pathlib.Path(__file__).parent / "frontend"
 
 
 def create_app() -> FastAPI:
@@ -32,6 +37,18 @@ def create_app() -> FastAPI:
     application.include_router(session_router)
     application.include_router(preview_router)
     application.include_router(bundles_router)
+
+    if _FRONTEND_DIR.exists():
+        application.mount(
+            "/static",
+            StaticFiles(directory=_FRONTEND_DIR),
+            name="static",
+        )
+
+        @application.get("/")
+        async def serve_index() -> FileResponse:
+            return FileResponse(_FRONTEND_DIR / "index.html")
+
     return application
 
 
