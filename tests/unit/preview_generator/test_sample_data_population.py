@@ -217,15 +217,20 @@ def test_config_milestone_statuses_static_defaults(catalog: BundleCatalog):
     assert set(config["milestone_statuses"]) == expected
 
 
-def test_config_kpi_definitions_unchanged(catalog: BundleCatalog):
-    """kpi_definitions still contains the KPI keys regardless of bundle."""
+def test_config_kpi_definitions_structured(catalog: BundleCatalog):
+    """kpi_definitions contains structured KPI objects for emitted payloads."""
     state = _make_full_state(catalog, bundle_key="ticketing", registry_key="ticketing")
     result = emit_preview(state)
     output = result["output"]
     config = output["generation_json"]["config"]
     assert "kpi_definitions" in config
-    kpi_keys = [k.key for k in state.kpi_metrics]
-    assert config["kpi_definitions"] == kpi_keys
+    assert isinstance(config["kpi_definitions"], list)
+    assert all(isinstance(item, dict) for item in config["kpi_definitions"])
+    emitted = {
+        (item["key"], item["label"], item["unit"]) for item in config["kpi_definitions"]
+    }
+    expected = {(k.key, k.label, k.type) for k in state.kpi_metrics}
+    assert emitted == expected
 
 
 def test_config_queue_names_populated_for_hr(catalog: BundleCatalog):

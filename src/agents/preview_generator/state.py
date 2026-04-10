@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import ExtractionResult
@@ -90,5 +90,4 @@ class PreviewGeneratorState(BaseModel):
     # --- emit_preview ---
     output: PreviewOutput | None = None
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

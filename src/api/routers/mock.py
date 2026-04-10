@@ -13,10 +13,10 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from agents.app_generator.mock_builder import KNOWN_RENDER_KEYS, MockPayloadBuilder
+from agents.app_generator.mock_builder import MockPayloadBuilder
 from api.deps import get_mock_payload_builder
 from api.schemas.mock import MockPayloadRequestSchema
-from core.exceptions import InvalidPayloadError, TemplateLoadError
+from core.exceptions import InvalidPayloadError, PreviewGenerationError
 from core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -29,12 +29,15 @@ router = APIRouter(prefix="/mock", tags=["mock"])
 # ---------------------------------------------------------------------------
 
 
-def _validate_bundle_key(bundle_key: str) -> None:
+def _validate_bundle_key(bundle_key: str, builder: MockPayloadBuilder) -> None:
     """Raise 404 for unknown render keys."""
-    if bundle_key not in KNOWN_RENDER_KEYS:
+    if bundle_key not in builder.known_render_keys:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unknown bundle key '{bundle_key}'. Valid keys: {sorted(KNOWN_RENDER_KEYS)}",
+            detail=(
+                f"Unknown bundle key '{bundle_key}'. "
+                f"Valid keys: {sorted(builder.known_render_keys)}"
+            ),
         )
 
 
@@ -67,7 +70,7 @@ def get_mock_payload(
       - feature_flags:    flag snapshot with bundle-specific flags enabled
       - service_mocks:    all sections from docs/api-mocks.json
     """
-    _validate_bundle_key(bundle_key)
+    _validate_bundle_key(bundle_key, builder)
 
     try:
         payload = builder.build(
@@ -80,10 +83,10 @@ def get_mock_payload(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc),
         ) from exc
-    except TemplateLoadError as exc:
+    except PreviewGenerationError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Template load failed: {exc}",
+            detail=f"Preview generation failed: {exc}",
         ) from exc
 
     logger.info(
@@ -108,16 +111,10 @@ def get_mock_stores(
     bundle_key: str,
     builder: Annotated[MockPayloadBuilder, Depends(get_mock_payload_builder)],
 ) -> dict[str, Any]:
-    """Return only the template dummy_data_json (store seed data) for a bundle."""
-    _validate_bundle_key(bundle_key)
+    """Return pipeline-generated dummy_data_json (store seed data) for a bundle."""
+    _validate_bundle_key(bundle_key, builder)
 
-    try:
-        dummy_data_json = builder.build_stores(bundle_key)
-    except TemplateLoadError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Template load failed: {exc}",
-        ) from exc
+    dummy_data_json = builder.build_stores(bundle_key)
 
     logger.info("Mock stores served: bundle_key=%s", bundle_key)
 
@@ -130,7 +127,7 @@ def get_mock_flags(
     builder: Annotated[MockPayloadBuilder, Depends(get_mock_payload_builder)],
 ) -> dict[str, Any]:
     """Return the feature flag snapshot with bundle-specific flags enabled."""
-    _validate_bundle_key(bundle_key)
+    _validate_bundle_key(bundle_key, builder)
 
     flags, permission_services, landing_pages = builder.build_flags(bundle_key)
 

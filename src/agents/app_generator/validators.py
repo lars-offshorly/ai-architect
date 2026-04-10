@@ -26,6 +26,10 @@ def validate_dummy_data_json(data: dict[str, object], bundle_key: str) -> None:
     missing = required - data.keys()
     if missing:
         raise InvalidPayloadError(f"dummy_data_json missing keys: {missing}")
+    if data.get("bundle_key") != bundle_key:
+        raise InvalidPayloadError(
+            f"dummy_data_json bundle_key mismatch: expected={bundle_key}"
+        )
     stores = data.get("stores")
     if not isinstance(stores, dict):
         raise InvalidPayloadError("dummy_data_json 'stores' must be a dict")

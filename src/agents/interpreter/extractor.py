@@ -108,7 +108,9 @@ class _PersonalizationSignalsOutput(BaseModel):
     department_names: list[str] = Field(..., description="Department names")
     branch_names: list[str] = Field(..., description="Office branch names")
     custom_labels: list[str] = Field(..., description="Other custom labels")
-    terminology: dict[str, str] = Field(default_factory=dict, description="Custom terminology mapping")
+    terminology: dict[str, str] = Field(
+        default_factory=dict, description="Custom terminology mapping"
+    )
 
 
 class _ExtractionOutput(BaseModel):

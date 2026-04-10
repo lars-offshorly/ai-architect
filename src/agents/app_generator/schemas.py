@@ -14,7 +14,7 @@ class KpiDefinitionItem(BaseModel):
 
     key: str = Field(description="Stable machine-readable KPI identifier.")
     label: str = Field(description="Human-readable KPI display name.")
-    # Sourced from KpiMetric.type in preview_generator/bundles/registry.py METRICS_CATALOG.
+    # Sourced from preview generator KPI metric types and bundle catalog metadata.
     # Valid values: "percentage", "count", "duration", "status", "ratio".
     unit: str = Field(description="Display unit suffix, e.g. '%', 'days', 'tickets'.")
 
@@ -657,15 +657,21 @@ class EmployeeStoreItem(BaseModel):
     id: int | str = Field(description="Employee record identifier.")
     firstName: str | None = Field(default=None, description="Employee's first name.")
     lastName: str | None = Field(default=None, description="Employee's last name.")
-    position: str | None = Field(default=None, description="Job title or position label.")
+    position: str | None = Field(
+        default=None, description="Job title or position label."
+    )
     department: str | None = Field(default=None, description="Department or team name.")
     status: str | None = Field(
-        default=None, description="Attendance/availability status, e.g. 'Active', 'Absent'."
+        default=None,
+        description="Attendance/availability status, e.g. 'Active', 'Absent'.",
     )
     employmentStatus: str | None = Field(
-        default=None, description="Employment lifecycle state, e.g. 'Active', 'Inactive'."
+        default=None,
+        description="Employment lifecycle state, e.g. 'Active', 'Inactive'.",
     )
-    team: str | None = Field(default=None, description="Team name within the department.")
+    team: str | None = Field(
+        default=None, description="Team name within the department."
+    )
     userId: int | None = Field(
         default=None, description="Linked user ID in the orchestration service."
     )
@@ -710,10 +716,12 @@ class AgentStoreItem(BaseModel):
         default=None, description="Name of the primary queue this agent is assigned to."
     )
     status: str | None = Field(
-        default=None, description="Availability status, e.g. 'available', 'busy', 'offline'."
+        default=None,
+        description="Availability status, e.g. 'available', 'busy', 'offline'.",
     )
     ticket_count: int | None = Field(
-        default=None, description="Number of open tickets currently assigned to this agent."
+        default=None,
+        description="Number of open tickets currently assigned to this agent.",
     )
     userId: int | None = Field(
         default=None, description="Linked user ID in the orchestration service."
@@ -822,6 +830,7 @@ class ProjectMgmtStores(BaseModel):
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
     projects: list[ProjectStoreItem] = Field(default_factory=list)
     weaves: list[WeaveStoreItem] = Field(default_factory=list)
+
 
 class TicketingStores(BaseModel):
     """Store container for the Ticketing bundle (``bundle_key='ticketing'``).

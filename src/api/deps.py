@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
 
+from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.service import PreviewGeneratorService
@@ -18,9 +18,6 @@ from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
 from repositories.template_repository import TemplateRepository
-
-if TYPE_CHECKING:
-    from agents.app_generator.mock_builder import MockPayloadBuilder
 
 
 @lru_cache(maxsize=1)
@@ -113,11 +110,9 @@ def get_bundle_metadata_service() -> BundleMetadataService:
 
 @lru_cache(maxsize=1)
 def get_mock_payload_builder() -> MockPayloadBuilder:
-    """Return a cached MockPayloadBuilder with api-mocks.json pre-loaded."""
+    """Return a cached MockPayloadBuilder backed by the preview generator pipeline."""
     import json
     import pathlib
-
-    from agents.app_generator.mock_builder import MockPayloadBuilder
 
     mocks_path = pathlib.Path(__file__).parent.parent.parent / "docs" / "api-mocks.json"
     service_mocks: dict = {}
@@ -125,6 +120,7 @@ def get_mock_payload_builder() -> MockPayloadBuilder:
         with mocks_path.open(encoding="utf-8") as f:
             service_mocks = json.load(f)
     return MockPayloadBuilder(
-        template_repo=get_template_repository(),
+        preview_service=get_preview_generator_service(),
+        catalog=get_bundle_catalog(),
         service_mocks=service_mocks,
     )

@@ -56,3 +56,8 @@ def test_validate_dummy_data_json_missing_stores_raises() -> None:
     data: dict[str, object] = {"bundle_key": "hr_hub"}
     with pytest.raises(InvalidPayloadError):
         validate_dummy_data_json(data, "hr_hub")
+
+
+def test_validate_dummy_data_json_bundle_mismatch_raises() -> None:
+    with pytest.raises(InvalidPayloadError):
+        validate_dummy_data_json(_valid_dummy_data_json("hr_hub"), "project_mgmt")
