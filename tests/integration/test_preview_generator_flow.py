@@ -141,9 +141,7 @@ _HISTORY_UNKNOWN: list[dict] = [
     },
     {
         "role": "assistant",
-        "content": (
-            "Let me see what I can configure for that use case."
-        ),
+        "content": ("Let me see what I can configure for that use case."),
     },
     {"role": "user", "content": "Great."},
 ]
@@ -206,7 +204,7 @@ class TestHRHub:
 
     def test_generation_json_structure(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-hr-2", "hr_management", _HISTORY_HR_HUB)
-        _assert_generation_json(gen, "hr_management")
+        _assert_generation_json(gen, "hr_hub")
 
     def test_hrhub_flags_enabled(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-hr-3", "hr_management", _HISTORY_HR_HUB)
