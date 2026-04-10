@@ -23,30 +23,31 @@ def test_rank_returns_sorted_by_confidence() -> None:
     candidates = _make_candidates(
         ("hr_hub", 0.4), ("project_ops", 0.8), ("generic", 0.2)
     )
-    result = service.rank("session-1", candidates)
-    keys = [s.bundle_key for s in result.suggestions]
+    result = service.rank_to_classification("session-1", candidates)
+    keys = [s.bundle_key for s in result.ranked_candidates]
     assert keys == ["project_ops", "hr_hub", "generic"]
 
 
 def test_rank_sets_top_bundle_key() -> None:
     service = BundleResolutionService()
     candidates = _make_candidates(("hr_hub", 0.9), ("project_ops", 0.5))
-    result = service.rank("session-1", candidates)
-    assert result.top_bundle_key == "hr_hub"
+    result = service.rank_to_classification("session-1", candidates)
+    assert result.selected_bundle is not None
+    assert result.selected_bundle.bundle_key == "hr_hub"
 
 
 def test_rank_empty_candidates() -> None:
     service = BundleResolutionService()
-    result = service.rank("session-1", [])
-    assert result.suggestions == []
-    assert result.top_bundle_key is None
+    result = service.rank_to_classification("session-1", [])
+    assert result.ranked_candidates == []
+    assert result.selected_bundle is None
 
 
 def test_top_returns_highest_confidence() -> None:
     service = BundleResolutionService()
     candidates = _make_candidates(("hr_hub", 0.9), ("project_ops", 0.5))
-    result = service.rank("session-1", candidates)
-    top = result.top()
+    result = service.rank_to_classification("session-1", candidates)
+    top = result.selected_bundle
     assert top is not None
     assert top.bundle_key == "hr_hub"
     assert top.confidence == 0.9
@@ -57,7 +58,7 @@ def test_above_threshold_filters_correctly() -> None:
     candidates = _make_candidates(
         ("hr_hub", 0.9), ("project_ops", 0.5), ("generic", 0.3)
     )
-    result = service.rank("session-1", candidates)
-    above = result.above_threshold(0.6)
+    result = service.rank_to_classification("session-1", candidates)
+    above = [s for s in result.ranked_candidates if s.confidence >= 0.6]
     assert len(above) == 1
     assert above[0].bundle_key == "hr_hub"

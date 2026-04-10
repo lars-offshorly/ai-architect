@@ -6,14 +6,18 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from api.deps import get_app_generator_service, get_session_repository, get_bundle_catalog
+from agents.app_generator.service import AppGeneratorService
+from api.deps import (
+    get_app_generator_service,
+    get_bundle_catalog,
+    get_session_repository,
+)
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.request import GenerateAppRequest
 from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import SessionNotFoundError
 from core.logging import get_logger
 from repositories.session_repository import SessionRepository
-from agents.app_generator.service import AppGeneratorService
 
 router = APIRouter(prefix="/sessions", tags=["app"])
 logger = get_logger(__name__)

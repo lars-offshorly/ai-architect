@@ -35,7 +35,8 @@ class AppGeneratorService:
 
         bundle = self._catalog.get(bundle_key)
         if bundle is None:
-            # Fallback to the key itself if not in catalog (unlikely for confirmed session)
+            # Fallback to the key itself if not in catalog
+            # (unlikely for confirmed session)
             template_dir = bundle_key
             render_key = bundle_key
         else:
@@ -47,22 +48,29 @@ class AppGeneratorService:
         generation_json["session_id"] = session_id
         # Ensure the payload uses the render key per AD-2
         generation_json["bundle_key"] = render_key
+        # AD-2 registry owns canonical modules; older app templates may omit them.
+        if (
+            not isinstance(generation_json.get("modules"), list)
+            or not generation_json.get("modules")
+        ) and bundle is not None:
+            generation_json["modules"] = list(bundle.default_modules)
+        normalized_dummy_data = self._normalize_dummy_data(dummy_data)
 
         # 1. Legacy structural validation
-        validate_generation_json(generation_json, bundle_key)
-        validate_dummy_data_json(dummy_data, bundle_key)
+        validate_generation_json(generation_json, render_key)
+        validate_dummy_data_json(normalized_dummy_data, render_key)
 
         # 2. Strict Pydantic Schema Validation (Integrated from T140)
         # This ensures config and stores sub-schemas are 100% correct.
         GenerationJsonSchema.model_validate(generation_json)
-        DummyDataJsonSchema.model_validate(
-            {
-                "schema_version": generation_json.get("schema_version", "1.0"),
-                "bundle_key": render_key,
-                "session_id": session_id,
-                "stores": dummy_data.get("stores", {}),
-            }
+        dummy_schema_input = dict(normalized_dummy_data)
+        dummy_schema_input.setdefault(
+            "schema_version", generation_json.get("schema_version", "1.0")
         )
+        dummy_schema_input.setdefault("bundle_key", render_key)
+        dummy_schema_input.setdefault("session_id", session_id)
+        dummy_schema_input.setdefault("stores", {})
+        DummyDataJsonSchema.model_validate(dummy_schema_input)
 
         # 3. Contract check
         contract = AppPayloadContract(
@@ -72,7 +80,7 @@ class AppGeneratorService:
             display_name=display_name,
             modules=list(cast(list[object], generation_json.get("modules", []))),
             generation_json=generation_json,
-            dummy_data_json=dummy_data,
+            dummy_data_json=normalized_dummy_data,
         )
         errors = contract.validate_contract()
         if errors:
@@ -83,7 +91,35 @@ class AppGeneratorService:
             bundle_key=render_key,
             display_name=display_name,
             generation_json=generation_json,
-            dummy_data_json=dummy_data,
+            dummy_data_json=normalized_dummy_data,
         )
         session_logger.info("App payload assembled for session=%s", session_id)
         return payload
+
+    @staticmethod
+    def _normalize_dummy_data(data: dict[str, object]) -> dict[str, object]:
+        """Normalize incoming dummy_data_json before strict schema validation."""
+        normalized = dict(data)
+        stores = normalized.get("stores")
+        if not isinstance(stores, dict):
+            return normalized
+
+        kpis = stores.get("kpis")
+        if not isinstance(kpis, list):
+            return normalized
+
+        normalized_stores = dict(stores)
+        normalized_kpis: list[object] = []
+        for idx, item in enumerate(kpis, start=1):
+            if not isinstance(item, dict):
+                normalized_kpis.append(item)
+                continue
+            kpi = dict(item)
+            if not kpi.get("id"):
+                key = kpi.get("key")
+                kpi["id"] = key if isinstance(key, str) and key else idx
+            normalized_kpis.append(kpi)
+
+        normalized_stores["kpis"] = normalized_kpis
+        normalized["stores"] = normalized_stores
+        return normalized

@@ -148,8 +148,7 @@ def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, 
 
     _field_values: dict[str, object] = {
         "kpi_definitions": [
-            {"key": k.key, "label": k.label, "unit": k.type}
-            for k in state.kpi_metrics
+            {"key": k.key, "label": k.label, "unit": k.type} for k in state.kpi_metrics
         ],
         # ticketing bundle
         "service_types": ticket_types,
@@ -177,7 +176,12 @@ def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, 
 def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     """Build the stores dict with frontend-correct key names for this bundle."""
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
-    stores: dict = {"kpis": state.kpi_metrics, "dashboard_widgets": []}
+    stores: dict = {
+        "kpis": [
+            {"id": i + 1, **m.model_dump()} for i, m in enumerate(state.kpi_metrics)
+        ],
+        "dashboard_widgets": [],
+    }
     if schema["primary"]:
         stores[schema["primary"]] = state.sample_tickets
     if schema["secondary"]:

@@ -1,45 +1,27 @@
-"""MockPayloadBuilder: assembles static mock payloads for frontend integration.
+"""MockPayloadBuilder: assembles mock payloads via the preview generator pipeline.
 
-No AI pipeline, no LangGraph, no database. All data comes from:
-  - Template files (app.json, dummy_data.json) via TemplateRepository
-  - Feature flag registry (BUNDLE_REGISTRY / get_flag_snapshot)
-  - docs/api-mocks.json loaded at construction time by the caller
+All data is produced by PreviewGeneratorService (the full LangGraph pipeline).
+No static template files are loaded directly. The public interface (MockPayload,
+MockPayloadBuilder.build / build_stores / build_flags, KNOWN_RENDER_KEYS) is
+unchanged so the router and deps.py do not need to change.
 
-Render keys vs template dirs:
-  The router and frontend use render keys (hr_hub, project_mgmt, ticketing,
-  generic). TemplateRepository uses template directory names (hr_hub,
-  project_ops, field_service, generic). This class owns the translation.
+Render keys:
+  KNOWN_RENDER_KEYS is derived from the BundleCatalog at construction time, so
+  it stays in sync with bundle_registry.yaml automatically.
 """
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
 from agents.app_generator.validators import validate_dummy_data_json
-from agents.preview_generator.bundles.registry import (
-    BUNDLE_REGISTRY,
-    get_flag_snapshot,
-)
-from core.exceptions import InvalidPayloadError, TemplateLoadError
+from agents.preview_generator.service import PreviewGeneratorService
+from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
-from repositories.template_repository import TemplateRepository
 
 logger = get_logger(__name__)
-
-# ---------------------------------------------------------------------------
-# Render key → template directory
-# Update when Lars exposes render_key from BundleCatalog / bundle_registry.yaml
-# ---------------------------------------------------------------------------
-
-RENDER_KEY_TO_TEMPLATE_DIR: dict[str, str] = {
-    "hr_hub": "hr_hub",
-    "project_mgmt": "project_ops",
-    "ticketing": "field_service",
-    "generic": "generic",
-}
-
-KNOWN_RENDER_KEYS: frozenset[str] = frozenset(RENDER_KEY_TO_TEMPLATE_DIR)
 
 
 # ---------------------------------------------------------------------------
@@ -66,12 +48,13 @@ class MockPayload:
 
 
 class MockPayloadBuilder:
-    """Assembles MockPayload objects from templates, registry, and api-mocks.json.
+    """Assembles MockPayload objects by running the preview generator pipeline.
 
     Usage::
 
         builder = MockPayloadBuilder(
-            template_repo=TemplateRepository(),
+            preview_service=PreviewGeneratorService(catalog),
+            catalog=catalog,
             service_mocks=api_mocks_dict,
         )
         payload = builder.build("hr_hub")
@@ -81,11 +64,20 @@ class MockPayloadBuilder:
 
     def __init__(
         self,
-        template_repo: TemplateRepository,
+        preview_service: PreviewGeneratorService,
+        catalog: BundleCatalog,
         service_mocks: dict[str, Any] | None = None,
     ) -> None:
-        self._repo = template_repo
+        self._preview_service = preview_service
+        self._catalog = catalog
         self._service_mocks: dict[str, Any] = service_mocks or {}
+        self._known_render_keys: frozenset[str] = frozenset(
+            b.render_key for b in catalog.list_all() if b.render_key
+        )
+
+    @property
+    def known_render_keys(self) -> frozenset[str]:
+        return self._known_render_keys
 
     # ------------------------------------------------------------------
     # Public API
@@ -99,41 +91,52 @@ class MockPayloadBuilder:
     ) -> MockPayload:
         """Assemble and return a complete MockPayload for the given render key.
 
-        Args:
-            bundle_key:           Render key (hr_hub, project_mgmt, ticketing, generic).
-            dummy_data_override:  Caller-supplied dummy_data_json. When provided the
-                                  template dummy_data.json file is skipped entirely.
-                                  Accepts the full shape: bundle_key, session_id,
-                                  company_name, stores.
-            session_id:           Injected into dummy_data_json.session_id when the
-                                  override does not already contain one.
-        """
-        template_dir = self._resolve_template_dir(bundle_key)
+        Runs the preview generator pipeline to produce generation_json and
+        dummy_data_json. When dummy_data_override is supplied, the pipeline
+        still runs for generation_json but dummy_data_json is taken from the
+        override instead.
 
-        generation_json = self._load_app_json(template_dir)
+        Args:
+            bundle_key:           Render key (e.g. hr_hub, project_mgmt, ticketing).
+            dummy_data_override:  Caller-supplied dummy_data_json. When provided the
+                                  pipeline dummy data output is discarded.
+                                  Accepted shape: bundle_key, session_id,
+                                  company_name, stores.
+            session_id:           Used as the pipeline session identifier.
+                                  A UUID is generated when omitted.
+        """
+        self._validate_render_key(bundle_key)
+        resolved_session_id = session_id or str(uuid.uuid4())
+
+        catalog_key = self._resolve_catalog_key(bundle_key)
+        generation_json, pipeline_dummy_data = self._preview_service.generate(
+            session_id=resolved_session_id,
+            bundle_key=catalog_key,
+            conversation_history=[],
+        )
 
         if dummy_data_override is not None:
             validate_dummy_data_json(dummy_data_override, bundle_key)
-            dummy_data_json = dummy_data_override
-            # Inject session_id if caller supplied it and override omits it
-            if session_id and not dummy_data_json.get("session_id"):
-                dummy_data_json = {**dummy_data_json, "session_id": session_id}
+            dummy_data_json: dict[str, Any] = dummy_data_override
+            if not dummy_data_json.get("session_id"):
+                dummy_data_json = {**dummy_data_json, "session_id": resolved_session_id}
             logger.info(
-                "MockPayload built: bundle_key=%s template_dir=%s source=override",
+                "MockPayload built: bundle_key=%s source=override session=%s",
                 bundle_key,
-                template_dir,
+                resolved_session_id,
             )
         else:
-            dummy_data_json = self._load_dummy_data(template_dir)
-            if session_id and not dummy_data_json.get("session_id"):
-                dummy_data_json = {**dummy_data_json, "session_id": session_id}
+            dummy_data_json = pipeline_dummy_data
             logger.info(
-                "MockPayload built: bundle_key=%s template_dir=%s source=template",
+                "MockPayload built: bundle_key=%s source=pipeline session=%s",
                 bundle_key,
-                template_dir,
+                resolved_session_id,
             )
 
-        flags, permission_services, landing_pages = self._resolve_flags(bundle_key)
+        flags = generation_json.get("feature_flags", [])
+        config = generation_json.get("config", {})
+        permission_services: list[str] = config.get("permission_services", [])
+        landing_pages: list[dict[str, Any]] = config.get("landing_pages", [])
 
         logger.info(
             "MockPayload flags: bundle_key=%s flags_enabled=%d",
@@ -152,9 +155,14 @@ class MockPayloadBuilder:
         )
 
     def build_stores(self, bundle_key: str) -> dict[str, Any]:
-        """Return only the template dummy_data_json (store seed data) for a bundle."""
-        template_dir = self._resolve_template_dir(bundle_key)
-        dummy_data_json = self._load_dummy_data(template_dir)
+        """Return dummy_data_json (store seed data) for a bundle via the pipeline."""
+        self._validate_render_key(bundle_key)
+        catalog_key = self._resolve_catalog_key(bundle_key)
+        _, dummy_data_json = self._preview_service.generate(
+            session_id=str(uuid.uuid4()),
+            bundle_key=catalog_key,
+            conversation_history=[],
+        )
         logger.info("MockPayload stores built: bundle_key=%s", bundle_key)
         return dummy_data_json
 
@@ -162,8 +170,17 @@ class MockPayloadBuilder:
         self, bundle_key: str
     ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
         """Return (feature_flags, permission_services, landing_pages) for render key."""
-        self._resolve_template_dir(bundle_key)  # validates key
-        flags, permission_services, landing_pages = self._resolve_flags(bundle_key)
+        self._validate_render_key(bundle_key)
+        catalog_key = self._resolve_catalog_key(bundle_key)
+        generation_json, _ = self._preview_service.generate(
+            session_id=str(uuid.uuid4()),
+            bundle_key=catalog_key,
+            conversation_history=[],
+        )
+        flags: list[dict[str, Any]] = generation_json.get("feature_flags", [])
+        config = generation_json.get("config", {})
+        permission_services: list[str] = config.get("permission_services", [])
+        landing_pages: list[dict[str, Any]] = config.get("landing_pages", [])
         logger.info(
             "MockPayload flags built: bundle_key=%s flags_enabled=%d",
             bundle_key,
@@ -175,47 +192,22 @@ class MockPayloadBuilder:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _resolve_template_dir(self, bundle_key: str) -> str:
-        """Translate render key to template dir, raising ValueError for unknown keys."""
-        if bundle_key not in KNOWN_RENDER_KEYS:
-            raise ValueError(f"Unknown render key: {bundle_key}")
-        return RENDER_KEY_TO_TEMPLATE_DIR[bundle_key]
+    def _validate_render_key(self, bundle_key: str) -> None:
+        if bundle_key not in self._known_render_keys:
+            raise ValueError(f"Unknown render key: {bundle_key!r}")
 
-    def _load_app_json(self, template_dir: str) -> dict[str, Any]:
-        try:
-            return self._repo.load_app_json(template_dir)
-        except TemplateLoadError as exc:
-            logger.error("MockPayload: failed to load app.json for %s", template_dir)
-            raise exc
+    def _resolve_catalog_key(self, render_key: str) -> str:
+        """Return the catalog bundle key that maps to the given render key."""
+        for bundle in self._catalog.list_all():
+            if bundle.render_key == render_key:
+                return bundle.bundle_key
+        return render_key
 
-    def _load_dummy_data(self, template_dir: str) -> dict[str, Any]:
-        try:
-            return self._repo.load_dummy_data(template_dir)
-        except TemplateLoadError as exc:
-            logger.error(
-                "MockPayload: failed to load dummy_data.json for %s", template_dir
-            )
-            raise exc
 
-    def _resolve_flags(
-        self, bundle_key: str
-    ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
-        """Return feature flag snapshot and associated metadata for the bundle."""
-        # 1. Map render key to registry bundle key
-        # (This shim is temporary until Lars aligns the keys)
-        registry_map = {
-            "hr_hub": "hr_management",
-            "project_mgmt": "project_mgmt",
-            "ticketing": "ticketing",
-            "generic": "generic",
-        }
-        registry_key = registry_map.get(bundle_key, "generic")
-
-        # 2. Extract from BUNDLE_REGISTRY
-        bundle = BUNDLE_REGISTRY.get(registry_key)
-        if not bundle:
-            return [], [], []
-
-        # 3. Generate snapshots
-        flags = get_flag_snapshot(registry_key)
-        return flags, bundle.permission_services, bundle.landing_pages
+# ---------------------------------------------------------------------------
+# Module-level KNOWN_RENDER_KEYS shim
+# ---------------------------------------------------------------------------
+# The router imports this name directly. It is populated by
+# MockPayloadBuilder.__init__ at runtime; this sentinel keeps the import from
+# failing before any builder is constructed.
+KNOWN_RENDER_KEYS: frozenset[str] = frozenset()
