@@ -638,12 +638,46 @@ class MilestoneStoreItem(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Queue store entity (HR Hub)
+# Employee store entity (HR Hub)
+# Primary entity per bundle_registry.yaml: primary_entity='people'
+# entity_definitions: employee, leave_request, department
+# ---------------------------------------------------------------------------
+
+
+class EmployeeStoreItem(BaseModel):
+    """An employee record inside ``stores.employees`` (HR Hub bundle).
+
+    Represents the primary entity of the ``hr_management`` catalog bundle
+    (render key ``hr_hub``). Shape is informed by the ``/employees/me``
+    response in ``docs/api-mocks.json`` and the YAML ``entity_definitions``.
+    All fields beyond ``id`` are optional to support both minimal template
+    records and full HR system records.
+    """
+
+    id: int | str = Field(description="Employee record identifier.")
+    firstName: str | None = Field(default=None, description="Employee's first name.")
+    lastName: str | None = Field(default=None, description="Employee's last name.")
+    position: str | None = Field(default=None, description="Job title or position label.")
+    department: str | None = Field(default=None, description="Department or team name.")
+    status: str | None = Field(
+        default=None, description="Attendance/availability status, e.g. 'Active', 'Absent'."
+    )
+    employmentStatus: str | None = Field(
+        default=None, description="Employment lifecycle state, e.g. 'Active', 'Inactive'."
+    )
+    team: str | None = Field(default=None, description="Team name within the department.")
+    userId: int | None = Field(
+        default=None, description="Linked user ID in the orchestration service."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Queue store entity (HR Hub and Ticketing)
 # ---------------------------------------------------------------------------
 
 
 class QueueStoreItem(BaseModel):
-    """A queue record inside ``stores.queues`` (HR Hub bundle)."""
+    """A queue record inside ``stores.queues``."""
 
     id: str | int = Field(description="Queue identifier.")
     name: str = Field(description="Human-readable queue label.")
@@ -652,6 +686,37 @@ class QueueStoreItem(BaseModel):
     )
     avg_resolution_days: float | int | None = Field(
         default=None, description="Rolling average resolution time in days."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Agent store entity (Ticketing)
+# entity_definitions: ticket, queue, agent (bundle_registry.yaml)
+# ---------------------------------------------------------------------------
+
+
+class AgentStoreItem(BaseModel):
+    """An agent record inside ``stores.agents`` (Ticketing bundle).
+
+    Represents a support agent who handles tickets within queues.
+    Defined as a primary entity of the ``ticketing`` catalog bundle
+    per ``bundle_registry.yaml`` ``entity_definitions``.
+    """
+
+    id: int | str = Field(description="Agent record identifier.")
+    name: str | None = Field(default=None, description="Agent's display name.")
+    email: str | None = Field(default=None, description="Agent's work email address.")
+    queue: str | None = Field(
+        default=None, description="Name of the primary queue this agent is assigned to."
+    )
+    status: str | None = Field(
+        default=None, description="Availability status, e.g. 'available', 'busy', 'offline'."
+    )
+    ticket_count: int | None = Field(
+        default=None, description="Number of open tickets currently assigned to this agent."
+    )
+    userId: int | None = Field(
+        default=None, description="Linked user ID in the orchestration service."
     )
 
 
@@ -723,9 +788,24 @@ class WeaveStoreItem(BaseModel):
 
 
 class HrHubStores(BaseModel):
-    """Store container for the HR Hub bundle (``bundle_key='hr_hub'``)."""
+    """Store container for the HR Hub bundle (``bundle_key='hr_hub'``).
 
-    tickets: list[TicketStoreItem] = Field(default_factory=list)
+    Primary entity per ``bundle_registry.yaml``: ``people``.
+    Entity definitions: ``employee``, ``leave_request``, ``department``.
+
+    ``employees`` is the YAML primary entity store.
+    ``tickets`` holds HR requests (leave, onboarding, policy) as work items.
+    ``queues`` groups HR requests by category (Leave Requests, Onboarding, etc.).
+    """
+
+    employees: list[EmployeeStoreItem] = Field(
+        default_factory=list,
+        description="Employee records. Primary entity for the HR Hub bundle.",
+    )
+    tickets: list[TicketStoreItem] = Field(
+        default_factory=list,
+        description="HR request records (leave, onboarding, policy questions).",
+    )
     queues: list[QueueStoreItem] = Field(default_factory=list)
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
@@ -744,10 +824,29 @@ class ProjectMgmtStores(BaseModel):
     weaves: list[WeaveStoreItem] = Field(default_factory=list)
 
 class TicketingStores(BaseModel):
-    """Store container for the Ticketing bundle (``bundle_key='ticketing'``)."""
+    """Store container for the Ticketing bundle (``bundle_key='ticketing'``).
 
-    tickets: list[TicketStoreItem] = Field(default_factory=list)
-    queues: list[QueueStoreItem] = Field(default_factory=list)
+    Primary entity per ``bundle_registry.yaml``: ``ticket``.
+    Entity definitions: ``ticket``, ``queue``, ``agent``.
+    Covers catalog bundles: ``ticketing``, ``healthcare``, ``legal_services``.
+
+    ``tickets`` is the YAML primary entity store.
+    ``queues`` routes tickets to the correct handling team.
+    ``agents`` are the support staff assigned to resolve tickets.
+    """
+
+    tickets: list[TicketStoreItem] = Field(
+        default_factory=list,
+        description="Ticket records. Primary entity for the Ticketing bundle.",
+    )
+    queues: list[QueueStoreItem] = Field(
+        default_factory=list,
+        description="Queue records routing tickets to handling teams.",
+    )
+    agents: list[AgentStoreItem] = Field(
+        default_factory=list,
+        description="Agent records assigned to resolve tickets within queues.",
+    )
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
 
