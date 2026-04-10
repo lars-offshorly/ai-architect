@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-5-mini"
 
+    PORT: int = Field(default=8000, ge=1, le=65535)
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
