@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.service import PreviewGeneratorService
@@ -18,6 +18,9 @@ from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
 from repositories.template_repository import TemplateRepository
+
+if TYPE_CHECKING:
+    from agents.app_generator.mock_builder import MockPayloadBuilder
 
 
 @lru_cache(maxsize=1)
@@ -75,7 +78,7 @@ def get_preview_generator_service() -> PreviewGeneratorService:
 @lru_cache(maxsize=1)
 def get_app_generator_service() -> AppGeneratorService:
     """Return a cached AppGeneratorService backed by the template repository."""
-    return AppGeneratorService(get_template_repository())
+    return AppGeneratorService(get_template_repository(), get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
@@ -113,6 +116,8 @@ def get_mock_payload_builder() -> MockPayloadBuilder:
     """Return a cached MockPayloadBuilder with api-mocks.json pre-loaded."""
     import json
     import pathlib
+
+    from agents.app_generator.mock_builder import MockPayloadBuilder
 
     mocks_path = pathlib.Path(__file__).parent.parent.parent / "docs" / "api-mocks.json"
     service_mocks: dict = {}

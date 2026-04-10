@@ -24,6 +24,7 @@ class ReplierService:
         self._model = ChatOpenAI(
             model=settings.OPENAI_MODEL,
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
+            api_key=settings.OPENAI_API_KEY,
         )
 
     async def build_clarification(
