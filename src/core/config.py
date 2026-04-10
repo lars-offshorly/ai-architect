@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     RATE_LIMIT_PER_MINUTE: int = 60
 
+    ENABLE_MOCK_ENDPOINTS: bool = False
+
     SENTRY_DSN: str = ""
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_API_KEY: str = ""

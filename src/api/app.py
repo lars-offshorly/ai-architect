@@ -20,6 +20,7 @@ try:
 except ImportError:  # pragma: no cover - optional in legacy app wiring
     BUNDLES_ROUTER = None
 
+
 _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
 
 logger = get_logger(__name__)

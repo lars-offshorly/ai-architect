@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.service import PreviewGeneratorService
@@ -105,3 +106,20 @@ def get_preview_flow() -> PreviewFlow:
 def get_bundle_metadata_service() -> BundleMetadataService:
     """Return metadata service backed by the cached bundle catalog."""
     return BundleMetadataService(get_bundle_catalog())
+
+
+@lru_cache(maxsize=1)
+def get_mock_payload_builder() -> MockPayloadBuilder:
+    """Return a cached MockPayloadBuilder with api-mocks.json pre-loaded."""
+    import json
+    import pathlib
+
+    mocks_path = pathlib.Path(__file__).parent.parent.parent / "docs" / "api-mocks.json"
+    service_mocks: dict = {}
+    if mocks_path.exists():
+        with mocks_path.open(encoding="utf-8") as f:
+            service_mocks = json.load(f)
+    return MockPayloadBuilder(
+        template_repo=get_template_repository(),
+        service_mocks=service_mocks,
+    )
