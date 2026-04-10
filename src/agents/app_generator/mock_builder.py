@@ -16,11 +16,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from agents.app_generator.validators import validate_dummy_data_json
 from agents.preview_generator.bundles.registry import (
     BUNDLE_REGISTRY,
     get_flag_snapshot,
 )
-from core.exceptions import TemplateLoadError
+from core.exceptions import InvalidPayloadError, TemplateLoadError
 from core.logging import get_logger
 from repositories.template_repository import TemplateRepository
 
@@ -90,18 +91,53 @@ class MockPayloadBuilder:
     # Public API
     # ------------------------------------------------------------------
 
-    def build(self, bundle_key: str) -> MockPayload:
-        """Assemble and return a complete MockPayload for the given render key."""
+    def build(
+        self,
+        bundle_key: str,
+        dummy_data_override: dict[str, Any] | None = None,
+        session_id: str | None = None,
+    ) -> MockPayload:
+        """Assemble and return a complete MockPayload for the given render key.
+
+        Args:
+            bundle_key:           Render key (hr_hub, project_mgmt, ticketing, generic).
+            dummy_data_override:  Caller-supplied dummy_data_json. When provided the
+                                  template dummy_data.json file is skipped entirely.
+                                  Accepts the full shape: bundle_key, session_id,
+                                  company_name, stores.
+            session_id:           Injected into dummy_data_json.session_id when the
+                                  override does not already contain one.
+        """
         template_dir = self._resolve_template_dir(bundle_key)
 
         generation_json = self._load_app_json(template_dir)
-        dummy_data_json = self._load_dummy_data(template_dir)
+
+        if dummy_data_override is not None:
+            validate_dummy_data_json(dummy_data_override, bundle_key)
+            dummy_data_json = dummy_data_override
+            # Inject session_id if caller supplied it and override omits it
+            if session_id and not dummy_data_json.get("session_id"):
+                dummy_data_json = {**dummy_data_json, "session_id": session_id}
+            logger.info(
+                "MockPayload built: bundle_key=%s template_dir=%s source=override",
+                bundle_key,
+                template_dir,
+            )
+        else:
+            dummy_data_json = self._load_dummy_data(template_dir)
+            if session_id and not dummy_data_json.get("session_id"):
+                dummy_data_json = {**dummy_data_json, "session_id": session_id}
+            logger.info(
+                "MockPayload built: bundle_key=%s template_dir=%s source=template",
+                bundle_key,
+                template_dir,
+            )
+
         flags, permission_services, landing_pages = self._resolve_flags(bundle_key)
 
         logger.info(
-            "MockPayload built: bundle_key=%s template_dir=%s flags_enabled=%d",
+            "MockPayload flags: bundle_key=%s flags_enabled=%d",
             bundle_key,
-            template_dir,
             sum(1 for f in flags if f.get("isEnabled")),
         )
 
