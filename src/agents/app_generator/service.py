@@ -9,6 +9,7 @@ from repositories.template_repository import TemplateRepository
 
 from .contract import AppPayloadContract
 from .formatter import AppPayloadFormatter
+from .config_assembly import map_relationships
 from .schemas import DummyDataJsonSchema, GenerationJsonSchema
 from .validators import validate_dummy_data_json, validate_generation_json
 
@@ -38,9 +39,13 @@ class AppGeneratorService:
             # Fallback to the key itself if not in catalog (unlikely for confirmed session)
             template_dir = bundle_key
             render_key = bundle_key
+            entity_definitions = {}
         else:
             template_dir = bundle.template_dir
             render_key = bundle.render_key
+            entity_definitions = (
+                bundle.metadata.entity_definitions if bundle.metadata else {}
+            )
 
         # Load from the correct directory resolved from the catalog
         generation_json = self._repo.load_app_json(template_dir)
@@ -51,6 +56,16 @@ class AppGeneratorService:
         # 1. Legacy structural validation
         validate_generation_json(generation_json, bundle_key)
         validate_dummy_data_json(dummy_data, bundle_key)
+
+        # 1a. Inject relationship map into config
+        if entity_definitions:
+            relationships = map_relationships(render_key, entity_definitions)
+            config = generation_json.get("config")
+            if isinstance(config, dict):
+                config["relationships"] = [r.model_dump() for r in relationships]
+                session_logger.debug(
+                    "Mapped %d relationships for bundle=%s", len(relationships), render_key
+                )
 
         # 2. Strict Pydantic Schema Validation (Integrated from T140)
         # This ensures config and stores sub-schemas are 100% correct.
@@ -73,6 +88,7 @@ class AppGeneratorService:
             modules=list(cast(list[object], generation_json.get("modules", []))),
             generation_json=generation_json,
             dummy_data_json=dummy_data,
+            has_entity_definitions=bool(entity_definitions),
         )
         errors = contract.validate_contract()
         if errors:

@@ -4,6 +4,24 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+
+# ---------------------------------------------------------------------------
+# Entity relationship model
+# ---------------------------------------------------------------------------
+
+
+class EntityRelationship(BaseModel):
+    """A directed relationship between two bundle entities."""
+
+    source_entity: str = Field(description="Source entity key, e.g. 'employee'.")
+    target_entity: str = Field(description="Target entity key, e.g. 'leave_request'.")
+    relation_type: str = Field(
+        description="Relationship type: 'has_many', 'belongs_to', or 'references'."
+    )
+    label: str | None = Field(
+        default=None, description="Human-readable relationship label."
+    )
+
 # ---------------------------------------------------------------------------
 # Shared primitive: KPI definition item
 # ---------------------------------------------------------------------------
