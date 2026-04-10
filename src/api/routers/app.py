@@ -6,9 +6,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from api.deps import get_app_generator_service, get_session_repository
+from api.deps import get_app_generator_service, get_session_repository, get_bundle_catalog
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.request import GenerateAppRequest
+from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import SessionNotFoundError
 from core.logging import get_logger
 from repositories.session_repository import SessionRepository
@@ -24,6 +25,7 @@ async def generate_app_payload(
     body: GenerateAppRequest,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     app_generator: Annotated[AppGeneratorService, Depends(get_app_generator_service)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
 ) -> AppPayloadResponseSchema:
     """Assembles the final app payload for a confirmed session.
 
@@ -43,11 +45,14 @@ async def generate_app_payload(
             detail="Session bundle must be confirmed before generating final app.",
         )
 
+    bundle = catalog.get(session.selected_bundle_key)
+    display_name = bundle.display_name if bundle else session.selected_bundle_key
+
     # Use the session-stored bundle info + the client-provided dummy data
     payload = app_generator.assemble(
         session_id=session_id,
         bundle_key=session.selected_bundle_key,
-        display_name=session.selected_bundle_key,  # For now, use the key as display name
+        display_name=display_name,
         dummy_data=body.dummy_data_json,
     )
 

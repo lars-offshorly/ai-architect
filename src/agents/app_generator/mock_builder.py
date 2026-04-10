@@ -2,7 +2,7 @@
 
 No AI pipeline, no LangGraph, no database. All data comes from:
   - Template files (app.json, dummy_data.json) via TemplateRepository
-  - Feature flag registry (BUNDLE_REGISTRY / get_flag_snapshot)
+  - BundleCatalog (bundle_registry.yaml + feature_flags.yaml)
   - docs/api-mocks.json loaded at construction time by the caller
 
 Render keys vs template dirs:
@@ -16,10 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from agents.preview_generator.bundles.registry import (
-    BUNDLE_REGISTRY,
-    get_flag_snapshot,
-)
+from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import TemplateLoadError
 from core.logging import get_logger
 from repositories.template_repository import TemplateRepository
@@ -35,6 +32,13 @@ RENDER_KEY_TO_TEMPLATE_DIR: dict[str, str] = {
     "hr_hub": "hr_hub",
     "project_mgmt": "project_ops",
     "ticketing": "field_service",
+    "generic": "generic",
+}
+
+RENDER_KEY_TO_CATALOG_KEY: dict[str, str] = {
+    "hr_hub": "hr_management",
+    "project_mgmt": "project_mgmt",
+    "ticketing": "ticketing",
     "generic": "generic",
 }
 
@@ -82,9 +86,11 @@ class MockPayloadBuilder:
         self,
         template_repo: TemplateRepository,
         service_mocks: dict[str, Any] | None = None,
+        catalog: BundleCatalog | None = None,
     ) -> None:
         self._repo = template_repo
         self._service_mocks: dict[str, Any] = service_mocks or {}
+        self._catalog = catalog or BundleCatalog()
 
     # ------------------------------------------------------------------
     # Public API
@@ -122,7 +128,9 @@ class MockPayloadBuilder:
         logger.info("MockPayload stores built: bundle_key=%s", bundle_key)
         return dummy_data_json
 
-    def build_flags(self, bundle_key: str) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
+    def build_flags(
+        self, bundle_key: str
+    ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
         """Return (feature_flags, permission_services, landing_pages) for render key."""
         self._resolve_template_dir(bundle_key)  # validates key
         flags, permission_services, landing_pages = self._resolve_flags(bundle_key)
@@ -162,20 +170,24 @@ class MockPayloadBuilder:
         self, bundle_key: str
     ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
         """Build flag snapshot with bundle + compatible addon flags enabled."""
-        registry_entry = BUNDLE_REGISTRY.get(bundle_key, {})
-        enabled_names: set[str] = set(registry_entry.get("flags", []))
+        catalog_key = RENDER_KEY_TO_CATALOG_KEY.get(bundle_key, bundle_key)
+        bundle = self._catalog.get(catalog_key)
+        if bundle is None:
+            return self._catalog.get_feature_flags(), [], []
 
-        for addon_key in registry_entry.get("compatible_addons", []):
-            addon = BUNDLE_REGISTRY.get(addon_key, {})
-            enabled_names.update(addon.get("flags", []))
+        enabled_names: set[str] = set(bundle.flags)
+        for addon_key in bundle.compatible_addons:
+            addon = self._catalog.get(addon_key)
+            if addon is not None:
+                enabled_names.update(addon.flags)
 
-        snapshot = get_flag_snapshot()
+        snapshot = self._catalog.get_feature_flags()
         for flag in snapshot:
             if flag["name"] in enabled_names:
                 flag["isEnabled"] = True
 
         return (
             snapshot,
-            registry_entry.get("permission_services", []),
-            registry_entry.get("landing_pages", []),
+            list(bundle.permission_services),
+            list(bundle.landing_pages),
         )

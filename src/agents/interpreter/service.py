@@ -29,6 +29,7 @@ class InterpreterService:
         model = ChatOpenAI(
             model=settings.OPENAI_MODEL,
             temperature=settings.CLASSIFIER_TEMPERATURE,
+            api_key=settings.OPENAI_API_KEY,
         )
         catalog_context = _build_catalog_context(bundle_keys)
         self._extractor = Extractor(model, catalog)
@@ -37,6 +38,7 @@ class InterpreterService:
             ChatOpenAI(
                 model=settings.OPENAI_MODEL,
                 temperature=settings.CONVERSATIONAL_TEMPERATURE,
+                api_key=settings.OPENAI_API_KEY,
             )
         )
         self._bundle_keys = bundle_keys
