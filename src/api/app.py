@@ -17,7 +17,9 @@ from .routers.bundles import router as bundles_router
 from .routers.preview import router as preview_router
 from .routers.session import router as session_router
 from .routers.app import router as app_router
+from .routers.mock import router as mock_router
 from .routes import health_router
+
 
 _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
 
@@ -59,6 +61,10 @@ def create_app() -> FastAPI:
     app.include_router(preview_router)
     app.include_router(bundles_router)
     app.include_router(app_router)
+
+    if settings.ENABLE_MOCK_ENDPOINTS:
+        app.include_router(mock_router)
+        logger.info("Mock endpoints enabled")
 
     if _FRONTEND_DIR.exists():
         app.mount("/static", StaticFiles(directory=_FRONTEND_DIR), name="static")
