@@ -1,183 +1,282 @@
 import {
-  confirmSession,
-  fetchMetadata,
-  generateEarlyPreview,
-  replySession,
   startSession,
-} from '/static/api.js';
+  replySession,
+  confirmSession,
+  generatePreview,
+  generateApp,
+} from './api.js';
 import {
-  appendMessage,
-  renderClassification,
-  renderExtraction,
-  renderFooter,
-  renderMetadata,
-  renderPipeline,
-} from '/static/components.js';
+  renderMessage,
+  renderBundleCard,
+  renderDashboard,
+  renderPipelineStatus,
+  renderThinkingIndicator,
+} from './components.js';
 
 const state = {
   sessionId: '',
-  turnCount: 0,
-  lastStatus: '',
-  previewType: null,
-  warning: null,
-  debug: null,
-  classification: null,
+  lastStatus: 'idle', // idle, awaiting_input, pending_confirmation, ready_for_preview, complete
   recommendation: null,
-  metadata: null,
-  metadataError: '',
+  classification: null,
+  previewPayload: null,
+  isProcessing: false,
+  statusInterval: null,
 };
+
+const STATUS_MESSAGES = [
+  "Analyzing your request...",
+  "Extracting requirements...",
+  "Classifying bundle candidates...",
+  "Thinking about your thoughts...",
+  "Checking for compatibility...",
+  "hmmm, i love my job...",
+  "Almost there...",
+  "Mapping architecture...",
+  "Personalizing modules...",
+];
 
 const els = {
   chatLog: document.getElementById('chatLog'),
   messageInput: document.getElementById('messageInput'),
-  bundleInput: document.getElementById('bundleInput'),
-  intentInput: document.getElementById('intentInput'),
-  startBtn: document.getElementById('startBtn'),
-  replyBtn: document.getElementById('replyBtn'),
-  confirmBtn: document.getElementById('confirmBtn'),
-  earlyPreviewBtn: document.getElementById('earlyPreviewBtn'),
-  tabs: document.getElementById('tabs'),
-  pipelinePanel: document.getElementById('tab-pipeline'),
-  extractionPanel: document.getElementById('tab-extraction'),
-  classificationPanel: document.getElementById('tab-classification'),
-  metadataPanel: document.getElementById('tab-metadata'),
-  footer: document.getElementById('footer'),
+  sendBtn: document.getElementById('sendBtn'),
+  previewPanel: document.getElementById('previewPanel'),
+  pipelineContainer: document.getElementById('pipelineContainer'),
 };
 
+// Initialize
 bindEvents();
-refreshPanels();
-appendMessage(els.chatLog, 'system', 'Ready. Start a session to inspect pipeline state.');
+appendSystemMessage("Hello! I'm AI Architect. Tell me what kind of app or workspace you want to build.");
 
 function bindEvents() {
-  els.startBtn.addEventListener('click', handleStartSession);
-  els.replyBtn.addEventListener('click', handleReply);
-  els.confirmBtn.addEventListener('click', handleConfirm);
-  els.earlyPreviewBtn.addEventListener('click', handleEarlyPreview);
-  els.tabs.addEventListener('click', handleTabSwitch);
+  els.sendBtn.addEventListener('click', handleSendMessage);
+  els.messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  });
+
+  // Global delegation for dynamic buttons
+  document.addEventListener('click', async (e) => {
+    if (e.target.id === 'confirmBundleBtn') {
+      await handleConfirmBundle(true);
+    } else if (e.target.id === 'generatePreviewBtn') {
+      await handleGeneratePreview();
+    } else if (e.target.id === 'deployBtn') {
+      await handleDeployApp();
+    } else if (e.target.classList.contains('suggestion-chip')) {
+      const msg = e.target.getAttribute('data-msg');
+      els.messageInput.value = msg;
+      handleSendMessage();
+    }
+  });
 }
 
-async function handleStartSession() {
+function startThinking() {
+  let index = 0;
+  // Initial thinking indicator
+  els.chatLog.insertAdjacentHTML('beforeend', renderThinkingIndicator(STATUS_MESSAGES[0]));
+  scrollToBottom();
+
+  state.statusInterval = setInterval(() => {
+    index = (index + 1) % STATUS_MESSAGES.length;
+    const indicator = document.getElementById('thinkingIndicator');
+    if (indicator) {
+      const textEl = indicator.querySelector('.thinking-text');
+      if (textEl) textEl.textContent = STATUS_MESSAGES[index];
+    }
+  }, 2500);
+}
+
+function stopThinking() {
+  if (state.statusInterval) {
+    clearInterval(state.statusInterval);
+    state.statusInterval = null;
+  }
+  const indicator = document.getElementById('thinkingIndicator');
+  if (indicator) indicator.remove();
+}
+
+async function handleSendMessage() {
   const message = els.messageInput.value.trim();
-  if (!message) return;
+  if (!message || state.isProcessing) return;
+
+  els.messageInput.value = '';
+  appendUserMessage(message);
+  setProcessing(true);
+  startThinking();
 
   try {
-    const body = {
-      message,
-      preselected_bundle_key: normalizeOptional(els.bundleInput.value),
-      preselected_intent: normalizeOptional(els.intentInput.value),
-    };
-    const response = await startSession(body);
+    let response;
+    if (!state.sessionId) {
+      // Step 1: Start Conversation
+      response = await startSession({ message });
+    } else {
+      // Step 2: Chat Loop
+      response = await replySession(state.sessionId, { message });
+    }
+    
+    stopThinking();
     applyTurnResponse(response);
-    appendMessage(els.chatLog, 'user', message);
-    appendMessage(els.chatLog, 'assistant', response.message || response.question || response.status);
   } catch (error) {
-    appendMessage(els.chatLog, 'error', error.message);
+    stopThinking();
+    appendErrorMessage(error.message);
+  } finally {
+    setProcessing(false);
   }
 }
 
-async function handleReply() {
-  if (!state.sessionId) {
-    appendMessage(els.chatLog, 'error', 'Start a session first.');
-    return;
-  }
-  const message = els.messageInput.value.trim();
-  if (!message) return;
+async function handleConfirmBundle(confirmed) {
+  if (!state.sessionId || state.isProcessing) return;
+  setProcessing(true);
+  startThinking();
 
   try {
-    const response = await replySession(state.sessionId, {
-      message,
-      force_preview: false,
-    });
+    // Step 3: Bundle Confirmation
+    const response = await confirmSession(state.sessionId, confirmed);
+    stopThinking();
     applyTurnResponse(response);
-    appendMessage(els.chatLog, 'user', message);
-    appendMessage(els.chatLog, 'assistant', response.message || response.question || response.status);
-  } catch (error) {
-    appendMessage(els.chatLog, 'error', error.message);
-  }
-}
-
-async function handleConfirm() {
-  if (!state.sessionId) {
-    appendMessage(els.chatLog, 'error', 'Start a session first.');
-    return;
-  }
-  try {
-    const response = await confirmSession(state.sessionId, true);
-    applyTurnResponse(response);
-    appendMessage(els.chatLog, 'system', 'Bundle confirmed.');
-  } catch (error) {
-    appendMessage(els.chatLog, 'error', error.message);
-  }
-}
-
-async function handleEarlyPreview() {
-  if (!state.sessionId) {
-    appendMessage(els.chatLog, 'error', 'Start a session first.');
-    return;
-  }
-  try {
-    const payload = await generateEarlyPreview(state.sessionId);
-    appendMessage(els.chatLog, 'system', `Early preview generated for bundle=${payload.bundle_key}`);
-    if (payload.warning) {
-      appendMessage(els.chatLog, 'warning', payload.warning);
+    
+    if (confirmed) {
+      appendSystemMessage("Great! Bundle confirmed. I'm ready to generate your preview data.");
+      addActionButton('Generate Preview', 'generatePreviewBtn');
     }
   } catch (error) {
-    appendMessage(els.chatLog, 'error', error.message);
+    stopThinking();
+    appendErrorMessage(error.message);
+  } finally {
+    setProcessing(false);
   }
 }
 
-function handleTabSwitch(event) {
-  const button = event.target.closest('button[data-tab]');
-  if (!button) return;
-  const tab = button.dataset.tab;
-
-  document.querySelectorAll('.tab').forEach((el) => el.classList.remove('is-active'));
-  document.querySelectorAll('.tab-panel').forEach((el) => el.classList.remove('is-active'));
-
-  button.classList.add('is-active');
-  document.getElementById(`tab-${tab}`).classList.add('is-active');
-}
-
-async function applyTurnResponse(response) {
-  state.sessionId = response.session_id || state.sessionId;
-  state.turnCount += 1;
-  state.lastStatus = response.status || state.lastStatus;
-  state.previewType = response.preview_type || null;
-  state.warning = response.warning || null;
-  state.debug = response.debug || null;
-  state.classification = response.classification || null;
-  state.recommendation = response.recommendation || null;
-
-  await hydrateMetadata();
-  refreshPanels();
-}
-
-async function hydrateMetadata() {
-  const bundleKey = state.recommendation?.primary_bundle_key || state.classification?.top_bundle_key;
-  if (!bundleKey) {
-    state.metadata = null;
-    state.metadataError = '';
-    return;
-  }
+async function handleGeneratePreview() {
+  if (!state.sessionId || state.isProcessing) return;
+  setProcessing(true);
+  startThinking();
 
   try {
-    state.metadata = await fetchMetadata(bundleKey);
-    state.metadataError = '';
+    // Step 4: Preview Generation
+    const payload = await generatePreview(state.sessionId);
+    stopThinking();
+    state.previewPayload = payload;
+    state.lastStatus = 'preview_ready';
+    
+    refreshUI();
+    appendSystemMessage("Preview generated! Check out the dashboard on the right.");
   } catch (error) {
-    state.metadata = null;
-    state.metadataError = error.message;
+    stopThinking();
+    appendErrorMessage(error.message);
+  } finally {
+    setProcessing(false);
   }
 }
 
-function refreshPanels() {
-  renderPipeline(els.pipelinePanel, state);
-  renderExtraction(els.extractionPanel, state.debug);
-  renderClassification(els.classificationPanel, state.classification);
-  renderMetadata(els.metadataPanel, state.metadata, state.metadataError);
-  renderFooter(els.footer, state);
+async function handleDeployApp() {
+  if (!state.sessionId || !state.previewPayload || state.isProcessing) return;
+  setProcessing(true);
+  startThinking();
+
+  try {
+    // Step 5: Final Delivery
+    const finalPayload = await generateApp(state.sessionId, state.previewPayload.dummy_data_json);
+    stopThinking();
+    state.lastStatus = 'complete';
+    
+    appendSystemMessage("Success! Your workspace is ready. Manifest generated.");
+    console.log("Final App Payload:", finalPayload);
+    
+    // Disable deploy button in dashboard
+    refreshUI();
+  } catch (error) {
+    stopThinking();
+    appendErrorMessage(error.message);
+  } finally {
+    setProcessing(false);
+  }
 }
 
-function normalizeOptional(value) {
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
+function applyTurnResponse(response) {
+  state.sessionId = response.session_id || state.sessionId;
+  state.lastStatus = response.status;
+  state.recommendation = response.recommendation;
+  state.classification = response.classification;
+
+  if (response.message || response.question) {
+    appendAssistantMessage(response.message || response.question);
+  }
+
+  if (state.lastStatus === 'pending_confirmation') {
+    appendCustomHTML(renderBundleCard(state.recommendation));
+  } else if (state.lastStatus === 'ready_for_preview') {
+    addActionButton('Generate Preview', 'generatePreviewBtn');
+  }
+
+  refreshUI();
+}
+
+function refreshUI() {
+  els.pipelineContainer.innerHTML = renderPipelineStatus(state);
+  els.previewPanel.innerHTML = renderDashboard(state.previewPayload);
+  
+  if (state.lastStatus === 'complete') {
+    const deployBtn = document.getElementById('deployBtn');
+    if (deployBtn) {
+      deployBtn.disabled = true;
+      deployBtn.textContent = 'App Deployed';
+    }
+  }
+}
+
+function setProcessing(processing) {
+  state.isProcessing = processing;
+  els.sendBtn.disabled = processing;
+  els.messageInput.disabled = processing;
+  if (processing) {
+    els.sendBtn.textContent = '...';
+  } else {
+    els.sendBtn.textContent = 'Send';
+  }
+}
+
+// Helper methods for chat display
+function appendUserMessage(content) {
+  els.chatLog.insertAdjacentHTML('beforeend', renderMessage('user', content));
+  scrollToBottom();
+}
+
+function appendAssistantMessage(content) {
+  els.chatLog.insertAdjacentHTML('beforeend', renderMessage('assistant', content));
+  scrollToBottom();
+}
+
+function appendSystemMessage(content) {
+  els.chatLog.insertAdjacentHTML('beforeend', renderMessage('system', content));
+  scrollToBottom();
+}
+
+function appendErrorMessage(content) {
+  els.chatLog.insertAdjacentHTML('beforeend', `
+    <div class="msg-bubble msg-error">
+      <div class="msg-role">Error</div>
+      <div class="msg-content">${content}</div>
+    </div>
+  `);
+  scrollToBottom();
+}
+
+function appendCustomHTML(html) {
+  els.chatLog.insertAdjacentHTML('beforeend', html);
+  scrollToBottom();
+}
+
+function addActionButton(label, id) {
+  appendCustomHTML(`
+    <div class="msg-bubble msg-assistant action-bubble">
+      <button id="${id}" class="primary-btn">${label}</button>
+    </div>
+  `);
+}
+
+function scrollToBottom() {
+  els.chatLog.scrollTop = els.chatLog.scrollHeight;
 }
