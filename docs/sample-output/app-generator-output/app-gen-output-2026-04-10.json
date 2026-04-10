@@ -1,0 +1,257 @@
+{
+    "schema_version": "1.0",
+    "session_id": "1ef31e51-2950-4430-a2d8-b0e029e1bfdf",
+    "bundle_key": "ticketing",
+    "display_name": "Ticketing Tool",
+    "modules": [
+        "tickets",
+        "chat",
+        "video_call",
+        "kpi",
+        "dashboard",
+        "announcements"
+    ],
+    "generation_json": {
+        "schema_version": "1.0",
+        "bundle_key": "ticketing",
+        "config": {
+            "permission_services": [
+                "ticketing",
+                "chat",
+                "video_call",
+                "announcements"
+            ],
+            "landing_pages": [
+                {
+                    "service": "ticketing",
+                    "path": "/tickets"
+                },
+                {
+                    "service": "dashboard",
+                    "path": "/dashboard"
+                }
+            ],
+            "work_order_statuses": [
+                "pending",
+                "dispatched",
+                "in_progress",
+                "completed",
+                "cancelled"
+            ],
+            "work_order_priorities": [
+                "low",
+                "medium",
+                "high",
+                "emergency"
+            ],
+            "service_types": [
+                "incident",
+                "service_request",
+                "access",
+                "maintenance",
+                "other"
+            ],
+            "kpi_definitions": [
+                {
+                    "key": "avg_resolution_time",
+                    "label": "Average Resolution Time",
+                    "unit": "duration"
+                },
+                {
+                    "key": "sla_compliance",
+                    "label": "SLA Compliance",
+                    "unit": "percentage"
+                },
+                {
+                    "key": "active_work_items",
+                    "label": "Active Work Items",
+                    "unit": "count"
+                }
+            ]
+        },
+        "stores_contract": {
+            "required": [
+                "tickets",
+                "kpis"
+            ],
+            "optional": [
+                "projects",
+                "tasks",
+                "weaves",
+                "dashboard_widgets"
+            ]
+        },
+        "slots_used": [
+            "primary_use_case",
+            "queue_type",
+            "company_name",
+            "industry_hint"
+        ],
+        "session_id": "1ef31e51-2950-4430-a2d8-b0e029e1bfdf",
+        "modules": [
+            "tickets",
+            "chat",
+            "video_call",
+            "kpi",
+            "dashboard",
+            "announcements"
+        ]
+    },
+    "dummy_data_json": {
+        "bundle_key": "ticketing",
+        "session_id": "1ef31e51-2950-4430-a2d8-b0e029e1bfdf",
+        "company_name": null,
+        "stores": {
+            "kpis": [
+                {
+                    "id": 1,
+                    "key": "avg_resolution_time",
+                    "label": "Avg. Resolution Time",
+                    "type": "duration",
+                    "source_service": "tickets",
+                    "sample_value": 3.2
+                },
+                {
+                    "id": 2,
+                    "key": "sla_compliance",
+                    "label": "SLA Compliance",
+                    "type": "percentage",
+                    "source_service": "tickets",
+                    "sample_value": 92.1
+                },
+                {
+                    "id": 3,
+                    "key": "active_work_items",
+                    "label": "Active Work Items",
+                    "type": "count",
+                    "source_service": "projects",
+                    "sample_value": 217
+                },
+                {
+                    "id": 4,
+                    "key": "cycle_time",
+                    "label": "Cycle Time",
+                    "type": "duration",
+                    "source_service": "projects",
+                    "sample_value": 2.1
+                }
+            ],
+            "dashboard_widgets": [],
+            "tickets": [
+                {
+                    "id": 101,
+                    "title": "Login page not loading on mobile",
+                    "type": "Bug",
+                    "status": "Open",
+                    "priority": "High",
+                    "requester": "Carlos Mendez",
+                    "assignee": "Maria Santos",
+                    "created_at": "2026-04-09"
+                },
+                {
+                    "id": 102,
+                    "title": "Export to CSV fails for large datasets",
+                    "type": "Feature Request",
+                    "status": "In Progress",
+                    "priority": "Medium",
+                    "requester": "Ana Reyes",
+                    "assignee": "Carlos Mendez",
+                    "created_at": "2026-04-06"
+                },
+                {
+                    "id": 103,
+                    "title": "Notification emails not delivered",
+                    "type": "Bug",
+                    "status": "Open",
+                    "priority": "Critical",
+                    "requester": "James Okafor",
+                    "assignee": "Ana Reyes",
+                    "created_at": "2026-04-03"
+                },
+                {
+                    "id": 104,
+                    "title": "Dashboard widget shows incorrect totals",
+                    "type": "Improvement",
+                    "status": "Resolved",
+                    "priority": "Low",
+                    "requester": "Sofia Lim",
+                    "assignee": "James Okafor",
+                    "created_at": "2026-03-31"
+                },
+                {
+                    "id": 105,
+                    "title": "User permissions not applying on new accounts",
+                    "type": "Bug",
+                    "status": "Open",
+                    "priority": "Medium",
+                    "requester": "David Park",
+                    "assignee": "Sofia Lim",
+                    "created_at": "2026-03-28"
+                },
+                {
+                    "id": 106,
+                    "title": "Search returns empty results intermittently",
+                    "type": "Access Request",
+                    "status": "In Progress",
+                    "priority": "Medium",
+                    "requester": "Priya Nair",
+                    "assignee": "David Park",
+                    "created_at": "2026-03-25"
+                }
+            ],
+            "queues": [
+                {
+                    "id": 1,
+                    "name": "Platform Migration — Phase 1",
+                    "status": "In Progress",
+                    "lead": "Maria Santos",
+                    "team_size": 3,
+                    "start_date": "2026-02-09",
+                    "due_date": "2026-05-10",
+                    "completion_pct": 68
+                },
+                {
+                    "id": 2,
+                    "name": "Infrastructure Rollout — Phase 2",
+                    "status": "In Progress",
+                    "lead": "Carlos Mendez",
+                    "team_size": 4,
+                    "start_date": "2026-02-19",
+                    "due_date": "2026-05-24",
+                    "completion_pct": 42
+                },
+                {
+                    "id": 3,
+                    "name": "Enterprise Deployment — Q3",
+                    "status": "On Hold",
+                    "lead": "Ana Reyes",
+                    "team_size": 5,
+                    "start_date": "2026-03-01",
+                    "due_date": "2026-06-07",
+                    "completion_pct": 15
+                },
+                {
+                    "id": 4,
+                    "name": "System Integration — Milestone 4",
+                    "status": "Completed",
+                    "lead": "James Okafor",
+                    "team_size": 6,
+                    "start_date": "2026-03-11",
+                    "due_date": "2026-06-21",
+                    "completion_pct": 100
+                },
+                {
+                    "id": 5,
+                    "name": "Platform Migration — Phase 5",
+                    "status": "In Progress",
+                    "lead": "Sofia Lim",
+                    "team_size": 3,
+                    "start_date": "2026-03-21",
+                    "due_date": "2026-07-05",
+                    "completion_pct": 30
+                }
+            ]
+        }
+    },
+    "warning": null
+}

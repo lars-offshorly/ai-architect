@@ -13,3 +13,6 @@ test-results/
 coverage.xml
 coverage*.xml 
 AGENTS.md 
+docs/archive/data-flow-architecture.md 
+docs/archive/frontend_data_structure.md 
+docs/archive/reference-exchange.md
