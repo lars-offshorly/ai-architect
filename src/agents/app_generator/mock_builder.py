@@ -30,7 +30,6 @@ logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Render key → template directory
-# Update when Lars exposes render_key from BundleCatalog / bundle_registry.yaml
 # ---------------------------------------------------------------------------
 
 def _build_render_key_mapping() -> dict[str, str]:
@@ -43,9 +42,6 @@ def _build_render_key_mapping() -> dict[str, str]:
  
  
 RENDER_KEY_TO_TEMPLATE_DIR: dict[str, str] = _build_render_key_mapping()
-KNOWN_RENDER_KEYS: frozenset[str] = frozenset(RENDER_KEY_TO_TEMPLATE_DIR)
-
-
 KNOWN_RENDER_KEYS: frozenset[str] = frozenset(RENDER_KEY_TO_TEMPLATE_DIR)
 
 
