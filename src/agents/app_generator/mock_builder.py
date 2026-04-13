@@ -21,6 +21,7 @@ from agents.preview_generator.bundles.registry import (
     BUNDLE_REGISTRY,
     get_flag_snapshot,
 )
+from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import InvalidPayloadError, TemplateLoadError
 from core.logging import get_logger
 from repositories.template_repository import TemplateRepository
@@ -32,12 +33,18 @@ logger = get_logger(__name__)
 # Update when Lars exposes render_key from BundleCatalog / bundle_registry.yaml
 # ---------------------------------------------------------------------------
 
-RENDER_KEY_TO_TEMPLATE_DIR: dict[str, str] = {
-    "hr_hub": "hr_hub",
-    "project_mgmt": "project_ops",
-    "ticketing": "field_service",
-    "generic": "generic",
-}
+def _build_render_key_mapping() -> dict[str, str]:
+    """Build render_key → template_dir mapping from BundleCatalog."""
+    catalog = BundleCatalog()
+    mapping: dict[str, str] = {}
+    for bundle in catalog.list_all():
+        mapping[bundle.render_key] = bundle.template_dir
+    return mapping
+ 
+ 
+RENDER_KEY_TO_TEMPLATE_DIR: dict[str, str] = _build_render_key_mapping()
+KNOWN_RENDER_KEYS: frozenset[str] = frozenset(RENDER_KEY_TO_TEMPLATE_DIR)
+
 
 KNOWN_RENDER_KEYS: frozenset[str] = frozenset(RENDER_KEY_TO_TEMPLATE_DIR)
 
