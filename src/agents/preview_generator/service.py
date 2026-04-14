@@ -8,7 +8,7 @@ from core.logging import get_logger, get_session_logger
 from domain.models.extraction_result import ExtractionResult
 
 from .pipeline import compiled_graph
-from .schemas import PreviewOutput
+from .schemas import PreviewOutput, UserContext
 from .state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -34,8 +34,8 @@ class PreviewGeneratorService:
         conversation_history: list[dict],
         extraction_result: ExtractionResult | None = None,
         preselected_intent: str | None = None,
-    ) -> tuple[dict, dict]:
-        """Run the preview pipeline and return (generation_json, dummy_data_json).
+    ) -> tuple[dict, dict, UserContext | None]:
+        """Run the preview pipeline and return (generation_json, dummy_data_json, user_context).
 
         Args:
             session_id:           Session identifier (passed through to state/logs).
@@ -52,6 +52,7 @@ class PreviewGeneratorService:
         Returns:
             generation_json  — Knit workspace config (feature_flags, modules, config).
             dummy_data_json  — Sample data stores (employees, projects, tickets, …).
+            user_context     — Extracted business context; used by dashboard enrichment.
         """
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Starting preview generation for bundle=%s", bundle_key)
@@ -74,9 +75,16 @@ class PreviewGeneratorService:
             )
         output = PreviewOutput.model_validate(raw) if isinstance(raw, dict) else raw
 
+        # Extract user_context from the final graph state for downstream enrichment.
+        user_context: UserContext | None = result.get("user_context")
+
         session_logger.info(
             "Preview generation complete for bundle=%s modules=%s",
             bundle_key,
             output.generation_json.modules,
         )
-        return output.generation_json.model_dump(), output.dummy_data_json.model_dump()
+        return (
+            output.generation_json.model_dump(),
+            output.dummy_data_json.model_dump(),
+            user_context,
+        )
