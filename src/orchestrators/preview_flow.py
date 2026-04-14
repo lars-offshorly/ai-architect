@@ -160,31 +160,84 @@ class PreviewFlow:
 
     @staticmethod
     def _to_internal_widgets(raw_widgets: Any) -> list[dict[str, object]]:
-        """Map external dashboard debug widgets to internal widget layout shape."""
+        """Map external dashboard debug widgets to internal widget layout shape.
+        
+        Handles CJ's dashboard generation output format:
+        - Maps typeId (int) to type (string)
+        - Extracts positioning from settings.xAxis/yAxis/width/height
+        - Handles chartType for chart widgets
+        """
         if not isinstance(raw_widgets, list):
             return []
+
+        # CJ's typeId → internal type string mapping
+        TYPE_ID_MAP = {
+            1: "number",
+            2: "text",
+            3: "bar",  # Chart widget - refined by chartType
+            4: "list",
+        }
 
         widgets: list[dict[str, object]] = []
         for idx, raw in enumerate(raw_widgets, start=1):
             if not isinstance(raw, dict):
                 continue
 
-            widget_type = raw.get("type")
-            if not isinstance(widget_type, str) or not widget_type:
-                widget_type = "number"
+            # Extract type from typeId
+            type_id = raw.get("typeId")
+            widget_type = TYPE_ID_MAP.get(type_id, "number")
 
-            title = raw.get("title") or raw.get("name")
+            # For chart widgets (typeId=3), refine type from settings.chartType
+            if type_id == 3:
+                settings = raw.get("settings", {})
+                if isinstance(settings, dict):
+                    chart_type = settings.get("chartType", "bar")
+                    if chart_type == "barHorizontal":
+                        widget_type = "hbar"
+                    elif chart_type in ("pie", "line", "scatter"):
+                        widget_type = chart_type
+                    # else: keep "bar" as default
+
+            # Extract title from name or title field
+            title = raw.get("name") or raw.get("title")
             if not isinstance(title, str) or not title.strip():
                 title = f"Widget {idx}"
 
-            row = (idx - 1) // 2
-            col = ((idx - 1) % 2) * 2
+            # Extract positioning from settings
+            settings = raw.get("settings", {})
+            if isinstance(settings, dict) and "yAxis" in settings:
+                # Use CJ's positioning from settings
+                row = settings.get("yAxis", 0)
+                col = settings.get("xAxis", 0)
+                width = settings.get("width", 2)
+                height = settings.get("height", 1)
+            else:
+                # Fallback to 2-column grid layout
+                row = (idx - 1) // 2
+                col = ((idx - 1) % 2) * 2
+                width = 2
+                height = 1
+
+            # Extract widget ID from settings or raw.id
+            widget_id = None
+            if isinstance(settings, dict):
+                widget_id = settings.get("id")
+            if widget_id is None:
+                widget_id = raw.get("id")
+            if widget_id is None:
+                widget_id = idx
+
             widgets.append(
                 {
-                    "id": f"widget-generated-{idx:02d}",
+                    "id": f"widget-{widget_id}",
                     "type": widget_type,
                     "title": title,
-                    "position": {"row": row, "col": col, "width": 2, "height": 1},
+                    "position": {
+                        "row": row,
+                        "col": col,
+                        "width": width,
+                        "height": height,
+                    },
                 }
             )
 
