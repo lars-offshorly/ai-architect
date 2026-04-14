@@ -189,6 +189,7 @@ def _assert_dummy_data_json(dummy_data_json: dict, bundle_key: str) -> None:
     stores = dummy_data_json["stores"]
     assert "kpis" in stores
     assert "dashboard_widgets" in stores
+    assert "dashboard_generation_output" in stores
 
 
 # ===========================================================================

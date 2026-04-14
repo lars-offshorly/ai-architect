@@ -1,0 +1,1392 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Dashboard Generator API",
+    "description": "AI-powered service for generating interactive dashboards from Insights and Analytics reports. Automatically extracts metrics, creates visualizations, and positions widgets based on report content. Supports text extraction, numeric widget generation, and chart creation with intelligent positioning.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/dashboards/generate/": {
+      "post": {
+        "tags": ["dashboards"],
+        "summary": "Generate Dashboard from Report",
+        "description": "Generate a new dashboard from Insights and Analytics reports. Creates positioned widgets based on report content and user specifications.",
+        "operationId": "generate_dashboard_api_v1_dashboards_generate__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DashboardGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardGenerateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error in request data"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "KnitAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/dashboards/health/": {
+      "get": {
+        "tags": ["dashboards"],
+        "summary": "Service Health Check",
+        "description": "Comprehensive health check for monitoring service status and dependencies. Validates external service connectivity and configuration.",
+        "operationId": "health_check_api_v1_dashboards_health__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboards/validate/": {
+      "post": {
+        "tags": ["dashboards"],
+        "summary": "Validate Dashboard Request",
+        "description": "Validate a dashboard generation request without creating resources.",
+        "operationId": "validate_dashboard_api_v1_dashboards_validate__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DashboardGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error in request data"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "KnitAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/dashboards/templates/suggest/": {
+      "post": {
+        "tags": ["dashboards"],
+        "summary": "Suggest Dashboard Templates",
+        "description": "Accepts a markdown report and returns a ranked, LLM-reasoned list of dashboard templates that best fit the report content. Does not instantiate a dashboard.",
+        "operationId": "suggest_dashboard_templates_api_v1_dashboards_templates_suggest__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestDashboardTemplatesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestDashboardTemplatesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error in request data"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "KnitAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregationType": {
+        "type": "string",
+        "enum": ["count", "sum", "average", "min", "max"],
+        "title": "AggregationType",
+        "description": "Data aggregation types."
+      },
+      "CalculationConfig": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Datasets",
+            "description": "List of datasets for calculation (minimum 1 required)"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula",
+            "description": "Formula string (e.g., 'datasets[0] / datasets[1] * 100'). Optional for single dataset operations."
+          },
+          "expected_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Value",
+            "description": "Expected format with symbols and decimals (e.g., '85.5%', '$1,250.00', '42')"
+          }
+        },
+        "type": "object",
+        "required": ["datasets"],
+        "title": "CalculationConfig",
+        "description": "Configuration for complex number calculations."
+      },
+      "ChartWidget": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["bar", "hbar", "pie", "line", "scatter"],
+            "title": "Type",
+            "description": "Chart type: bar, hbar, pie, line, scatter"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Chart title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Optional chart description"
+          },
+          "data_config": {
+            "$ref": "#/components/schemas/DataConfig",
+            "description": "Complete data configuration"
+          },
+          "repopulate_fields": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repopulate Fields",
+            "description": "Ignore this field.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["type", "title", "data_config"],
+        "title": "ChartWidget",
+        "description": "Chart widget with flexible configuration."
+      },
+      "ComboChartWidget": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "combo",
+            "title": "Type",
+            "description": "Widget type, always 'combo'",
+            "default": "combo"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Chart title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Optional chart description"
+          },
+          "primary_data_config": {
+            "$ref": "#/components/schemas/DataConfig",
+            "description": "Primary dataset configuration"
+          },
+          "secondary_data_config": {
+            "$ref": "#/components/schemas/DataConfig",
+            "description": "Secondary dataset configuration"
+          },
+          "repopulate_fields": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repopulate Fields",
+            "description": "Ignore this field.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["title", "primary_data_config", "secondary_data_config"],
+        "title": "ComboChartWidget",
+        "description": "Combo chart widget with dual datasets."
+      },
+      "DashboardGenerateRequest": {
+        "properties": {
+          "dashboard_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[a-zA-Z0-9 \\-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dashboard Name",
+            "description": "Optional dashboard name. If not provided, auto-generated with timestamp.",
+            "examples": ["Q4 Analytics Report", "Monthly KPI Dashboard"]
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceType",
+            "description": "Source type: insights or analytics",
+            "examples": ["insights", "analytics"]
+          },
+          "report": {
+            "type": "string",
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Report",
+            "description": "Markdown report content for extraction. Supports text extraction and numeric widget generation.",
+            "examples": ["# Monthly Revenue Report\n\n## Key Metrics\n- Total Revenue: $125,000\n- Growth Rate: 15%\n\n## Summary\nThis month showed strong performance."]
+          },
+          "widgets": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ChartWidget"
+                },
+                {
+                  "$ref": "#/components/schemas/NumericWidget"
+                },
+                {
+                  "$ref": "#/components/schemas/ListWidget"
+                },
+                {
+                  "$ref": "#/components/schemas/ComboChartWidget"
+                },
+                {
+                  "$ref": "#/components/schemas/EmbedWidget"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "bar": "#/components/schemas/ChartWidget",
+                  "combo": "#/components/schemas/ComboChartWidget",
+                  "embed": "#/components/schemas/EmbedWidget",
+                  "hbar": "#/components/schemas/ChartWidget",
+                  "line": "#/components/schemas/ChartWidget",
+                  "list": "#/components/schemas/ListWidget",
+                  "number": "#/components/schemas/NumericWidget",
+                  "pie": "#/components/schemas/ChartWidget",
+                  "scatter": "#/components/schemas/ChartWidget"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 0,
+            "title": "Widgets",
+            "description": "List of chart, numeric, list, combo, and embed widgets with complete data configurations"
+          }
+        },
+        "type": "object",
+        "required": ["source", "report", "widgets"],
+        "title": "DashboardGenerateRequest",
+        "description": "Complete request payload for dashboard generation.\nTwo sources: report markdown + explicit widget definitions."
+      },
+      "DashboardGenerateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the operation succeeded"
+          },
+          "dashboard": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DashboardInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dashboard information if successful"
+          },
+          "widgets": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WidgetCount"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Widget count breakdown"
+          },
+          "execution_time": {
+            "type": "string",
+            "title": "Execution Time",
+            "description": "Execution time in format: '2m 15s'"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "description": "List of error messages"
+          },
+          "debug_payload": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DebugPayload"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Debug payload with comprehensive generation details"
+          },
+          "generation_metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GenerationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Additional metadata about the generation process"
+          }
+        },
+        "type": "object",
+        "required": ["success", "execution_time"],
+        "title": "DashboardGenerateResponse",
+        "description": "Response for dashboard generation."
+      },
+      "DashboardInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Generated dashboard ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Dashboard name with timestamp"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "description": "Dashboard URL"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"],
+        "title": "DashboardInfo",
+        "description": "Dashboard information in response."
+      },
+      "DataConfig": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Module",
+            "description": "Module name (e.g., 'HR Hub', 'Projects')"
+          },
+          "data_source": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Data Source",
+            "description": "Data source name (e.g., 'employees', 'absences')"
+          },
+          "group_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group By",
+            "description": "Fields to group data by for charts"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields",
+            "description": "Available options for the groupBy field (e.g., department names)"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filters",
+            "description": "Data filters in SourceFit format"
+          },
+          "time_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeRange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Time range for data filtering"
+          },
+          "aggregation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AggregationType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Data aggregation method",
+            "default": "count"
+          },
+          "filter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Id",
+            "description": "Filter ID for custom parameters (e.g., 'custom_dates')"
+          },
+          "date_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date From",
+            "description": "Start date for custom dates parameter (YYYY-MM-DD format)"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date To",
+            "description": "End date for custom dates parameter (YYYY-MM-DD format)"
+          },
+          "date_interval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeInterval"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Time interval for custom dates (daily, weekly, monthly, yearly)"
+          }
+        },
+        "type": "object",
+        "required": ["module", "data_source"],
+        "title": "DataConfig",
+        "description": "Complete data configuration to avoid reverse engineering."
+      },
+      "DebugPayload": {
+        "properties": {
+          "widgets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Widgets",
+            "description": "Complete widget payload for bulk create"
+          },
+          "total_widgets": {
+            "type": "integer",
+            "title": "Total Widgets",
+            "description": "Total number of widgets generated"
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At",
+            "description": "Timestamp when widgets were generated"
+          },
+          "widget_breakdown": {
+            "$ref": "#/components/schemas/WidgetCount",
+            "description": "Breakdown of widgets by type"
+          }
+        },
+        "type": "object",
+        "required": ["widgets", "total_widgets", "generated_at", "widget_breakdown"],
+        "title": "DebugPayload",
+        "description": "Debug payload with widget generation details."
+      },
+      "EmbedWidget": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "embed",
+            "title": "Type",
+            "description": "Widget type, always 'embed'",
+            "default": "embed"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Display name for the widget"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "string",
+                "format": "uuid"
+              }
+            ],
+            "title": "Url",
+            "description": "URL to embed (S3 presigned URL or PowerBI URL or file ID from Orchestration)"
+          }
+        },
+        "type": "object",
+        "required": ["name", "url"],
+        "title": "EmbedWidget",
+        "description": "Embed widget for displaying external content via URL (S3 images or PowerBI)."
+      },
+      "ErrorResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always false for error responses",
+            "default": false
+          },
+          "execution_time": {
+            "type": "string",
+            "title": "Execution Time",
+            "description": "Execution time in format: '0m 1s'"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "description": "List of error messages"
+          }
+        },
+        "type": "object",
+        "required": ["execution_time"],
+        "title": "ErrorResponse",
+        "description": "Error response for validation errors (400)."
+      },
+      "GenerationMetadata": {
+        "properties": {
+          "report_length": {
+            "type": "integer",
+            "title": "Report Length",
+            "description": "Length of the source report in characters"
+          },
+          "widgets_extracted": {
+            "type": "integer",
+            "title": "Widgets Extracted",
+            "description": "Number of widgets extracted from report",
+            "default": 0
+          },
+          "widgets_explicit": {
+            "type": "integer",
+            "title": "Widgets Explicit",
+            "description": "Number of explicitly defined widgets",
+            "default": 0
+          },
+          "data_sources_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources Used",
+            "description": "List of data sources referenced"
+          },
+          "processing_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Processing Steps",
+            "description": "Steps completed during generation"
+          }
+        },
+        "type": "object",
+        "required": ["report_length"],
+        "title": "GenerationMetadata",
+        "description": "Additional metadata about the generation process."
+      },
+      "HealthCheckResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Service status",
+            "default": "healthy"
+          },
+          "dependencies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependencies",
+            "description": "External service status"
+          }
+        },
+        "type": "object",
+        "title": "HealthCheckResponse",
+        "description": "Health check response."
+      },
+      "InternalErrorResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always false for error responses",
+            "default": false
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "description": "Error message describing what went wrong"
+          },
+          "execution_time": {
+            "type": "string",
+            "title": "Execution Time",
+            "description": "Execution time in format: '0m 5s'"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "description": "List of error messages"
+          }
+        },
+        "type": "object",
+        "required": ["error", "execution_time"],
+        "title": "InternalErrorResponse",
+        "description": "Error response for internal server errors (500)."
+      },
+      "ListWidget": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "list",
+            "title": "Type",
+            "description": "Widget type, always 'list'",
+            "default": "list"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Display name for the widget"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Optional widget description"
+          },
+          "data_config": {
+            "$ref": "#/components/schemas/DataConfig",
+            "description": "Complete data configuration"
+          },
+          "column_count": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Column Count",
+            "description": "Number of columns to display (1-10)",
+            "default": 4
+          },
+          "column_width": {
+            "type": "integer",
+            "maximum": 500.0,
+            "minimum": 100.0,
+            "title": "Column Width",
+            "description": "Width of each column in pixels",
+            "default": 250
+          }
+        },
+        "type": "object",
+        "required": ["name", "data_config"],
+        "title": "ListWidget",
+        "description": "List widget for tabular data display."
+      },
+      "NumericWidget": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "number",
+            "title": "Type",
+            "description": "Widget type, always 'number'",
+            "default": "number"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Display name for the widget"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "String representation of number (e.g., '$50,868.71', '30%', '265')"
+          },
+          "calculation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalculationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Complex calculation with datasets and formula"
+          }
+        },
+        "type": "object",
+        "required": ["name"],
+        "title": "NumericWidget",
+        "description": "Minimal numeric widget configuration."
+      },
+      "SourceType": {
+        "type": "string",
+        "enum": ["insights", "analytics"],
+        "title": "SourceType",
+        "description": "Source bot types."
+      },
+      "SuggestDashboardTemplatesRequest": {
+        "properties": {
+          "report": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report",
+            "description": "Markdown report content used for template matching"
+          },
+          "module": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module",
+            "description": "Optional module filter passed to the template list API (e.g. 'HR Hub')"
+          },
+          "intent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent",
+            "description": "The user's goal or purpose for the dashboard (e.g. 'monitor team performance')"
+          },
+          "time_period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Period",
+            "description": "The time scope of the data (e.g. 'Q1 2025', 'last 30 days', 'FY 2024')"
+          },
+          "segment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment",
+            "description": "Organisational scope such as a department, team, or region (e.g. 'HR', 'Sales')"
+          },
+          "max_suggestions": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Suggestions",
+            "description": "Maximum number of template suggestions to return",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "title": "SuggestDashboardTemplatesRequest",
+        "description": "Request payload for suggesting dashboard templates based on a markdown report."
+      },
+      "SuggestDashboardTemplatesResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the operation succeeded"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateSuggestion"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Ranked list of template suggestions"
+          },
+          "execution_time": {
+            "type": "string",
+            "title": "Execution Time",
+            "description": "Execution time in format: '2m 15s'"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "description": "List of error messages"
+          }
+        },
+        "type": "object",
+        "required": ["success", "execution_time"],
+        "title": "SuggestDashboardTemplatesResponse",
+        "description": "Response for dashboard template suggestion."
+      },
+      "TemplateSuggestion": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Template ID — directly usable with POST /templates/use/"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Template display name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Template description from the dashboard API"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "LLM-generated explanation for why this template matches the report"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "reason"],
+        "title": "TemplateSuggestion",
+        "description": "A single template suggestion returned by the LLM."
+      },
+      "TimeInterval": {
+        "type": "string",
+        "enum": ["daily", "weekly", "monthly", "yearly"],
+        "title": "TimeInterval",
+        "description": "Time interval options for date filtering."
+      },
+      "TimeRange": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start",
+            "description": "Start date for time range filtering"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End",
+            "description": "End date for time range filtering"
+          },
+          "interval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimeInterval"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Time interval for data grouping"
+          }
+        },
+        "type": "object",
+        "required": ["start", "end"],
+        "title": "TimeRange",
+        "description": "Time range for data filtering."
+      },
+      "UnauthorizedResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Error message describing the authentication failure"
+          }
+        },
+        "type": "object",
+        "required": ["detail"],
+        "title": "UnauthorizedResponse",
+        "description": "Error response for authentication errors (401)."
+      },
+      "ValidateResponse": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid",
+            "description": "Whether the request payload is valid"
+          },
+          "dashboard_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dashboard Name",
+            "description": "Generated dashboard name"
+          },
+          "report_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Length",
+            "description": "Length of report content"
+          },
+          "widget_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widget Count",
+            "description": "Total number of widgets"
+          },
+          "widget_breakdown": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WidgetCount"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Breakdown of widgets by type"
+          },
+          "data_sources_used": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Sources Used",
+            "description": "List of data sources that would be used"
+          },
+          "estimated_execution_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Execution Time",
+            "description": "Estimated processing time"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Error message if validation failed"
+          },
+          "error_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Type",
+            "description": "Type of validation error"
+          }
+        },
+        "type": "object",
+        "required": ["valid"],
+        "title": "ValidateResponse",
+        "description": "Response for request validation."
+      },
+      "WidgetCount": {
+        "properties": {
+          "text": {
+            "type": "integer",
+            "title": "Text",
+            "description": "Number of text widgets",
+            "default": 0
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number",
+            "description": "Number of numeric widgets",
+            "default": 0
+          },
+          "bar": {
+            "type": "integer",
+            "title": "Bar",
+            "description": "Number of bar chart widgets",
+            "default": 0
+          },
+          "hbar": {
+            "type": "integer",
+            "title": "Hbar",
+            "description": "Number of horizontal bar chart widgets",
+            "default": 0
+          },
+          "pie": {
+            "type": "integer",
+            "title": "Pie",
+            "description": "Number of pie chart widgets",
+            "default": 0
+          },
+          "line": {
+            "type": "integer",
+            "title": "Line",
+            "description": "Number of line chart widgets",
+            "default": 0
+          },
+          "scatter": {
+            "type": "integer",
+            "title": "Scatter",
+            "description": "Number of scatter chart widgets",
+            "default": 0
+          },
+          "list": {
+            "type": "integer",
+            "title": "List",
+            "description": "Number of list widgets",
+            "default": 0
+          },
+          "combo": {
+            "type": "integer",
+            "title": "Combo",
+            "description": "Number of combo chart widgets",
+            "default": 0
+          },
+          "embed": {
+            "type": "integer",
+            "title": "Embed",
+            "description": "Number of embed widgets",
+            "default": 0
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of widgets",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "WidgetCount",
+        "description": "Widget count breakdown by type."
+        }
+      },
+      "securitySchemes": {
+        "KnitAuth": {
+          "type": "http",
+          "scheme": "bearer"
+        }
+      }
+    }
+  }
+}

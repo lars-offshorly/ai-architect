@@ -260,6 +260,61 @@ class DashboardWidgetEntity(BaseModel):
     position: WidgetPosition = Field(description="Grid placement and size.")
 
 
+class DashboardInfo(BaseModel):
+    """Dashboard information in generation response."""
+
+    id: str = Field(description="Generated dashboard ID.")
+    name: str = Field(description="Generated dashboard name.")
+    url: str | None = Field(default=None, description="Generated dashboard URL.")
+
+
+class WidgetCount(BaseModel):
+    """Widget count breakdown by widget type."""
+
+    text: int = Field(default=0)
+    number: int = Field(default=0)
+    bar: int = Field(default=0)
+    hbar: int = Field(default=0)
+    pie: int = Field(default=0)
+    line: int = Field(default=0)
+    scatter: int = Field(default=0)
+    list: int = Field(default=0)
+    combo: int = Field(default=0)
+    embed: int = Field(default=0)
+    total: int = Field(default=0)
+
+
+class DebugPayload(BaseModel):
+    """Debug payload with generated widget details."""
+
+    widgets: list[dict[str, object]] = Field(default_factory=list)
+    total_widgets: int = Field(default=0)
+    generated_at: str = Field(description="ISO timestamp when widgets were generated.")
+    widget_breakdown: WidgetCount
+
+
+class GenerationMetadata(BaseModel):
+    """Metadata describing the generation process."""
+
+    report_length: int = Field(default=0)
+    widgets_extracted: int = Field(default=0)
+    widgets_explicit: int = Field(default=0)
+    data_sources_used: list[str] = Field(default_factory=list)
+    processing_steps: list[str] = Field(default_factory=list)
+
+
+class DashboardGenerateOutput(BaseModel):
+    """OpenAPI-aligned dashboard generate response embedded in stores."""
+
+    success: bool = Field(default=True)
+    dashboard: DashboardInfo | None = None
+    widgets: WidgetCount | None = None
+    execution_time: str = Field(default="0m 1s")
+    errors: list[str] = Field(default_factory=list)
+    debug_payload: DebugPayload | None = None
+    generation_metadata: GenerationMetadata | None = None
+
+
 class KpiStoreItem(BaseModel):
     """A KPI record inside ``stores.kpis``."""
 
@@ -817,6 +872,7 @@ class HrHubStores(BaseModel):
     queues: list[QueueStoreItem] = Field(default_factory=list)
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
+    dashboard_generation_output: DashboardGenerateOutput | None = None
 
 
 class ProjectMgmtStores(BaseModel):
@@ -828,6 +884,7 @@ class ProjectMgmtStores(BaseModel):
     milestones: list[MilestoneStoreItem] = Field(default_factory=list)
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
+    dashboard_generation_output: DashboardGenerateOutput | None = None
     projects: list[ProjectStoreItem] = Field(default_factory=list)
     weaves: list[WeaveStoreItem] = Field(default_factory=list)
 
@@ -858,6 +915,7 @@ class TicketingStores(BaseModel):
     )
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
+    dashboard_generation_output: DashboardGenerateOutput | None = None
 
 
 class GenericStores(BaseModel):
@@ -868,6 +926,7 @@ class GenericStores(BaseModel):
     tickets: list[TicketStoreItem] = Field(default_factory=list)
     kpis: list[KpiStoreItem] = Field(default_factory=list)
     dashboard_widgets: list[DashboardWidgetEntity] = Field(default_factory=list)
+    dashboard_generation_output: DashboardGenerateOutput | None = None
 
 
 # ---------------------------------------------------------------------------
