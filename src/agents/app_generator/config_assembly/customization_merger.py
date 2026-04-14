@@ -12,7 +12,7 @@ Responsibility
 - Deep-merge customisation values into the base config.
 - Return the merged config without mutating either input.
 
-This module is a stub pending full implementation (CORE-AI-015).
+# TODO(CORE-AI-012 Subtask) This module is a stub pending full implementation.
 """
 
 from __future__ import annotations

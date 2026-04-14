@@ -1,114 +1,107 @@
-"""relationship_mapper — infer entity relationships from bundle entity definitions.
+"""relationship_mapper — load entity relationships from bundle_registry.yaml definitions.
 
-Pure functions, no I/O.  Input comes from BundleCatalog via
-``bundle.metadata.entity_definitions``; output is embedded into
-``generation_json["config"]["relationships"]`` during assembly.
+Converts the explicit ``entity_relationships`` list declared under each bundle's
+``metadata`` section in ``bundle_registry.yaml`` into typed ``EntityRelationship``
+records that get embedded in ``generation_json["config"]["relationships"]``.
 
-Relationship type inference rules (applied per ordered pair):
-  - If the *target* entity key ends with a "child" suffix token
-    (request, task, order, record, event, log): source → has_many target
-  - If the *source* entity key ends with a "child" suffix token:
-    source → belongs_to target
-  - Otherwise: source → references target
+This replaces the previous token-suffix inference approach, which produced
+incorrect relationships for indirect chains (e.g. leave_request → department).
+Relationships are now correct by construction — defined once in the YAML and
+loaded here without any inference logic.
 
-These rules cover the common HR / ticketing / project patterns present in
-``bundle_registry.yaml`` without requiring explicit relationship data in the YAML.
+Relationship types supported:
+  has_many    — source contains many of target (e.g. department has_many employee)
+  belongs_to  — source is owned by target    (e.g. employee belongs_to department)
+  references  — loose association             (e.g. project references team_member)
+  many_to_many — bidirectional plural link   (e.g. agent many_to_many ticket)
 """
 
 from __future__ import annotations
 
-import itertools
-
 from core.logging import get_logger
-from domain.models.bundle_metadata import EntityDefinition
+from domain.models.bundle_metadata import EntityDefinition, EntityRelationshipDefinition
 
 from ..schemas import EntityRelationship
 
 logger = get_logger(__name__)
 
-# Token suffixes that indicate a "child / subordinate" entity.
-_CHILD_TOKENS: frozenset[str] = frozenset(
-    {"request", "task", "order", "record", "event", "log"}
-)
 
-
-def _last_token(entity_key: str) -> str:
-    """Return the final underscore-separated token of an entity key."""
-    parts = entity_key.rsplit("_", maxsplit=1)
-    return parts[-1]
-
-
-def _infer_relation_type(source_key: str, target_key: str) -> str:
-    """Return the relation type for the directed edge source → target."""
-    if _last_token(target_key) in _CHILD_TOKENS:
-        return "has_many"
-    if _last_token(source_key) in _CHILD_TOKENS:
-        return "belongs_to"
-    return "references"
-
-
-def _make_label(
-    source_key: str,
-    target_key: str,
-    relation_type: str,
+def _resolve_display(
+    key: str,
     entity_defs: dict[str, EntityDefinition],
-) -> str:
-    """Build a human-readable label for a relationship edge."""
-    src_label = (
-        entity_defs[source_key].label
-        if source_key in entity_defs
-        else source_key.replace("_", " ").title()
-    )
-    tgt_label = (
-        entity_defs[target_key].label
-        if target_key in entity_defs
-        else target_key.replace("_", " ").title()
-    )
-    tgt_plural = (
-        entity_defs[target_key].plural
-        if target_key in entity_defs
-        else tgt_label + "s"
-    )
+) -> tuple[str, str]:
+    """Return ``(label, plural)`` for an entity key.
 
+    Falls back to a title-cased version of the key when it is absent from
+    ``entity_defs``, using ``"<Label>s"`` as the synthetic plural.
+    """
+    if key in entity_defs:
+        defn = entity_defs[key]
+        return defn.label, defn.plural
+    label = key.replace("_", " ").title()
+    return label, label + "s"
+
+
+def _build_label(
+    src_label: str,
+    tgt_label: str,
+    tgt_plural: str,
+    relation_type: str,
+) -> str:
+    """Build a human-readable label from resolved display strings."""
     if relation_type == "has_many":
         return f"{src_label} has many {tgt_plural}"
     if relation_type == "belongs_to":
         return f"{src_label} belongs to {tgt_label}"
+    if relation_type == "many_to_many":
+        return f"{src_label} and {tgt_plural} are many-to-many"
     return f"{src_label} references {tgt_label}"
 
 
 def map_relationships(
     bundle_key: str,
+    entity_relationships: list[EntityRelationshipDefinition],
     entity_definitions: dict[str, EntityDefinition],
 ) -> list[EntityRelationship]:
-    """Produce typed relationship records from a bundle's entity definitions.
+    """Convert explicit YAML relationship definitions into typed records.
 
     Args:
-        bundle_key:         Render key of the bundle (e.g. ``"hr_hub"``).
-                            Reserved for future bundle-specific overrides and
-                            logging; not used in the current inference logic.
-        entity_definitions: Mapping of entity key → EntityDefinition sourced
-                            from ``BundleCatalog.get(bundle_key).metadata``.
+        bundle_key:           Render key of the bundle (e.g. ``"hr_hub"``).
+                              Used for logging only.
+        entity_relationships: Relationship entries parsed from
+                              ``bundle_registry.yaml`` ``metadata.entity_relationships``.
+        entity_definitions:   Entity label/plural map from
+                              ``bundle_registry.yaml`` ``metadata.entity_definitions``.
+                              Used to auto-generate labels when the YAML entry
+                              omits the optional ``label`` field.
 
     Returns:
-        One ``EntityRelationship`` for each ordered pair of distinct entity
-        keys.  Returns an empty list when fewer than two entities are defined.
+        One ``EntityRelationship`` per entry in ``entity_relationships``.
+        Returns an empty list when ``entity_relationships`` is empty.
     """
-    keys = list(entity_definitions.keys())
-    logger.debug("map_relationships: bundle_key=%s entities=%s", bundle_key, keys)
-    if len(keys) < 2:
+    logger.debug(
+        "map_relationships: bundle_key=%s relationships=%d",
+        bundle_key,
+        len(entity_relationships),
+    )
+    if not entity_relationships:
         return []
 
-    relationships: list[EntityRelationship] = []
-    for source_key, target_key in itertools.permutations(keys, 2):
-        relation_type = _infer_relation_type(source_key, target_key)
-        label = _make_label(source_key, target_key, relation_type, entity_definitions)
-        relationships.append(
+    result: list[EntityRelationship] = []
+    for rel_def in entity_relationships:
+        if rel_def.label:
+            label = rel_def.label
+        else:
+            src_label, _ = _resolve_display(rel_def.source, entity_definitions)
+            tgt_label, tgt_plural = _resolve_display(rel_def.target, entity_definitions)
+            label = _build_label(src_label, tgt_label, tgt_plural, rel_def.type)
+
+        result.append(
             EntityRelationship(
-                source_entity=source_key,
-                target_entity=target_key,
-                relation_type=relation_type,
+                source_entity=rel_def.source,
+                target_entity=rel_def.target,
+                relation_type=rel_def.type,
                 label=label,
             )
         )
-    return relationships
+    return result

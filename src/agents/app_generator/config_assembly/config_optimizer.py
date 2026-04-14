@@ -12,7 +12,9 @@ Responsibility
 - Deduplicate repeated entries in list fields (modules, feature_flags, etc.).
 - Return the optimised dict without mutating the input.
 
-This module is a stub pending full implementation (CORE-AI-016).
+# TODO(CORE-AI-016): This module is a stub pending full implementation.
+# (1) Confirm if needed in future development
+# (2) If so, add input validation and implement the optimisation logic as per the above
 """
 
 from __future__ import annotations
