@@ -205,9 +205,7 @@ def _build_dashboard_widgets(
     """Create lightweight dashboard layout widgets for preview and app payloads."""
     primary_store = schema.get("primary") or "items"
     secondary_store = schema.get("secondary") or "projects"
-    kpi_title = (
-        state.kpi_metrics[0].label if state.kpi_metrics else "KPI Snapshot"
-    )
+    kpi_title = state.kpi_metrics[0].label if state.kpi_metrics else "KPI Snapshot"
     return [
         {
             "id": "widget-kpi-overview",
