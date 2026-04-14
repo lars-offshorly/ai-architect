@@ -120,6 +120,10 @@ def _make_payload(
     default_stores = stores or {
         "kpis": kpis,
         "dashboard_widgets": [],
+        "dashboard_generation_output": {
+            "success": True,
+            "execution_time": "0m 1s",
+        },
         "tickets": [{"id": 101, "title": "Test ticket"}],
         "milestones": [{"id": 1, "name": "Phase 1"}],
     }
@@ -390,6 +394,8 @@ class TestDashboard:
         )
         assert flag["isEnabled"] is False
         assert "Dashboard" not in result["generation_json"]["modules"]
+        assert "dashboard_widgets" not in result["dummy_data_json"]["stores"]
+        assert "dashboard_generation_output" not in result["dummy_data_json"]["stores"]
 
     def test_add_dashboard(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(

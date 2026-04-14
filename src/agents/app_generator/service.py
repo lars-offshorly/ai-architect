@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import cast
+from datetime import datetime, timezone
+from typing import Any, cast
 
 from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger, get_session_logger
@@ -104,11 +105,13 @@ class AppGeneratorService:
         if not isinstance(stores, dict):
             return normalized
 
+        normalized_stores = dict(stores)
+        AppGeneratorService._ensure_dashboard_generation_output(normalized_stores)
         kpis = stores.get("kpis")
         if not isinstance(kpis, list):
+            normalized["stores"] = normalized_stores
             return normalized
 
-        normalized_stores = dict(stores)
         normalized_kpis: list[object] = []
         for idx, item in enumerate(kpis, start=1):
             if not isinstance(item, dict):
@@ -123,3 +126,82 @@ class AppGeneratorService:
         normalized_stores["kpis"] = normalized_kpis
         normalized["stores"] = normalized_stores
         return normalized
+
+    @staticmethod
+    def _ensure_dashboard_generation_output(stores: dict[str, object]) -> None:
+        """Backfill OpenAPI-aligned dashboard output when callers omit it."""
+        if "dashboard_generation_output" in stores:
+            return
+
+        widgets_raw = stores.get("dashboard_widgets")
+        if not isinstance(widgets_raw, list):
+            widgets_raw = []
+
+        debug_widgets: list[dict[str, object]] = []
+        for widget in widgets_raw:
+            if not isinstance(widget, dict):
+                continue
+            widget_type = str(widget.get("type", "number"))
+            title = str(widget.get("title", "Widget"))
+            if widget_type == "number":
+                debug_widgets.append({"type": "number", "name": title, "value": "0"})
+            elif widget_type == "list":
+                debug_widgets.append(
+                    {
+                        "type": "list",
+                        "name": title,
+                        "data_config": {"module": "KPI", "data_source": "kpis"},
+                    }
+                )
+            else:
+                debug_widgets.append(
+                    {
+                        "type": "bar",
+                        "title": title,
+                        "data_config": {
+                            "module": "Operations",
+                            "data_source": "items",
+                            "group_by": ["status"],
+                            "aggregation": "count",
+                        },
+                    }
+                )
+
+        type_counts: dict[str, int] = {
+            "text": 0,
+            "number": 0,
+            "bar": 0,
+            "hbar": 0,
+            "pie": 0,
+            "line": 0,
+            "scatter": 0,
+            "list": 0,
+            "combo": 0,
+            "embed": 0,
+        }
+        for widget in debug_widgets:
+            widget_type = widget.get("type")
+            if isinstance(widget_type, str) and widget_type in type_counts:
+                type_counts[widget_type] += 1
+        widget_count: dict[str, Any] = {**type_counts, "total": len(debug_widgets)}
+
+        stores["dashboard_generation_output"] = {
+            "success": True,
+            "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
+            "widgets": widget_count,
+            "execution_time": "0m 1s",
+            "errors": [],
+            "debug_payload": {
+                "widgets": debug_widgets,
+                "total_widgets": len(debug_widgets),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "widget_breakdown": widget_count,
+            },
+            "generation_metadata": {
+                "report_length": 0,
+                "widgets_extracted": len(widgets_raw),
+                "widgets_explicit": len(widgets_raw),
+                "data_sources_used": ["kpis"],
+                "processing_steps": ["normalize_dummy_data"],
+            },
+        }

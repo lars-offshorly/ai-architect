@@ -54,7 +54,7 @@ _MODULE_CASCADE: dict[str, dict] = {
     },
     "dashboard-module": {
         "source_service": None,
-        "store_keys": ["dashboard_widgets"],
+        "store_keys": ["dashboard_widgets", "dashboard_generation_output"],
     },
     "kpi-module": {
         "source_service": None,
@@ -247,6 +247,7 @@ def _remove_dashboard(payload: dict) -> None:
     dummy = payload["dummy_data_json"]
     if "stores" in dummy:
         dummy["stores"].pop("dashboard_widgets", None)
+        dummy["stores"].pop("dashboard_generation_output", None)
 
     logger.info("Removed dashboard")
 

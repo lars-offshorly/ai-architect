@@ -224,3 +224,70 @@ def test_assemble_raises_on_dummy_data_bundle_key_mismatch() -> None:
                 "session_id": "test-session",
             },
         )
+
+
+def test_assemble_backfills_dashboard_generation_output() -> None:
+    svc = AppGeneratorService(
+        template_repo=_FakeTemplateRepo(
+            {
+                "field_service": {
+                    "schema_version": "1.0",
+                    "bundle_key": "ticketing",
+                    "config": {
+                        "work_order_statuses": ["open"],
+                        "work_order_priorities": ["high"],
+                        "service_types": ["incident"],
+                        "kpi_definitions": [
+                            {
+                                "key": "avg_resolution_time",
+                                "label": "Average Resolution Time",
+                                "unit": "duration",
+                            }
+                        ],
+                    },
+                }
+            }
+        ),
+        catalog=_FakeCatalog(
+            {
+                "ticketing": _FakeBundle(
+                    template_dir="field_service",
+                    render_key="ticketing",
+                    default_modules=["tickets", "dashboard", "kpi"],
+                )
+            }
+        ),
+    )
+
+    payload = svc.assemble(
+        session_id="test-session",
+        bundle_key="ticketing",
+        display_name="Ticketing Tool",
+        dummy_data={
+            "bundle_key": "ticketing",
+            "stores": {
+                "kpis": [
+                    {
+                        "key": "avg_resolution_time",
+                        "label": "Avg. Resolution Time",
+                        "type": "duration",
+                        "source_service": "tickets",
+                        "sample_value": 3.2,
+                    }
+                ],
+                "dashboard_widgets": [
+                    {
+                        "id": "widget-1",
+                        "type": "number",
+                        "title": "Resolution Time",
+                        "position": {"row": 0, "col": 0, "width": 2, "height": 1},
+                    }
+                ],
+            },
+            "session_id": "test-session",
+        },
+    )
+
+    stores = payload.dummy_data_json.get("stores", {})
+    assert isinstance(stores, dict)
+    assert "dashboard_generation_output" in stores

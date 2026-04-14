@@ -94,6 +94,10 @@ def _make_preview_payload(session_id: str = "sess-1") -> dict:
                     }
                 ],
                 "dashboard_widgets": [],
+                "dashboard_generation_output": {
+                    "success": True,
+                    "execution_time": "0m 1s",
+                },
             },
         },
         "warning": None,
