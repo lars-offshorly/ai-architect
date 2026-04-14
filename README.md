@@ -5,38 +5,211 @@ AI-powered onboarding conversation pipeline built with FastAPI.
 ## Prerequisites
 
 - Python `>=3.10,<3.12`
-- Poetry (2.x recommended)
+- Poetry `2.x` (recommended)
 
-## Setup (Poetry)
+## Quick Start
 
-1. Install dependencies (including dev tools):
+1. Install dependencies:
+
    ```bash
    poetry install --with dev
    ```
-2. Create env file:
+
+2. Create your local environment file:
+
    ```bash
    cp .env.example .env
    ```
-3. Update `.env` with valid values for the services you use (at minimum set `OPENAI_API_KEY`; set Pinecone/DB/JWT values as needed).
 
-## Run the API
+3. Update `.env` with required values (at minimum `OPENAI_API_KEY`, `DATABASE_URL`, `JWT_SECRET`).
 
-Use Makefile targets (Poetry-backed):
+4. Run the API:
 
-```bash
-make dev
+   ```bash
+   PYTHONPATH=src:. poetry run python src/main.py # or `make dev`
+   ```
+
+Sample  FE (WIP): `http://0.0.0.0:8000/`
+API docs: `http://0.0.0.0:8000/docs`
+
+
+
+## Authentication
+
+All endpoints except `/health`, `/docs`, `/openapi.json`, and `/redoc` require a JWT bearer token:
+
+```http
+Authorization: Bearer <jwt_token>
 ```
 
-Or production mode:
+JWT requirements:
+
+- Algorithm: `HS256` (configurable via `JWT_ALGORITHM`)
+- Secret: `JWT_SECRET`
+- Must include an identity claim: `user_id`, `sub`, or `id`
+- `exp` is enforced when present
+
+## Environment Variables
+
+| Variable | Default | Required | Description |
+|---|---|---|---|
+| `OPENAI_API_KEY` | — | Yes | OpenAI API key |
+| `JWT_SECRET` | — | Yes | Secret used to sign and verify JWT tokens |
+| `DATABASE_URL` | — | Yes | PostgreSQL connection string |
+| `OPENAI_MODEL` | `gpt-4.1` | No | Model used for AI agents |
+| `CLASSIFIER_TEMPERATURE` | `0.0` | No | Temperature for bundle classifier |
+| `CONVERSATIONAL_TEMPERATURE` | `0.3` | No | Temperature for conversational replies |
+| `ASSEMBLER_TEMPERATURE` | `0.2` | No | Temperature for payload assembler |
+| `CONFIDENCE_PROCEED_THRESHOLD` | `0.75` | No | Min confidence to proceed without clarification |
+| `CONFIDENCE_SUGGEST_THRESHOLD` | `0.50` | No | Min confidence to suggest a bundle |
+| `SCORE_GAP_MINIMUM` | `0.15` | No | Required margin between top two candidates |
+| `MAX_CLARIFICATION_TURNS` | `3` | No | Max turns before forcing a decision |
+| `TOP_K_BUNDLES` | `3` | No | Number of bundle candidates to rank |
+| `LOG_LEVEL` | `INFO` | No | Application log level |
+| `RATE_LIMIT_PER_MINUTE` | `60` | No | Per-IP request rate limit |
+| `JWT_ALGORITHM` | `HS256` | No | JWT signing algorithm |
+| `ENABLE_MOCK_ENDPOINTS` | `false` | No | Mounts mock endpoints at `/mock/**` |
+| `SENTRY_DSN` | — | No | Sentry error tracking DSN |
+| `LANGCHAIN_TRACING_V2` | `false` | No | Enable LangSmith tracing |
+| `LANGCHAIN_API_KEY` | — | No | LangSmith API key |
+| `LANGCHAIN_PROJECT` | `ai-architect` | No | LangSmith project name |
+
+## API Endpoints
+
+Interactive docs: `http://localhost:8000/docs`
+
+### Health
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/health` | None | Returns `{"status": "ok", "version": "0.1.0"}` |
+
+### Sessions
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/sessions` | Start a new onboarding session |
+| `POST` | `/sessions/{session_id}/reply` | Continue a session with a user reply |
+| `POST` | `/sessions/{session_id}/confirm` | Confirm or reject the proposed bundle |
+| `POST` | `/sessions/{session_id}/preview` | Generate full preview (requires confirmation) |
+| `POST` | `/sessions/{session_id}/preview/early` | Generate early preview without confirmation |
+| `POST` | `/sessions/{session_id}/preview/edit` | Apply NL edit instruction to existing preview |
+| `POST` | `/sessions/{session_id}/app` | Generate final app payload |
+
+### Bundles
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/bundles/{bundle_key}/metadata` | Get metadata for a bundle key |
+
+### Mock Endpoints
+
+Requires `ENABLE_MOCK_ENDPOINTS=true`.
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/mock/{bundle_key}` | Full mock payload |
+| `GET` | `/mock/{bundle_key}/stores` | Dummy store seed data |
+| `GET` | `/mock/{bundle_key}/flags` | Feature flag snapshot |
+
+### Session Status Values
+
+| Status | Meaning |
+|---|---|
+| `awaiting_input` | AI is asking a clarification question |
+| `in_progress` | Conversation ongoing, no bundle locked yet |
+| `pending_confirmation` | Bundle proposed, waiting for confirmation |
+| `ready_for_preview` | Bundle confirmed and ready for `/preview` |
+| `complete` | Flow complete |
+
+## Running and Tests via Postman
 
 ```bash
-make run
+make dev      # development (auto-reload)
+make run      # production-like run (no reload)
 ```
 
-Default server: `http://0.0.0.0:8000`  
-FastAPI docs: `http://0.0.0.0:8000/docs`
+Default server: `http://0.0.0.0:8000`
 
-## Test
+### Testing the AI Pipeline (Real Flow)
+
+  1. Start a Conversational Session
+   * Endpoint: POST {{baseUrl}}/sessions
+   * Body: { "message": "I want an app for IT support tickets." }
+   * Postman Tip: In the Tests tab, add:
+   
+   ```javascript
+   pm.collectionVariables.set("sessionId", pm.response.json().session_id);
+   ```
+
+  2. Drive the Conversation (Classification)
+   * Endpoint: 
+   ```
+   POST {{baseUrl}}/sessions/{{sessionId}}/reply
+   ```
+   * Body: 
+   ```
+   { "message": "We need High, Medium, and Low priorities." }
+   ```
+   * Goal: Repeat, changing the message until the response status is pending_confirmation.
+
+  3. Confirm the Recommended Bundle
+   * Endpoint: 
+   ```
+   POST {{baseUrl}}/sessions/{{sessionId}}/confirm
+   ```
+   
+   * Body: 
+   ```
+   { "confirmed": true }
+   ```
+
+  4. Generate AI Preview
+   * Endpoint: 
+   ```
+   POST {{baseUrl}}/sessions/{{sessionId}}/preview
+   ```
+   * Action: Copy the dummy_data_json object from the response. This is the personalized data generated by the AI.
+
+  5. Finalize App Packaging (Delivery)
+   * Endpoint: 
+   ```
+   POST {{baseUrl}}/sessions/{{sessionId}}/app
+   ```
+   * Body: 
+   ```
+      { "dummy_data_json": <Paste the object from Step 4 here> }
+   ```
+   * Outcome: You will receive the production-grade app.json merged with your AI-generated data, fully validated against strict Pydantic schemas.
+
+### Testing Mock Endpoints (Static/Dev Flow)
+
+  Use these to test frontend rendering without running the expensive AI pipeline.
+
+  1. Full Mock Payload (With Overrides)
+   * Endpoint: POST {{baseUrl}}/mock/hr_hub
+   * Body:
+   ```
+         {
+         "display_name": "My Custom HR App",
+         "dummy_data_json": {
+         "bundle_key": "hr_hub",
+         "stores": { "employees": [{ "id": 1, "firstName": "Lars" }] }
+         }}
+   ```
+   * Note: All body fields are optional. Sending an empty body {} will return the default template data.
+
+  2. Mock Stores (Data Only)
+   * Endpoint: GET {{baseUrl}}/mock/ticketing/stores
+   * Outcome: Returns the raw dummy_data.json from the field_service directory.
+
+  3. Mock Flags (Config Only)
+   * Endpoint: GET {{baseUrl}}/mock/project_mgmt/flags
+   * Outcome: Returns the feature flags and permission sets for Project Management.
+
+  ---
+
+## Unit and integration Tests
 
 ```bash
 make test
@@ -44,90 +217,38 @@ make test-unit
 make test-integration
 ```
 
-## Makefile Walkthrough
-
-Use `make help` to see all targets. The most useful ones are grouped below.
-
-### 1. Environment and app runtime
-
-- `make install`: install project + dev dependencies with Poetry.
-- `make dev`: run FastAPI with auto-reload for local development.
-- `make run`: run FastAPI in non-reload mode.
-
-### 2. Day-to-day local checks (developer convenience)
-
-- `make test`: run all tests (continues even if tests fail).
-- `make test-unit`: run `tests/unit` only (continues on failures).
-- `make test-integration`: run `tests/integration` only (continues on failures).
-- `make lint`: run full lint stack (`black`, `ruff`, `flake8`, `mypy`, `pylint`, `vulture`).
-- `make format`: auto-format code with `black` + `ruff format`.
-- `make lint-file ...`: lint only specific files/folders.
-- `make lint-staged`: lint staged Python files only.
-- `make lint-mr`: lint Python files changed versus `origin/dev` plus staged changes.
-- `make check-mr`: convenience command for tests + MR-style linting (tests are non-blocking).
-
-These are optimized for fast iteration and may not mirror CI pass/fail behavior exactly.
-
-### 3. CI preflight checks (pipeline-aligned)
-
-- `make ci-preflight`: alias for commit-style preflight.
-- `make ci-preflight-commit`: mirrors commit pipeline checks:
-  - test run with CI ignore list and JUnit output (`test-results/junit.xml`)
-  - coverage run with CI ignore list (`coverage.xml`)
-  - full `make lint`
-  - security scan via `make ci-security` (non-blocking, same as CI `allow_failure`)
-- `make ci-preflight-mr`: same as above but uses `make lint-mr` to match MR lint behavior.
-- `make ci-security`: exports requirements and runs `safety check` (non-blocking).
-
-If you want to know "will this pass pipeline before I push?", run:
-
-```bash
-make ci-preflight
-```
-
-For merge-request style lint scope, run:
-
-```bash
-make ci-preflight-mr
-```
-
-## Lint and Format
-
-Run full lint pipeline (`black + ruff + flake8 + mypy + pylint + vulture`):
+## Linting and Formatting
 
 ```bash
 make lint
-```
-
-Run formatter targets:
-
-```bash
 make format
 ```
 
-Lint specific files/directories:
+Targeted lint commands:
 
 ```bash
 make lint-file src/agents/interpreter/service.py tests/unit/interpreter/test_extractor.py
-# or
-make lint-file src/agents/interpreter/
-```
-
-Lint staged files only:
-
-```bash
 make lint-staged
-```
-
-Lint files changed against `dev` branch:
-
-```bash
 make lint-mr
 make check-mr
-make ci-preflight-mr
 ```
 
-## Utility Commands
+## CI Preflight
+
+Use these to approximate pipeline checks locally:
+
+```bash
+make ci-preflight
+make ci-preflight-mr
+make ci-security
+```
+
+Notes:
+
+- `make ci-preflight-commit` mirrors commit pipeline behavior.
+- Security checks are non-blocking in the same spirit as CI `allow_failure`.
+
+## Utilities
 
 ```bash
 make validate-templates
@@ -135,104 +256,12 @@ make generate-template BUNDLE=my_bundle
 make seed BUNDLE=hr_hub
 ```
 
-## Notes
+## Dependency Management Note
 
-- `requirements.txt` is intentionally informational only; dependency management is handled by Poetry via `pyproject.toml`.
-- If you need pip-compatible output, export from Poetry:
-  ```bash
-  poetry export -f requirements.txt --output requirements.lock.txt --without-hashes --with dev
-  ```
+`requirements.txt` is informational. Dependency management is handled by Poetry via `pyproject.toml`.
 
-# AI-Architect
+To export pip-compatible requirements:
 
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+```bash
+poetry export -f requirements.txt --output requirements.lock.txt --without-hashes --with dev
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/sourcefit/ai-dev/ai-architect.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-* [Set up project integrations](https://gitlab.com/sourcefit/ai-dev/ai-architect/-/settings/integrations)
-
-## Collaborate with your team
-
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.

@@ -108,7 +108,9 @@ class _PersonalizationSignalsOutput(BaseModel):
     department_names: list[str] = Field(..., description="Department names")
     branch_names: list[str] = Field(..., description="Office branch names")
     custom_labels: list[str] = Field(..., description="Other custom labels")
-    terminology: dict[str, str] = Field(..., description="Custom terminology mapping")
+    terminology: dict[str, str] = Field(
+        default_factory=dict, description="Custom terminology mapping"
+    )
 
 
 class _ExtractionOutput(BaseModel):
@@ -141,9 +143,11 @@ class Extractor:
             summary=summary,
             history=history or [],
         )
-        # Use method="function_calling" if schema issues persist, but first try
-        # making the Pydantic schema strictly required.
-        structured = self._model.with_structured_output(_ExtractionOutput)
+        # Use method="function_calling" to avoid schema validation issues with
+        # dict types in OpenAI's structured output feature.
+        structured = self._model.with_structured_output(
+            _ExtractionOutput, method="function_calling"
+        )
         try:
             result = await structured.ainvoke(
                 [

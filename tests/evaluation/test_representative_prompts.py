@@ -269,8 +269,8 @@ async def test_project_vs_construction_ambiguity(
                 matched_signals=["project", "milestone"],
             ),
             BundleSuggestion(
-                bundle_key="construction_real_estate",
-                display_name="Construction & Real Estate",
+                bundle_key="construction",
+                display_name="Construction",
                 confidence=0.60,
                 reasoning="Site work",
                 matched_signals=["site"],

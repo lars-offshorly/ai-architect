@@ -127,7 +127,14 @@ def _make_payload(
     default_config = config or {
         "permission_services": ["projects", "kpi"],
         "landing_pages": [],
-        "kpi_definitions": default_kpis,
+        "kpi_definitions": [
+            {
+                "key": k,
+                "label": k.replace("_", " ").title(),
+                "unit": "percentage",
+            }
+            for k in default_kpis
+        ],
     }
 
     return {
@@ -155,6 +162,19 @@ def _make_payload(
 
 def _action(action_type: EditActionType, target: str | None = None) -> EditAction:
     return EditAction(action_type=action_type, target=target, raw_instruction="test")
+
+
+def _config_kpi_keys(payload: dict[str, Any]) -> list[str]:
+    definitions = payload["generation_json"]["config"].get("kpi_definitions", [])
+    keys: list[str] = []
+    if not isinstance(definitions, list):
+        return keys
+    for item in definitions:
+        if isinstance(item, str):
+            keys.append(item)
+        elif isinstance(item, dict) and isinstance(item.get("key"), str):
+            keys.append(item["key"])
+    return keys
 
 
 # ---------------------------------------------------------------------------
@@ -290,10 +310,7 @@ class TestRemoveKpi:
         result, _ = apply_edit(
             payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
         )
-        assert (
-            "capacity_utilization"
-            not in result["generation_json"]["config"]["kpi_definitions"]
-        )
+        assert "capacity_utilization" not in _config_kpi_keys(result)
 
     def test_remove_nonexistent_kpi_is_noop(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(kpi_keys=["capacity_utilization"])
@@ -302,6 +319,19 @@ class TestRemoveKpi:
         )
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_keys
+
+    def test_remove_kpi_from_legacy_string_config(self, catalog: BundleCatalog) -> None:
+        payload = _make_payload(
+            config={
+                "permission_services": ["projects", "kpi"],
+                "landing_pages": [],
+                "kpi_definitions": ["capacity_utilization", "active_work_items"],
+            }
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
+        )
+        assert "capacity_utilization" not in _config_kpi_keys(result)
 
 
 # ---------------------------------------------------------------------------
@@ -323,9 +353,7 @@ class TestAddKpi:
         result, _ = apply_edit(
             payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
         )
-        assert (
-            "sla_compliance" in result["generation_json"]["config"]["kpi_definitions"]
-        )
+        assert "sla_compliance" in _config_kpi_keys(result)
 
     def test_add_unknown_kpi_returns_warning(self, catalog: BundleCatalog) -> None:
         payload = _make_payload()

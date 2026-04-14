@@ -108,7 +108,9 @@ async def personalise_template(
     prompt = _build_user_prompt(input_data, merged_content, generated_at)
     settings = get_settings()
     model = get_openai_chat_model(temperature=settings.ASSEMBLER_TEMPERATURE)
-    structured = model.with_structured_output(PersonalisationOutput)
+    structured = model.with_structured_output(
+        PersonalisationOutput, method="function_calling"
+    )
     result = await structured.ainvoke([HumanMessage(content=prompt)])
     if isinstance(result, PersonalisationOutput):
         return result

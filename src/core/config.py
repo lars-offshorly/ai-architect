@@ -10,8 +10,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4.1"
+    OPENAI_MODEL: str = "gpt-5-mini"
 
+    PORT: int = Field(default=8000, ge=1, le=65535)
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
@@ -33,6 +34,8 @@ class Settings(BaseSettings):
     JWT_SECRET: str = ""
     JWT_ALGORITHM: str = "HS256"
     RATE_LIMIT_PER_MINUTE: int = 60
+
+    ENABLE_MOCK_ENDPOINTS: bool = False
 
     SENTRY_DSN: str = ""
     LANGCHAIN_TRACING_V2: bool = False

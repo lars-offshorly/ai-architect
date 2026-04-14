@@ -97,6 +97,17 @@ def _set_flag(flags: list[dict], flag_name: str, enabled: bool) -> None:
             return
 
 
+def _kpi_definition_key(item: object) -> str | None:
+    """Return KPI key from a config.kpi_definitions item (dict or legacy str)."""
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        key = item.get("key")
+        if isinstance(key, str) and key:
+            return key
+    return None
+
+
 def _remove_module(payload: dict, flag_name: str) -> None:
     """Remove a module: disable flag, remove from modules[], cascade."""
     gen = payload["generation_json"]
@@ -161,9 +172,11 @@ def _remove_kpi(payload: dict, kpi_key: str) -> None:
 
     # Remove from config.kpi_definitions
     config = gen.get("config", {})
-    if "kpi_definitions" in config:
+    if isinstance(config.get("kpi_definitions"), list):
         config["kpi_definitions"] = [
-            k for k in config["kpi_definitions"] if k != kpi_key
+            item
+            for item in config["kpi_definitions"]
+            if _kpi_definition_key(item) != kpi_key
         ]
 
     logger.info("Removed KPI %s", kpi_key)
@@ -201,10 +214,22 @@ def _add_kpi(payload: dict, kpi_key: str, catalog: BundleCatalog) -> str | None:
 
     # Add to config.kpi_definitions
     config = gen.get("config", {})
-    if "kpi_definitions" not in config:
+    if not isinstance(config.get("kpi_definitions"), list):
         config["kpi_definitions"] = []
-    if kpi_key not in config["kpi_definitions"]:
-        config["kpi_definitions"].append(kpi_key)
+
+    existing_keys = {
+        key
+        for key in (_kpi_definition_key(item) for item in config["kpi_definitions"])
+        if key is not None
+    }
+    if kpi_key not in existing_keys:
+        config["kpi_definitions"].append(
+            {
+                "key": catalog_entry["key"],
+                "label": catalog_entry["label"],
+                "unit": catalog_entry["type"],
+            }
+        )
     gen["config"] = config
 
     logger.info("Added KPI %s", kpi_key)

@@ -88,13 +88,6 @@ _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
 
 
 _BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
-    "hr_management": [
-        "ticket_categories",
-        "default_statuses",
-        "default_priorities",
-        "queue_names",
-        "kpi_definitions",
-    ],
     "hr_hub": [
         "ticket_categories",
         "default_statuses",
@@ -122,42 +115,41 @@ _BUNDLE_CONFIG_FALLBACK_FIELDS: list[str] = [
 ]
 
 
-def _build_config(
-    registry_key: str,
-    permission_services: list[str],
-    landing_pages: list[dict],
-    kpi_metrics: list,
-    sample_tickets: list[dict],
-    sample_employees: list[dict],
-) -> dict[str, object]:
+def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, object]:
     """Build the per-bundle config dict for generation_json."""
     config: dict[str, object] = {
-        "permission_services": permission_services,
-        "landing_pages": landing_pages,
+        "permission_services": state.permission_services,
+        "landing_pages": state.landing_pages,
     }
 
     # Derive sample values from already-generated data
     ticket_statuses = list(
-        dict.fromkeys(t.get("status", "") for t in sample_tickets if t.get("status"))
+        dict.fromkeys(
+            t.get("status", "") for t in state.sample_tickets if t.get("status")
+        )
     )
     ticket_types = list(
-        dict.fromkeys(t.get("type", "") for t in sample_tickets if t.get("type"))
+        dict.fromkeys(t.get("type", "") for t in state.sample_tickets if t.get("type"))
     )
     ticket_priorities = list(
         dict.fromkeys(
-            t.get("priority", "") for t in sample_tickets if t.get("priority")
+            t.get("priority", "") for t in state.sample_tickets if t.get("priority")
         )
     )
     dept_names = list(
         dict.fromkeys(
-            e.get("department", "") for e in sample_employees if e.get("department")
+            e.get("department", "")
+            for e in state.sample_employees
+            if e.get("department")
         )
     )
 
     fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
 
     _field_values: dict[str, object] = {
-        "kpi_definitions": [k.key for k in kpi_metrics],
+        "kpi_definitions": [
+            {"key": k.key, "label": k.label, "unit": k.type} for k in state.kpi_metrics
+        ],
         # ticketing bundle
         "service_types": ticket_types,
         "work_order_statuses": ticket_statuses,
@@ -184,7 +176,12 @@ def _build_config(
 def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     """Build the stores dict with frontend-correct key names for this bundle."""
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
-    stores: dict = {"kpis": state.kpi_metrics, "dashboard_widgets": []}
+    stores: dict = {
+        "kpis": [
+            {"id": i + 1, **m.model_dump()} for i, m in enumerate(state.kpi_metrics)
+        ],
+        "dashboard_widgets": [],
+    }
     if schema["primary"]:
         stores[schema["primary"]] = state.sample_tickets
     if schema["secondary"]:
@@ -228,23 +225,16 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     generation_json = GenerationJson(
         schema_version="1.0",
-        bundle_key=state.bundle_key,
+        bundle_key=registry_key,
         feature_flags=flag_list,
         modules=modules,
-        config=_build_config(
-            registry_key,
-            state.permission_services,
-            state.landing_pages,
-            state.kpi_metrics,
-            state.sample_tickets,
-            state.sample_employees,
-        ),
+        config=_build_config(registry_key, state),
     )
 
     stores = _build_stores(registry_key, state)
 
     dummy_data_json = DummyDataJson(
-        bundle_key=state.bundle_key,
+        bundle_key=registry_key,
         session_id=state.session_id,
         company_name=company_name,
         stores=stores,

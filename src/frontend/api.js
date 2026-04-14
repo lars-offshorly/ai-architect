@@ -19,9 +19,22 @@ export async function confirmSession(sessionId, confirmed = true) {
   });
 }
 
+export async function generatePreview(sessionId) {
+  return requestJson(`/sessions/${sessionId}/preview`, {
+    method: 'POST',
+  });
+}
+
 export async function generateEarlyPreview(sessionId) {
   return requestJson(`/sessions/${sessionId}/preview/early`, {
     method: 'POST',
+  });
+}
+
+export async function generateApp(sessionId, dummyDataJson) {
+  return requestJson(`/sessions/${sessionId}/app`, {
+    method: 'POST',
+    body: JSON.stringify({ dummy_data_json: dummyDataJson }),
   });
 }
 

@@ -69,7 +69,9 @@ class Classifier:
         prompt = CLASSIFICATION_SYSTEM_PROMPT.format(
             catalog_context=self._catalog_context
         )
-        structured = self._model.with_structured_output(_ClassificationOutput)
+        structured = self._model.with_structured_output(
+            _ClassificationOutput, method="function_calling"
+        )
         try:
             result = await structured.ainvoke(
                 [
