@@ -180,14 +180,18 @@ class AppGeneratorService:
             "embed": 0,
         }
         for widget in debug_widgets:
-            widget_type = widget.get("type")
-            if isinstance(widget_type, str) and widget_type in type_counts:
-                type_counts[widget_type] += 1
+            widget_type_value = widget.get("type")
+            if isinstance(widget_type_value, str) and widget_type_value in type_counts:
+                type_counts[widget_type_value] += 1
         widget_count: dict[str, Any] = {**type_counts, "total": len(debug_widgets)}
 
         stores["dashboard_generation_output"] = {
             "success": True,
-            "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
+            "dashboard": {
+                "id": "dash-preview",
+                "name": "Preview Dashboard",
+                "url": None,
+            },
             "widgets": widget_count,
             "execution_time": "0m 1s",
             "errors": [],

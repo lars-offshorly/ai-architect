@@ -273,7 +273,7 @@ class WidgetCount(BaseModel):
 
     text: int = Field(default=0)
     number: int = Field(default=0)
-    bar: int = Field(default=0)
+    bar: int = Field(default=0)  # pylint: disable=disallowed-name
     hbar: int = Field(default=0)
     pie: int = Field(default=0)
     line: int = Field(default=0)
