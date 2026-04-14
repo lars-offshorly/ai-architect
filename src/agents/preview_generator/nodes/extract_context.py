@@ -517,7 +517,7 @@ def extract_user_context(  # pylint: disable=too-many-locals
         return {"user_context": UserContext()}
 
     # --- Tier 2: no ExtractionResult, but history available ---
-    # Phase 2: call LLM extraction here. For now: keyword-only path.
+    # TODO: Phase 2 — replace with LLM extraction call; keep keyword scan as fallback.
     ctx = _keyword_fill(UserContext(), history, catalog)
 
     if preselected_intent:
