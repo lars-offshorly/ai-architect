@@ -145,22 +145,47 @@ class PreviewFlow:
         if response is None:
             return
 
-        widgets: list = (
-            response.get("debug_payload", {}).get("widgets", [])
-        )
-        dashboard_info: dict = response.get("dashboard", {})
+        raw_widgets = response.get("debug_payload", {}).get("widgets", [])
+        widgets = self._to_internal_widgets(raw_widgets)
 
         stores: dict = dummy_data_json.setdefault("stores", {})
+        stores["dashboard_generation_output"] = response
         stores["dashboard_widgets"] = widgets
-        if dashboard_info:
-            stores["dashboard_meta"] = {
-                "id": dashboard_info.get("id"),
-                "name": dashboard_info.get("name"),
-                "url": dashboard_info.get("url"),
-            }
 
         logger.info(
             "session=%s — dashboard enrichment complete: %d widgets injected",
             session_id,
             len(widgets),
         )
+
+    @staticmethod
+    def _to_internal_widgets(raw_widgets: Any) -> list[dict[str, object]]:
+        """Map external dashboard debug widgets to internal widget layout shape."""
+        if not isinstance(raw_widgets, list):
+            return []
+
+        widgets: list[dict[str, object]] = []
+        for idx, raw in enumerate(raw_widgets, start=1):
+            if not isinstance(raw, dict):
+                continue
+
+            widget_type = raw.get("type")
+            if not isinstance(widget_type, str) or not widget_type:
+                widget_type = "number"
+
+            title = raw.get("title") or raw.get("name")
+            if not isinstance(title, str) or not title.strip():
+                title = f"Widget {idx}"
+
+            row = (idx - 1) // 2
+            col = ((idx - 1) % 2) * 2
+            widgets.append(
+                {
+                    "id": f"widget-generated-{idx:02d}",
+                    "type": widget_type,
+                    "title": title,
+                    "position": {"row": row, "col": col, "width": 2, "height": 1},
+                }
+            )
+
+        return widgets
