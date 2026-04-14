@@ -42,11 +42,15 @@ class AppGeneratorService:
             template_dir = bundle_key
             render_key = bundle_key
             entity_definitions = {}
+            entity_relationships = []
         else:
             template_dir = bundle.template_dir
             render_key = bundle.render_key
             entity_definitions = (
                 bundle.metadata.entity_definitions if bundle.metadata else {}
+            )
+            entity_relationships = (
+                bundle.metadata.entity_relationships if bundle.metadata else []
             )
 
         # Load from the correct directory resolved from the catalog
@@ -67,8 +71,8 @@ class AppGeneratorService:
         validate_dummy_data_json(normalized_dummy_data, render_key)
 
         # 1a. Inject relationship map into config
-        if entity_definitions:
-            relationships = map_relationships(render_key, entity_definitions)
+        if entity_relationships:
+            relationships = map_relationships(render_key, entity_relationships, entity_definitions)
             config = generation_json.get("config")
             if isinstance(config, dict):
                 config["relationships"] = [r.model_dump() for r in relationships]
@@ -97,7 +101,7 @@ class AppGeneratorService:
             modules=list(cast(list[object], generation_json.get("modules", []))),
             generation_json=generation_json,
             dummy_data_json=normalized_dummy_data,
-            has_entity_definitions=bool(entity_definitions),
+            has_entity_relationships=bool(entity_relationships),
         )
         errors = contract.validate_contract()
         if errors:
