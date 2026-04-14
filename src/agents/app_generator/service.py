@@ -46,11 +46,12 @@ class AppGeneratorService:
         else:
             template_dir = bundle.template_dir
             render_key = bundle.render_key
+            metadata = getattr(bundle, "metadata", None)
             entity_definitions = (
-                bundle.metadata.entity_definitions if bundle.metadata else {}
+                metadata.entity_definitions if metadata is not None else {}
             )
             entity_relationships = (
-                bundle.metadata.entity_relationships if bundle.metadata else []
+                metadata.entity_relationships if metadata is not None else []
             )
 
         # Load from the correct directory resolved from the catalog
