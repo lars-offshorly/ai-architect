@@ -1,0 +1,112 @@
+{
+    "dashboard_name": "HR Management Dashboard Template",
+    "source": "analytics",
+    "report": "# HR Management Dashboard\n\n## Overview\nThis dashboard provides a comprehensive view of human resource metrics, including workforce distribution, hiring trends, and employee diversity. The data aims to help management optimize staffing and improve organizational health.\n\n## Key Metrics\n- Total Employees: 532\n- Average Salary: $72,500\n- Retention Rate: 92%\n\n## Insights\n- Diversity remains high with a balanced gender distribution.\n- Engineering and Sales are the largest departments, accounting for 60% of the workforce.\n- Hiring has been steady over the past quarter with a focus on technical roles.",
+    "widgets": [
+        {
+            "type": "number",
+            "name": "Total Employees",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Active Employees",
+                        "data_source": "employees",
+                        "module": "HR Hub",
+                        "operation": "count",
+                        "filters": {
+                            "employmentStatus": "Active"
+                        }
+                    }
+                ],
+                "expected_value": "532"
+            }
+        },
+        {
+            "type": "number",
+            "name": "Average Annual Salary",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Employee Salaries",
+                        "data_source": "salary",
+                        "module": "HR Hub",
+                        "operation": "average"
+                    }
+                ],
+                "expected_value": "$72,500"
+            }
+        },
+        {
+            "type": "bar",
+            "title": "Headcount by Department",
+            "description": "Distribution of active employees across different organizational departments.",
+            "data_config": {
+                "module": "HR Hub",
+                "data_source": "employees",
+                "group_by": [
+                    "department"
+                ],
+                "fields": [
+                    "Engineering",
+                    "Sales",
+                    "Marketing",
+                    "HR",
+                    "Operations"
+                ],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "pie",
+            "title": "Workforce Diversity (Gender)",
+            "description": "Breakdown of employees by gender identification.",
+            "data_config": {
+                "module": "HR Hub",
+                "data_source": "employees",
+                "group_by": [
+                    "gender"
+                ],
+                "fields": [
+                    "Male",
+                    "Female",
+                    "Non-binary",
+                    "Prefer not to say"
+                ],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "line",
+            "title": "Monthly Hiring Trend",
+            "description": "Number of new hires per month over the last year.",
+            "data_config": {
+                "module": "HR Hub",
+                "data_source": "employees",
+                "group_by": [
+                    "custom_dates"
+                ],
+                "date_from": "2023-01-01",
+                "date_to": "2023-12-31",
+                "date_interval": "monthly",
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "list",
+            "name": "Recent New Hires",
+            "description": "Detailed list of the most recently joined employees.",
+            "data_config": {
+                "module": "HR Hub",
+                "data_source": "employees",
+                "group_by": [
+                    "employmentName",
+                    "department",
+                    "jobTitle",
+                    "hiredAt"
+                ]
+            },
+            "column_count": 4,
+            "column_width": 200
+        }
+    ]
+}
