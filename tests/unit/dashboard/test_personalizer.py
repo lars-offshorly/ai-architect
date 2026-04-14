@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import copy
 from datetime import date, timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agents.preview_generator.dashboard.personalizer import personalize_template
+from agents.preview_generator.dashboard.personalizer import (
+    _build_llm_human_message,
+    personalize_template,
+)
 from agents.preview_generator.schemas import TeamDetail, UserContext
 
 
@@ -212,3 +216,192 @@ def test_none_context_returns_valid_payload():
     # Dates should still be filled
     assert result["widgets"][0]["data_config"]["date_from"] is not None
     assert result["widgets"][0]["data_config"]["date_to"] is not None
+
+
+# ---------------------------------------------------------------------------
+# LLM report generation — happy path
+# ---------------------------------------------------------------------------
+
+_HISTORY = [
+    {"role": "user", "content": "We need to track our headcount at Acme Corp."},
+    {"role": "assistant", "content": "Got it! Which departments?"},
+    {"role": "user", "content": "Engineering and Sales mainly."},
+]
+
+
+def _mock_llm_response(text: str) -> MagicMock:
+    response = MagicMock()
+    response.content = text
+    return response
+
+
+def _mock_llm(text: str) -> MagicMock:
+    llm = MagicMock()
+    llm.invoke.return_value = _mock_llm_response(text)
+    return llm
+
+
+def test_llm_report_replaces_template_report():
+    """When LLM returns text, the report field should use it."""
+    template = _make_template(report="This is the Template report.")
+    ctx = _ctx(company="Acme Corp")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = "sk-test"
+        mock_settings.return_value.ASSEMBLER_TEMPERATURE = 0.2
+        mock_get_llm.return_value = _mock_llm("Acme Corp tracks headcount across all teams.")
+
+        result = personalize_template(template, ctx, "hr_management", _HISTORY)
+
+    assert result["report"] == "Acme Corp tracks headcount across all teams."
+
+
+def test_llm_report_strips_whitespace():
+    """LLM output is stripped before being written to the payload."""
+    template = _make_template(report="Template report.")
+    ctx = _ctx(company="Globex")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = "sk-test"
+        mock_settings.return_value.ASSEMBLER_TEMPERATURE = 0.2
+        mock_get_llm.return_value = _mock_llm("  Globex dashboard report.  ")
+
+        result = personalize_template(template, ctx, "hr_management", _HISTORY)
+
+    assert result["report"] == "Globex dashboard report."
+
+
+# ---------------------------------------------------------------------------
+# LLM report generation — fallback paths
+# ---------------------------------------------------------------------------
+
+
+def test_llm_skipped_when_no_api_key():
+    """With no OPENAI_API_KEY the keyword fallback is used — LLM never called."""
+    template = _make_template(report="This is the Template report.")
+    ctx = _ctx(company="Initech")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = ""
+        result = personalize_template(template, ctx, "hr_management", _HISTORY)
+
+    mock_get_llm.assert_not_called()
+    assert "Initech" in result["report"]
+    assert "Template" not in result["report"]
+
+
+def test_llm_exception_falls_back_to_keyword():
+    """If the LLM call raises, keyword substitution is used."""
+    template = _make_template(report="This is the Template report.")
+    ctx = _ctx(company="Umbrella")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = "sk-test"
+        mock_settings.return_value.ASSEMBLER_TEMPERATURE = 0.2
+        mock_get_llm.return_value.invoke.side_effect = RuntimeError("API down")
+
+        result = personalize_template(template, ctx, "hr_management", _HISTORY)
+
+    assert "Umbrella" in result["report"]
+    assert "Template" not in result["report"]
+
+
+def test_llm_empty_response_falls_back_to_keyword():
+    """Empty LLM content triggers keyword fallback."""
+    template = _make_template(report="This is the Template report.")
+    ctx = _ctx(company="Cyberdyne")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = "sk-test"
+        mock_settings.return_value.ASSEMBLER_TEMPERATURE = 0.2
+        mock_get_llm.return_value = _mock_llm("")
+
+        result = personalize_template(template, ctx, "hr_management", _HISTORY)
+
+    assert "Cyberdyne" in result["report"]
+
+
+def test_llm_no_history_still_calls_llm():
+    """LLM is attempted even when conversation_history is empty."""
+    template = _make_template(report="Template report.")
+    ctx = _ctx(company="Weyland")
+
+    with patch(
+        "agents.preview_generator.dashboard.personalizer.get_settings"
+    ) as mock_settings, patch(
+        "agents.preview_generator.dashboard.personalizer.get_openai_chat_model"
+    ) as mock_get_llm:
+        mock_settings.return_value.OPENAI_API_KEY = "sk-test"
+        mock_settings.return_value.ASSEMBLER_TEMPERATURE = 0.2
+        mock_get_llm.return_value = _mock_llm("Weyland Corp dashboard.")
+
+        result = personalize_template(template, ctx, "hr_management", conversation_history=[])
+
+    assert result["report"] == "Weyland Corp dashboard."
+
+
+# ---------------------------------------------------------------------------
+# _build_llm_human_message
+# ---------------------------------------------------------------------------
+
+
+def test_build_llm_human_message_includes_company():
+    ctx = _ctx(company="Initech", teams=["Engineering"])
+    msg = _build_llm_human_message(ctx, "hr_management", _HISTORY, "Fallback report.")
+    assert "Initech" in msg
+
+
+def test_build_llm_human_message_includes_teams():
+    ctx = _ctx(teams=["Sales", "HR"])
+    msg = _build_llm_human_message(ctx, "hr_management", [], "Fallback.")
+    assert "Sales" in msg
+    assert "HR" in msg
+
+
+def test_build_llm_human_message_includes_bundle():
+    ctx = _ctx()
+    msg = _build_llm_human_message(ctx, "project_mgmt", [], "Fallback.")
+    assert "Project Mgmt" in msg
+
+
+def test_build_llm_human_message_includes_conversation_excerpt():
+    ctx = _ctx()
+    msg = _build_llm_human_message(ctx, "hr_management", _HISTORY, "Fallback.")
+    assert "headcount" in msg
+
+
+def test_build_llm_human_message_caps_history_at_five():
+    """Only the last 5 user messages should appear."""
+    history = [{"role": "user", "content": f"Message {i}"} for i in range(10)]
+    ctx = _ctx()
+    msg = _build_llm_human_message(ctx, "hr_management", history, "Fallback.")
+    # Only messages 5-9 should appear.
+    assert "Message 9" in msg
+    assert "Message 0" not in msg
+
+
+def test_build_llm_human_message_no_context_still_builds():
+    """None user_context should not raise."""
+    msg = _build_llm_human_message(None, "ticketing", _HISTORY, "Fallback.")
+    assert "Ticketing" in msg
+    assert "Fallback." in msg
