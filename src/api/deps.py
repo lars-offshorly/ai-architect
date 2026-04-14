@@ -68,7 +68,7 @@ def get_replier_service() -> ReplierService:
 @lru_cache(maxsize=1)
 def get_preview_generator_service() -> PreviewGeneratorService:
     """Return a cached PreviewGeneratorService."""
-    return PreviewGeneratorService()
+    return PreviewGeneratorService(get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)

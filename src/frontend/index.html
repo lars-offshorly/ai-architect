@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Architect Debug Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a"></div>
+    <div class="bg-shape bg-shape-b"></div>
+
+    <main class="shell">
+      <section class="panel chat-panel">
+        <header class="panel-header">
+          <h1>AI Architect</h1>
+          <p>Session-driven onboarding debugger</p>
+        </header>
+
+        <div id="chatLog" class="chat-log"></div>
+
+        <form id="chatForm" class="chat-form">
+          <label class="field-label" for="messageInput">Message</label>
+          <textarea id="messageInput" rows="3" placeholder="Describe the workspace you want..."></textarea>
+
+          <div class="quick-fields">
+            <input id="bundleInput" type="text" placeholder="Optional bundle key" />
+            <input id="intentInput" type="text" placeholder="Optional intent" />
+          </div>
+
+          <div class="button-row">
+            <button id="startBtn" type="button">Start Session</button>
+            <button id="replyBtn" type="button">Reply</button>
+            <button id="confirmBtn" type="button">Confirm Bundle</button>
+            <button id="earlyPreviewBtn" type="button">Early Preview</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel inspector-panel">
+        <header class="panel-header">
+          <h2>Debug Inspector</h2>
+          <p>Pipeline visibility</p>
+        </header>
+
+        <nav class="tabs" id="tabs">
+          <button data-tab="pipeline" class="tab is-active">Pipeline Status</button>
+          <button data-tab="extraction" class="tab">Extraction</button>
+          <button data-tab="classification" class="tab">Classification</button>
+          <button data-tab="metadata" class="tab">Metadata</button>
+        </nav>
+
+        <div class="tab-panels">
+          <section id="tab-pipeline" class="tab-panel is-active"></section>
+          <section id="tab-extraction" class="tab-panel"></section>
+          <section id="tab-classification" class="tab-panel"></section>
+          <section id="tab-metadata" class="tab-panel"></section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="/static/api.js" type="module"></script>
+    <script src="/static/components.js" type="module"></script>
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>

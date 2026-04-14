@@ -4,52 +4,23 @@ from __future__ import annotations
 
 from core.logging import get_logger
 
-from ..bundles.registry import BUNDLE_REGISTRY, get_flag_snapshot
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Catalog → registry key translation
-# BundleCatalog uses enriched bundle_registry.yaml at runtime.
-# Map catalog keys to the registry key that should be activated.
-# Keys absent from this map with no direct registry entry fall to Tier 3.
-# ---------------------------------------------------------------------------
-_CATALOG_TO_REGISTRY: dict[str, str] = {
-    "hr_management": "hr_hub",  # Dev A sends "hr_management"; registry key is "hr_hub"
-}
-
-
-def _collect_bundle_ids(primary_key: str) -> list[str]:
-    """Return primary bundle key plus any known compatible addons."""
-    ids = [primary_key]
-    for addon_key in BUNDLE_REGISTRY.get(primary_key, {}).get("compatible_addons", []):
-        if addon_key in BUNDLE_REGISTRY:
-            ids.append(addon_key)
-    return ids
-
-
-def _accumulate(bundle_ids: list[str]) -> tuple[set[str], list[str], list[dict]]:
-    """Merge flags, permission_services, and landing_pages across all bundle ids."""
-    flags: set[str] = set()
-    services: list[str] = []
-    pages: list[dict] = []
-    for bid in bundle_ids:
-        bundle = BUNDLE_REGISTRY.get(bid, {})
-        flags.update(bundle.get("flags", []))
-        for svc in bundle.get("permission_services", []):
-            if svc not in services:
-                services.append(svc)
-        for lp in bundle.get("landing_pages", []):
-            if lp not in pages:
-                pages.append(lp)
-    return flags, services, pages
+# Only these catalog keys have dedicated flag/store schemas and should have
+# their flags enabled. All other bundles (e.g. sales, finance, real_estate)
+# share a render_key but are not full preview bundles — they use fallback behavior.
+_TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
+    {"hr_management", "project_mgmt", "ticketing", "generic", "all_microservices"}
+)
 
 
 def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
+    # pylint: disable=too-many-branches
     """Resolve bundle_key → feature flags, permission_services, landing_pages.
 
-    Translates catalog bundle keys to registry keys before lookup.
+    Uses the canonical BundleCatalog from state to resolve definitions.
     Includes the primary bundle plus all of its compatible_addons.
     Unknown bundle_key is handled gracefully (empty sets; data_tier will
     fall through to Tier 3 fallback).
@@ -57,15 +28,40 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
     Returns updates for:
       resolved_bundle_ids, feature_flags, permission_services, landing_pages
     """
-    catalog_key = state.bundle_key
-    bundle_key = _CATALOG_TO_REGISTRY.get(catalog_key, catalog_key)
+    if state.catalog is None:
+        logger.error("session=%s — BundleCatalog missing in state", state.session_id)
+        return {
+            "resolved_bundle_ids": [],
+            "feature_flags": {},
+            "permission_services": [],
+            "landing_pages": [],
+        }
 
-    if bundle_key not in BUNDLE_REGISTRY:
-        logger.warning(
-            "session=%s — bundle_key=%r (catalog=%r) not in registry, resolved nothing",
+    bundle_key = state.bundle_key
+
+    if bundle_key not in _TIER1_CANONICAL_KEYS:
+        logger.info(
+            "session=%s — bundle_key=%r is not a tier-1 bundle, "
+            "skipping flag resolution",
             state.session_id,
             bundle_key,
-            catalog_key,
+        )
+        return {
+            "resolved_bundle_ids": [],
+            "feature_flags": {
+                e["name"]: False for e in state.catalog.get_feature_flags()
+            },
+            "permission_services": [],
+            "landing_pages": [],
+        }
+
+    bundle = state.catalog.get(bundle_key)
+
+    if bundle is None:
+        logger.warning(
+            "session=%s — bundle_key=%r not in catalog, resolved nothing",
+            state.session_id,
+            bundle_key,
         )
         return {
             "resolved_bundle_ids": [],
@@ -74,18 +70,31 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
             "landing_pages": [],
         }
 
-    if bundle_key != catalog_key:
-        logger.info(
-            "session=%s — translated catalog key %r → registry key %r",
-            state.session_id,
-            catalog_key,
-            bundle_key,
-        )
+    # Collect primary + addons
+    bundle_ids = [bundle_key]
+    for addon_key in bundle.compatible_addons:
+        if state.catalog.has_bundle(addon_key):
+            bundle_ids.append(addon_key)
 
-    bundle_ids = _collect_bundle_ids(bundle_key)
-    flag_names_to_enable, permission_services, landing_pages = _accumulate(bundle_ids)
+    # Accumulate across all resolved bundles
+    flag_names_to_enable: set[str] = set()
+    permission_services: list[str] = []
+    landing_pages: list[dict] = []
 
-    snapshot = get_flag_snapshot()
+    for bid in bundle_ids:
+        b_def = state.catalog.get(bid)
+        if b_def is None:
+            continue
+        flag_names_to_enable.update(b_def.flags)
+        for svc in b_def.permission_services:
+            if svc not in permission_services:
+                permission_services.append(svc)
+        for lp in b_def.landing_pages:
+            if lp not in landing_pages:
+                landing_pages.append(lp)
+
+    # Apply to a fresh snapshot of all known flags
+    snapshot = state.catalog.get_feature_flags()
     for entry in snapshot:
         if entry["name"] in flag_names_to_enable:
             entry["isEnabled"] = True

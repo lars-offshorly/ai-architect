@@ -4,12 +4,21 @@
   "display_name": "Custom Workspace",
   "modules": ["tickets", "dashboard"],
   "config": {
-    "ticket_statuses": ["pending", "in_progress", "resolved", "closed"],
+    "permission_services": ["ticketing"],
+    "landing_pages": [
+      {"service": "ticketing", "path": "/tickets"},
+      {"service": "dashboard", "path": "/dashboard"}
+    ],
+    "ticket_statuses": ["open", "in_progress", "resolved", "closed"],
     "ticket_priorities": ["low", "medium", "high"],
     "kpi_definitions": [
-      {"key": "open_items", "label": "Open Items", "unit": "items"},
-      {"key": "completed_this_week", "label": "Completed This Week", "unit": "items"}
+      {"key": "open_items", "label": "Open Items", "unit": "count"},
+      {"key": "completed_this_week", "label": "Completed This Week", "unit": "count"}
     ]
+  },
+  "stores_contract": {
+    "required": ["tickets", "kpis"],
+    "optional": ["projects", "tasks", "weaves", "dashboard_widgets"]
   },
   "slots_used": ["primary_use_case", "company_name"]
 }

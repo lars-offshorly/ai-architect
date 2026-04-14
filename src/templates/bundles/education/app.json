@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "project_mgmt",
+  "config": {
+    "permission_services": ["project_mgmt", "weaves", "chat", "video_call", "kpi", "dashboard"],
+    "landing_pages": [
+      {"service": "project_mgmt", "path": "/projects"},
+      {"service": "dashboard", "path": "/dashboard"}
+    ],
+    "task_statuses": ["backlog", "in_progress", "review", "done", "blocked"],
+    "task_priorities": ["low", "medium", "high", "critical"],
+    "milestone_statuses": ["pending", "at_risk", "achieved"],
+    "kpi_definitions": [
+      {"key": "active_work_items", "label": "Active Work Items", "unit": "count"},
+      {"key": "planned_vs_actual", "label": "Planned vs Actual", "unit": "percentage"},
+      {"key": "on_time_delivery_rate", "label": "On-Time Delivery Rate", "unit": "percentage"}
+    ]
+  },
+  "stores_contract": {
+    "required": ["projects", "tasks", "kpis"],
+    "optional": ["tickets", "weaves", "dashboard_widgets", "announcements", "calendar"]
+  },
+  "slots_used": ["primary_use_case", "company_name", "industry_hint"]
+}

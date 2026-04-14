@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -17,6 +18,7 @@ class BundleCatalogError(AppError):
 
 class BundleDefinition(BaseModel):
     bundle_key: str
+    render_key: str
     display_name: str
     primary_entity: str
     description: str
@@ -29,12 +31,19 @@ class BundleDefinition(BaseModel):
     required_slots: list[str] = Field(default_factory=list)
     customizable_fields: list[str] = Field(default_factory=list)
 
+    # Preview Generator fields (AD-2 consolidation)
+    flags: list[str] = Field(default_factory=list)
+    permission_services: list[str] = Field(default_factory=list)
+    landing_pages: list[dict] = Field(default_factory=list)
+    compatible_addons: list[str] = Field(default_factory=list)
+
     synonyms: list[str] = Field(default_factory=list)
     typical_entities: list[str] = Field(default_factory=list)
     typical_intents: list[str] = Field(default_factory=list)
     required_signals: list[str] = Field(default_factory=list)
     signal_boosts: dict[str, float] = Field(default_factory=dict)
     terminology: dict[str, str] = Field(default_factory=dict)
+    extraction_keywords: dict[str, Any] = Field(default_factory=dict)
 
     metadata: BundleMetadata | None = None
 
@@ -72,8 +81,38 @@ class BundleCatalog:
                 catalog_path = Path("src/templates/bundle_registry.yaml")
         self._catalog_path = catalog_path
         self._bundles = self._load_bundles(self._catalog_path)
+        self._feature_flags = self._load_feature_flags()
+        self._metrics_catalog = self._load_metrics_catalog()
+
         if include_legacy_aliases:
             self._add_legacy_aliases()
+
+    def _load_feature_flags(self) -> list[dict]:
+        path = self._catalog_path.parent / "feature_flags.yaml"
+        if not path.exists():
+            return []
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            return list(data.get("feature_flags") or [])
+        except (OSError, yaml.YAMLError):
+            return []
+
+    def _load_metrics_catalog(self) -> dict[str, dict]:
+        path = self._catalog_path.parent / "metrics_catalog.yaml"
+        if not path.exists():
+            return {}
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            metrics = list(data.get("metrics") or [])
+            return {m["key"]: m for m in metrics if "key" in m}
+        except (OSError, yaml.YAMLError):
+            return {}
+
+    def get_feature_flags(self) -> list[dict]:
+        return [dict(f) for f in self._feature_flags]
+
+    def get_metrics_catalog(self) -> dict[str, dict]:
+        return {k: dict(v) for k, v in self._metrics_catalog.items()}
 
     def _add_legacy_aliases(self) -> None:
         if "hr_hub" in self._bundles:
@@ -83,6 +122,7 @@ class BundleCatalog:
             return
         self._bundles["hr_hub"] = BundleDefinition(
             bundle_key="hr_hub",
+            render_key="hr_hub",
             display_name="HR Hub",
             primary_entity="people",
             description=base.description,
@@ -154,6 +194,7 @@ class BundleCatalog:
     def validate(self, templates_dir: Path | None = None) -> None:
         required_fields = (
             "bundle_key",
+            "render_key",
             "display_name",
             "primary_entity",
             "description",
@@ -254,6 +295,9 @@ class BundleCatalog:
     def list_all(self) -> list[BundleDefinition]:
         return list(self._bundles.values())
 
+    def catalog_to_render_key(self) -> dict[str, str]:
+        return {key: bundle.render_key for key, bundle in self._bundles.items()}
+
     def get_metadata(self, bundle_key: str) -> BundleMetadata | None:
         bundle = self.get(bundle_key)
         if bundle is None:
@@ -343,3 +387,19 @@ class BundleCatalog:
                 "Catalog is missing required fallback bundle: generic"
             )
         return fallback_bundle
+
+
+def _exported_key_sets() -> tuple[frozenset[str], frozenset[str]]:
+    default_registry = (
+        Path(__file__).resolve().parents[1] / "src/templates/bundle_registry.yaml"
+    )
+    try:
+        catalog = BundleCatalog(default_registry)
+    except BundleCatalogError:
+        return frozenset(), frozenset()
+    return frozenset(catalog.list_keys()), frozenset(
+        catalog.catalog_to_render_key().values()
+    )
+
+
+CANONICAL_BUNDLE_KEYS, RENDER_KEYS = _exported_key_sets()

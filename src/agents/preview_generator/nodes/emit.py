@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from core.logging import get_logger
 
-from ..bundles.registry import ALL_FEATURE_FLAGS
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
 
@@ -26,14 +25,19 @@ _FLAG_TO_MODULE: dict[str, str] = {
 }
 
 
-def _build_flag_list(feature_flags: dict[str, bool]) -> list[dict]:
+def _build_flag_list(
+    feature_flags: dict[str, bool], state: PreviewGeneratorState
+) -> list[dict]:
     """Reconstruct the full feature flags array in api-mocks format.
 
-    Preserves id and module from ALL_FEATURE_FLAGS; sets isEnabled
-    from the resolved dict.
+    Preserves id and module from canonical catalog; sets isEnabled
+    from the resolved dict in state.
     """
+    if state.catalog is None:
+        return []
+
     result = []
-    for entry in ALL_FEATURE_FLAGS:
+    for entry in state.catalog.get_feature_flags():
         name = entry["name"]
         result.append(
             {
@@ -64,10 +68,18 @@ def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
 # "weaves"    → sample_weaves   (only included for weaves-enabled bundles)
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
+    "hr_management": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
 }
+
+# Only these canonical tier-1 bundle keys should have their render_key applied
+# for store/config schema derivation. Other bundles that share a render_key
+# (e.g. sales -> project_mgmt) must not inherit the tier-1 schema.
+_TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
+    {"hr_management", "project_mgmt", "ticketing"}
+)
 _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
     "primary": "items",
     "secondary": "projects",
@@ -76,6 +88,13 @@ _STORE_SCHEMA_FALLBACK: dict[str, str | None] = {
 
 
 _BUNDLE_CONFIG_FIELDS: dict[str, list[str]] = {
+    "hr_management": [
+        "ticket_categories",
+        "default_statuses",
+        "default_priorities",
+        "queue_names",
+        "kpi_definitions",
+    ],
     "hr_hub": [
         "ticket_categories",
         "default_statuses",
@@ -136,10 +155,9 @@ def _build_config(
     )
 
     fields = _BUNDLE_CONFIG_FIELDS.get(registry_key, _BUNDLE_CONFIG_FALLBACK_FIELDS)
-    kpi_keys = [k.key for k in kpi_metrics]
 
     _field_values: dict[str, object] = {
-        "kpi_definitions": kpi_keys,
+        "kpi_definitions": [k.key for k in kpi_metrics],
         # ticketing bundle
         "service_types": ticket_types,
         "work_order_statuses": ticket_statuses,
@@ -190,7 +208,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     Both are placed in state.output so service.py can unpack them.
     """
-    flag_list = _build_flag_list(state.feature_flags)
+    flag_list = _build_flag_list(state.feature_flags, state)
     modules = _derive_modules(state.feature_flags)
 
     company_name = (
@@ -199,10 +217,14 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         else None
     )
 
-    # resolved_bundle_ids[0] is the registry key (already translated from catalog key)
-    registry_key = (
-        state.resolved_bundle_ids[0] if state.resolved_bundle_ids else state.bundle_key
-    )
+    # Use render_key only for canonical tier-1 bundles (hr_management, project_mgmt,
+    # ticketing). Other bundles that share a render_key (e.g. sales -> project_mgmt)
+    # must not inherit the tier-1 store/config schema — they use the fallback.
+    registry_key = state.bundle_key
+    if state.bundle_key in _TIER1_CANONICAL_KEYS and state.catalog is not None:
+        bundle = state.catalog.get(state.bundle_key)
+        if bundle is not None and bundle.render_key:
+            registry_key = bundle.render_key
 
     generation_json = GenerationJson(
         schema_version="1.0",

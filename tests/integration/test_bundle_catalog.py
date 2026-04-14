@@ -4,12 +4,17 @@ from pathlib import Path
 
 import pytest
 
-from catalog.bundle_catalog import BundleCatalog, BundleCatalogError
+from catalog.bundle_catalog import (
+    CANONICAL_BUNDLE_KEYS,
+    RENDER_KEYS,
+    BundleCatalog,
+    BundleCatalogError,
+)
 
 REGISTRY_PATH = (
     Path(__file__).resolve().parents[2] / "src/templates/bundle_registry.yaml"
 )
-EXPECTED_BUNDLE_COUNT = 12
+EXPECTED_BUNDLE_COUNT = 13
 
 
 @pytest.fixture(name="catalog")
@@ -17,7 +22,7 @@ def fixture_catalog() -> BundleCatalog:
     return BundleCatalog(REGISTRY_PATH)
 
 
-def test_loads_all_twelve_bundles(catalog: BundleCatalog) -> None:
+def test_loads_all_thirteen_bundles(catalog: BundleCatalog) -> None:
     assert len(catalog.list_all()) == EXPECTED_BUNDLE_COUNT
 
 
@@ -31,12 +36,31 @@ def test_all_expected_bundle_keys_present(catalog: BundleCatalog) -> None:
         "sales",
         "healthcare",
         "legal_services",
-        "construction_real_estate",
+        "construction",
+        "real_estate",
         "education",
         "all_microservices",
         "generic",
     }
     assert expected == set(catalog.list_keys())
+
+
+def test_catalog_to_render_key_mapping(catalog: BundleCatalog) -> None:
+    mapping = catalog.catalog_to_render_key()
+    assert mapping["hr_management"] == "hr_hub"
+    assert mapping["ticketing"] == "ticketing"
+    assert mapping["project_mgmt"] == "project_mgmt"
+    assert mapping["finance"] == "project_mgmt"
+    assert mapping["healthcare"] == "ticketing"
+    assert mapping["construction"] == "project_mgmt"
+    assert mapping["real_estate"] == "project_mgmt"
+    assert mapping["all_microservices"] == "all_microservices"
+    assert mapping["generic"] == "generic"
+
+
+def test_exported_bundle_key_sets_are_in_sync(catalog: BundleCatalog) -> None:
+    assert CANONICAL_BUNDLE_KEYS == frozenset(catalog.list_keys())
+    assert RENDER_KEYS == frozenset(catalog.catalog_to_render_key().values())
 
 
 def test_get_hr_management_returns_correct_data(catalog: BundleCatalog) -> None:

@@ -30,8 +30,18 @@ User message
 
 ## Bundle Types
 
-- **hr_hub** — HR teams managing employees, leave, and onboarding
-- **project_ops** — Project delivery, milestones, and task tracking
-- **asset_mgmt** — Physical asset lifecycle and maintenance
-- **field_service** — Technician dispatch and work order management
-- **generic** — Fallback for requests that don't map to a specific bundle
+Catalog keys defined in `src/templates/bundle_registry.yaml`:
+
+- **hr_management** → renders as `hr_hub` — HR teams managing employees, leave, and onboarding
+- **project_mgmt** → renders as `project_mgmt` — Project delivery, milestones, and task tracking
+- **ticketing** → renders as `ticketing` — Support tickets, queues, and SLA management
+- **finance** → renders as `project_mgmt` — Budgeting, invoicing, and financial reporting
+- **marketing** → renders as `project_mgmt` — Campaign and content management
+- **sales** → renders as `project_mgmt` — Lead tracking and pipeline management
+- **healthcare** → renders as `ticketing` — Patient records and appointment workflows
+- **legal_services** → renders as `ticketing` — Case management and legal documentation
+- **construction** → renders as `project_mgmt` — Site and contractor management
+- **real_estate** → renders as `project_mgmt` — Property listings and tenant management
+- **education** → renders as `project_mgmt` — Course and student management
+- **all_microservices** → renders as `hr_hub` — Full platform with all services
+- **generic** → renders as `generic` — Fallback for unmapped requests

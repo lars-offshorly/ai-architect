@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "project_mgmt",
+  "config": {
+    "permission_services": ["project_mgmt", "weaves", "dashboard", "notifications"],
+    "landing_pages": [
+      {"service": "project_mgmt", "path": "/projects"},
+      {"service": "dashboard", "path": "/dashboard"}
+    ],
+    "task_statuses": ["backlog", "in_progress", "review", "done", "blocked"],
+    "task_priorities": ["low", "medium", "high", "critical"],
+    "milestone_statuses": ["pending", "at_risk", "achieved"],
+    "kpi_definitions": [
+      {"key": "gross_profit_margin", "label": "Gross Profit Margin", "unit": "percentage"},
+      {"key": "budget_variance", "label": "Budget Variance", "unit": "percentage"},
+      {"key": "invoice_aging", "label": "Invoice Aging", "unit": "duration"},
+      {"key": "expense_ratio", "label": "Expense Ratio", "unit": "percentage"},
+      {"key": "net_income", "label": "Net Income", "unit": "currency"}
+    ]
+  },
+  "stores_contract": {
+    "required": ["projects", "tasks", "kpis"],
+    "optional": ["tickets", "weaves", "dashboard_widgets"]
+  },
+  "slots_used": ["primary_use_case", "company_name", "industry_hint"]
+}

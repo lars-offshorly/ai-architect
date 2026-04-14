@@ -2,14 +2,23 @@
   "schema_version": "1.0",
   "bundle_key": "ticketing",
   "config": {
+    "permission_services": ["ticketing", "chat", "video_call", "announcements"],
+    "landing_pages": [
+      {"service": "ticketing", "path": "/tickets"},
+      {"service": "dashboard", "path": "/dashboard"}
+    ],
     "work_order_statuses": ["pending", "dispatched", "in_progress", "completed", "cancelled"],
     "work_order_priorities": ["low", "medium", "high", "emergency"],
-    "service_types": ["installation", "repair", "inspection", "maintenance", "emergency"],
+    "service_types": ["incident", "service_request", "access", "maintenance", "other"],
     "kpi_definitions": [
-      {"key": "sla_compliance", "label": "SLA Compliance", "unit": "%"},
-      {"key": "open_work_orders", "label": "Open Work Orders", "unit": "orders"},
-      {"key": "avg_job_duration", "label": "Avg Job Duration", "unit": "hours"}
+      {"key": "avg_resolution_time", "label": "Average Resolution Time", "unit": "duration"},
+      {"key": "sla_compliance", "label": "SLA Compliance", "unit": "percentage"},
+      {"key": "active_work_items", "label": "Active Work Items", "unit": "count"}
     ]
   },
-  "slots_used": ["service_zones", "technician_count", "company_name"]
+  "stores_contract": {
+    "required": ["tickets", "kpis"],
+    "optional": ["projects", "tasks", "weaves", "dashboard_widgets"]
+  },
+  "slots_used": ["primary_use_case", "queue_type", "company_name", "industry_hint"]
 }

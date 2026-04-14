@@ -23,9 +23,16 @@ class BundleCandidateInfo(BaseModel):
 class ClassificationInfo(BaseModel):
     confidence_status: str
     top_bundle_key: str | None = None
+    top_confidence: float = 0.0
+    score_gap: float = 0.0
+    missing_context: list[str] = Field(default_factory=list)
+    reasoning: str = ""
     ranked_candidates: list[BundleCandidateInfo] = Field(default_factory=list)
 
 
 class RecommendationInfo(BaseModel):
     recommendation_status: str
     primary_bundle_key: str | None = None
+    fallback_bundle_keys: list[str] = Field(default_factory=list)
+    inferred_modules: list[str] = Field(default_factory=list)
+    reasoning: str = ""

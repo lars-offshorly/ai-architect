@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from core.logging import get_logger
 
-from ..bundles.registry import BUNDLE_REGISTRY
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -13,7 +12,7 @@ logger = get_logger(__name__)
 def select_data_tier(state: PreviewGeneratorState) -> dict:
     """Select the data generation tier based on bundle resolution.
 
-    Tier 1 — bundle_key is in BUNDLE_REGISTRY and flags were resolved.
+    Tier 1 — bundle_key is known in catalog and flags were resolved.
               Uses deterministic, programmatic sample data from name/value pools.
               Personalised from UserContext (work_type, people, teams).
 
@@ -26,11 +25,14 @@ def select_data_tier(state: PreviewGeneratorState) -> dict:
 
     Returns: {"data_tier": "tier_1" | "tier_3"}
     """
+    if state.catalog is None:
+        logger.error("session=%s — BundleCatalog missing in state", state.session_id)
+        return {"data_tier": "tier_3"}
+
     # resolved_bundle_ids[0] is the registry key (already translated from catalog key).
-    # Checking against BUNDLE_REGISTRY must use the registry key, not state.bundle_key.
     flags_resolved = bool(state.resolved_bundle_ids)
     registry_key = state.resolved_bundle_ids[0] if flags_resolved else state.bundle_key
-    is_known = registry_key in BUNDLE_REGISTRY
+    is_known = state.catalog.has_bundle(registry_key)
 
     if is_known and flags_resolved:
         tier = "tier_1"

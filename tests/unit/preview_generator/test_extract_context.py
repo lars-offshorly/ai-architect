@@ -2,15 +2,27 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from agents.preview_generator.nodes.extract_context import extract_user_context
 from agents.preview_generator.state import PreviewGeneratorState
+from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import (
     ClassificationSignals,
     ExtractionResult,
     PersonalizationSignals,
 )
+
+REGISTRY_PATH = (
+    Path(__file__).resolve().parents[3] / "src/templates/bundle_registry.yaml"
+)
+
+
+@pytest.fixture
+def catalog() -> BundleCatalog:
+    return BundleCatalog(REGISTRY_PATH)
 
 
 # ---------------------------------------------------------------------------
@@ -19,6 +31,7 @@ from domain.models.extraction_result import (
 
 
 def _make_state(
+    catalog: BundleCatalog,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
     history: list[dict] | None = None,
@@ -29,6 +42,7 @@ def _make_state(
         conversation_history=history or [],
         extraction_result=extraction_result,
         preselected_intent=preselected_intent,
+        catalog=catalog,
     )
 
 
@@ -64,82 +78,82 @@ def _make_extraction(
 # ---------------------------------------------------------------------------
 
 
-def test_tier1_maps_company_name() -> None:
+def test_tier1_maps_company_name(catalog: BundleCatalog) -> None:
     er = _make_extraction(company_name="TechCorp")
-    result = extract_user_context(_make_state(extraction_result=er))
+    result = extract_user_context(_make_state(catalog, extraction_result=er))
     assert result["user_context"].company_name == "TechCorp"
 
 
-def test_tier1_maps_department_names_to_teams() -> None:
+def test_tier1_maps_department_names_to_teams(catalog: BundleCatalog) -> None:
     er = _make_extraction(department_names=["Engineering", "Legal"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     team_names = [t.name for t in ctx.teams]
     assert "Engineering" in team_names
     assert "Legal" in team_names
 
 
-def test_tier1_maps_employee_names_to_people() -> None:
+def test_tier1_maps_employee_names_to_people(catalog: BundleCatalog) -> None:
     er = _make_extraction(employee_names=["Alice Tan", "Bob Reyes"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     person_names = [p.name for p in ctx.people]
     assert "Alice Tan" in person_names
     assert "Bob Reyes" in person_names
 
 
-def test_tier1_maps_role_names_to_people() -> None:
+def test_tier1_maps_role_names_to_people(catalog: BundleCatalog) -> None:
     er = _make_extraction(role_names=["HR Manager", "Team Lead"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     person_roles = [p.role for p in ctx.people]
     assert "HR Manager" in person_roles
     assert "Team Lead" in person_roles
 
 
-def test_tier1_maps_domain_hint_to_industry() -> None:
+def test_tier1_maps_domain_hint_to_industry(catalog: BundleCatalog) -> None:
     er = _make_extraction(domain_hints=["Legal / Law Firm", "Litigation"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     assert ctx.industry_detail == "Legal / Law Firm"
 
 
-def test_tier1_maps_workflow_hints_to_methodology_agile() -> None:
+def test_tier1_maps_workflow_hints_to_methodology_agile(catalog: BundleCatalog) -> None:
     er = _make_extraction(workflow_hints=["agile sprints", "kanban board"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     assert ctx.work_methodology == "agile"
 
 
-def test_tier1_maps_workflow_hints_to_methodology_waterfall() -> None:
+def test_tier1_maps_workflow_hints_to_methodology_waterfall(catalog: BundleCatalog) -> None:
     er = _make_extraction(workflow_hints=["waterfall milestones"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     assert ctx.work_methodology == "waterfall"
 
 
-def test_tier1_maps_metrics_to_key_phrases() -> None:
+def test_tier1_maps_metrics_to_key_phrases(catalog: BundleCatalog) -> None:
     er = _make_extraction(metrics=["sla_compliance", "avg_resolution_time"])
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     assert "sla_compliance" in ctx.key_phrases
     assert "avg_resolution_time" in ctx.key_phrases
 
 
-def test_tier1_maps_terminology_values_to_key_phrases() -> None:
+def test_tier1_maps_terminology_values_to_key_phrases(catalog: BundleCatalog) -> None:
     er = _make_extraction(terminology={"ticket": "matter", "project": "engagement"})
-    ctx = extract_user_context(_make_state(extraction_result=er))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er))["user_context"]
     assert "matter" in ctx.key_phrases
     assert "engagement" in ctx.key_phrases
 
 
-def test_tier1_keyword_fills_company_size_gap() -> None:
+def test_tier1_keyword_fills_company_size_gap(catalog: BundleCatalog) -> None:
     """ExtractionResult provides company_name; keyword scan adds company_size."""
     er = _make_extraction(company_name="Apex Corp")
     history = [{"role": "user", "content": "We are an enterprise company with 5000 employees."}]
-    ctx = extract_user_context(_make_state(extraction_result=er, history=history))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er, history=history))["user_context"]
     assert ctx.company_name == "Apex Corp"
     assert ctx.company_size == "enterprise"
 
 
-def test_tier1_keyword_fills_industry_gap() -> None:
+def test_tier1_keyword_fills_industry_gap(catalog: BundleCatalog) -> None:
     """ExtractionResult has no domain_hints; keyword scan detects industry."""
     er = _make_extraction(domain_hints=[])
     history = [{"role": "user", "content": "We handle litigation and court filings."}]
-    ctx = extract_user_context(_make_state(extraction_result=er, history=history))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, extraction_result=er, history=history))["user_context"]
     assert ctx.industry_detail is not None
     assert "legal" in ctx.industry_detail.lower() or "law" in ctx.industry_detail.lower()
 
@@ -149,36 +163,36 @@ def test_tier1_keyword_fills_industry_gap() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_preselected_intent_sets_methodology_when_hints_empty() -> None:
+def test_preselected_intent_sets_methodology_when_hints_empty(catalog: BundleCatalog) -> None:
     er = _make_extraction(workflow_hints=[])
     ctx = extract_user_context(
-        _make_state(extraction_result=er, preselected_intent="agile sprints")
+        _make_state(catalog, extraction_result=er, preselected_intent="agile sprints")
     )["user_context"]
     assert ctx.work_methodology == "agile"
 
 
-def test_preselected_intent_non_methodology_appended_to_key_phrases() -> None:
+def test_preselected_intent_non_methodology_appended_to_key_phrases(catalog: BundleCatalog) -> None:
     er = _make_extraction()
     ctx = extract_user_context(
-        _make_state(extraction_result=er, preselected_intent="onboarding")
+        _make_state(catalog, extraction_result=er, preselected_intent="onboarding")
     )["user_context"]
     assert "onboarding" in ctx.key_phrases
 
 
-def test_preselected_intent_in_tier2_appended_to_key_phrases() -> None:
+def test_preselected_intent_in_tier2_appended_to_key_phrases(catalog: BundleCatalog) -> None:
     """No ExtractionResult — preselected_intent should still surface in key_phrases."""
     history = [{"role": "user", "content": "We need help managing our team."}]
     ctx = extract_user_context(
-        _make_state(preselected_intent="employee_records", history=history)
+        _make_state(catalog, preselected_intent="employee_records", history=history)
     )["user_context"]
     assert "employee_records" in ctx.key_phrases
 
 
-def test_preselected_intent_methodology_not_duplicated_in_phrases() -> None:
+def test_preselected_intent_methodology_not_duplicated_in_phrases(catalog: BundleCatalog) -> None:
     """A methodology-type intent should set work_methodology, not pollute key_phrases."""
     er = _make_extraction(workflow_hints=[])
     ctx = extract_user_context(
-        _make_state(extraction_result=er, preselected_intent="kanban")
+        _make_state(catalog, extraction_result=er, preselected_intent="kanban")
     )["user_context"]
     assert ctx.work_methodology == "kanban"
     assert "kanban" not in ctx.key_phrases
@@ -189,21 +203,21 @@ def test_preselected_intent_methodology_not_duplicated_in_phrases() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_tier2_extracts_company_name_from_history() -> None:
+def test_tier2_extracts_company_name_from_history(catalog: BundleCatalog) -> None:
     history = [{"role": "user", "content": "We are Acme Corp and we need project tracking."}]
-    ctx = extract_user_context(_make_state(history=history))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, history=history))["user_context"]
     assert ctx.company_name is not None
 
 
-def test_tier2_detects_industry_from_history() -> None:
+def test_tier2_detects_industry_from_history(catalog: BundleCatalog) -> None:
     history = [{"role": "user", "content": "We handle sprints and backlog grooming."}]
-    ctx = extract_user_context(_make_state(history=history))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, history=history))["user_context"]
     assert ctx.industry_detail is not None
 
 
-def test_tier2_returns_valid_user_context_shape() -> None:
+def test_tier2_returns_valid_user_context_shape(catalog: BundleCatalog) -> None:
     history = [{"role": "user", "content": "Small team of 10 doing agile development."}]
-    ctx = extract_user_context(_make_state(history=history))["user_context"]
+    ctx = extract_user_context(_make_state(catalog, history=history))["user_context"]
     assert ctx.company_size is not None
     assert ctx.work_methodology is not None
     assert len(ctx.work_items) > 0
@@ -214,8 +228,8 @@ def test_tier2_returns_valid_user_context_shape() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_tier3_returns_empty_user_context() -> None:
-    ctx = extract_user_context(_make_state())["user_context"]
+def test_tier3_returns_empty_user_context(catalog: BundleCatalog) -> None:
+    ctx = extract_user_context(_make_state(catalog))["user_context"]
     assert ctx.company_name is None
     assert ctx.company_size is None
     assert ctx.teams == []

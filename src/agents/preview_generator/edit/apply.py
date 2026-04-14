@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import copy
 
+from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
 
-from ..bundles.registry import METRICS_CATALOG
 from ..schemas import EditAction, EditActionType
 
 logger = get_logger(__name__)
@@ -169,9 +169,10 @@ def _remove_kpi(payload: dict, kpi_key: str) -> None:
     logger.info("Removed KPI %s", kpi_key)
 
 
-def _add_kpi(payload: dict, kpi_key: str) -> str | None:
-    """Add a KPI by slug from METRICS_CATALOG to stores.kpis and config."""
-    catalog_entry = METRICS_CATALOG.get(kpi_key)
+def _add_kpi(payload: dict, kpi_key: str, catalog: BundleCatalog) -> str | None:
+    """Add a KPI by slug from metrics catalog to stores.kpis and config."""
+    metrics_catalog = catalog.get_metrics_catalog()
+    catalog_entry = metrics_catalog.get(kpi_key)
     if catalog_entry is None:
         warning = f"KPI '{kpi_key}' not found in metrics catalog."
         logger.warning(warning)
@@ -246,6 +247,7 @@ def _add_dashboard(payload: dict) -> None:
 def apply_edit(
     payload: dict,
     action: EditAction,
+    catalog: BundleCatalog,
 ) -> tuple[dict, str | None]:
     """Apply an EditAction to an existing preview payload.
 
@@ -281,7 +283,7 @@ def apply_edit(
         return result, None
 
     if action.action_type == EditActionType.ADD_KPI and target:
-        warning = _add_kpi(result, target)
+        warning = _add_kpi(result, target, catalog)
         return result, warning
 
     if action.action_type == EditActionType.REMOVE_DASHBOARD:

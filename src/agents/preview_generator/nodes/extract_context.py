@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from catalog.bundle_catalog import BundleCatalog, BundleCatalogError
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
 
@@ -13,179 +14,18 @@ from ..state import PreviewGeneratorState
 logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
-# Keyword sets — Phase 1 (deterministic keyword scan)
-# Phase 2 replaces _detect_* with a structured LLM call; these become fallback.
+# Catalog instance
 # ---------------------------------------------------------------------------
 
-_LEGAL_KEYWORDS = frozenset(
-    [
-        "litigation",
-        "matter",
-        "attorney",
-        "paralegal",
-        "counsel",
-        "court",
-        "filing",
-        "docket",
-        "case",
-        "law firm",
-        "legal",
-        "lawsuit",
-        "plaintiff",
-        "defendant",
-        "deposition",
-        "arbitration",
-        "settlement",
-    ]
-)
-_TECH_KEYWORDS = frozenset(
-    [
-        "sprint",
-        "standup",
-        "backlog",
-        "scrum",
-        "kanban",
-        "agile",
-        "developer",
-        "engineer",
-        "software",
-        "deploy",
-        "release",
-        "codebase",
-        "repository",
-        "pull request",
-        "devops",
-        "ci/cd",
-    ]
-)
-_CONSULTING_KEYWORDS = frozenset(
-    [
-        "engagement",
-        "consultant",
-        "consulting",
-        "deliverable",
-        "client work",
-        "statement of work",
-        "sow",
-        "retainer",
-        "billable",
-        "advisory",
-    ]
-)
-_HR_KEYWORDS = frozenset(
-    [
-        "onboarding",
-        "offboarding",
-        "employee",
-        "headcount",
-        "payroll",
-        "performance review",
-        "hr",
-        "human resources",
-        "leave",
-        "attendance",
-        "recruitment",
-        "hiring",
-        "org chart",
-    ]
-)
-_AGILE_KEYWORDS = frozenset(
-    [
-        "sprint",
-        "sprints",
-        "scrum",
-        "kanban",
-        "agile",
-        "backlog",
-        "backlogs",
-        "standup",
-        "standups",
-        "velocity",
-        "story points",
-        "retrospective",
-        "epic",
-        "epics",
-        "iteration",
-        "iterations",
-    ]
-)
-_WATERFALL_KEYWORDS = frozenset(
-    [
-        "milestone",
-        "phase",
-        "waterfall",
-        "gantt",
-        "wbs",
-        "work breakdown",
-        "baseline",
-        "deliverable",
-        "gate review",
-    ]
-)
-# Superset of _LEGAL_KEYWORDS — adds "discovery" for work-type detection.
-# Any term added to _LEGAL_KEYWORDS is automatically covered here.
-_LITIGATION_KEYWORDS = _LEGAL_KEYWORDS | frozenset(["discovery"])
-_SUPPORT_KEYWORDS = frozenset(
-    [
-        "support",
-        "helpdesk",
-        "help desk",
-        "ticket",
-        "issue",
-        "request",
-        "incident",
-        "sla",
-        "escalation",
-        "resolution",
-        "service desk",
-    ]
-)
-_REMOTE_KEYWORDS = frozenset(
-    [
-        "remote",
-        "distributed",
-        "work from home",
-        "wfh",
-        "hybrid",
-        "across time zones",
-        "global team",
-        "different locations",
-    ]
-)
-_CLIENT_KEYWORDS = frozenset(
-    [
-        "clients",
-        "client",
-        "customers",
-        "external",
-        "client-facing",
-        "customer success",
-        "account",
-    ]
-)
-_SMALL_KEYWORDS = frozenset(
-    [
-        "small team",
-        "startup",
-        "just us",
-        "handful",
-        "few of us",
-        "small company",
-        "small business",
-        "solopreneur",
-    ]
-)
-_ENTERPRISE_KEYWORDS = frozenset(
-    [
-        "enterprise",
-        "corporation",
-        "large company",
-        "thousands of employees",
-        "global",
-        "multinational",
-        "conglomerate",
-    ]
-)
+
+def _get_catalog() -> BundleCatalog:
+    """Return a BundleCatalog instance. Internal nodes should favor passing it
+    as an argument, but helpers like _keyword_fill call it directly (cached)."""
+    try:
+        return BundleCatalog()
+    except BundleCatalogError as exc:
+        raise RuntimeError(f"Failed to load bundle catalog: {exc}") from exc
+
 
 # Patterns for named-entity extraction
 _COMPANY_PATTERNS = [
@@ -265,49 +105,62 @@ def _raw_user_text(conversation_history: list[dict]) -> str:
     )
 
 
-def _detect_industry(text: str) -> tuple[str | None, str | None]:
-    """Returns (industry_class, industry_detail).
-    industry_class maps to broad category; industry_detail is more specific.
+def _detect_industry(
+    text: str, catalog: BundleCatalog
+) -> tuple[str | None, str | None]:
+    """Returns (bundle_key, industry_detail) by scanning catalog extraction_keywords.
+
+    Each bundle in bundle_registry.yaml declares extraction_keywords.industry —
+    a list of keywords that signal its industry vertical. The first bundle
+    whose keywords match wins. Falls back to (None, None).
     """
-    if _any_kw_in(text, _LEGAL_KEYWORDS):
-        return "legal", "Law / Litigation"
-    if _any_kw_in(text, _HR_KEYWORDS):
-        return "hr", "Human Resources"
-    if _any_kw_in(text, _CONSULTING_KEYWORDS):
-        return "consulting", "Professional Services / Consulting"
-    if _any_kw_in(text, _TECH_KEYWORDS):
-        return "technology", "Software / Technology"
-    if _any_kw_in(text, _SUPPORT_KEYWORDS):
-        return "operations", "IT Support / Service Desk"
+    for bundle in catalog.list_all():
+        raw_kws = bundle.extraction_keywords.get("industry", [])
+        keywords = raw_kws if isinstance(raw_kws, list) else []
+        if keywords and _any_kw_in(text, frozenset(keywords)):
+            detail = (
+                bundle.extraction_keywords.get("industry_detail") or bundle.display_name
+            )
+            return bundle.bundle_key, str(detail)
     return None, None
 
 
-def _detect_work_types(text: str) -> list[str]:
+def _detect_work_types(text: str, catalog: BundleCatalog) -> list[str]:
     """Returns all work types detected in the text (one per matched keyword set).
 
-    A conversation can reference multiple work styles — e.g. a law firm that
-    also runs support tickets would produce ["litigation", "support_request"].
-    Defaults to ["waterfall"] when nothing is detected.
+    Scans extraction_keywords.work_types in all catalog bundles.
     """
     types: list[str] = []
-    if _any_kw_in(text, _LITIGATION_KEYWORDS):
-        types.append("litigation")
-    if _any_kw_in(text, _AGILE_KEYWORDS):
-        types.append("sprint")
-    if _any_kw_in(text, _WATERFALL_KEYWORDS):
-        types.append("waterfall")
-    if _any_kw_in(text, _SUPPORT_KEYWORDS):
-        types.append("support_request")
+    seen: set[str] = set()
+
+    for bundle in catalog.list_all():
+        work_types = bundle.extraction_keywords.get("work_types", {})
+        if not isinstance(work_types, dict):
+            continue
+
+        for slug, raw_kws in work_types.items():
+            if slug in seen:
+                continue
+            keywords = raw_kws if isinstance(raw_kws, list) else []
+            if keywords and _any_kw_in(text, frozenset(keywords)):
+                types.append(slug)
+                seen.add(slug)
+
     return types or ["waterfall"]  # safe default
 
 
-def _detect_methodology(text: str) -> str | None:
-    if _any_kw_in(text, _AGILE_KEYWORDS):
-        return "agile"
-    if _any_kw_in(text, _WATERFALL_KEYWORDS):
-        return "waterfall"
-    if re.search(r"\bkanban\b", text):
-        return "kanban"
+def _detect_methodology(text: str, catalog: BundleCatalog) -> str | None:
+    """Detect methodology using keywords from the generic bundle fallback."""
+    generic = catalog.get_fallback()
+    meth_map = generic.extraction_keywords.get("methodologies", {})
+    if not isinstance(meth_map, dict):
+        return None
+
+    for meth, raw_kws in meth_map.items():
+        keywords = raw_kws if isinstance(raw_kws, list) else []
+        if keywords and _any_kw_in(text, frozenset(keywords)):
+            return meth
+
     return None
 
 
@@ -382,8 +235,10 @@ def _extract_teams(_raw_text: str, lower_text: str) -> list[TeamDetail]:
     return teams[:5]
 
 
-def _detect_company_size(text: str) -> str | None:
-    # Numeric signals
+def _detect_company_size(text: str, catalog: BundleCatalog) -> str | None:
+    """Detect company size using numeric patterns and keywords from the
+    generic bundle."""
+    # 1. Numeric signals
     for pattern in _SIZE_PATTERNS:
         match = pattern.search(text)
         if match:
@@ -394,11 +249,17 @@ def _detect_company_size(text: str) -> str | None:
                 return "mid-sized"
             return "enterprise"
 
-    # Keyword signals
-    if _any_kw_in(text, _ENTERPRISE_KEYWORDS):
-        return "enterprise"
-    if _any_kw_in(text, _SMALL_KEYWORDS):
-        return "small"
+    # 2. Keyword signals from generic bundle
+    generic = catalog.get_fallback()
+    size_map = generic.extraction_keywords.get("company_size", {})
+    if not isinstance(size_map, dict):
+        return None
+
+    for size_label, raw_kws in size_map.items():
+        keywords = raw_kws if isinstance(raw_kws, list) else []
+        if keywords and _any_kw_in(text, frozenset(keywords)):
+            return size_label
+
     return None
 
 
@@ -497,9 +358,10 @@ def _map_extraction_result(  # pylint: disable=too-many-locals
     )
 
 
-def _keyword_fill(  # pylint: disable=too-many-locals
-    ctx: UserContext, history: list[dict]
+def _keyword_fill(
+    ctx: UserContext, history: list[dict], catalog: BundleCatalog
 ) -> UserContext:
+    # pylint: disable=too-many-locals
     """Run keyword scan and fill any UserContext fields still None.
 
     Returns a new UserContext with gaps filled; fields already set are preserved.
@@ -511,20 +373,33 @@ def _keyword_fill(  # pylint: disable=too-many-locals
     raw = _raw_user_text(history)
 
     company_name = ctx.company_name or _extract_company_name(raw)
-    company_size = ctx.company_size or _detect_company_size(lower)
-    _, industry_detail = _detect_industry(lower)
+    company_size = ctx.company_size or _detect_company_size(lower, catalog)
+
+    # Industry detection
+    _, industry_detail = _detect_industry(lower, catalog)
     industry_detail = ctx.industry_detail or industry_detail
+
     people = ctx.people or _extract_people(raw)
     teams = ctx.teams or _extract_teams(raw, lower)
-    methodology = ctx.work_methodology or _detect_methodology(lower)
+    methodology = ctx.work_methodology or _detect_methodology(lower, catalog)
+
+    # Feature detection (remote/clients) from generic bundle
+    generic = catalog.get_fallback()
+    features = generic.extraction_keywords.get("features", {})
+    if not isinstance(features, dict):
+        features = {}
 
     has_remote = ctx.has_remote_teams
     if has_remote is None:
-        has_remote = any(kw in lower for kw in _REMOTE_KEYWORDS) or None
+        raw_remote = features.get("remote", [])
+        remote_kws = raw_remote if isinstance(raw_remote, list) else []
+        has_remote = any(kw in lower for kw in remote_kws) or None
 
     has_clients = ctx.has_clients
     if has_clients is None:
-        has_clients = any(kw in lower for kw in _CLIENT_KEYWORDS) or None
+        raw_clients = features.get("clients", [])
+        client_kws = raw_clients if isinstance(raw_clients, list) else []
+        has_clients = any(kw in lower for kw in client_kws) or None
 
     # Merge key_phrases — preserve existing, add newly detected
     existing = set(ctx.key_phrases)
@@ -537,7 +412,7 @@ def _keyword_fill(  # pylint: disable=too-many-locals
     if ctx.work_items:
         work_items = ctx.work_items
     else:
-        work_types = _detect_work_types(lower)
+        work_types = _detect_work_types(lower, catalog)
         work_items = [
             WorkItemDetail(
                 work_type=wt, has_deadlines=has_deadlines, methodology=methodology
@@ -548,6 +423,14 @@ def _keyword_fill(  # pylint: disable=too-many-locals
     primary_concern = ctx.primary_concern
     if not primary_concern:
         pain_words = [
+            "struggle",
+            "difficult",
+            "hard to",
+            "problem",
+            "issue",
+            "can't",
+            "cannot",
+            "need to",
             "struggle",
             "difficult",
             "hard to",
@@ -597,24 +480,22 @@ def extract_user_context(  # pylint: disable=too-many-locals
     Tier 1 — extraction_result present (Dev A already did the work):
       Map ExtractionResult fields → UserContext directly.
       Keyword scan fills any remaining None fields.
-      CONTEXT_EXTRACTION_SYSTEM_PROMPT is NOT invoked.
 
     Tier 2 — extraction_result absent, history present:
-      LLM extraction via CONTEXT_EXTRACTION_SYSTEM_PROMPT (Phase 2, not yet wired).
-      Keyword scan fills remaining None fields.
-      One LLM call — only for sessions Dev A never processed.
+      Keyword scan fills empty UserContext.
 
     Tier 3 — nothing available:
-      Return empty UserContext(). No LLM call.
+      Return empty UserContext().
     """
     history = state.conversation_history
     extraction_result = state.extraction_result
     preselected_intent = state.preselected_intent
+    catalog = _get_catalog()
 
-    # --- Tier 1: ExtractionResult present — map directly, no LLM ---
+    # --- Tier 1: ExtractionResult present — map directly ---
     if extraction_result is not None:
         ctx = _map_extraction_result(extraction_result, preselected_intent)
-        ctx = _keyword_fill(ctx, history)
+        ctx = _keyword_fill(ctx, history, catalog)
         logger.info(
             "session=%s — Tier 1 context: company=%r size=%r industry=%r "
             "methodology=%r phrases=%d (from ExtractionResult)",
@@ -627,94 +508,30 @@ def extract_user_context(  # pylint: disable=too-many-locals
         )
         return {"user_context": ctx}
 
-    # --- Tier 3: no history (and no ExtractionResult) ---
+    # --- Tier 3: no history ---
     if not history:
         logger.info(
-            "session=%s — Tier 3: no extraction_result and no history, "
-            "returning empty UserContext",
+            "session=%s — Tier 3: no extraction_result and no history",
             state.session_id,
         )
         return {"user_context": UserContext()}
 
     # --- Tier 2: no ExtractionResult, but history available ---
-    # Phase 2: call _extract_context_via_llm() here using
-    # CONTEXT_EXTRACTION_SYSTEM_PROMPT, then pass result to _keyword_fill().
-    # For now: keyword-only path (same as original Phase 1 behaviour).
-    lower = _user_text(history)
-    raw = _raw_user_text(history)
+    # Phase 2: call LLM extraction here. For now: keyword-only path.
+    ctx = _keyword_fill(UserContext(), history, catalog)
 
-    company_name = _extract_company_name(raw)
-    company_size = _detect_company_size(lower)
-    _, industry_detail = _detect_industry(lower)
-    people = _extract_people(raw)
-    teams = _extract_teams(raw, lower)
-    work_types = _detect_work_types(lower)
-    methodology = _detect_methodology(lower) or _methodology_from_hints(
-        [], preselected_intent
-    )
-    key_phrases = _extract_key_phrases(lower)
-
-    # Append preselected_intent as a signal phrase if it isn't a methodology word
     if preselected_intent:
         intent_lower = preselected_intent.lower()
         is_methodology = any(kw in intent_lower for kw in _METHODOLOGY_HINTS)
-        if not is_methodology and preselected_intent not in key_phrases:
-            key_phrases.append(preselected_intent)
-
-    has_remote = any(kw in lower for kw in _REMOTE_KEYWORDS)
-    has_clients = any(kw in lower for kw in _CLIENT_KEYWORDS)
-    has_deadlines = any(
-        p in lower for p in ["deadline", "due date", "due by", "by friday"]
-    )
-    work_items = [
-        WorkItemDetail(
-            work_type=wt, has_deadlines=has_deadlines, methodology=methodology
-        )
-        for wt in work_types
-    ]
-
-    pain_words = [
-        "struggle",
-        "difficult",
-        "hard to",
-        "problem",
-        "issue",
-        "can't",
-        "cannot",
-        "need to",
-    ]
-    primary_concern: str | None = None
-    for msg in history:
-        if msg.get("role") != "user":
-            continue
-        for sentence in re.split(r"[.!?]", msg["content"]):
-            if any(pw in sentence.lower() for pw in pain_words):
-                primary_concern = sentence.strip()
-                break
-        if primary_concern:
-            break
-
-    user_context = UserContext(
-        company_name=company_name,
-        company_size=company_size,
-        industry_detail=industry_detail,
-        people=people,
-        teams=teams,
-        work_items=work_items,
-        has_remote_teams=has_remote or None,
-        has_clients=has_clients or None,
-        work_methodology=methodology,
-        primary_concern=primary_concern,
-        key_phrases=key_phrases,
-    )
+        if not is_methodology and preselected_intent not in ctx.key_phrases:
+            ctx.key_phrases.append(preselected_intent)  # pylint: disable=no-member
 
     logger.info(
-        "session=%s — Tier 2 context: company=%r size=%r industry=%r work_types=%s "
+        "session=%s — Tier 2 context: company=%r size=%r industry=%r "
         "(keyword scan — no ExtractionResult)",
         state.session_id,
-        company_name,
-        company_size,
-        industry_detail,
-        work_types,
+        ctx.company_name,
+        ctx.company_size,
+        ctx.industry_detail,
     )
-    return {"user_context": user_context}
+    return {"user_context": ctx}
