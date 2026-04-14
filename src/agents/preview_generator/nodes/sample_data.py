@@ -72,8 +72,18 @@ _DEPARTMENTS_BY_BUNDLE = {
     "project_mgmt": ["Operations", "Product", "Engineering", "Strategy"],
     "ticketing": ["IT Support", "Customer Success", "Operations", "Engineering"],
     "hr_hub": ["Human Resources", "Talent & Culture", "People Ops", "Finance"],
+    "hr_management": ["Human Resources", "Talent & Culture", "People Ops", "Finance"],
     "weaves": ["Operations", "Product", "Leadership", "Strategy"],
 }
+
+# Queue names used as the secondary store for HR bundles (replaces waterfall project names)
+_HR_QUEUE_NAMES = [
+    "Onboarding Queue",
+    "IT Setup Queue",
+    "Leave Management Queue",
+    "Equipment Requests Queue",
+    "Policy & Compliance Queue",
+]
 
 # Project name templates keyed by work_type
 _PROJECT_NAMES = {
@@ -119,6 +129,13 @@ _TICKET_TYPES_BY_BUNDLE = {
         ("Equipment Request", "Medium"),
         ("Policy Query", "Low"),
     ],
+    "hr_management": [
+        ("Onboarding", "High"),
+        ("IT Setup", "Medium"),
+        ("Leave Request", "Low"),
+        ("Equipment Request", "Medium"),
+        ("Policy Query", "Low"),
+    ],
 }
 
 _TICKET_TITLES_BY_BUNDLE = {
@@ -131,6 +148,13 @@ _TICKET_TITLES_BY_BUNDLE = {
         "Search returns empty results intermittently",
     ],
     "hr_hub": [
+        "New hire onboarding — Week 1 checklist",
+        "Laptop provisioning for {name}",
+        "Annual leave request — {name}",
+        "Access credentials not received",
+        "Benefits enrollment query — {name}",
+    ],
+    "hr_management": [
         "New hire onboarding — Week 1 checklist",
         "Laptop provisioning for {name}",
         "Annual leave request — {name}",
@@ -200,6 +224,7 @@ def _role_pool(bundle_key: str, user_context: UserContext | None) -> list[str]:
     bundle_map = {
         "ticketing": _SUPPORT_ROLES,
         "hr_hub": _HR_ROLES,
+        "hr_management": _HR_ROLES,
     }
     return bundle_map.get(bundle_key, _GENERAL_ROLES)
 
@@ -276,11 +301,32 @@ def _build_employees(
 
 
 def _build_projects(
-    _bundle_key: str,
+    bundle_key: str,
     user_context: UserContext | None,
     employees: list[dict],
     count: int = 5,
 ) -> list[dict]:
+    # HR bundles use queue names instead of project/milestone names
+    if bundle_key in ("hr_hub", "hr_management"):
+        templates = _HR_QUEUE_NAMES
+        projects = []
+        for i in range(count):
+            name = templates[i % len(templates)]
+            lead = employees[i % len(employees)]["name"] if employees else "Unassigned"
+            projects.append(
+                {
+                    "id": i + 1,
+                    "name": name,
+                    "status": _STATUSES_PROJECT[i % len(_STATUSES_PROJECT)],
+                    "lead": lead,
+                    "team_size": 2 + (i % 3),
+                    "start_date": _base_date(60 - i * 10),
+                    "due_date": _future_date(30 + i * 14),
+                    "completion_pct": [68, 42, 15, 100, 30][i % 5],
+                }
+            )
+        return projects
+
     work_type = _work_type(user_context)
     company = _company_slug(user_context)
     templates = _PROJECT_NAMES.get(work_type, _PROJECT_NAMES["waterfall"])

@@ -8,22 +8,16 @@ from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
 
-# Only these catalog keys have dedicated flag/store schemas and should have
-# their flags enabled. All other bundles (e.g. sales, finance, real_estate)
-# share a render_key but are not full preview bundles — they use fallback behavior.
-_TIER1_CANONICAL_KEYS: frozenset[str] = frozenset(
-    {"hr_management", "project_mgmt", "ticketing", "generic", "all_microservices"}
-)
-
 
 def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
-    # pylint: disable=too-many-branches
     """Resolve bundle_key → feature flags, permission_services, landing_pages.
 
-    Uses the canonical BundleCatalog from state to resolve definitions.
-    Includes the primary bundle plus all of its compatible_addons.
-    Unknown bundle_key is handled gracefully (empty sets; data_tier will
-    fall through to Tier 3 fallback).
+    All 69 feature flags are enabled for every bundle — module activation is
+    no longer bundle-specific. Bundle identity still drives permission_services,
+    landing_pages, config, and dummy data stores.
+
+    Unknown bundle_key is handled gracefully (empty permission_services /
+    landing_pages; data_tier will fall through to Tier 3 fallback).
 
     Returns updates for:
       resolved_bundle_ids, feature_flags, permission_services, landing_pages
@@ -39,45 +33,32 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
 
     bundle_key = state.bundle_key
 
-    if bundle_key not in _TIER1_CANONICAL_KEYS:
-        logger.info(
-            "session=%s — bundle_key=%r is not a tier-1 bundle, "
-            "skipping flag resolution",
-            state.session_id,
-            bundle_key,
-        )
-        return {
-            "resolved_bundle_ids": [],
-            "feature_flags": {
-                e["name"]: False for e in state.catalog.get_feature_flags()
-            },
-            "permission_services": [],
-            "landing_pages": [],
-        }
+    # All flags are always enabled regardless of bundle.
+    feature_flags: dict[str, bool] = {
+        e["name"]: True for e in state.catalog.get_feature_flags()
+    }
 
     bundle = state.catalog.get(bundle_key)
 
     if bundle is None:
-        logger.warning(
-            "session=%s — bundle_key=%r not in catalog, resolved nothing",
+        logger.info(
+            "session=%s — bundle_key=%r not in catalog, no permission_services/landing_pages",
             state.session_id,
             bundle_key,
         )
         return {
             "resolved_bundle_ids": [],
-            "feature_flags": {},
+            "feature_flags": feature_flags,
             "permission_services": [],
             "landing_pages": [],
         }
 
-    # Collect primary + addons
+    # Collect permission_services and landing_pages from primary bundle + addons.
     bundle_ids = [bundle_key]
     for addon_key in bundle.compatible_addons:
         if state.catalog.has_bundle(addon_key):
             bundle_ids.append(addon_key)
 
-    # Accumulate across all resolved bundles
-    flag_names_to_enable: set[str] = set()
     permission_services: list[str] = []
     landing_pages: list[dict] = []
 
@@ -85,7 +66,6 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
         b_def = state.catalog.get(bid)
         if b_def is None:
             continue
-        flag_names_to_enable.update(b_def.flags)
         for svc in b_def.permission_services:
             if svc not in permission_services:
                 permission_services.append(svc)
@@ -93,19 +73,10 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
             if lp not in landing_pages:
                 landing_pages.append(lp)
 
-    # Apply to a fresh snapshot of all known flags
-    snapshot = state.catalog.get_feature_flags()
-    for entry in snapshot:
-        if entry["name"] in flag_names_to_enable:
-            entry["isEnabled"] = True
-
-    feature_flags: dict[str, bool] = {e["name"]: e["isEnabled"] for e in snapshot}
-
     logger.info(
-        "session=%s — resolved bundle_ids=%s enabled_flags=%d permission_services=%s",
+        "session=%s — bundle_key=%r all flags enabled, permission_services=%s",
         state.session_id,
-        bundle_ids,
-        sum(1 for v in feature_flags.values() if v),
+        bundle_key,
         permission_services,
     )
 

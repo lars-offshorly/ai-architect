@@ -213,8 +213,7 @@ class TestHRHub:
         assert flag_map["hrhub-overview"] is True
         assert flag_map["dashboard-module"] is True
         assert flag_map["kpi-module"] is True
-        # Tickets module should NOT be enabled for hr_hub
-        assert flag_map["tickets-module"] is False
+        assert flag_map["tickets-module"] is True
 
     def test_modules_include_hrhub(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-hr-4", "hr_management", _HISTORY_HR_HUB)
@@ -275,8 +274,7 @@ class TestProjectOps:
         assert flag_map["projects-module"] is True
         assert flag_map["dashboard-module"] is True
         assert flag_map["kpi-module"] is True
-        # HR Hub flags must NOT be enabled
-        assert flag_map["hrhub-module"] is False
+        assert flag_map["hrhub-module"] is True
 
     def test_modules_include_projects(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-po-3", "project_mgmt", _HISTORY_PROJECT_OPS)
@@ -334,8 +332,8 @@ class TestFieldService:
         gen, _ = svc.generate("sess-fs-2", "ticketing", _HISTORY_FIELD_SERVICE)
         flag_map = {f["name"]: f["isEnabled"] for f in gen["feature_flags"]}
         assert flag_map["tickets-module"] is True
-        assert flag_map["hrhub-module"] is False
-        assert flag_map["projects-module"] is False
+        assert flag_map["hrhub-module"] is True
+        assert flag_map["projects-module"] is True
 
     def test_dummy_data_store_names(self, svc: PreviewGeneratorService) -> None:
         _, dummy = svc.generate("sess-fs-3", "ticketing", _HISTORY_FIELD_SERVICE)
@@ -367,14 +365,14 @@ class TestUnknownBundleTier3:
         gen, _ = svc.generate("sess-unk-2", "unknown_bundle", _HISTORY_UNKNOWN)
         assert gen["bundle_key"] == "unknown_bundle"
 
-    def test_no_flags_enabled(self, svc: PreviewGeneratorService) -> None:
+    def test_all_flags_enabled(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-unk-3", "unknown_bundle", _HISTORY_UNKNOWN)
         enabled = [f for f in gen["feature_flags"] if f["isEnabled"]]
-        assert len(enabled) == 0
+        assert len(enabled) == 69
 
-    def test_modules_empty(self, svc: PreviewGeneratorService) -> None:
+    def test_all_modules_present(self, svc: PreviewGeneratorService) -> None:
         gen, _ = svc.generate("sess-unk-4", "unknown_bundle", _HISTORY_UNKNOWN)
-        assert gen["modules"] == []
+        assert len(gen["modules"]) == 10
 
     def test_stores_use_fallback_names(self, svc: PreviewGeneratorService) -> None:
         _, dummy = svc.generate("sess-unk-5", "unknown_bundle", _HISTORY_UNKNOWN)
