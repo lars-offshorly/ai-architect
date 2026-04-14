@@ -30,8 +30,11 @@ SRC = ROOT / "src"
 sys.path.insert(0, str(SRC))
 sys.path.insert(0, str(ROOT))  # catalog/ lives at project root, not src/
 
-from catalog.bundle_catalog import BundleCatalog  # noqa: E402
+# pylint: disable=wrong-import-position
 from agents.preview_generator.service import PreviewGeneratorService  # noqa: E402
+from catalog.bundle_catalog import BundleCatalog  # noqa: E402
+
+# pylint: enable=wrong-import-position
 
 REGISTRY_PATH = ROOT / "src" / "templates" / "bundle_registry.yaml"
 OUTPUT_DIR = ROOT / "docs" / "sample-output" / "dummy-data"
@@ -71,10 +74,11 @@ SCENARIOS = [
             {
                 "role": "user",
                 "content": (
-                    "We're a marketing agency called Bright Signal Co. We run campaigns "
-                    "for about 15 clients simultaneously. We need to track KPIs like "
-                    "monthly leads, conversion rates, cost per acquisition, and campaign "
-                    "ROI. Team of 30 people split across creative, media buying, and "
+                    "We're a marketing agency called Bright Signal Co. "
+                    "We run campaigns for about 15 clients simultaneously. "
+                    "We need to track KPIs like monthly leads, conversion rates, "
+                    "cost per acquisition, and campaign ROI. "
+                    "Team of 30 people split across creative, media buying, and "
                     "analytics."
                 ),
             },
@@ -94,8 +98,9 @@ SCENARIOS = [
             {
                 "role": "user",
                 "content": (
-                    "We're FastMove Logistics, handling import/export documentation for "
-                    "about 500 shipments per month. We need to automate document "
+                    "We're FastMove Logistics, handling import/export "
+                    "documentation for about 500 shipments per month. "
+                    "We need to automate document "
                     "processing — bill of lading, customs declarations, invoices — and "
                     "track compliance across our 8-person operations team."
                 ),
@@ -103,7 +108,8 @@ SCENARIOS = [
             {
                 "role": "assistant",
                 "content": (
-                    "I'll set up a document operations workspace for FastMove Logistics."
+                    "I'll set up a document operations workspace "
+                    "for FastMove Logistics."
                 ),
             },
         ],

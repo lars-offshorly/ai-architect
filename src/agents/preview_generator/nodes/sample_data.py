@@ -76,7 +76,8 @@ _DEPARTMENTS_BY_BUNDLE = {
     "weaves": ["Operations", "Product", "Leadership", "Strategy"],
 }
 
-# Queue names used as the secondary store for HR bundles (replaces waterfall project names)
+# Queue names used as the secondary store for HR bundles
+# (replaces waterfall project names)
 _HR_QUEUE_NAMES = [
     "Onboarding Queue",
     "IT Setup Queue",

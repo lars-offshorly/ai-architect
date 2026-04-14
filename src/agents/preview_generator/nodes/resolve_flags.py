@@ -42,7 +42,8 @@ def resolve_bundles_to_flags(state: PreviewGeneratorState) -> dict:
 
     if bundle is None:
         logger.info(
-            "session=%s — bundle_key=%r not in catalog, no permission_services/landing_pages",
+            "session=%s — bundle_key=%r not in catalog, "
+            "no permission_services/landing_pages",
             state.session_id,
             bundle_key,
         )

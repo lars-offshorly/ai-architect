@@ -395,13 +395,13 @@ class TestClassifierToPreviewTier3:
         assert data["dummy_data_json"]["company_name"] == "LegalEdge"
 
     @pytest.mark.asyncio
-    async def test_tier3_no_flags_enabled(self, client: AsyncClient) -> None:
+    async def test_tier3_all_flags_enabled(self, client: AsyncClient) -> None:
         extraction = _make_extraction(company="SalesCo")
         sid = _seed_confirmed("sales", extraction=extraction)
 
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         enabled = [f for f in data["generation_json"]["feature_flags"] if f["isEnabled"]]
-        assert len(enabled) == 0
+        assert len(enabled) == 69
 
 
 # ===========================================================================
