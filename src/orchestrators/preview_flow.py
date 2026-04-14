@@ -76,6 +76,7 @@ class PreviewFlow:
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
+            conversation_history=conversation_history,
         )
 
         display_name = self._display_names.get(bundle_key, bundle_key)
@@ -108,6 +109,7 @@ class PreviewFlow:
         bundle_key: str,
         dummy_data_json: dict,
         user_context: Any,
+        conversation_history: list[dict] | None = None,
     ) -> None:
         """Attempt to populate dashboard_widgets in stores via the external service.
 
@@ -127,7 +129,12 @@ class PreviewFlow:
             return
 
         try:
-            personalized = personalize_template(template, user_context, bundle_key)
+            personalized = personalize_template(
+                template,
+                user_context,
+                bundle_key,
+                conversation_history=conversation_history or [],
+            )
             response = self._dashboard_client.generate(personalized)
         except Exception as exc:  # noqa: BLE001
             logger.warning(
