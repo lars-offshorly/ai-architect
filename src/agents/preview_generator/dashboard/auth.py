@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Optional
 
 import httpx
 
@@ -20,7 +19,7 @@ from core.logging import get_logger
 logger = get_logger(__name__)
 
 
-class KnitAuthService:
+class KnitAuthService:  # pylint: disable=too-many-instance-attributes
     """Fetches and caches a Knit platform Bearer token.
 
     Usage:
@@ -51,7 +50,7 @@ class KnitAuthService:
         self._ttl = ttl_seconds
         self._timeout = timeout
 
-        self._token: Optional[str] = None
+        self._token: str | None = None
         self._expires_at: float = 0.0
         self._lock = threading.Lock()
 
@@ -59,7 +58,7 @@ class KnitAuthService:
     # Public API
     # ------------------------------------------------------------------
 
-    def get_token(self) -> Optional[str]:
+    def get_token(self) -> str | None:
         """Return a valid Bearer token, refreshing if expired.
 
         Returns None only when no token has ever been fetched successfully
@@ -83,7 +82,7 @@ class KnitAuthService:
     def _is_valid(self) -> bool:
         return self._token is not None and time.monotonic() < self._expires_at
 
-    def _refresh(self) -> Optional[str]:
+    def _refresh(self) -> str | None:
         """POST credentials, parse token, update cache. Caller holds lock."""
         logger.info("Refreshing Knit auth token from %s", self._auth_url)
         try:
@@ -117,7 +116,7 @@ class KnitAuthService:
         return self._token
 
     @staticmethod
-    def _parse_token(data: dict) -> Optional[str]:
+    def _parse_token(data: dict) -> str | None:
         """Extract the token string from the login response.
 
         Tries common field names in priority order:

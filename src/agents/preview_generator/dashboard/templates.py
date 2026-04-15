@@ -14,7 +14,6 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from typing import Optional
 
 from core.logging import get_logger
 
@@ -25,7 +24,7 @@ logger = get_logger(__name__)
 # receive None from get(), skipping the dashboard call entirely.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "hr_management": "hr_management",
-    "hr_hub": "hr_management",       # render key alias
+    "hr_hub": "hr_management",  # render key alias
     "project_mgmt": "project_management",
 }
 
@@ -48,7 +47,7 @@ class DashboardTemplateRegistry:
     # Public API
     # ------------------------------------------------------------------
 
-    def get(self, bundle_key: str) -> Optional[dict]:
+    def get(self, bundle_key: str) -> dict | None:
         """Return a deep copy of the template for ``bundle_key``, or None."""
         filename = _BUNDLE_TO_TEMPLATE.get(bundle_key)
         if filename is None:
@@ -73,7 +72,8 @@ class DashboardTemplateRegistry:
             path = self._dir / f"{filename}.json"
             if not path.exists():
                 logger.warning(
-                    "Dashboard template not found: %s — bundle(s) using it will skip dashboard enrichment",
+                    "Dashboard template not found: %s — "
+                    "bundle(s) using it will skip dashboard enrichment",
                     path,
                 )
                 continue
@@ -82,4 +82,6 @@ class DashboardTemplateRegistry:
                     self._cache[filename] = json.load(f)
                 logger.info("Loaded dashboard template: %s", path.name)
             except (json.JSONDecodeError, OSError) as exc:
-                logger.warning("Failed to load dashboard template %s: %s", path.name, exc)
+                logger.warning(
+                    "Failed to load dashboard template %s: %s", path.name, exc
+                )

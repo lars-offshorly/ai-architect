@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from agents.preview_generator.dashboard.client import DashboardClient
 from agents.preview_generator.dashboard.personalizer import personalize_template
@@ -36,8 +36,8 @@ class PreviewFlow:
         self,
         preview_generator_service: Any,
         bundle_display_names: dict[str, str],
-        dashboard_client: Optional[DashboardClient] = None,
-        dashboard_template_registry: Optional[DashboardTemplateRegistry] = None,
+        dashboard_client: DashboardClient | None = None,
+        dashboard_template_registry: DashboardTemplateRegistry | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
@@ -52,7 +52,9 @@ class PreviewFlow:
         extraction_result: ExtractionResult | None = None,
         preselected_intent: str | None = None,
     ) -> AppPayload:
-        """Execute the preview pipeline, enrich with dashboard widgets, return AppPayload.
+        """Execute the preview pipeline, enrich with dashboard widgets.
+
+        Returns AppPayload.
 
         Args:
             extraction_result:  Dev A's accumulated ExtractionResult. When present,
@@ -136,7 +138,7 @@ class PreviewFlow:
                 conversation_history=conversation_history or [],
             )
             response = self._dashboard_client.generate(personalized)
-        except Exception as exc:  # noqa: BLE001
+        except (AttributeError, KeyError, RuntimeError, TypeError, ValueError) as exc:
             logger.warning(
                 "session=%s — dashboard enrichment error: %s", session_id, exc
             )
@@ -159,9 +161,11 @@ class PreviewFlow:
         )
 
     @staticmethod
-    def _to_internal_widgets(raw_widgets: Any) -> list[dict[str, object]]:
+    def _to_internal_widgets(  # pylint: disable=too-many-branches
+        raw_widgets: Any,
+    ) -> list[dict[str, object]]:
         """Map external dashboard debug widgets to internal widget layout shape.
-        
+
         Handles CJ's dashboard generation output format:
         - Maps typeId (int) to type (string)
         - Extracts positioning from settings.xAxis/yAxis/width/height
@@ -171,7 +175,7 @@ class PreviewFlow:
             return []
 
         # CJ's typeId → internal type string mapping
-        TYPE_ID_MAP = {
+        type_id_map = {
             1: "number",
             2: "text",
             3: "bar",  # Chart widget - refined by chartType
@@ -185,7 +189,9 @@ class PreviewFlow:
 
             # Extract type from typeId
             type_id = raw.get("typeId")
-            widget_type = TYPE_ID_MAP.get(type_id, "number")
+            widget_type = (
+                type_id_map.get(type_id) if isinstance(type_id, int) else None
+            ) or "number"
 
             # For chart widgets (typeId=3), refine type from settings.chartType
             if type_id == 3:

@@ -18,7 +18,6 @@ from __future__ import annotations
 import copy
 import re
 from datetime import date, timedelta
-from typing import Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -40,9 +39,9 @@ _HISTORY_WINDOW = 5
 
 def personalize_template(
     template: dict,
-    user_context: Optional[UserContext],
+    user_context: UserContext | None,
     bundle_key: str,
-    conversation_history: Optional[list[dict]] = None,
+    conversation_history: list[dict] | None = None,
 ) -> dict:
     """Return a personalized copy of ``template`` for the given session context.
 
@@ -97,7 +96,7 @@ def personalize_template(
 # ---------------------------------------------------------------------------
 
 
-def _personalize_dashboard_name(payload: dict, company_name: Optional[str]) -> None:
+def _personalize_dashboard_name(payload: dict, company_name: str | None) -> None:
     name: str = payload.get("dashboard_name", "")
     if company_name:
         name = _COMPANY_PLACEHOLDER_RE.sub(company_name, name)
@@ -108,13 +107,23 @@ def _personalize_dashboard_name(payload: dict, company_name: Optional[str]) -> N
 
 def _personalize_report(
     payload: dict,
-    user_context: Optional[UserContext],
+    user_context: UserContext | None,
     bundle_key: str,
     conversation_history: list[dict],
 ) -> None:
     """Write the report field: LLM-generated if possible, keyword fallback otherwise."""
     existing_report: str = payload.get("report", "")
     if not isinstance(existing_report, str):
+        return
+
+    company_name = (
+        user_context.company_name
+        if user_context and user_context.company_name
+        else None
+    )
+
+    # Skip personalization entirely if there's no context to personalize with.
+    if not company_name and not conversation_history:
         return
 
     # Attempt LLM generation first.
@@ -127,17 +136,12 @@ def _personalize_report(
         return
 
     # Keyword fallback: replace "Template" occurrences with the company name.
-    company_name = (
-        user_context.company_name
-        if user_context and user_context.company_name
-        else None
-    )
     if company_name:
         payload["report"] = _COMPANY_PLACEHOLDER_RE.sub(company_name, existing_report)
 
 
 def _build_llm_human_message(
-    user_context: Optional[UserContext],
+    user_context: UserContext | None,
     bundle_key: str,
     conversation_history: list[dict],
     fallback_report: str,
@@ -178,11 +182,11 @@ def _build_llm_human_message(
 
 
 def _generate_report_via_llm(
-    user_context: Optional[UserContext],
+    user_context: UserContext | None,
     bundle_key: str,
     conversation_history: list[dict],
     fallback_report: str,
-) -> Optional[str]:
+) -> str | None:
     """Call the LLM to generate a personalised report string.
 
     Returns the generated text on success, or None on any failure (no API key,
@@ -206,8 +210,10 @@ def _generate_report_via_llm(
         )
         text: str = response.content.strip() if response and response.content else ""
         return text if text else None
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("LLM report generation failed for bundle=%s: %s", bundle_key, exc)
+    except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+        logger.warning(
+            "LLM report generation failed for bundle=%s: %s", bundle_key, exc
+        )
         return None
 
 

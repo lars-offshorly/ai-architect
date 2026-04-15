@@ -18,7 +18,7 @@ Responsibility
 from __future__ import annotations
 
 
-def merge_customization(
+def merge_customization(  # noqa: V103
     base_config: dict[str, object],
     customization: dict[str, object],
 ) -> dict[str, object]:
@@ -38,6 +38,7 @@ def merge_customization(
         NotImplementedError: Pending implementation (CORE-AI-015 —
                              Customization Merge Engine).
     """
+    del base_config, customization
     raise NotImplementedError(
         "merge_customization is not yet implemented (CORE-AI-015 — "
         "Customization Merge Engine)."

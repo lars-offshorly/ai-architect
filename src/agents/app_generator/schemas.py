@@ -1,9 +1,12 @@
+"""App generator schemas - comprehensive Pydantic models for generation JSON."""
+
+# pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
-
 
 # ---------------------------------------------------------------------------
 # Entity relationship model
@@ -21,6 +24,7 @@ class EntityRelationship(BaseModel):
     label: str | None = Field(
         default=None, description="Human-readable relationship label."
     )
+
 
 # ---------------------------------------------------------------------------
 # Shared primitive: KPI definition item

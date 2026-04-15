@@ -1,4 +1,6 @@
-"""relationship_mapper — load entity relationships from bundle_registry.yaml definitions.
+"""relationship_mapper — load entity relationships from bundle_registry.yaml.
+
+Load entity relationships from bundle_registry.yaml definitions.
 
 Converts the explicit ``entity_relationships`` list declared under each bundle's
 ``metadata`` section in ``bundle_registry.yaml`` into typed ``EntityRelationship``
@@ -69,7 +71,8 @@ def map_relationships(
         bundle_key:           Render key of the bundle (e.g. ``"hr_hub"``).
                               Used for logging only.
         entity_relationships: Relationship entries parsed from
-                              ``bundle_registry.yaml`` ``metadata.entity_relationships``.
+                              ``bundle_registry.yaml``
+                              ``metadata.entity_relationships``.
         entity_definitions:   Entity label/plural map from
                               ``bundle_registry.yaml`` ``metadata.entity_definitions``.
                               Used to auto-generate labels when the YAML entry

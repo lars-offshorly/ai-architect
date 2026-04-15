@@ -8,9 +8,9 @@ from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from repositories.template_repository import TemplateRepository
 
+from .config_assembly import map_relationships
 from .contract import AppPayloadContract
 from .formatter import AppPayloadFormatter
-from .config_assembly import map_relationships
 from .schemas import DummyDataJsonSchema, GenerationJsonSchema
 from .validators import validate_dummy_data_json, validate_generation_json
 
@@ -25,7 +25,7 @@ class AppGeneratorService:
         self._catalog = catalog
         self._formatter = AppPayloadFormatter()
 
-    def assemble(
+    def assemble(  # pylint: disable=too-many-locals
         self,
         session_id: str,
         bundle_key: str,
@@ -41,8 +41,8 @@ class AppGeneratorService:
             # (unlikely for confirmed session)
             template_dir = bundle_key
             render_key = bundle_key
-            entity_definitions = {}
-            entity_relationships = []
+            entity_definitions: dict[str, Any] = {}
+            entity_relationships: list[Any] = []
         else:
             template_dir = bundle.template_dir
             render_key = bundle.render_key
@@ -73,12 +73,16 @@ class AppGeneratorService:
 
         # 1a. Inject relationship map into config
         if entity_relationships:
-            relationships = map_relationships(render_key, entity_relationships, entity_definitions)
+            relationships = map_relationships(
+                render_key, entity_relationships, entity_definitions
+            )
             config = generation_json.get("config")
             if isinstance(config, dict):
                 config["relationships"] = [r.model_dump() for r in relationships]
                 session_logger.debug(
-                    "Mapped %d relationships for bundle=%s", len(relationships), render_key
+                    "Mapped %d relationships for bundle=%s",
+                    len(relationships),
+                    render_key,
                 )
 
         # 2. Strict Pydantic Schema Validation (Integrated from T140)

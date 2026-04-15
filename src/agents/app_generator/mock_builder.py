@@ -108,10 +108,12 @@ class MockPayloadBuilder:
         resolved_session_id = session_id or str(uuid.uuid4())
 
         catalog_key = self._resolve_catalog_key(bundle_key)
-        generation_json, pipeline_dummy_data, _user_context = self._preview_service.generate(
-            session_id=resolved_session_id,
-            bundle_key=catalog_key,
-            conversation_history=[],
+        generation_json, pipeline_dummy_data, _user_context = (
+            self._preview_service.generate(
+                session_id=resolved_session_id,
+                bundle_key=catalog_key,
+                conversation_history=[],
+            )
         )
 
         if dummy_data_override is not None:

@@ -7,8 +7,6 @@ receives None and the preview pipeline continues with an empty widget list.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import httpx
 
 from core.logging import get_logger
@@ -41,7 +39,7 @@ class DashboardClient:
         self._auth = auth_service
         self._timeout = timeout
 
-    def generate(self, payload: dict) -> Optional[dict]:
+    def generate(self, payload: dict) -> dict | None:
         """POST payload to /api/v1/dashboards/generate/.
 
         Args:
@@ -81,7 +79,9 @@ class DashboardClient:
                 return None
 
             if response.status_code == 401 and attempt == 0:
-                logger.info("Dashboard client: 401 received — invalidating token and retrying")
+                logger.info(
+                    "Dashboard client: 401 received — invalidating token and retrying"
+                )
                 self._auth.invalidate()
                 continue
 

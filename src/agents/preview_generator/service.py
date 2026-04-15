@@ -35,7 +35,9 @@ class PreviewGeneratorService:
         extraction_result: ExtractionResult | None = None,
         preselected_intent: str | None = None,
     ) -> tuple[dict, dict, UserContext | None]:
-        """Run the preview pipeline and return (generation_json, dummy_data_json, user_context).
+        """Run the preview pipeline.
+
+        Returns (generation_json, dummy_data_json, user_context).
 
         Args:
             session_id:           Session identifier (passed through to state/logs).

@@ -63,8 +63,13 @@ def _parse_metadata(bundle_key: str, raw: dict | None) -> BundleMetadata | None:
                 plural=str(val.get("plural", key + "s")),
             )
     entity_rels: list[EntityRelationshipDefinition] = []
-    for rel in (raw.get("entity_relationships") or []):
-        if isinstance(rel, dict) and rel.get("source") and rel.get("target") and rel.get("type"):
+    for rel in raw.get("entity_relationships") or []:
+        if (
+            isinstance(rel, dict)
+            and rel.get("source")
+            and rel.get("target")
+            and rel.get("type")
+        ):
             entity_rels.append(
                 EntityRelationshipDefinition(
                     source=str(rel["source"]),
