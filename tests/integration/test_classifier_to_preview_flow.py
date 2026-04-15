@@ -23,6 +23,8 @@ No mocking of the preview pipeline — real stack end to end.
 
 from __future__ import annotations
 
+import importlib
+import os
 import uuid
 
 import pytest
@@ -45,9 +47,11 @@ def fixture_app():
     from pathlib import Path
 
     sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
-    from main import create_app
-
-    return create_app()
+    os.environ["DEBUG"] = "True"
+    config_module = importlib.import_module("core.config")
+    config_module.get_settings.cache_clear()
+    main_module = importlib.import_module("main")
+    return main_module.create_app()
 
 
 @pytest.fixture(name="client")
