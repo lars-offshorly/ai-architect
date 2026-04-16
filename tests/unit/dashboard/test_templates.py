@@ -76,7 +76,7 @@ def test_project_mgmt_returns_template(registry: DashboardTemplateRegistry):
 
 @pytest.mark.parametrize(
     "bundle_key",
-    ["finance", "marketing", "sales", "healthcare", "unknown_bundle", "generic"],
+    ["finance", "marketing", "sales", "unknown_bundle"],
 )
 def test_tier3_bundles_return_none(bundle_key: str, registry: DashboardTemplateRegistry):
     result = registry.get(bundle_key)
@@ -156,4 +156,5 @@ def test_supported_bundles_contains_known_keys(registry: DashboardTemplateRegist
 def test_supported_bundles_does_not_contain_tier3(registry: DashboardTemplateRegistry):
     supported = registry.supported_bundles()
     assert "finance" not in supported
-    assert "generic" not in supported
+    assert "marketing" not in supported
+    assert "sales" not in supported

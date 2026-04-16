@@ -1,0 +1,90 @@
+{
+    "dashboard_name": "Corporate Legal Department Dashboard Template",
+    "source": "analytics",
+    "report": "# Corporate Legal Department Dashboard\n\n## Overview\nThis dashboard provides in-house legal teams with visibility into contract pipeline health, IP activity, compliance incident tracking, and legal spend. It supports the General Counsel in managing workload, mitigating risk, and demonstrating legal department value to the business.\n\n## Key Metrics\n- Open Contracts: 47\n- Contract Review Turnaround: 5 days\n- Compliance Incidents: 3\n\n## Insights\n- Contract cycle time has improved by 1.2 days since the standard template library was deployed.\n- IP filings are on track with 12 submissions YTD against an annual target of 20.\n- Legal spend variance of 0.94 indicates the department is operating 6% under budget.",
+    "widgets": [
+        {
+            "type": "number",
+            "name": "Open Contracts",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Active Contracts",
+                        "data_source": "contracts",
+                        "module": "Legal Services",
+                        "operation": "count",
+                        "filters": {
+                            "status": "Open"
+                        }
+                    }
+                ],
+                "expected_value": "47"
+            }
+        },
+        {
+            "type": "number",
+            "name": "Avg Contract Review Turnaround (Days)",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Contract Cycle Time",
+                        "data_source": "contracts",
+                        "module": "Legal Services",
+                        "operation": "average"
+                    }
+                ],
+                "expected_value": "5 days"
+            }
+        },
+        {
+            "type": "bar",
+            "title": "Contracts by Type",
+            "description": "Distribution of active contracts by agreement category.",
+            "data_config": {
+                "module": "Legal Services",
+                "data_source": "contracts",
+                "group_by": ["contract_type"],
+                "fields": ["Vendor MSA", "NDA", "Employment", "IP License", "SaaS Agreement"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "pie",
+            "title": "Compliance Incidents by Category",
+            "description": "Breakdown of open and recently closed compliance incidents by type.",
+            "data_config": {
+                "module": "Legal Services",
+                "data_source": "compliance_incidents",
+                "group_by": ["incident_type"],
+                "fields": ["Data Privacy", "Employment", "Regulatory", "Contract Breach", "Other"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "line",
+            "title": "Monthly Legal Matters Trend",
+            "description": "Volume of new legal matters opened per month over the past year.",
+            "data_config": {
+                "module": "Legal Services",
+                "data_source": "legal_matters",
+                "group_by": ["custom_dates"],
+                "date_from": "2025-01-01",
+                "date_to": "2025-12-31",
+                "date_interval": "monthly",
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "list",
+            "name": "Contracts Pending Review",
+            "description": "List of contracts awaiting legal review with counterparty, type, and due date.",
+            "data_config": {
+                "module": "Legal Services",
+                "data_source": "contracts",
+                "group_by": ["counterparty", "contract_type", "assigned_counsel", "review_due_date"]
+            },
+            "column_count": 4,
+            "column_width": 200
+        }
+    ]
+}

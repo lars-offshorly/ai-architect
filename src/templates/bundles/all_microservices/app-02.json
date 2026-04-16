@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "all_microservices",
+  "keywords": ["ecommerce", "online store", "orders", "products", "inventory", "fulfillment", "marketplace", "shoppers", "SKU", "cart", "checkout", "returns"],
+  "stores": {
+    "tickets": [
+      {"id": "ticket-001", "title": "Order fulfillment delay — batch 2026-04-09", "status": "pending", "priority": "high", "category": "Operations", "assignee": "Maria Santos", "requester": "Carlos Mendez", "created_at": "2026-04-12T09:00:00Z"},
+      {"id": "ticket-002", "title": "Inventory sync failing — SKU-4821", "status": "in_progress", "priority": "medium", "category": "Bug Report", "assignee": "Carlos Mendez", "requester": "Ana Reyes", "created_at": "2026-04-09T10:00:00Z"},
+      {"id": "ticket-003", "title": "Return processing stuck — Order #98234", "status": "resolved", "priority": "medium", "category": "Returns", "assignee": "Ana Reyes", "requester": "James Okafor", "created_at": "2026-04-06T08:00:00Z"}
+    ],
+    "projects": [
+      {"id": "proj-001", "title": "Mobile Checkout Redesign", "status": "active", "phase": "in_progress", "lead": "James Okafor", "start_date": "2026-01-20", "due_date": "2026-06-15", "completion_pct": 68},
+      {"id": "proj-002", "title": "Inventory AI Forecasting", "status": "active", "phase": "in_progress", "lead": "Sofia Lim", "start_date": "2026-02-01", "due_date": "2026-07-31", "completion_pct": 42}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Checkout UX prototype review", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "David Park", "due_date": "2026-04-30"},
+      {"id": "task-002", "title": "Forecasting model v1 testing", "project_id": "proj-002", "status": "review", "priority": "medium", "assignee": "Priya Nair", "due_date": "2026-05-10"},
+      {"id": "task-003", "title": "Payment gateway fallback config", "project_id": "proj-001", "status": "backlog", "priority": "high", "assignee": "Lucas Silva", "due_date": "2026-05-20"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "active_orders", "label": "Active Orders", "type": "count", "sample_value": 3420, "source_service": "all_microservices"},
+      {"id": 2, "key": "order_fulfillment_rate", "label": "Order Fulfillment Rate", "type": "percentage", "sample_value": 96.8, "source_service": "all_microservices"},
+      {"id": 3, "key": "return_rate", "label": "Return Rate", "type": "percentage", "sample_value": 7.1, "source_service": "all_microservices"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "ticket_summary", "title": "Order Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Commerce Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

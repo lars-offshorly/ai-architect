@@ -1,0 +1,112 @@
+{
+  "dashboard_name": "Real Estate Brokerage Dashboard Template",
+  "source": "analytics",
+  "report": "# Real Estate Brokerage Operations Report\n\n## Overview\nThis dashboard gives Summit Realty Group a live view of listing activity, deal velocity, days-on-market performance, agent productivity, and the current month's closing pipeline.\n\n## Key Metrics\n- Active Listings: 63\n- Listings Closed MTD: 11\n- Avg Days on Market: 22\n- Avg Sale Price: $485,000\n- Active Agents: 28\n\n## Insights\n- Avg DOM of 22 days is competitive in current market conditions; listings exceeding 45 days should trigger a price review.\n- MTD closing pace of 11 deals suggests a strong month; 6 listings are currently pending and should close before month-end.\n- Agent productivity varies — top 10 agents are likely driving 60%+ of volume; consider tracking individual agent DOM and close ratios.",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Listings Count",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Listings",
+            "data_source": "projects",
+            "module": "Real Estate",
+            "operation": "count",
+            "filters": {"status": ["Active"]}
+          }
+        ],
+        "expected_value": "63"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Monthly Closed Deals",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Closed Deals MTD",
+            "data_source": "projects",
+            "module": "Real Estate",
+            "operation": "count",
+            "filters": {"status": ["Closed"], "period": "mtd"}
+          }
+        ],
+        "expected_value": "11"
+      }
+    },
+    {
+      "type": "pie",
+      "name": "Listing Status Distribution",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Listings by Status",
+            "data_source": "projects",
+            "module": "Real Estate",
+            "operation": "count",
+            "filters": {},
+            "group_by": "status"
+          }
+        ],
+        "expected_value": "pie chart"
+      }
+    },
+    {
+      "type": "line",
+      "name": "Days on Market Trend",
+      "data_config": {
+        "datasets": [
+          {
+            "name": "Avg Days on Market",
+            "data_source": "projects",
+            "module": "Real Estate",
+            "operation": "average",
+            "filters": {"status": ["Closed"]},
+            "field": "days_on_market"
+          }
+        ],
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "name": "Agent Performance",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Closings per Agent",
+            "data_source": "projects",
+            "module": "Real Estate",
+            "operation": "count",
+            "filters": {"status": ["Closed"]},
+            "group_by": "assigned_agent"
+          }
+        ],
+        "expected_value": "bar chart"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Active Listings & Deal Pipeline",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open & Pending Items",
+            "data_source": "ticketing",
+            "module": "Real Estate",
+            "operation": "list",
+            "filters": {"status": ["Open", "In Progress"]}
+          }
+        ],
+        "expected_value": "item list"
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

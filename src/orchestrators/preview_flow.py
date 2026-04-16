@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from agents.preview_generator.bundle_template_loader import (
+    BundleTemplateLoader,
+    _PIPELINE_OWNED_STORE_KEYS,
+)
 from agents.preview_generator.dashboard.client import DashboardClient
 from agents.preview_generator.dashboard.personalizer import personalize_template
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
@@ -38,11 +42,13 @@ class PreviewFlow:
         bundle_display_names: dict[str, str],
         dashboard_client: DashboardClient | None = None,
         dashboard_template_registry: DashboardTemplateRegistry | None = None,
+        bundle_template_loader: BundleTemplateLoader | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
         self._dashboard_client = dashboard_client
         self._dashboard_templates = dashboard_template_registry
+        self._bundle_template_loader = bundle_template_loader
 
     def run(
         self,
@@ -70,6 +76,18 @@ class PreviewFlow:
             conversation_history=conversation_history,
             extraction_result=extraction_result,
             preselected_intent=preselected_intent,
+        )
+
+        # --- Static bundle template overlay (best-effort) ---
+        # Replaces dynamically generated operational stores (tickets, projects,
+        # tasks …) with realistic, domain-specific fixtures from app-0*.json.
+        # KPIs and dashboard_widgets are intentionally left to the pipeline and
+        # the dashboard enrichment step respectively.
+        self._apply_bundle_template(
+            session_id=session_id,
+            bundle_key=bundle_key,
+            dummy_data_json=dummy_data_json,
+            user_context=user_context,
         )
 
         # --- Dashboard enrichment (best-effort, never blocks preview) ---
@@ -104,6 +122,68 @@ class PreviewFlow:
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
+
+    def _apply_bundle_template(
+        self,
+        session_id: str,
+        bundle_key: str,
+        dummy_data_json: dict,
+        user_context: Any,
+    ) -> None:
+        """Overlay operational stores from a static app-0*.json variant.
+
+        Picks the best-matching variant for *bundle_key* using keyword scoring
+        against ``user_context.primary_use_case``.  Writes directly into
+        ``dummy_data_json["stores"]``, skipping keys owned by the pipeline
+        (``kpis``) and the dashboard enrichment step (``dashboard_widgets``,
+        ``dashboard_generation_output``).
+
+        All failures are swallowed; the preview is returned with pipeline-
+        generated data if anything goes wrong.
+        """
+        if self._bundle_template_loader is None:
+            return
+
+        try:
+            primary_use_case: str | None = (
+                getattr(user_context, "primary_use_case", None)
+                if user_context is not None
+                else None
+            )
+            template = self._bundle_template_loader.load(bundle_key, primary_use_case)
+        except Exception as exc:  # pylint: disable=broad-except
+            logger.warning(
+                "session=%s — bundle template load error: %s", session_id, exc
+            )
+            return
+
+        if template is None:
+            logger.info(
+                "session=%s — no bundle template for bundle=%s, skipping overlay",
+                session_id,
+                bundle_key,
+            )
+            return
+
+        template_stores: dict = template.get("stores", {})
+        if not template_stores:
+            return
+
+        stores: dict = dummy_data_json.setdefault("stores", {})
+        overlaid_keys: list[str] = []
+        for key, value in template_stores.items():
+            if key in _PIPELINE_OWNED_STORE_KEYS:
+                continue
+            stores[key] = value
+            overlaid_keys.append(key)
+
+        source_file = template.get("_source_file", "unknown")
+        logger.info(
+            "session=%s — bundle template overlay: file=%s stores_overlaid=%s",
+            session_id,
+            source_file,
+            overlaid_keys,
+        )
 
     def _enrich_dashboard_widgets(
         self,

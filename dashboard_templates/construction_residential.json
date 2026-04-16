@@ -1,0 +1,111 @@
+{
+  "dashboard_name": "Residential Homebuilder Dashboard Template",
+  "source": "analytics",
+  "report": "# Residential Homebuilder Operations Report\n\n## Overview\nThis dashboard gives Sunrise Homes LLC a complete view of their residential construction pipeline — from active builds and permitting to closings, warranty claims, and the forward sales pipeline across subdivisions.\n\n## Key Metrics\n- Homes Under Construction: 34\n- Homes Closed YTD: 18\n- Avg Construction Days: 112\n- Open Warranty Claims: 9\n- Sales Pipeline (Units): 41\n\n## Insights\n- YTD closings pace of 18 homes in Q1 is strong; the sales pipeline of 41 units supports continued throughput through Q3.\n- Avg construction cycle of 112 days is within industry norms; material shortage risks (roofing shingles) could push this above 120 days if unresolved.\n- 9 open warranty claims should be triaged — HVAC and structural items carry highest customer satisfaction risk.",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Homes Under Construction",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Homes Under Construction",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {"status": ["In Progress"]}
+          }
+        ],
+        "expected_value": "34"
+      }
+    },
+    {
+      "type": "number",
+      "name": "YTD Closings",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Homes Closed YTD",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {"status": ["Completed"], "period": "ytd"}
+          }
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "bar",
+      "name": "Construction Pipeline by Phase",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Homes by Construction Phase",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {},
+            "group_by": "phase"
+          }
+        ],
+        "expected_value": "grouped bar"
+      }
+    },
+    {
+      "type": "line",
+      "name": "Warranty Claims Trend",
+      "data_config": {
+        "datasets": [
+          {
+            "name": "Warranty Claims",
+            "data_source": "ticketing",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {"type": "Warranty Claim"}
+          }
+        ],
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "name": "Monthly Closings",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Closings per Month",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {"status": ["Completed"]},
+            "group_by": "close_month"
+          }
+        ],
+        "expected_value": "bar chart"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Active Warranty & Work Items",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Work Items",
+            "data_source": "ticketing",
+            "module": "Construction",
+            "operation": "list",
+            "filters": {"status": ["Open", "In Progress"]}
+          }
+        ],
+        "expected_value": "item list"
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

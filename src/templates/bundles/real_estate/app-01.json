@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "construction_real_estate",
+  "keywords": ["property management", "tenant", "lease", "maintenance", "rent", "vacancy", "occupancy", "unit", "work order", "renewal", "eviction", "landlord"],
+  "stores": {
+    "projects": [
+      {"id": "proj-001", "title": "HVAC Modernization — Building A", "status": "active", "phase": "in_progress", "lead": "Maria Santos", "start_date": "2026-01-15", "due_date": "2026-06-30", "completion_pct": 68},
+      {"id": "proj-002", "title": "Tenant Portal Launch", "status": "active", "phase": "review", "lead": "Carlos Mendez", "start_date": "2026-02-01", "due_date": "2026-05-31", "completion_pct": 42},
+      {"id": "proj-003", "title": "Security System Upgrade — Complex B", "status": "on_hold", "phase": "planning", "lead": "Ana Reyes", "start_date": "2026-03-01", "due_date": "2026-08-31", "completion_pct": 15}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Maintenance request — HVAC unit 4B", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "James Okafor", "due_date": "2026-04-25"},
+      {"id": "task-002", "title": "Lease renewal follow-up — Tenant 214", "project_id": "proj-002", "status": "backlog", "priority": "medium", "assignee": "Sofia Lim", "due_date": "2026-04-30"},
+      {"id": "task-003", "title": "Move-out inspection — Unit 308", "project_id": "proj-001", "status": "review", "priority": "low", "assignee": "David Park", "due_date": "2026-04-23"},
+      {"id": "task-004", "title": "Rent arrears notice — Unit 102", "project_id": "proj-001", "status": "blocked", "priority": "high", "assignee": "Priya Nair", "due_date": "2026-04-20"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "occupancy_rate", "label": "Occupancy Rate", "type": "percentage", "sample_value": 94.2, "source_service": "construction_real_estate"},
+      {"id": 2, "key": "maintenance_requests_open", "label": "Maintenance Requests Open", "type": "count", "sample_value": 37, "source_service": "construction_real_estate"},
+      {"id": 3, "key": "rent_collection_rate", "label": "Rent Collection Rate", "type": "percentage", "sample_value": 98.1, "source_service": "construction_real_estate"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "project_summary", "title": "Property Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Portfolio Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

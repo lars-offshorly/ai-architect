@@ -1,0 +1,89 @@
+{
+  "dashboard_name": "Small Business Operations Dashboard Template",
+  "source": "analytics",
+  "report": "# Small Business Operations Overview\n\n## Overview\nThis dashboard gives Coastal Ventures LLC a clear picture of daily operational health, team workload, and project progress. It is designed for small business owners and team leads who need a simple, unified view of active tasks, capacity, and project status without unnecessary complexity.\n\n## Key Metrics\n- Active Work Items: 34\n- Capacity Utilization: 82.0%\n- Tasks Completed (MTD): 47\n- Team Size: 12\n- Overdue Items: 5\n\n## Insights\n- Capacity utilization at 82% is approaching upper limits; consider redistributing 3 open items to balance team load\n- 5 overdue items warrant immediate triage, with 2 linked to the Website Redesign project\n- Month-to-date task completion of 47 is on track with the rolling 30-day average of 45",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Work Items",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "active_items",
+            "data_source": "work_items",
+            "module": "Projects",
+            "operation": "count",
+            "filters": {"status": ["Open", "In Progress"]}
+          }
+        ],
+        "expected_value": "34"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Capacity Utilization",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "capacity_utilization",
+            "data_source": "team_capacity",
+            "module": "Projects",
+            "operation": "percentage",
+            "filters": {}
+          }
+        ],
+        "expected_value": "82.0%"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Work Item Type Distribution",
+      "description": "Breaks down active work items by type (Task, Bug, Feature Request, Meeting, Administrative, Support Request) to understand where team time is concentrated.",
+      "data_config": {
+        "module": "Projects",
+        "data_source": "work_items",
+        "group_by": ["type"],
+        "fields": ["type", "item_count", "avg_age_days"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Task Completion Trend",
+      "description": "Tracks the number of tasks completed per month to measure team throughput and identify productivity trends over time.",
+      "data_config": {
+        "module": "Projects",
+        "data_source": "work_items",
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Project Status Overview",
+      "description": "Shows all active projects grouped by status (Planning, In Progress, Completed) with completion percentage for at-a-glance portfolio health.",
+      "data_config": {
+        "module": "Projects",
+        "data_source": "projects",
+        "group_by": ["status"],
+        "fields": ["name", "status", "completion_pct"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Work Item Tracker",
+      "description": "Lists all active work items with title, type, priority, and assigned team member for quick daily review.",
+      "data_config": {
+        "module": "Projects",
+        "data_source": "work_items",
+        "group_by": ["title", "type", "priority", "assignee"]
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

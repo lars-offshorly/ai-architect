@@ -1,0 +1,111 @@
+{
+  "dashboard_name": "University Operations Dashboard Template",
+  "source": "analytics",
+  "report": "# University Operations Report\n\n## Overview\nThis dashboard gives Lakewood University leadership a real-time view of student enrollment, faculty ratios, active research grants, course completion rates, and alumni engagement to support data-driven academic and operational decisions.\n\n## Key Metrics\n- Total Students: 12,400\n- Faculty-to-Student Ratio: 1:15.9\n- Active Research Grants: 34\n- Course Completion Rate: 88.7%\n- Alumni Giving Rate: 21.4%\n\n## Insights\n- Faculty-to-student ratio of 1:15.9 is within accreditation standards; the new Engineering Building and associated faculty hires should improve this ratio in STEM colleges.\n- 34 active research grants represent significant external funding; the Research Data Platform project will improve grant reporting efficiency.\n- Alumni giving at 21.4% is above the national average of 18% — the upcoming accreditation review is an opportunity to highlight this engagement metric.",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Total Students",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Total Students",
+            "data_source": "education",
+            "module": "Education",
+            "operation": "count",
+            "filters": {"status": "Enrolled"}
+          }
+        ],
+        "expected_value": "12400"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Faculty-Student Ratio",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Faculty to Student Ratio",
+            "data_source": "education",
+            "module": "Education",
+            "operation": "ratio",
+            "filters": {}
+          }
+        ],
+        "expected_value": "0.063"
+      }
+    },
+    {
+      "type": "bar",
+      "name": "Enrollment by College",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Students by College",
+            "data_source": "education",
+            "module": "Education",
+            "operation": "count",
+            "filters": {},
+            "group_by": "college"
+          }
+        ],
+        "expected_value": "bar chart"
+      }
+    },
+    {
+      "type": "line",
+      "name": "Research Grant Trend",
+      "data_config": {
+        "datasets": [
+          {
+            "name": "Active Research Grants",
+            "data_source": "education",
+            "module": "Education",
+            "operation": "count",
+            "filters": {"type": "Research Grant Request", "status": "Active"}
+          }
+        ],
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "name": "Course Completion Rates by Department",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Completion Rate by Dept",
+            "data_source": "education",
+            "module": "Education",
+            "operation": "percentage",
+            "filters": {"status": "Completed"},
+            "group_by": "department"
+          }
+        ],
+        "expected_value": "bar chart"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open University Work Items",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Items",
+            "data_source": "ticketing",
+            "module": "Education",
+            "operation": "list",
+            "filters": {"status": ["Open", "In Progress"]}
+          }
+        ],
+        "expected_value": "item list"
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

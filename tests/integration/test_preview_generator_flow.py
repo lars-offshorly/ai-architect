@@ -218,7 +218,7 @@ class TestHRHub:
 
     def test_modules_include_hrhub(self, svc: PreviewGeneratorService) -> None:
         gen, *_ = svc.generate("sess-hr-4", "hr_management", _HISTORY_HR_HUB)
-        assert "HRHub" in gen["modules"]
+        assert "HR Management" in gen["modules"]
         assert "Dashboard" in gen["modules"]
         assert "KPI" in gen["modules"]
 
@@ -279,7 +279,7 @@ class TestProjectOps:
 
     def test_modules_include_projects(self, svc: PreviewGeneratorService) -> None:
         gen, *_ = svc.generate("sess-po-3", "project_mgmt", _HISTORY_PROJECT_OPS)
-        assert "Projects" in gen["modules"]
+        assert "Project Management" in gen["modules"]
 
     def test_dummy_data_store_names(self, svc: PreviewGeneratorService) -> None:
         _, dummy, *_uc = svc.generate("sess-po-4", "project_mgmt", _HISTORY_PROJECT_OPS)

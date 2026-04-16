@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "generic",
+  "keywords": ["nonprofit", "charity", "donors", "fundraising", "grants", "volunteers", "programs", "impact", "beneficiaries", "community", "mission", "outreach"],
+  "stores": {
+    "tickets": [
+      {"id": "ticket-001", "title": "Grant application — USAID community health", "status": "pending", "priority": "high", "category": "Grant Application", "assignee": "Carlos Mendez", "requester": "Ana Reyes", "created_at": "2026-04-10T09:00:00Z"},
+      {"id": "ticket-002", "title": "Volunteer coordination — Spring drive", "status": "in_progress", "priority": "medium", "category": "Volunteer Coordination", "assignee": "Ana Reyes", "requester": "James Okafor", "created_at": "2026-04-07T10:00:00Z"},
+      {"id": "ticket-003", "title": "Annual gala venue booking confirmation", "status": "resolved", "priority": "medium", "category": "Event Planning", "assignee": "James Okafor", "requester": "Sofia Lim", "created_at": "2026-04-04T08:00:00Z"},
+      {"id": "ticket-004", "title": "Donor communication — Year-end appeal", "status": "pending", "priority": "low", "category": "Donor Communication", "assignee": "Sofia Lim", "requester": "Carlos Mendez", "created_at": "2026-04-01T11:00:00Z"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "active_programs", "label": "Active Programs", "type": "count", "sample_value": 9, "source_service": "generic"},
+      {"id": 2, "key": "donor_retention_rate", "label": "Donor Retention Rate", "type": "percentage", "sample_value": 64.2, "source_service": "generic"},
+      {"id": 3, "key": "volunteers_active", "label": "Volunteers Active", "type": "count", "sample_value": 147, "source_service": "generic"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "ticket_summary", "title": "Program Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Impact Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

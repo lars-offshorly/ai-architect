@@ -1,0 +1,89 @@
+{
+  "dashboard_name": "Non-Profit Operations Dashboard Template",
+  "source": "analytics",
+  "report": "# Non-Profit Operations Overview\n\n## Overview\nThis dashboard gives Brightpath Foundation leadership a real-time view of program reach, donor engagement, volunteer activity, and fundraising progress. It is designed for executive directors and program managers who need to track mission impact and organizational health in a single workspace.\n\n## Key Metrics\n- Active Programs: 9\n- Donor Retention Rate: 64.2%\n- Active Volunteers: 147\n- Beneficiaries Served (YTD): 2,840\n- Fundraising Goal Achievement: 71.0%\n\n## Insights\n- Fundraising goal is at 71% with Q2 major donor campaign and Annual Gala still ahead; on track to reach 95% by year-end\n- Donor retention at 64.2% is below the 70% sector benchmark; a personalized stewardship campaign is recommended for lapsed donors\n- Volunteer force grew 18% year-over-year; the Annual Gala and Community Health Program are the top two volunteer drivers",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Programs",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "active_programs",
+            "data_source": "programs",
+            "module": "Programs",
+            "operation": "count",
+            "filters": {"status": "active"}
+          }
+        ],
+        "expected_value": "9"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Donor Retention Rate",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "donor_retention",
+            "data_source": "donor_records",
+            "module": "Fundraising",
+            "operation": "percentage",
+            "filters": {}
+          }
+        ],
+        "expected_value": "64.2%"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Fundraising Progress by Program",
+      "description": "Compares funds raised against fundraising goal for each active program to identify which initiatives need additional donor outreach.",
+      "data_config": {
+        "module": "Fundraising",
+        "data_source": "fundraising_records",
+        "group_by": ["program_name"],
+        "fields": ["program_name", "amount_raised", "goal_amount"],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Monthly Donor Activity Trend",
+      "description": "Tracks the number of unique donors making contributions each month to identify seasonal giving patterns and campaign effectiveness.",
+      "data_config": {
+        "module": "Fundraising",
+        "data_source": "donor_transactions",
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Volunteer Distribution by Program",
+      "description": "Shows how the active volunteer workforce is distributed across programs to identify staffing imbalances and recruitment priorities.",
+      "data_config": {
+        "module": "Programs",
+        "data_source": "volunteer_assignments",
+        "group_by": ["program_name"],
+        "fields": ["program_name", "volunteer_count", "hours_contributed"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Program & Operations Work Tracker",
+      "description": "Lists active operational items — grant applications, events, compliance filings, and program reviews — with type, status, and owner.",
+      "data_config": {
+        "module": "Programs",
+        "data_source": "operational_items",
+        "group_by": ["title", "type", "status", "assignee"]
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}
