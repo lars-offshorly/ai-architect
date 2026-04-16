@@ -53,7 +53,9 @@ def _build_flag_list(
     return result
 
 
-def _derive_modules(feature_flags: dict[str, bool], state: PreviewGeneratorState) -> list[str]:
+def _derive_modules(
+    feature_flags: dict[str, bool], state: PreviewGeneratorState
+) -> list[str]:
     """Derive active module display names from enabled flags."""
     modules: list[str] = []
     for flag_name, module_name in _FLAG_TO_MODULE.items():
@@ -84,14 +86,22 @@ _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
     # Tier 3 — industry bundles (project-centric)
-    "construction_real_estate": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    "construction_real_estate": {
+        "primary": "tasks",
+        "secondary": "projects",
+        "weaves": None,
+    },
     "education": {"primary": "tasks", "secondary": "projects", "weaves": None},
     # Tier 3 — industry bundles (ticket-centric)
     "healthcare": {"primary": "tickets", "secondary": None, "weaves": None},
     "legal_services": {"primary": "tickets", "secondary": None, "weaves": None},
     "generic": {"primary": "tickets", "secondary": None, "weaves": None},
     # Tier 3 — mixed (has tickets + projects + tasks)
-    "all_microservices": {"primary": "tickets", "secondary": "projects", "weaves": None},
+    "all_microservices": {
+        "primary": "tickets",
+        "secondary": "projects",
+        "weaves": None,
+    },
 }
 
 # Only these canonical tier-1 bundle keys should have their render_key applied
@@ -265,7 +275,14 @@ def _build_dashboard_generation_output(
                 "type": "number",
                 "name": metric.label,
                 "value": str(metric.sample_value),
-                "calculation": {"datasets": [{"module": state.bundle_key.replace("_", " ").title(), "data_source": "kpis"}]},
+                "calculation": {
+                    "datasets": [
+                        {
+                            "module": state.bundle_key.replace("_", " ").title(),
+                            "data_source": "kpis",
+                        }
+                    ]
+                },
             }
         )
     debug_widgets.append(

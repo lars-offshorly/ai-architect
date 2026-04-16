@@ -106,9 +106,7 @@ class BundleTemplateLoader:
 
     def _load_all(self) -> None:
         if not self._dir.exists():
-            logger.warning(
-                "BundleTemplateLoader: bundles_dir not found: %s", self._dir
-            )
+            logger.warning("BundleTemplateLoader: bundles_dir not found: %s", self._dir)
             return
 
         for variant_path in sorted(self._dir.glob("*/app-0*.json")):
@@ -145,7 +143,5 @@ class BundleTemplateLoader:
         """Count how many keywords appear (case-insensitive) in *use_case*."""
         use_case_lower = use_case.lower()
         return sum(
-            1
-            for kw in keywords
-            if isinstance(kw, str) and kw.lower() in use_case_lower
+            1 for kw in keywords if isinstance(kw, str) and kw.lower() in use_case_lower
         )

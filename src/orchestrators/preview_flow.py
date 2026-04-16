@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from agents.preview_generator.bundle_template_loader import (
-    BundleTemplateLoader,
     _PIPELINE_OWNED_STORE_KEYS,
+    BundleTemplateLoader,
 )
 from agents.preview_generator.dashboard.client import DashboardClient
 from agents.preview_generator.dashboard.personalizer import personalize_template
