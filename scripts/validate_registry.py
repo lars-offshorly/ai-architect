@@ -219,7 +219,12 @@ def check_synonym_overlap(bundles: list[dict]) -> list[str]:
 
 
 def validate_catalog_loading() -> tuple[list[str], list[str]]:
-    """Try loading catalog via BundleCatalog to catch Pydantic validation errors."""
+    """Try loading catalog via BundleCatalog to catch Pydantic + variant errors.
+
+    Runs ``BundleCatalog.validate`` (template_dir consistency) AND
+    ``BundleCatalog.validate_variants`` (default-count, unique keys,
+    on-disk app-0*.json and dashboard_templates/*.json presence).
+    """
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -231,12 +236,45 @@ def validate_catalog_loading() -> tuple[list[str], list[str]]:
         catalog = BundleCatalog(catalog_path=REGISTRY_PATH)
         num_bundles = len(catalog._bundles)  # pylint: disable=protected-access
         print(f"✓ Catalog loaded successfully: {num_bundles} bundles")
+
+        catalog.validate(templates_dir=TEMPLATES_BASE)
+        catalog.validate_variants(templates_dir=TEMPLATES_BASE)
+        print("✓ Variant validation passed")
     except BundleRegistryValidationError as exc:
         errors.append(f"Catalog validation failed: {exc}")
     except Exception as exc:  # pylint: disable=broad-except
         errors.append(f"Catalog loading failed: {exc}")
 
     return errors, warnings
+
+
+def validate_no_stray_keywords() -> list[str]:
+    """Ensure ``keywords`` lives only in bundle_registry.yaml variants.
+
+    Legacy ``keywords`` fields in ``app-0*.json`` / ``dashboard_templates/*.json``
+    were removed once variant selection moved into the catalog. Re-introducing
+    them silently desyncs the source of truth, so we fail loudly.
+    """
+    import json  # pylint: disable=import-outside-toplevel
+
+    errors: list[str] = []
+    app_files = list(TEMPLATES_BASE.glob("*/app-0*.json"))
+    dashboards_base = Path(__file__).parent.parent / "dashboard_templates"
+    dashboard_files = (
+        list(dashboards_base.glob("*.json")) if dashboards_base.is_dir() else []
+    )
+
+    for path in app_files + dashboard_files:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if isinstance(data, dict) and "keywords" in data:
+            errors.append(
+                f"Stray 'keywords' field in {path.relative_to(Path(__file__).parent.parent)}; "
+                f"move to variants block in bundle_registry.yaml."
+            )
+    return errors
 
 
 def main() -> int:
@@ -280,10 +318,13 @@ def main() -> int:
     # Step 4: Check synonym overlap (warnings only)
     all_warnings += check_synonym_overlap(bundles)
 
-    # Step 5: Try loading with BundleCatalog
+    # Step 5: Try loading with BundleCatalog (includes variant validation)
     load_errors, load_warnings = validate_catalog_loading()
     all_errors += load_errors
     all_warnings += load_warnings
+
+    # Step 6: Ensure no stray 'keywords' outside the registry
+    all_errors += validate_no_stray_keywords()
 
     # Report results
     print_results(all_errors, all_warnings)
