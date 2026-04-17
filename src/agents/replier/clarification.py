@@ -3,6 +3,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from catalog.bundle_catalog import BundleVariantDefinition
 from core.logging import get_logger
 from domain.enums.missing_field_type import MissingFieldType
 
@@ -15,6 +16,7 @@ _CRITICAL_FIELDS: frozenset[MissingFieldType] = frozenset(
         MissingFieldType.PRIMARY_USE_CASE,
         MissingFieldType.ENTITY_TYPE,
         MissingFieldType.WORKFLOW_TYPE,
+        MissingFieldType.BUNDLE_VARIANT,
     }
 )
 
@@ -28,7 +30,14 @@ async def generate_clarification_question(
     missing_field: MissingFieldType,
     bundle_key: str,
     slots: dict[str, object],
+    variants: list[BundleVariantDefinition] | None = None,
 ) -> str:
+    # Bundle-variant clarification is deterministic: we enumerate the
+    # declared variants verbatim so the user sees the exact set the system
+    # can pick from. No LLM call needed.
+    if missing_field == MissingFieldType.BUNDLE_VARIANT:
+        return build_bundle_variant_question(bundle_key, variants or [])
+
     try:
         response = await model.ainvoke(
             [
@@ -47,6 +56,34 @@ async def generate_clarification_question(
     except (RuntimeError, ValueError, TypeError) as exc:
         logger.error("Clarification generation failed: %s", exc)
         return _fallback_question(missing_field)
+
+
+def build_bundle_variant_question(
+    bundle_key: str,
+    variants: list[BundleVariantDefinition],
+) -> str:
+    """Return a deterministic clarification question listing every variant."""
+    if not variants:
+        return (
+            f"Could you share a bit more about how your team will use the "
+            f"{bundle_key.replace('_', ' ')} workspace?"
+        )
+    labels = [
+        (v.clarification_label or v.display_name or v.key).strip()
+        for v in variants
+    ]
+    labels = [label for label in labels if label]
+    if len(labels) == 1:
+        return (
+            f"Should I set this up for {labels[0]}?"
+        )
+    if len(labels) == 2:
+        joined = f"{labels[0]} or {labels[1]}"
+    else:
+        joined = ", ".join(labels[:-1]) + f", or {labels[-1]}"
+    return (
+        f"Which best describes how you'll use this workspace: {joined}?"
+    )
 
 
 def _fallback_question(field: MissingFieldType) -> str:

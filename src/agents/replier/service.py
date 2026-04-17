@@ -3,6 +3,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
@@ -19,13 +20,14 @@ logger = get_logger(__name__)
 
 
 class ReplierService:
-    def __init__(self) -> None:
+    def __init__(self, catalog: BundleCatalog | None = None) -> None:
         settings = get_settings()
         self._model = ChatOpenAI(
             model=settings.OPENAI_MODEL,
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
+        self._catalog = catalog
 
     async def build_clarification(
         self,
@@ -44,8 +46,15 @@ class ReplierService:
             return None, ""
 
         slots = extracted.to_extracted_info().slots
+        variants = (
+            self._catalog.get_variants(bundle_key) if self._catalog else None
+        )
         question = await generate_clarification_question(
-            self._model, target, bundle_key, slots
+            self._model,
+            target,
+            bundle_key,
+            slots,
+            variants=variants,
         )
         session_logger.info("Clarification needed for field=%s", target.value)
         return target, question

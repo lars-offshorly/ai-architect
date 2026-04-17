@@ -66,8 +66,8 @@ def get_interpreter_service() -> InterpreterService:
 
 @lru_cache(maxsize=1)
 def get_replier_service() -> ReplierService:
-    """Return a cached ReplierService."""
-    return ReplierService()
+    """Return a cached ReplierService wired to the bundle catalog."""
+    return ReplierService(catalog=get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
@@ -124,8 +124,8 @@ def get_dashboard_client() -> DashboardClient | None:
 
 @lru_cache(maxsize=1)
 def get_dashboard_template_registry() -> DashboardTemplateRegistry:
-    """Return a cached DashboardTemplateRegistry."""
-    return DashboardTemplateRegistry()
+    """Return a cached DashboardTemplateRegistry wired to the catalog."""
+    return DashboardTemplateRegistry(catalog=get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
