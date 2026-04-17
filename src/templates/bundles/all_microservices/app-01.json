@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "all_microservices",
+  "keywords": ["enterprise", "SaaS", "platform", "multi-module", "all-in-one", "integrated", "scalable", "departments", "unified", "workspace", "full-stack", "modules"],
+  "stores": {
+    "tickets": [
+      {"id": "ticket-001", "title": "HR module — onboarding flow broken for new hires", "status": "pending", "priority": "high", "category": "Module Support", "assignee": "Maria Santos", "requester": "Carlos Mendez", "created_at": "2026-04-12T09:00:00Z"},
+      {"id": "ticket-002", "title": "Projects module — Gantt view not loading", "status": "in_progress", "priority": "medium", "category": "Bug Report", "assignee": "Carlos Mendez", "requester": "Ana Reyes", "created_at": "2026-04-09T10:00:00Z"},
+      {"id": "ticket-003", "title": "SSO integration failing — Okta", "status": "resolved", "priority": "urgent", "category": "IT Support", "assignee": "Ana Reyes", "requester": "James Okafor", "created_at": "2026-04-06T08:00:00Z"}
+    ],
+    "projects": [
+      {"id": "proj-001", "title": "Enterprise SSO Rollout", "status": "active", "phase": "in_progress", "lead": "James Okafor", "start_date": "2026-01-15", "due_date": "2026-06-30", "completion_pct": 68},
+      {"id": "proj-002", "title": "Analytics Module Launch", "status": "active", "phase": "review", "lead": "Sofia Lim", "start_date": "2026-02-01", "due_date": "2026-07-31", "completion_pct": 42}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "SSO config — Azure AD mapping", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "David Park", "due_date": "2026-04-28"},
+      {"id": "task-002", "title": "Analytics dashboard QA testing", "project_id": "proj-002", "status": "review", "priority": "medium", "assignee": "Priya Nair", "due_date": "2026-05-05"},
+      {"id": "task-003", "title": "Module permission matrix audit", "project_id": "proj-001", "status": "backlog", "priority": "high", "assignee": "Lucas Silva", "due_date": "2026-05-15"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "active_modules_deployed", "label": "Active Modules Deployed", "type": "count", "sample_value": 7, "source_service": "all_microservices"},
+      {"id": 2, "key": "total_users", "label": "Total Users", "type": "count", "sample_value": 1240, "source_service": "all_microservices"},
+      {"id": 3, "key": "system_uptime", "label": "System Uptime", "type": "percentage", "sample_value": 99.7, "source_service": "all_microservices"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "ticket_summary", "title": "Platform Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Usage Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

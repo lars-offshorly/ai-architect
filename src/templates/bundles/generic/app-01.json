@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "generic",
+  "keywords": ["small business", "startup", "general operations", "team", "tasks", "workflow", "daily operations", "work management", "productivity", "multi-purpose", "projects"],
+  "stores": {
+    "tickets": [
+      {"id": "ticket-001", "title": "Website contact form not sending emails", "status": "pending", "priority": "medium", "category": "Bug", "assignee": "Maria Santos", "requester": "Carlos Mendez", "created_at": "2026-04-12T09:00:00Z"},
+      {"id": "ticket-002", "title": "Update team onboarding checklist", "status": "in_progress", "priority": "low", "category": "Task", "assignee": "Carlos Mendez", "requester": "Ana Reyes", "created_at": "2026-04-09T10:00:00Z"},
+      {"id": "ticket-003", "title": "Q1 financial summary document", "status": "resolved", "priority": "medium", "category": "Administrative", "assignee": "Ana Reyes", "requester": "James Okafor", "created_at": "2026-04-06T08:00:00Z"},
+      {"id": "ticket-004", "title": "Vendor invoice approval — Office supplies", "status": "pending", "priority": "high", "category": "Administrative", "assignee": "James Okafor", "requester": "Sofia Lim", "created_at": "2026-04-03T11:00:00Z"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "active_work_items", "label": "Active Work Items", "type": "count", "sample_value": 34, "source_service": "generic"},
+      {"id": 2, "key": "tasks_completed_mtd", "label": "Tasks Completed MTD", "type": "count", "sample_value": 47, "source_service": "generic"},
+      {"id": 3, "key": "overdue_items", "label": "Overdue Items", "type": "count", "sample_value": 5, "source_service": "generic"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "ticket_summary", "title": "Work Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Team Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

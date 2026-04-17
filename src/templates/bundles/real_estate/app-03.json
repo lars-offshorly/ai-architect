@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "construction_real_estate",
+  "keywords": ["commercial real estate", "REIT", "office", "retail", "industrial", "lease", "NOI", "cap rate", "asset management", "portfolio", "tenant mix", "development"],
+  "stores": {
+    "projects": [
+      {"id": "proj-001", "title": "Tech Campus Redevelopment", "status": "active", "phase": "in_progress", "lead": "Maria Santos", "start_date": "2025-12-01", "due_date": "2026-09-30", "completion_pct": 68},
+      {"id": "proj-002", "title": "Industrial Park Acquisition", "status": "active", "phase": "review", "lead": "Carlos Mendez", "start_date": "2026-01-15", "due_date": "2026-07-31", "completion_pct": 42},
+      {"id": "proj-003", "title": "Retail Center Repositioning", "status": "on_hold", "phase": "planning", "lead": "Ana Reyes", "start_date": "2026-02-15", "due_date": "2026-11-30", "completion_pct": 15}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Lease negotiation — TechCo renewal 8,000 sqft", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "James Okafor", "due_date": "2026-05-01"},
+      {"id": "task-002", "title": "Environmental audit — Industrial Parcel C", "project_id": "proj-002", "status": "backlog", "priority": "medium", "assignee": "Sofia Lim", "due_date": "2026-05-10"},
+      {"id": "task-003", "title": "Capital improvement proposal — lobby", "project_id": "proj-001", "status": "review", "priority": "low", "assignee": "David Park", "due_date": "2026-04-28"},
+      {"id": "task-004", "title": "Tenant default notice — Retail Unit 4", "project_id": "proj-001", "status": "blocked", "priority": "critical", "assignee": "Priya Nair", "due_date": "2026-04-22"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "portfolio_occupancy", "label": "Portfolio Occupancy", "type": "percentage", "sample_value": 91.7, "source_service": "construction_real_estate"},
+      {"id": 2, "key": "lease_expirations_next_12mo", "label": "Lease Expirations Next 12mo", "type": "count", "sample_value": 8, "source_service": "construction_real_estate"},
+      {"id": 3, "key": "noi_variance_pct", "label": "NOI Variance Pct", "type": "percentage", "sample_value": 2.3, "source_service": "construction_real_estate"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "project_summary", "title": "Portfolio Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Asset Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "construction_real_estate",
+  "keywords": ["infrastructure", "civil engineering", "roads", "bridges", "utilities", "municipal", "government contract", "surveying", "earthwork", "drainage", "public works", "grading"],
+  "stores": {
+    "projects": [
+      {"id": "proj-001", "title": "Highway 12 Resurfacing", "status": "active", "phase": "in_progress", "lead": "Maria Santos", "start_date": "2025-11-01", "due_date": "2026-06-30", "completion_pct": 68},
+      {"id": "proj-002", "title": "River Bridge Rehabilitation", "status": "active", "phase": "review", "lead": "Carlos Mendez", "start_date": "2025-12-15", "due_date": "2026-08-15", "completion_pct": 42},
+      {"id": "proj-003", "title": "Municipal Waterline Extension", "status": "on_hold", "phase": "planning", "lead": "Ana Reyes", "start_date": "2026-01-01", "due_date": "2026-10-01", "completion_pct": 15}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Geotechnical survey — Section 4", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "James Okafor", "due_date": "2026-04-28"},
+      {"id": "task-002", "title": "Environmental impact report review", "project_id": "proj-002", "status": "review", "priority": "medium", "assignee": "Sofia Lim", "due_date": "2026-05-05"},
+      {"id": "task-003", "title": "Drainage design approval — City review", "project_id": "proj-003", "status": "backlog", "priority": "high", "assignee": "David Park", "due_date": "2026-05-15"},
+      {"id": "task-004", "title": "Safety audit — contractor compliance", "project_id": "proj-001", "status": "in_progress", "priority": "critical", "assignee": "Priya Nair", "due_date": "2026-04-22"}
+    ],
+    "kpis": [
+      {"id": 1, "key": "active_contracts", "label": "Active Contracts", "type": "count", "sample_value": 8, "source_service": "construction_real_estate"},
+      {"id": 2, "key": "schedule_performance_index", "label": "Schedule Performance Index", "type": "ratio", "sample_value": 0.92, "source_service": "construction_real_estate"},
+      {"id": 3, "key": "safety_compliance_rate", "label": "Safety Compliance Rate", "type": "percentage", "sample_value": 97.8, "source_service": "construction_real_estate"}
+    ],
+    "dashboard_widgets": [
+      {"id": "widget-001", "type": "project_summary", "title": "Contract Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
+      {"id": "widget-002", "type": "kpi_grid", "title": "Civil Engineering Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+    ]
+  }
+}

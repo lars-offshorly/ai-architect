@@ -8,6 +8,7 @@ from pathlib import Path
 from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
+from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
 from agents.preview_generator.dashboard.auth import KnitAuthService
 from agents.preview_generator.dashboard.client import DashboardClient
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
@@ -128,6 +129,12 @@ def get_dashboard_template_registry() -> DashboardTemplateRegistry:
 
 
 @lru_cache(maxsize=1)
+def get_bundle_template_loader() -> BundleTemplateLoader:
+    """Return a cached BundleTemplateLoader for static app-0*.json variants."""
+    return BundleTemplateLoader()
+
+
+@lru_cache(maxsize=1)
 def get_preview_flow() -> PreviewFlow:
     """Return a cached PreviewFlow wired to the preview generator service."""
     catalog = get_bundle_catalog()
@@ -137,6 +144,7 @@ def get_preview_flow() -> PreviewFlow:
         bundle_display_names=display_names,
         dashboard_client=get_dashboard_client(),
         dashboard_template_registry=get_dashboard_template_registry(),
+        bundle_template_loader=get_bundle_template_loader(),
     )
 
 

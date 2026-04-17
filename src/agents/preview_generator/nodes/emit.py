@@ -14,16 +14,16 @@ logger = get_logger(__name__)
 # Map from flag name → display module name (for the modules[] list)
 # Only core module-level flags are mapped; nav and notification flags are skipped.
 _FLAG_TO_MODULE: dict[str, str] = {
-    "projects-module": "Projects",
-    "tickets-module": "Tickets",
-    "hrhub-module": "HRHub",
+    "projects-module": "Project Management",
+    "tickets-module": "Ticketing Tool",
+    "hrhub-module": "HR Management",
     "weaves-module": "Weaves",
     "dashboard-module": "Dashboard",
     "kpi-module": "KPI",
     "calendar_module": "Calendar",
     "chat-module": "Chat",
-    "ai-toolkit-module": "AIToolkit",
-    "rewards-module": "Rewards",
+    "ai-toolkit-module": "AI Toolkit",
+    "rewards-module": "Rewards Store",
 }
 
 
@@ -53,12 +53,22 @@ def _build_flag_list(
     return result
 
 
-def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
+def _derive_modules(
+    feature_flags: dict[str, bool], state: PreviewGeneratorState
+) -> list[str]:
     """Derive active module display names from enabled flags."""
     modules: list[str] = []
     for flag_name, module_name in _FLAG_TO_MODULE.items():
         if feature_flags.get(flag_name, False) and module_name not in modules:
             modules.append(module_name)
+
+    # For industry/standalone bundles, ensure the bundle name itself is a valid module
+    if state.catalog:
+        bundle = state.catalog.get(state.bundle_key)
+        if bundle and bundle.display_name not in modules:
+            # Insert at front as it's the primary hub for this bundle
+            modules.insert(0, bundle.display_name)
+
     return modules
 
 
@@ -69,11 +79,29 @@ def _derive_modules(feature_flags: dict[str, bool]) -> list[str]:
 # "secondary" → sample_projects (groupings: queues / milestones)
 # "weaves"    → sample_weaves   (only included for weaves-enabled bundles)
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
+    # Tier 1 — canonical registry keys
     "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
     "hr_management": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
+    # Tier 3 — industry bundles (project-centric)
+    "construction_real_estate": {
+        "primary": "tasks",
+        "secondary": "projects",
+        "weaves": None,
+    },
+    "education": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    # Tier 3 — industry bundles (ticket-centric)
+    "healthcare": {"primary": "tickets", "secondary": None, "weaves": None},
+    "legal_services": {"primary": "tickets", "secondary": None, "weaves": None},
+    "generic": {"primary": "tickets", "secondary": None, "weaves": None},
+    # Tier 3 — mixed (has tickets + projects + tasks)
+    "all_microservices": {
+        "primary": "tickets",
+        "secondary": "projects",
+        "weaves": None,
+    },
 }
 
 # Only these canonical tier-1 bundle keys should have their render_key applied
@@ -247,7 +275,14 @@ def _build_dashboard_generation_output(
                 "type": "number",
                 "name": metric.label,
                 "value": str(metric.sample_value),
-                "calculation": {"datasets": [{"module": "KPI", "data_source": "kpis"}]},
+                "calculation": {
+                    "datasets": [
+                        {
+                            "module": state.bundle_key.replace("_", " ").title(),
+                            "data_source": "kpis",
+                        }
+                    ]
+                },
             }
         )
     debug_widgets.append(
@@ -255,7 +290,7 @@ def _build_dashboard_generation_output(
             "type": "bar",
             "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
             "data_config": {
-                "module": "Operations",
+                "module": state.bundle_key.replace("_", " ").title(),
                 "data_source": primary_store,
                 "group_by": ["status"],
                 "aggregation": "count",
@@ -347,7 +382,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     Both are placed in state.output so service.py can unpack them.
     """
     flag_list = _build_flag_list(state.feature_flags, state)
-    modules = _derive_modules(state.feature_flags)
+    modules = _derive_modules(state.feature_flags, state)
 
     company_name = (
         state.user_context.company_name

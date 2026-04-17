@@ -23,12 +23,21 @@ logger = get_logger(__name__)
 # Tier 3 bundles (finance, marketing, sales, …) have no entry and will
 # receive None from get(), skipping the dashboard call entirely.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
+    # Group A — core bundles
     "hr_management": "hr_management",
     "hr_hub": "hr_management",  # render key alias
     "project_mgmt": "project_management",
+    # Group B — industry/domain-specific (variant 1 used as primary template;
+    # semantic variant selection is handled by the template loader, not here)
+    "healthcare": "healthcare_hospital",
+    "legal_services": "legal_litigation_firm",
+    "construction_real_estate": "construction_general_contractor",
+    "education": "education_k12",
+    "all_microservices": "all_microservices_enterprise_saas",
+    "generic": "generic_small_business",
 }
 
-_DEFAULT_TEMPLATES_DIR = Path(__file__).parents[5] / "dashboard_templates"
+_DEFAULT_TEMPLATES_DIR = Path(__file__).parents[4] / "dashboard_templates"
 
 
 class DashboardTemplateRegistry:

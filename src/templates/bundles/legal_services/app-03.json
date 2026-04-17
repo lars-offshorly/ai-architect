@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "legal_services",
+  "keywords": ["compliance", "regulatory", "audit", "risk", "financial regulation", "KYC", "AML", "reporting", "policy", "breach", "sanctions", "SOX"],
+  "stores": {
+    "tickets": [
+      {
+        "id": "ticket-001",
+        "title": "AML alert — high-risk transaction cluster",
+        "status": "pending",
+        "priority": "urgent",
+        "category": "Risk Assessment",
+        "assignee": "Carlos Mendez",
+        "requester": "Ana Reyes",
+        "created_at": "2026-04-10T11:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "SOX control gap — AP reconciliation process",
+        "status": "in_progress",
+        "priority": "high",
+        "category": "Audit Finding",
+        "assignee": "Ana Reyes",
+        "requester": "James Okafor",
+        "created_at": "2026-04-07T11:00:00Z"
+      },
+      {
+        "id": "ticket-003",
+        "title": "KYC refresh — Client batch Q1 2026",
+        "status": "resolved",
+        "priority": "medium",
+        "category": "KYC Review",
+        "assignee": "James Okafor",
+        "requester": "Sofia Lim",
+        "created_at": "2026-04-04T11:00:00Z"
+      },
+      {
+        "id": "ticket-004",
+        "title": "Regulatory filing — Q1 FINRA report",
+        "status": "pending",
+        "priority": "high",
+        "category": "Regulatory Filing",
+        "assignee": "Sofia Lim",
+        "requester": "Carlos Mendez",
+        "created_at": "2026-04-01T11:00:00Z"
+      }
+    ],
+    "kpis": [
+      {"id": 1, "key": "open_compliance_issues", "label": "Open Compliance Issues", "type": "count", "sample_value": 19, "source_service": "legal_services"},
+      {"id": 2, "key": "audit_findings_resolved_rate", "label": "Audit Findings Resolved Rate", "type": "percentage", "sample_value": 83.5, "source_service": "legal_services"},
+      {"id": 3, "key": "policy_attestation_completion", "label": "Policy Attestation Completion", "type": "percentage", "sample_value": 91.0, "source_service": "legal_services"}
+    ],
+    "dashboard_widgets": [
+      {
+        "id": "widget-001",
+        "type": "ticket_summary",
+        "title": "Compliance Overview",
+        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+      },
+      {
+        "id": "widget-002",
+        "type": "kpi_grid",
+        "title": "Risk Metrics",
+        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+      }
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "dashboard_name": "Professional Services Dashboard Template",
+  "source": "analytics",
+  "report": "# Professional Services Operations Overview\n\n## Overview\nThis dashboard provides Meridian Advisory Group with a comprehensive view of engagement health, consultant utilization, and client satisfaction. It is built for managing partners and delivery leads who need to monitor billable performance, pipeline activity, and on-time delivery across all active engagements.\n\n## Key Metrics\n- Active Engagements: 18\n- Billable Utilization Rate: 78.4%\n- Deliverables On-Time Rate: 86.0%\n- Client Satisfaction Score: 4.3 / 5.0\n- Proposals in Pipeline: 7\n\n## Insights\n- Utilization at 78.4% is below the 80% firm target; two senior consultants are under-allocated and available for new engagements\n- Deliverable on-time rate dipped from 91% last quarter; scope changes on 2 engagements are the primary driver\n- Client satisfaction score of 4.3 is stable; the Digital Transformation engagement at Apex Corp scores highest at 4.8",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Engagements",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "active_engagements",
+            "data_source": "engagements",
+            "module": "Custom Workspace",
+            "operation": "count",
+            "filters": {"status": "In Progress"}
+          }
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Billable Utilization Rate",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "utilization_rate",
+            "data_source": "timesheets",
+            "module": "Custom Workspace",
+            "operation": "percentage",
+            "filters": {"entry_type": "billable"}
+          }
+        ],
+        "expected_value": "78.4%"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Engagement Stage Distribution",
+      "description": "Shows the distribution of engagements by lifecycle stage (Proposal, Kickoff, Delivery, Review, Closed) to understand pipeline composition.",
+      "data_config": {
+        "module": "Custom Workspace",
+        "data_source": "engagements",
+        "group_by": ["stage"],
+        "fields": ["stage", "engagement_count", "total_value"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Billable Hours Trend",
+      "description": "Tracks total billable hours logged per month across all engagements to monitor revenue capacity and team throughput.",
+      "data_config": {
+        "module": "Custom Workspace",
+        "data_source": "timesheets",
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Client Satisfaction Scores by Engagement",
+      "description": "Displays client satisfaction scores per engagement to surface experience gaps and highlight high-performing delivery teams.",
+      "data_config": {
+        "module": "Custom Workspace",
+        "data_source": "client_feedback",
+        "group_by": ["engagement_name"],
+        "fields": ["engagement_name", "satisfaction_score", "response_count"],
+        "aggregation": "average"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Active Engagement Tracker",
+      "description": "Lists all active engagements with lead consultant, client name, current stage, and completion percentage for portfolio-level review.",
+      "data_config": {
+        "module": "Custom Workspace",
+        "data_source": "engagements",
+        "group_by": ["name", "lead", "stage", "completion_pct"]
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

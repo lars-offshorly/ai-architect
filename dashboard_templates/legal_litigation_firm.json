@@ -1,0 +1,93 @@
+{
+    "dashboard_name": "Litigation Firm Dashboard Template",
+    "source": "analytics",
+    "report": "# Litigation Firm Dashboard\n\n## Overview\nThis dashboard gives litigation partners and practice managers a complete view of the firm's active caseload, attorney performance, win rates, and billing utilization. It supports strategic decisions on case intake, staffing, and settlement positioning.\n\n## Key Metrics\n- Active Cases: 84\n- Cases Won Rate: 71.4%\n- Billable Hours Utilization: 88.2%\n\n## Insights\n- Win rate has improved 4.2% year-over-year, driven by stronger pre-trial motion outcomes.\n- Settlement rate of 62% is reducing average case duration; average time to resolution is down 18 days vs. prior year.\n- Three attorneys are below 80% billable utilization — pipeline review recommended.",
+    "widgets": [
+        {
+            "type": "number",
+            "name": "Active Cases",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Open Cases",
+                        "data_source": "cases",
+                        "module": "Tickets",
+                        "operation": "count",
+                        "filters": {
+                            "status": "Active"
+                        }
+                    }
+                ],
+                "expected_value": "84"
+            }
+        },
+        {
+            "type": "number",
+            "name": "Cases Won Rate",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Won Cases",
+                        "data_source": "cases",
+                        "module": "Tickets",
+                        "operation": "percentage",
+                        "filters": {
+                            "outcome": "Won"
+                        }
+                    }
+                ],
+                "expected_value": "71.4%"
+            }
+        },
+        {
+            "type": "bar",
+            "title": "Billable Hours by Attorney",
+            "description": "Total billable hours logged per attorney for the current billing period.",
+            "data_config": {
+                "module": "Tickets",
+                "data_source": "time_entries",
+                "group_by": ["attorney"],
+                "fields": ["Santos", "Mendez", "Reyes", "Okafor", "Lim"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "pie",
+            "title": "Case Stage Distribution",
+            "description": "Breakdown of active cases by current litigation stage.",
+            "data_config": {
+                "module": "Tickets",
+                "data_source": "cases",
+                "group_by": ["case_stage"],
+                "fields": ["Pre-Litigation", "Discovery", "Motion Practice", "Trial", "Settlement", "Appeal"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "line",
+            "title": "Monthly Case Filings Trend",
+            "description": "Number of new cases filed or opened per month over the past year.",
+            "data_config": {
+                "module": "Tickets",
+                "data_source": "cases",
+                "group_by": ["custom_dates"],
+                "date_from": "2025-01-01",
+                "date_to": "2025-12-31",
+                "date_interval": "monthly",
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "list",
+            "name": "Active Case Registry",
+            "description": "Summary list of active cases with lead attorney, stage, and next hearing date.",
+            "data_config": {
+                "module": "Tickets",
+                "data_source": "cases",
+                "group_by": ["case_name", "lead_attorney", "case_stage", "next_date"]
+            },
+            "column_count": 4,
+            "column_width": 200
+        }
+    ]
+}

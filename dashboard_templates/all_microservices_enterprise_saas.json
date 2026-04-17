@@ -1,0 +1,116 @@
+{
+  "dashboard_name": "Enterprise SaaS Platform Dashboard Template",
+  "source": "analytics",
+  "report": "# Enterprise SaaS Platform Overview\n\n## Overview\nThis dashboard provides a unified view of platform health, workforce activity, and cross-module engagement across the workspace. It is designed for platform administrators and operations leads who need real-time visibility into module adoption, team performance, and support ticket volume.\n\n## Key Metrics\n- Active Headcount: 1,240\n- Open Support Tickets: 84\n- On-Time Project Delivery: 87%\n- SLA Compliance: 94.2%\n\n## Insights\n- Cross-module adoption has grown 8% quarter-over-quarter, driven by HR Hub and Projects integration\n- Support ticket volume is within normal range; Module Setup tickets represent 30% of total volume\n- Project delivery rate is above the 85% threshold for the current quarter",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Headcount",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Employees",
+            "data_source": "employees",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "employmentStatus": "Active"
+            }
+          }
+        ],
+        "expected_value": "1240"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Open Support Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Tickets",
+            "data_source": "tickets",
+            "module": "Tickets",
+            "operation": "count",
+            "filters": {
+              "status": "Open"
+            }
+          }
+        ],
+        "expected_value": "84"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Headcount by Department",
+      "description": "Distribution of active employees across departments to identify staffing concentrations and gaps.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "employees",
+        "group_by": [
+          "department"
+        ],
+        "fields": [
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "HR",
+          "Operations",
+          "Finance"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Support Ticket Volume Trend",
+      "description": "Monthly ticket submission volume to monitor support demand and surface operational pressure points.",
+      "data_config": {
+        "module": "Tickets",
+        "data_source": "tickets",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Projects by Status",
+      "description": "Breakdown of projects by current status to highlight delivery health across the organisation.",
+      "data_config": {
+        "module": "Projects",
+        "data_source": "projects",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "active",
+          "completed",
+          "on_hold",
+          "at_risk"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Recent Support Tickets",
+      "description": "List of the most recent support tickets with type, priority, status, and assigned team member.",
+      "data_config": {
+        "module": "Tickets",
+        "data_source": "tickets",
+        "group_by": [
+          "title",
+          "type",
+          "status",
+          "assignee"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}

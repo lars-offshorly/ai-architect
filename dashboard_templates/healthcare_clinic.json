@@ -1,0 +1,93 @@
+{
+    "dashboard_name": "Medical Clinic Operations Dashboard Template",
+    "source": "analytics",
+    "report": "# Medical Clinic Operations Dashboard\n\n## Overview\nThis dashboard tracks outpatient clinic performance, including daily appointment volume, no-show rates, patient satisfaction, and wait time metrics. It helps clinic administrators optimize scheduling, reduce gaps, and improve the patient experience.\n\n## Key Metrics\n- Daily Appointments: 48\n- No-Show Rate: 12.3%\n- Patient Satisfaction Score: 4.1 / 5.0\n\n## Insights\n- No-show rate has declined 2.1% since SMS reminder automation was activated last quarter.\n- Telehealth appointments now account for 31% of total visits, reducing in-clinic wait times.\n- Patient satisfaction scores are highest for follow-up visits and lowest for new patient intake.",
+    "widgets": [
+        {
+            "type": "number",
+            "name": "Daily Appointment Volume",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Scheduled Appointments",
+                        "data_source": "appointments",
+                        "module": "Healthcare",
+                        "operation": "count",
+                        "filters": {
+                            "date": "today"
+                        }
+                    }
+                ],
+                "expected_value": "48"
+            }
+        },
+        {
+            "type": "number",
+            "name": "No-Show Rate",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Missed Appointments",
+                        "data_source": "appointments",
+                        "module": "Healthcare",
+                        "operation": "percentage",
+                        "filters": {
+                            "status": "No Show"
+                        }
+                    }
+                ],
+                "expected_value": "12.3%"
+            }
+        },
+        {
+            "type": "bar",
+            "title": "Appointment Volume by Provider",
+            "description": "Number of appointments completed per physician or care team for the current period.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "appointments",
+                "group_by": ["provider"],
+                "fields": ["Dr. Santos", "Dr. Mendez", "Dr. Reyes", "Dr. Okafor", "Dr. Lim"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "pie",
+            "title": "Appointment Type Distribution",
+            "description": "Breakdown of visits by appointment category for the selected period.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "appointments",
+                "group_by": ["appointment_type"],
+                "fields": ["New Patient", "Follow-Up", "Telehealth", "Specialist", "Preventive Care"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "line",
+            "title": "Monthly Visit Volume Trend",
+            "description": "Total patient visits per month over the last year, segmented by visit type.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "appointments",
+                "group_by": ["custom_dates"],
+                "date_from": "2025-01-01",
+                "date_to": "2025-12-31",
+                "date_interval": "monthly",
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "list",
+            "name": "Upcoming Appointments",
+            "description": "List of scheduled appointments with patient, provider, type, and time details.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "appointments",
+                "group_by": ["patient_name", "provider", "appointment_type", "scheduled_time"]
+            },
+            "column_count": 4,
+            "column_width": 200
+        }
+    ]
+}

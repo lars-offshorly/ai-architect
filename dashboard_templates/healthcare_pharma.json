@@ -1,0 +1,93 @@
+{
+    "dashboard_name": "Pharmaceutical R&D Dashboard Template",
+    "source": "analytics",
+    "report": "# Pharmaceutical R&D Dashboard\n\n## Overview\nThis dashboard provides visibility into the clinical trial portfolio, regulatory submission pipeline, and R&D milestone progress. It enables research leaders to track enrollment rates, protocol adherence, and regulatory timelines across all active programs.\n\n## Key Metrics\n- Active Clinical Trials: 7\n- Trial Enrollment Rate: 64.2%\n- Milestone Completion Rate: 79.0%\n\n## Insights\n- CardioMax Phase III enrollment is 8% below target — site activation at two additional sites is underway.\n- Protocol deviation rate of 3.8% is within acceptable thresholds but requires monitoring at Site 4.\n- Four regulatory submissions are pending review; NovaDerm NDA is the highest priority.",
+    "widgets": [
+        {
+            "type": "number",
+            "name": "Active Clinical Trials",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Active Trials",
+                        "data_source": "clinical_trials",
+                        "module": "Healthcare",
+                        "operation": "count",
+                        "filters": {
+                            "status": "Active"
+                        }
+                    }
+                ],
+                "expected_value": "7"
+            }
+        },
+        {
+            "type": "number",
+            "name": "Regulatory Submissions Pending",
+            "calculation": {
+                "datasets": [
+                    {
+                        "name": "Pending Submissions",
+                        "data_source": "regulatory_submissions",
+                        "module": "Healthcare",
+                        "operation": "count",
+                        "filters": {
+                            "status": "Pending"
+                        }
+                    }
+                ],
+                "expected_value": "4"
+            }
+        },
+        {
+            "type": "bar",
+            "title": "Trial Enrollment by Phase",
+            "description": "Current enrollment count versus target for each active trial, grouped by clinical phase.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "clinical_trials",
+                "group_by": ["trial_phase"],
+                "fields": ["Phase I", "Phase II", "Phase III", "Phase IV", "Observational"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "pie",
+            "title": "Regulatory Submission Status",
+            "description": "Distribution of regulatory submissions by current review status.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "regulatory_submissions",
+                "group_by": ["submission_status"],
+                "fields": ["Pending", "Under Review", "Approved", "Resubmission Required", "Withdrawn"],
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "line",
+            "title": "Monthly Patient Enrollment Trend",
+            "description": "Cumulative patient enrollment across all active trials over the past year.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "clinical_trials",
+                "group_by": ["custom_dates"],
+                "date_from": "2025-01-01",
+                "date_to": "2025-12-31",
+                "date_interval": "monthly",
+                "aggregation": "count"
+            }
+        },
+        {
+            "type": "list",
+            "name": "Active Trial Milestones",
+            "description": "List of upcoming regulatory and clinical milestones with trial, due date, and status.",
+            "data_config": {
+                "module": "Healthcare",
+                "data_source": "trial_milestones",
+                "group_by": ["trial_name", "milestone_type", "due_date", "status"]
+            },
+            "column_count": 4,
+            "column_width": 200
+        }
+    ]
+}

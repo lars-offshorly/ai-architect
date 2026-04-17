@@ -1,0 +1,94 @@
+{
+  "dashboard_name": "Civil Engineering & Infrastructure Dashboard Template",
+  "source": "analytics",
+  "report": "# Civil Engineering & Infrastructure Operations Report\n\n## Overview\nThis dashboard tracks Stonebridge Civil Engineering's active government contracts, schedule performance, safety compliance, and open punch items across civil infrastructure projects including roads, bridges, utilities, and drainage systems.\n\n## Key Metrics\n- Active Contracts: 8\n- Schedule Performance Index: 0.92\n- Open Punch Items: 43\n- Safety Compliance Rate: 97.8%\n- Contract Utilization Rate: 86.0%\n\n## Insights\n- An SPI of 0.92 indicates minor schedule slippage — the River Bridge Rehabilitation should be reviewed for critical path delays.\n- Safety compliance at 97.8% is strong; close the 2 remaining open inspections to reach 100%.\n- 43 open punch items is elevated — assign a dedicated closeout team to reduce backlog before new contract mobilizations.",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Contracts",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Contracts",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {"status": ["In Progress"]}
+          }
+        ],
+        "expected_value": "8"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Schedule Performance Index",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "SPI",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "ratio",
+            "filters": {}
+          }
+        ],
+        "expected_value": "0.92"
+      }
+    },
+    {
+      "type": "pie",
+      "name": "Project Phase Distribution",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Projects by Phase",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "count",
+            "filters": {},
+            "group_by": "phase"
+          }
+        ],
+        "expected_value": "pie chart"
+      }
+    },
+    {
+      "type": "line",
+      "name": "Safety Compliance Trend",
+      "data_config": {
+        "datasets": [
+          {
+            "name": "Safety Compliance Rate",
+            "data_source": "projects",
+            "module": "Construction",
+            "operation": "percentage",
+            "filters": {"type": "Safety Inspection", "status": "Resolved"}
+          }
+        ],
+        "group_by": ["custom_dates"],
+        "date_from": "2025-01-01",
+        "date_to": "2025-12-31",
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open Punch Items",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Punch Items",
+            "data_source": "ticketing",
+            "module": "Construction",
+            "operation": "list",
+            "filters": {"type": "Punch Item", "status": ["Open", "In Progress"]}
+          }
+        ],
+        "expected_value": "item list"
+      },
+      "column_count": 4,
+      "column_width": 200
+    }
+  ]
+}
