@@ -1,43 +1,182 @@
 {
   "schema_version": "1.0",
   "bundle_key": "finance",
-  "keywords": ["accounting", "invoicing", "receivables", "payables", "bookkeeping", "smb", "small business", "invoices", "ar", "ap"],
   "stores": {
     "invoices": [
-      {"id": "INV-001", "client": "Client 1", "amount": 42000, "issue_date": "2026-02-15", "due_date": "2026-03-15", "status": "Paid"},
-      {"id": "INV-002", "client": "Client 2", "amount": 62000, "issue_date": "2026-02-28", "due_date": "2026-03-30", "status": "Pending"},
-      {"id": "INV-003", "client": "Client 3", "amount": 95000, "issue_date": "2026-02-28", "due_date": "2026-03-30", "status": "Pending"},
-      {"id": "INV-004", "client": "Client 4", "amount": 42000, "issue_date": "2026-02-15", "due_date": "2026-03-15", "status": "Paid"}
+      {
+        "id": "INV-001",
+        "client": "Client 1",
+        "amount": 42000,
+        "issue_date": "2026-02-15",
+        "due_date": "2026-03-15",
+        "status": "Paid"
+      },
+      {
+        "id": "INV-002",
+        "client": "Client 2",
+        "amount": 62000,
+        "issue_date": "2026-02-28",
+        "due_date": "2026-03-30",
+        "status": "Pending"
+      },
+      {
+        "id": "INV-003",
+        "client": "Client 3",
+        "amount": 95000,
+        "issue_date": "2026-02-28",
+        "due_date": "2026-03-30",
+        "status": "Pending"
+      },
+      {
+        "id": "INV-004",
+        "client": "Client 4",
+        "amount": 42000,
+        "issue_date": "2026-02-15",
+        "due_date": "2026-03-15",
+        "status": "Paid"
+      }
     ],
     "receivables": [
-      {"id": "ar-001", "client": "Client 1", "outstanding": 42000, "due_date": "2026-03-15"},
-      {"id": "ar-002", "client": "Client 2", "outstanding": 62000, "due_date": "2026-03-30"},
-      {"id": "ar-003", "client": "Client 3", "outstanding": 95000, "due_date": "2026-03-30"}
+      {
+        "id": "ar-001",
+        "client": "Client 1",
+        "outstanding": 42000,
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "ar-002",
+        "client": "Client 2",
+        "outstanding": 62000,
+        "due_date": "2026-03-30"
+      },
+      {
+        "id": "ar-003",
+        "client": "Client 3",
+        "outstanding": 95000,
+        "due_date": "2026-03-30"
+      }
     ],
     "payments": [
-      {"id": "pay-001", "payment_type": "Vendor", "recipient": "Office Supplies Co.", "amount": 8500, "due_date": "2026-04-20", "status": "Scheduled"},
-      {"id": "pay-002", "payment_type": "Payroll", "recipient": "April Payroll", "amount": 450000, "due_date": "2026-04-30", "status": "Scheduled"}
+      {
+        "id": "pay-001",
+        "payment_type": "Vendor",
+        "recipient": "Office Supplies Co.",
+        "amount": 8500,
+        "due_date": "2026-04-20",
+        "status": "Scheduled"
+      },
+      {
+        "id": "pay-002",
+        "payment_type": "Payroll",
+        "recipient": "April Payroll",
+        "amount": 450000,
+        "due_date": "2026-04-30",
+        "status": "Scheduled"
+      }
     ],
     "expenses": [
-      {"id": "exp-001", "category": "Payroll", "amount": 450000, "month": "2026-03"},
-      {"id": "exp-002", "category": "Operations", "amount": 120000, "month": "2026-03"},
-      {"id": "exp-003", "category": "Marketing", "amount": 65000, "month": "2026-03"},
-      {"id": "exp-004", "category": "Utilities", "amount": 32000, "month": "2026-03"}
+      {
+        "id": "exp-001",
+        "category": "Payroll",
+        "amount": 450000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-002",
+        "category": "Operations",
+        "amount": 120000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-003",
+        "category": "Marketing",
+        "amount": 65000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-004",
+        "category": "Utilities",
+        "amount": 32000,
+        "month": "2026-03"
+      }
     ],
     "revenue": [
-      {"id": "rev-001", "category": "Product Sales", "amount": 820000, "month": "2026-03"},
-      {"id": "rev-002", "category": "Services", "amount": 340000, "month": "2026-03"},
-      {"id": "rev-003", "category": "Other Income", "amount": 28000, "month": "2026-03"}
+      {
+        "id": "rev-001",
+        "category": "Product Sales",
+        "amount": 820000,
+        "month": "2026-03"
+      },
+      {
+        "id": "rev-002",
+        "category": "Services",
+        "amount": 340000,
+        "month": "2026-03"
+      },
+      {
+        "id": "rev-003",
+        "category": "Other Income",
+        "amount": 28000,
+        "month": "2026-03"
+      }
     ],
     "tasks": [
-      {"id": "task-001", "title": "Send Invoice", "client": "Client 1", "due_date": "2026-03-15", "status": "To Do"},
-      {"id": "task-002", "title": "Draft Invoice", "client": "Client 2", "due_date": "2026-03-12", "status": "Open"},
-      {"id": "task-003", "title": "Profit Report", "client": "Client 3", "due_date": "2026-03-13", "status": "Open"}
+      {
+        "id": "task-001",
+        "title": "Send Invoice",
+        "client": "Client 1",
+        "due_date": "2026-03-15",
+        "status": "To Do"
+      },
+      {
+        "id": "task-002",
+        "title": "Draft Invoice",
+        "client": "Client 2",
+        "due_date": "2026-03-12",
+        "status": "Open"
+      },
+      {
+        "id": "task-003",
+        "title": "Profit Report",
+        "client": "Client 3",
+        "due_date": "2026-03-13",
+        "status": "Open"
+      }
     ],
     "tickets": [
-      {"id": "ticket-001", "title": "Invoice Not Generated", "description": "Invoice missing after confirmation", "status": "open", "priority": "high", "category": "Billing", "assignee": "Carlos Mendez", "requester": "Client 1", "created_at": "2026-04-11T09:00:00Z"},
-      {"id": "ticket-002", "title": "Duplicate Invoice created", "description": "Two invoices created after confirmation", "status": "in_progress", "priority": "high", "category": "Billing", "assignee": "Maria Santos", "requester": "Client 2", "created_at": "2026-04-10T10:00:00Z"},
-      {"id": "ticket-003", "title": "Missing Invoice Copy", "description": "Client requesting invoice copy", "status": "open", "priority": "medium", "category": "Billing", "assignee": "Ana Reyes", "requester": "Client 3", "created_at": "2026-04-09T11:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Invoice Not Generated",
+        "description": "Invoice missing after confirmation",
+        "status": "open",
+        "priority": "high",
+        "category": "Billing",
+        "assignee": "Carlos Mendez",
+        "requester": "Client 1",
+        "created_at": "2026-04-11T09:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "Duplicate Invoice created",
+        "description": "Two invoices created after confirmation",
+        "status": "in_progress",
+        "priority": "high",
+        "category": "Billing",
+        "assignee": "Maria Santos",
+        "requester": "Client 2",
+        "created_at": "2026-04-10T10:00:00Z"
+      },
+      {
+        "id": "ticket-003",
+        "title": "Missing Invoice Copy",
+        "description": "Client requesting invoice copy",
+        "status": "open",
+        "priority": "medium",
+        "category": "Billing",
+        "assignee": "Ana Reyes",
+        "requester": "Client 3",
+        "created_at": "2026-04-09T11:00:00Z"
+      }
     ]
   }
 }

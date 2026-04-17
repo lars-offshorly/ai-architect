@@ -1,37 +1,139 @@
 {
   "schema_version": "1.0",
   "bundle_key": "sales",
-  "keywords": ["real estate", "brokerage", "broker", "listing", "property", "buyer", "seller", "agent", "showing", "closing"],
   "stores": {
     "leads": [
-      {"id": "lead-001", "name": "Mark Tan", "company": "Tan Family", "source": "Open House", "status": "New", "owner": "Isabel Cruz", "created_at": "2026-04-10"},
-      {"id": "lead-002", "name": "Linda Garcia", "company": "Garcia Household", "source": "Referral", "status": "Qualified", "owner": "Paolo Reyes", "created_at": "2026-04-06"}
+      {
+        "id": "lead-001",
+        "name": "Mark Tan",
+        "company": "Tan Family",
+        "source": "Open House",
+        "status": "New",
+        "owner": "Isabel Cruz",
+        "created_at": "2026-04-10"
+      },
+      {
+        "id": "lead-002",
+        "name": "Linda Garcia",
+        "company": "Garcia Household",
+        "source": "Referral",
+        "status": "Qualified",
+        "owner": "Paolo Reyes",
+        "created_at": "2026-04-06"
+      }
     ],
     "opportunities": [
-      {"id": "opp-001", "name": "Makati Condo — 2BR", "client": "Mark Tan", "stage": "Proposal", "value": 8500000, "close_date": "2026-05-30", "owner": "Isabel Cruz"},
-      {"id": "opp-002", "name": "BGC Townhouse", "client": "Linda Garcia", "stage": "Negotiation", "value": 15500000, "close_date": "2026-04-28", "owner": "Paolo Reyes"},
-      {"id": "opp-003", "name": "QC House & Lot", "client": "Reyes Family", "stage": "Qualified", "value": 12000000, "close_date": "2026-06-15", "owner": "Isabel Cruz"}
+      {
+        "id": "opp-001",
+        "name": "Makati Condo \u2014 2BR",
+        "client": "Mark Tan",
+        "stage": "Proposal",
+        "value": 8500000,
+        "close_date": "2026-05-30",
+        "owner": "Isabel Cruz"
+      },
+      {
+        "id": "opp-002",
+        "name": "BGC Townhouse",
+        "client": "Linda Garcia",
+        "stage": "Negotiation",
+        "value": 15500000,
+        "close_date": "2026-04-28",
+        "owner": "Paolo Reyes"
+      },
+      {
+        "id": "opp-003",
+        "name": "QC House & Lot",
+        "client": "Reyes Family",
+        "stage": "Qualified",
+        "value": 12000000,
+        "close_date": "2026-06-15",
+        "owner": "Isabel Cruz"
+      }
     ],
     "listings": [
-      {"id": "list-001", "property": "Makati Tower A — Unit 2201", "price": 8500000, "status": "Active", "agent": "Isabel Cruz"},
-      {"id": "list-002", "property": "BGC Townhouse — Block 5", "price": 15500000, "status": "Under Offer", "agent": "Paolo Reyes"},
-      {"id": "list-003", "property": "QC House & Lot — Project 6", "price": 12000000, "status": "Active", "agent": "Isabel Cruz"}
+      {
+        "id": "list-001",
+        "property": "Makati Tower A \u2014 Unit 2201",
+        "price": 8500000,
+        "status": "Active",
+        "agent": "Isabel Cruz"
+      },
+      {
+        "id": "list-002",
+        "property": "BGC Townhouse \u2014 Block 5",
+        "price": 15500000,
+        "status": "Under Offer",
+        "agent": "Paolo Reyes"
+      },
+      {
+        "id": "list-003",
+        "property": "QC House & Lot \u2014 Project 6",
+        "price": 12000000,
+        "status": "Active",
+        "agent": "Isabel Cruz"
+      }
     ],
     "upcoming_closures": [
-      {"id": "uc-001", "client": "Linda Garcia", "deal_value": 15500000, "close_date": "2026-04-28"},
-      {"id": "uc-002", "client": "Mark Tan", "deal_value": 8500000, "close_date": "2026-05-30"}
+      {
+        "id": "uc-001",
+        "client": "Linda Garcia",
+        "deal_value": 15500000,
+        "close_date": "2026-04-28"
+      },
+      {
+        "id": "uc-002",
+        "client": "Mark Tan",
+        "deal_value": 8500000,
+        "close_date": "2026-05-30"
+      }
     ],
     "sales_rep_performance": [
-      {"rep": "Isabel Cruz", "deals": 3, "revenue": 28500000},
-      {"rep": "Paolo Reyes", "deals": 2, "revenue": 15500000}
+      {
+        "rep": "Isabel Cruz",
+        "deals": 3,
+        "revenue": 28500000
+      },
+      {
+        "rep": "Paolo Reyes",
+        "deals": 2,
+        "revenue": 15500000
+      }
     ],
     "tasks": [
-      {"id": "task-001", "title": "Schedule property viewing", "client": "Mark Tan", "due_date": "2026-04-18", "status": "To Do"},
-      {"id": "task-002", "title": "Prepare offer letter", "client": "Linda Garcia", "due_date": "2026-04-20", "status": "In Progress"},
-      {"id": "task-003", "title": "Loan pre-qualification follow-up", "client": "Reyes Family", "due_date": "2026-04-25", "status": "Open"}
+      {
+        "id": "task-001",
+        "title": "Schedule property viewing",
+        "client": "Mark Tan",
+        "due_date": "2026-04-18",
+        "status": "To Do"
+      },
+      {
+        "id": "task-002",
+        "title": "Prepare offer letter",
+        "client": "Linda Garcia",
+        "due_date": "2026-04-20",
+        "status": "In Progress"
+      },
+      {
+        "id": "task-003",
+        "title": "Loan pre-qualification follow-up",
+        "client": "Reyes Family",
+        "due_date": "2026-04-25",
+        "status": "Open"
+      }
     ],
     "tickets": [
-      {"id": "ticket-001", "title": "Title document delay — Unit 2201", "status": "open", "priority": "high", "category": "Documentation", "assignee": "Isabel Cruz", "requester": "Mark Tan", "created_at": "2026-04-10T10:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Title document delay \u2014 Unit 2201",
+        "status": "open",
+        "priority": "high",
+        "category": "Documentation",
+        "assignee": "Isabel Cruz",
+        "requester": "Mark Tan",
+        "created_at": "2026-04-10T10:00:00Z"
+      }
     ]
   }
 }

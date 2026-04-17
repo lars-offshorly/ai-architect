@@ -1,15 +1,22 @@
 {
   "dashboard_name": "Onboarding & Offboarding Dashboard Template",
   "source": "analytics",
-  "keywords": ["onboarding", "offboarding", "new hire", "exit", "probation", "separation", "orientation", "clearance"],
-  "report": "# Onboarding & Offboarding Dashboard\n\n## Overview\nThis dashboard gives the Template people operations team a day-one to day-exit view of employee lifecycle events. It supports HRBPs, IT, and department heads in spotting stalled onboarding plans, incomplete clearances, and upcoming probation reviews.\n\n## Key Metrics\n- New Hires This Month: 12\n- Onboarding In Progress: 9\n- Exits This Month: 4\n- Probation Reviews Due: 5\n\n## Insights\n- IT asset provisioning remains the most common onboarding blocker\n- Exit clearances are averaging 6 days — inside the 10-day target\n- Probation reviews are clustered in the next two weeks — manager capacity risk",
+  "report": "# Onboarding & Offboarding Dashboard\n\n## Overview\nThis dashboard gives the Template people operations team a day-one to day-exit view of employee lifecycle events. It supports HRBPs, IT, and department heads in spotting stalled onboarding plans, incomplete clearances, and upcoming probation reviews.\n\n## Key Metrics\n- New Hires This Month: 12\n- Onboarding In Progress: 9\n- Exits This Month: 4\n- Probation Reviews Due: 5\n\n## Insights\n- IT asset provisioning remains the most common onboarding blocker\n- Exit clearances are averaging 6 days \u2014 inside the 10-day target\n- Probation reviews are clustered in the next two weeks \u2014 manager capacity risk",
   "widgets": [
     {
       "type": "number",
       "name": "New Hires This Month",
       "calculation": {
         "datasets": [
-          {"name": "New Hires", "data_source": "employees", "module": "HR Hub", "operation": "count", "filters": {"status": "Onboarding"}}
+          {
+            "name": "New Hires",
+            "data_source": "employees",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "Onboarding"
+            }
+          }
         ],
         "expected_value": "12"
       }
@@ -19,7 +26,15 @@
       "name": "Onboarding In Progress",
       "calculation": {
         "datasets": [
-          {"name": "Active Onboarding", "data_source": "onboarding_plans", "module": "HR Hub", "operation": "count", "filters": {"status": "In Progress"}}
+          {
+            "name": "Active Onboarding",
+            "data_source": "onboarding_plans",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "In Progress"
+            }
+          }
         ],
         "expected_value": "9"
       }
@@ -29,7 +44,15 @@
       "name": "Exits This Month",
       "calculation": {
         "datasets": [
-          {"name": "Offboarding Cases", "data_source": "offboarding_cases", "module": "HR Hub", "operation": "count", "filters": {"status": "In Progress"}}
+          {
+            "name": "Offboarding Cases",
+            "data_source": "offboarding_cases",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "In Progress"
+            }
+          }
         ],
         "expected_value": "4"
       }
@@ -39,7 +62,16 @@
       "name": "Probation Reviews Due",
       "calculation": {
         "datasets": [
-          {"name": "Probation Reviews", "data_source": "requests", "module": "HR Hub", "operation": "count", "filters": {"request_type": "Probation Review", "status": "Pending"}}
+          {
+            "name": "Probation Reviews",
+            "data_source": "requests",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "request_type": "Probation Review",
+              "status": "Pending"
+            }
+          }
         ],
         "expected_value": "5"
       }
@@ -51,8 +83,16 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "onboarding_plans",
-        "group_by": ["stage"],
-        "fields": ["Pre-boarding", "Day 1", "Week 1", "Month 1", "Complete"],
+        "group_by": [
+          "stage"
+        ],
+        "fields": [
+          "Pre-boarding",
+          "Day 1",
+          "Week 1",
+          "Month 1",
+          "Complete"
+        ],
         "aggregation": "count"
       }
     },
@@ -63,8 +103,16 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "offboarding_cases",
-        "group_by": ["reason"],
-        "fields": ["Resignation", "End of Contract", "Retirement", "Termination", "Other"],
+        "group_by": [
+          "reason"
+        ],
+        "fields": [
+          "Resignation",
+          "End of Contract",
+          "Retirement",
+          "Termination",
+          "Other"
+        ],
         "aggregation": "count"
       }
     },
@@ -75,8 +123,16 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "employees",
-        "group_by": ["department"],
-        "fields": ["Engineering", "Sales", "Marketing", "Operations", "HR"],
+        "group_by": [
+          "department"
+        ],
+        "fields": [
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Operations",
+          "HR"
+        ],
         "aggregation": "count"
       }
     },
@@ -87,7 +143,9 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "employees",
-        "group_by": ["custom_dates"],
+        "group_by": [
+          "custom_dates"
+        ],
         "date_from": null,
         "date_to": null,
         "date_interval": "monthly",
@@ -101,7 +159,13 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "onboarding_plans",
-        "group_by": ["employee", "department", "stage", "owner", "target_date"]
+        "group_by": [
+          "employee",
+          "department",
+          "stage",
+          "owner",
+          "target_date"
+        ]
       },
       "column_count": 5,
       "column_width": 160
@@ -113,7 +177,12 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "offboarding_cases",
-        "group_by": ["employee", "last_working_day", "reason", "status"]
+        "group_by": [
+          "employee",
+          "last_working_day",
+          "reason",
+          "status"
+        ]
       },
       "column_count": 4,
       "column_width": 180
@@ -125,7 +194,11 @@
       "data_config": {
         "module": "HR Hub",
         "data_source": "requests",
-        "group_by": ["request_type", "employee", "status"]
+        "group_by": [
+          "request_type",
+          "employee",
+          "status"
+        ]
       },
       "column_count": 3,
       "column_width": 200

@@ -1,12 +1,11 @@
 {
   "schema_version": "1.0",
   "bundle_key": "legal_services",
-  "keywords": ["corporate", "in-house", "contracts", "compliance", "M&A", "intellectual property", "employment law", "vendor agreements", "risk", "governance", "NDA", "legal review"],
   "stores": {
     "tickets": [
       {
         "id": "ticket-001",
-        "title": "Vendor NDA review — CloudOps Inc.",
+        "title": "Vendor NDA review \u2014 CloudOps Inc.",
         "status": "pending",
         "priority": "medium",
         "category": "Contract Review",
@@ -16,7 +15,7 @@
       },
       {
         "id": "ticket-002",
-        "title": "Employment matter — Performance PIP review",
+        "title": "Employment matter \u2014 Performance PIP review",
         "status": "in_progress",
         "priority": "high",
         "category": "Employment Matter",
@@ -26,7 +25,7 @@
       },
       {
         "id": "ticket-003",
-        "title": "IP filing — patent application #2026-004",
+        "title": "IP filing \u2014 patent application #2026-004",
         "status": "resolved",
         "priority": "low",
         "category": "IP Filing",
@@ -36,7 +35,7 @@
       },
       {
         "id": "ticket-004",
-        "title": "Acquisition LOI review — Target Co.",
+        "title": "Acquisition LOI review \u2014 Target Co.",
         "status": "pending",
         "priority": "urgent",
         "category": "Contract Review",
@@ -46,22 +45,53 @@
       }
     ],
     "kpis": [
-      {"id": 1, "key": "open_contracts", "label": "Open Contracts", "type": "count", "sample_value": 47, "source_service": "legal_services"},
-      {"id": 2, "key": "contract_review_turnaround", "label": "Contract Review Turnaround", "type": "days", "sample_value": 5, "source_service": "legal_services"},
-      {"id": 3, "key": "compliance_incidents", "label": "Compliance Incidents", "type": "count", "sample_value": 3, "source_service": "legal_services"}
+      {
+        "id": 1,
+        "key": "open_contracts",
+        "label": "Open Contracts",
+        "type": "count",
+        "sample_value": 47,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 2,
+        "key": "contract_review_turnaround",
+        "label": "Contract Review Turnaround",
+        "type": "days",
+        "sample_value": 5,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 3,
+        "key": "compliance_incidents",
+        "label": "Compliance Incidents",
+        "type": "count",
+        "sample_value": 3,
+        "source_service": "legal_services"
+      }
     ],
     "dashboard_widgets": [
       {
         "id": "widget-001",
         "type": "ticket_summary",
         "title": "Legal Matters Overview",
-        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+        "position": {
+          "row": 0,
+          "col": 0,
+          "width": 2,
+          "height": 1
+        }
       },
       {
         "id": "widget-002",
         "type": "kpi_grid",
         "title": "Corporate Legal Metrics",
-        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+        "position": {
+          "row": 1,
+          "col": 0,
+          "width": 3,
+          "height": 1
+        }
       }
     ]
   }

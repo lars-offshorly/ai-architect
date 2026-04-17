@@ -1,26 +1,119 @@
 {
   "schema_version": "1.0",
   "bundle_key": "project_mgmt",
-  "keywords": ["software", "agile", "sprint", "scrum", "kanban", "engineering", "product", "dev team", "release", "backlog"],
   "stores": {
     "projects": [
-      {"id": "proj-001", "title": "Checkout Service Refactor", "client": "Internal", "lead": "James Okafor", "start_date": "2026-02-01", "end_date": "2026-06-30", "status": "Active", "priority": "High", "phase": "in_progress", "completion_pct": 62},
-      {"id": "proj-002", "title": "Analytics Dashboard v2", "client": "Internal", "lead": "Sofia Lim", "start_date": "2026-03-15", "end_date": "2026-08-30", "status": "Active", "priority": "Normal", "phase": "review", "completion_pct": 38},
-      {"id": "proj-003", "title": "Mobile SDK Launch", "client": "Internal", "lead": "Priya Nair", "start_date": "2026-01-10", "end_date": "2026-05-15", "status": "Pending", "priority": "Critical", "phase": "backlog", "completion_pct": 12}
+      {
+        "id": "proj-001",
+        "title": "Checkout Service Refactor",
+        "client": "Internal",
+        "lead": "James Okafor",
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30",
+        "status": "Active",
+        "priority": "High",
+        "phase": "in_progress",
+        "completion_pct": 62
+      },
+      {
+        "id": "proj-002",
+        "title": "Analytics Dashboard v2",
+        "client": "Internal",
+        "lead": "Sofia Lim",
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30",
+        "status": "Active",
+        "priority": "Normal",
+        "phase": "review",
+        "completion_pct": 38
+      },
+      {
+        "id": "proj-003",
+        "title": "Mobile SDK Launch",
+        "client": "Internal",
+        "lead": "Priya Nair",
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15",
+        "status": "Pending",
+        "priority": "Critical",
+        "phase": "backlog",
+        "completion_pct": 12
+      }
     ],
     "tasks": [
-      {"id": "task-001", "title": "Design checkout state machine", "project_id": "proj-001", "status": "in_progress", "priority": "high", "assignee": "David Park", "due_date": "2026-04-25"},
-      {"id": "task-002", "title": "Implement caching layer", "project_id": "proj-001", "status": "for_deployment", "priority": "critical", "assignee": "Lucas Silva", "due_date": "2026-04-20"},
-      {"id": "task-003", "title": "QA regression sweep", "project_id": "proj-002", "status": "review", "priority": "medium", "assignee": "Priya Nair", "due_date": "2026-05-02"},
-      {"id": "task-004", "title": "API contract finalization", "project_id": "proj-003", "status": "new", "priority": "high", "assignee": "James Okafor", "due_date": "2026-04-28"},
-      {"id": "task-005", "title": "SDK docs draft", "project_id": "proj-003", "status": "on_hold", "priority": "low", "assignee": "Sofia Lim", "due_date": "2026-05-10"}
+      {
+        "id": "task-001",
+        "title": "Design checkout state machine",
+        "project_id": "proj-001",
+        "status": "in_progress",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-04-25"
+      },
+      {
+        "id": "task-002",
+        "title": "Implement caching layer",
+        "project_id": "proj-001",
+        "status": "for_deployment",
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "task-003",
+        "title": "QA regression sweep",
+        "project_id": "proj-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "task-004",
+        "title": "API contract finalization",
+        "project_id": "proj-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
+        "due_date": "2026-04-28"
+      },
+      {
+        "id": "task-005",
+        "title": "SDK docs draft",
+        "project_id": "proj-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      }
     ],
     "milestones": [
-      {"id": "ms-001", "project_id": "proj-001", "title": "Alpha release", "due_date": "2026-04-30", "status": "at_risk"},
-      {"id": "ms-002", "project_id": "proj-002", "title": "Beta rollout", "due_date": "2026-06-15", "status": "pending"}
+      {
+        "id": "ms-001",
+        "project_id": "proj-001",
+        "title": "Alpha release",
+        "due_date": "2026-04-30",
+        "status": "at_risk"
+      },
+      {
+        "id": "ms-002",
+        "project_id": "proj-002",
+        "title": "Beta rollout",
+        "due_date": "2026-06-15",
+        "status": "pending"
+      }
     ],
     "tickets": [
-      {"id": "ticket-001", "title": "Build pipeline flaky — ci/cd", "status": "open", "priority": "high", "category": "Bug Report", "assignee": "Lucas Silva", "requester": "David Park", "created_at": "2026-04-12T09:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Build pipeline flaky \u2014 ci/cd",
+        "status": "open",
+        "priority": "high",
+        "category": "Bug Report",
+        "assignee": "Lucas Silva",
+        "requester": "David Park",
+        "created_at": "2026-04-12T09:00:00Z"
+      }
     ]
   }
 }

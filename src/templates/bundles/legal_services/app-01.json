@@ -1,12 +1,11 @@
 {
   "schema_version": "1.0",
   "bundle_key": "legal_services",
-  "keywords": ["litigation", "trial", "plaintiff", "defendant", "discovery", "deposition", "motion", "court", "settlement", "attorney", "paralegal", "case management"],
   "stores": {
     "tickets": [
       {
         "id": "ticket-001",
-        "title": "Discovery documents overdue — Harrington v. Apex",
+        "title": "Discovery documents overdue \u2014 Harrington v. Apex",
         "status": "pending",
         "priority": "urgent",
         "category": "Discovery",
@@ -16,7 +15,7 @@
       },
       {
         "id": "ticket-002",
-        "title": "Motion to compel — deadline Friday",
+        "title": "Motion to compel \u2014 deadline Friday",
         "status": "in_progress",
         "priority": "high",
         "category": "Motion Filing",
@@ -26,7 +25,7 @@
       },
       {
         "id": "ticket-003",
-        "title": "Client deposition prep — Smith matter",
+        "title": "Client deposition prep \u2014 Smith matter",
         "status": "resolved",
         "priority": "medium",
         "category": "Deposition Prep",
@@ -36,7 +35,7 @@
       },
       {
         "id": "ticket-004",
-        "title": "Expert witness retainer — Dr. Franklin",
+        "title": "Expert witness retainer \u2014 Dr. Franklin",
         "status": "pending",
         "priority": "medium",
         "category": "Client Consultation",
@@ -46,22 +45,53 @@
       }
     ],
     "kpis": [
-      {"id": 1, "key": "active_cases", "label": "Active Cases", "type": "count", "sample_value": 84, "source_service": "legal_services"},
-      {"id": 2, "key": "billable_hours_utilization", "label": "Billable Hours Utilization", "type": "percentage", "sample_value": 88.2, "source_service": "legal_services"},
-      {"id": 3, "key": "cases_won_rate", "label": "Cases Won Rate", "type": "percentage", "sample_value": 71.4, "source_service": "legal_services"}
+      {
+        "id": 1,
+        "key": "active_cases",
+        "label": "Active Cases",
+        "type": "count",
+        "sample_value": 84,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 2,
+        "key": "billable_hours_utilization",
+        "label": "Billable Hours Utilization",
+        "type": "percentage",
+        "sample_value": 88.2,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 3,
+        "key": "cases_won_rate",
+        "label": "Cases Won Rate",
+        "type": "percentage",
+        "sample_value": 71.4,
+        "source_service": "legal_services"
+      }
     ],
     "dashboard_widgets": [
       {
         "id": "widget-001",
         "type": "ticket_summary",
         "title": "Case Overview",
-        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+        "position": {
+          "row": 0,
+          "col": 0,
+          "width": 2,
+          "height": 1
+        }
       },
       {
         "id": "widget-002",
         "type": "kpi_grid",
         "title": "Firm Metrics",
-        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+        "position": {
+          "row": 1,
+          "col": 0,
+          "width": 3,
+          "height": 1
+        }
       }
     ]
   }
