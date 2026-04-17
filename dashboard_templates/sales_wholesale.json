@@ -1,0 +1,134 @@
+{
+  "dashboard_name": "Wholesale & Distribution Dashboard Template",
+  "source": "analytics",
+  "keywords": ["wholesale", "distribution", "reseller", "distributor", "trade sales", "dealer", "channel", "b2b distribution", "fmcg"],
+  "report": "# Wholesale & Distribution Dashboard\n\n## Overview\nThis dashboard gives Template wholesale and distribution leaders a view of reseller orders, channel performance, and territory pipeline. It supports channel managers, trade sales leads, and distributor account owners in catching stalled re-orders, under-performing resellers, and territory gaps.\n\n## Key Metrics\n- Active Distributors: 68\n- Open Orders: 112\n- Orders Shipped Today: 24\n- Weighted Pipeline Value: P 22.5M\n- Quota Attainment: 79%\n\n## Insights\n- NCR and Cebu territories are on track; Mindanao is lagging vs quota\n- Top 5 resellers generate 45% of order volume — concentration risk\n- Order cycle time has tightened by 8% versus last quarter",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Distributors",
+      "calculation": {
+        "datasets": [
+          {"name": "Active Distributors", "data_source": "leads", "module": "Sales", "operation": "count", "filters": {"status": "Active"}}
+        ],
+        "expected_value": "68"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Open Orders",
+      "calculation": {
+        "datasets": [
+          {"name": "Open Orders", "data_source": "orders", "module": "Sales", "operation": "count", "filters": {"status": "Open"}}
+        ],
+        "expected_value": "112"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Orders Shipped Today",
+      "calculation": {
+        "datasets": [
+          {"name": "Orders Shipped Today", "data_source": "orders", "module": "Sales", "operation": "count", "filters": {"status": "Shipped"}}
+        ],
+        "expected_value": "24"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Active Opportunities",
+      "calculation": {
+        "datasets": [
+          {"name": "Active Opportunities", "data_source": "opportunities", "module": "Sales", "operation": "count"}
+        ],
+        "expected_value": "35"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Sales Pipeline",
+      "description": "Opportunity count across wholesale pipeline stages.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "opportunities",
+        "group_by": ["stage"],
+        "fields": ["Lead", "Qualified", "Proposal", "Negotiation", "Closed"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Order Volume Trend",
+      "description": "Orders shipped per week over the last 12 months.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "orders",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Orders by Territory",
+      "description": "Open orders distributed across territories.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "orders",
+        "group_by": ["territory"],
+        "fields": ["NCR", "Luzon", "Visayas", "Mindanao", "International"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open Orders",
+      "description": "All open orders with distributor, SKU count, value, and status.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "orders",
+        "group_by": ["id", "distributor", "sku_count", "value", "status", "ship_by"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "Active Distributors",
+      "description": "All active distributors with territory, owner, and last order date.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "leads",
+        "group_by": ["name", "company", "source", "owner", "status"]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Active Opportunities",
+      "description": "All active wholesale opportunities with client, stage, value, and owner.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "opportunities",
+        "group_by": ["name", "client", "stage", "value", "close_date", "owner"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "hbar",
+      "title": "Rep Performance",
+      "description": "Deals closed and revenue per channel rep in the current quarter.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "sales_rep_performance",
+        "group_by": ["rep"],
+        "fields": ["deals", "revenue"],
+        "aggregation": "sum"
+      }
+    }
+  ]
+}

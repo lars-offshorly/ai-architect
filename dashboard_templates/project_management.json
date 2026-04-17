@@ -1,6 +1,7 @@
 {
   "dashboard_name": "Project Management Dashboard Template",
   "source": "analytics",
+  "keywords": ["software", "agile", "sprint", "scrum", "kanban", "engineering", "product", "dev team", "release", "backlog"],
   "report": "# Project Management Dashboard\n\n## Overview\nThis dashboard gives Template delivery leaders a portfolio-level view of project health, task throughput, and execution cadence. It supports PMs, engineering managers, and delivery leads in catching slipping milestones, blocked work, and overloaded owners.\n\n## Key Metrics\n- Active Projects: 8\n- Pending Projects: 3\n- New Tasks: 36\n- In Progress Tasks: 25\n- Resolved Tasks: 162\n- Overdue Tasks: 14\n\n## Insights\n- Two high-priority projects are trending toward milestone slippage in Q2\n- Task priority distribution is skewed toward High and Low — Normal tasks are underrepresented, suggesting triage inconsistency\n- Throughput is steady week-over-week; cycle time has tightened by 6% this quarter",
   "widgets": [
     {

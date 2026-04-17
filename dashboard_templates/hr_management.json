@@ -1,6 +1,7 @@
 {
   "dashboard_name": "HR Management Dashboard Template",
   "source": "analytics",
+  "keywords": ["hr", "people", "human resources", "employees", "attendance", "workforce", "headcount", "timekeeping", "shifts"],
   "report": "# HR Management Dashboard\n\n## Overview\nThis dashboard gives the Template people operations team a daily view of workforce health, attendance, and employee request throughput. It supports HR Business Partners, department heads, and people operations leads in spotting attendance exceptions, approval bottlenecks, and workforce capacity issues.\n\n## Key Metrics\n- Total Employees: 1,082\n- Present Today: 1,023\n- Attendance Rate: 95%\n- Open Employee Requests: 14\n\n## Insights\n- Attendance rate is within the 94–96% healthy range; late arrivals are concentrated in Morning shift\n- Open requests are trending down week-over-week, driven by faster HMO application processing\n- Engineering and Operations remain the largest departments and drive most shift distribution volume",
   "widgets": [
     {

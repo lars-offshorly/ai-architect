@@ -1,6 +1,7 @@
 {
   "dashboard_name": "Sales Dashboard Template",
   "source": "analytics",
+  "keywords": ["b2b", "saas", "pipeline", "crm", "opportunities", "enterprise sales", "account executive", "quota", "forecast"],
   "report": "# Sales Dashboard\n\n## Overview\nThis dashboard gives Template sales leaders a real-time view of pipeline health, forecast reliability, and seller productivity. It supports sales managers, RevOps, and account executives in spotting at-risk deals, stalled proposals, and quota gaps.\n\n## Key Metrics\n- Total Leads: 12\n- Active Opportunities: 96\n- Proposals Sent: 2\n- Closed Deals: 102\n- Weighted Pipeline Value: P 18.2M\n- Quota Attainment: 84%\n\n## Insights\n- Pipeline is healthy at the Qualified and Proposal stages; Negotiation stage is thinning\n- Two large opportunities have had no activity in >14 days — follow-up needed\n- Win rate has climbed 4pts versus last quarter, driven by better lead qualification",
   "widgets": [
     {

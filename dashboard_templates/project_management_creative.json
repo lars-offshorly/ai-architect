@@ -1,0 +1,122 @@
+{
+  "dashboard_name": "Creative Production Dashboard Template",
+  "source": "analytics",
+  "keywords": ["creative", "campaign", "marketing", "agency", "design", "production", "content", "brand", "media"],
+  "report": "# Creative Production Dashboard\n\n## Overview\nThis dashboard gives Template creative and agency leaders a view of in-flight production work across campaigns, brands, and channels. It supports creative directors, producers, and traffic managers in catching blocked assets, review bottlenecks, and upcoming launch pressure points.\n\n## Key Metrics\n- Active Productions: 9\n- Assets in Review: 18\n- Approved This Week: 22\n- Launches Next 30 Days: 6\n\n## Insights\n- Review cycles on video assets are the longest — consider dedicated reviewer slots\n- Two campaigns are converging on the same launch window — staging risk\n- Design pod load is evenly distributed; copy pod is oversubscribed this sprint",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Productions",
+      "calculation": {
+        "datasets": [
+          {"name": "Active Productions", "data_source": "projects", "module": "Project Management", "operation": "count", "filters": {"status": "Active"}}
+        ],
+        "expected_value": "9"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Assets in Review",
+      "calculation": {
+        "datasets": [
+          {"name": "Assets in Review", "data_source": "tasks", "module": "Project Management", "operation": "count", "filters": {"status": "for_review"}}
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Approved This Week",
+      "calculation": {
+        "datasets": [
+          {"name": "Approved Assets", "data_source": "tasks", "module": "Project Management", "operation": "count", "filters": {"status": "resolved"}}
+        ],
+        "expected_value": "22"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Launches Next 30 Days",
+      "calculation": {
+        "datasets": [
+          {"name": "Upcoming Launches", "data_source": "milestones", "module": "Project Management", "operation": "count"}
+        ],
+        "expected_value": "6"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Tasks per Status",
+      "description": "Production tasks by workflow state.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "tasks",
+        "group_by": ["status"],
+        "fields": ["backlog", "in_progress", "for_review", "revisions", "approved", "published"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "description": "Priority mix across active creative tasks.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "tasks",
+        "group_by": ["priority"],
+        "fields": ["critical", "high", "normal", "low", "very_low"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Productions per Brand",
+      "description": "Active productions distributed across brands/clients.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": ["client"],
+        "fields": ["Brand A", "Brand B", "Brand C", "Internal", "Others"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Launch Trend",
+      "description": "Launches per month over the last 12 months.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Productions in Flight",
+      "description": "All active productions with client, lead, start/end dates, and status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": ["title", "client", "lead", "start_date", "end_date", "status"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Launches",
+      "description": "Next campaign launches with due date and risk status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": ["title", "project_id", "due_date", "status"]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

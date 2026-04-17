@@ -1,0 +1,122 @@
+{
+  "dashboard_name": "Client Delivery Dashboard Template",
+  "source": "analytics",
+  "keywords": ["client", "delivery", "consulting", "services", "engagement", "professional services", "statement of work", "sow", "account"],
+  "report": "# Client Delivery Dashboard\n\n## Overview\nThis dashboard gives Template consulting and professional services leaders a portfolio view of client engagements, billable throughput, and milestone health. It supports engagement managers, delivery leads, and account executives in catching slipping SOWs, under-utilised teams, and at-risk billables.\n\n## Key Metrics\n- Active Engagements: 11\n- Pending Engagements: 2\n- Milestones Due This Month: 14\n- Overdue Milestones: 3\n- Billable Hours MTD: 1,480\n\n## Insights\n- Two engagements are trending toward SOW slippage — escalate to account owners\n- Milestone completion rate holds at 88%; creative review cycles are the largest delay driver\n- Utilisation is healthy across delivery pods; one pod is under-allocated and can absorb new scope",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Engagements",
+      "calculation": {
+        "datasets": [
+          {"name": "Active Engagements", "data_source": "projects", "module": "Project Management", "operation": "count", "filters": {"status": "Active"}}
+        ],
+        "expected_value": "11"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Pending Engagements",
+      "calculation": {
+        "datasets": [
+          {"name": "Pending Engagements", "data_source": "projects", "module": "Project Management", "operation": "count", "filters": {"status": "Pending"}}
+        ],
+        "expected_value": "2"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Milestones Due This Month",
+      "calculation": {
+        "datasets": [
+          {"name": "Milestones Due", "data_source": "milestones", "module": "Project Management", "operation": "count"}
+        ],
+        "expected_value": "14"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Overdue Milestones",
+      "calculation": {
+        "datasets": [
+          {"name": "Overdue Milestones", "data_source": "milestones", "module": "Project Management", "operation": "count", "filters": {"status": "Overdue"}}
+        ],
+        "expected_value": "3"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Engagements per Status",
+      "description": "Lifecycle stage of all client engagements.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": ["status"],
+        "fields": ["Active", "On Hold", "Pending", "Completed"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "description": "Priority mix across delivery tasks.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "tasks",
+        "group_by": ["priority"],
+        "fields": ["critical", "high", "normal", "low", "very_low"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Engagement by Client",
+      "description": "Active engagements distributed by client.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": ["client"],
+        "fields": ["ABC Corp", "Acme Inc", "Globex", "Initech", "Others"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Milestone Trend",
+      "description": "Milestones completed versus planned per month over the last 12 months.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Engagement Portfolio",
+      "description": "All engagements with client, lead, start/end dates, and status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": ["title", "client", "lead", "start_date", "end_date", "status"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Milestones",
+      "description": "Next delivery milestones by due date with current risk status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": ["title", "project_id", "due_date", "status"]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

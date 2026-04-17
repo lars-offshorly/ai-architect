@@ -1,0 +1,122 @@
+{
+  "dashboard_name": "Internal Ops & Facilities Dashboard Template",
+  "source": "analytics",
+  "keywords": ["internal ops", "facilities", "maintenance", "workplace", "office", "request", "service request", "admin", "housekeeping"],
+  "report": "# Internal Ops & Facilities Dashboard\n\n## Overview\nThis dashboard gives Template facilities and admin leads a view of service requests across office locations. It supports facilities managers, admin ops, and workplace experience teams in catching maintenance backlogs, open work orders, and recurring issues by building.\n\n## Key Metrics\n- Open Requests: 22\n- Completed Today: 14\n- Scheduled Maintenance: 6\n- On Hold: 3\n- Average Resolution Time: 1d 8h\n\n## Insights\n- HVAC and Electrical remain the largest request categories; AC units in 5F are a recurring hotspot\n- Turnaround time is inside target; housekeeping requests dominate volume but close fastest\n- Two buildings account for 60% of open work orders — vendor review recommended",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Open Requests",
+      "calculation": {
+        "datasets": [
+          {"name": "Open Requests", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "open"}}
+        ],
+        "expected_value": "22"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Completed Today",
+      "calculation": {
+        "datasets": [
+          {"name": "Completed Today", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "closed"}}
+        ],
+        "expected_value": "14"
+      }
+    },
+    {
+      "type": "number",
+      "name": "On Hold",
+      "calculation": {
+        "datasets": [
+          {"name": "On Hold", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "on_hold"}}
+        ],
+        "expected_value": "3"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Average Resolution Time",
+      "calculation": {
+        "datasets": [
+          {"name": "Resolution Time", "data_source": "tickets", "module": "Ticketing", "operation": "average"}
+        ],
+        "expected_value": "1d 8h"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Request Status Overview",
+      "description": "Distribution of facilities tickets by current status.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["status"],
+        "fields": ["open", "in_progress", "on_hold", "resolved", "closed"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Requests by Category",
+      "description": "Active facilities tickets per category.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["queue"],
+        "fields": ["Facilities", "Housekeeping", "Electrical", "HVAC", "Plumbing", "Security", "Admin"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Request Volume Trend",
+      "description": "Weekly facilities request volume over the last 12 months.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Priority Distribution",
+      "description": "Breakdown of open facilities tickets by priority.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["priority"],
+        "fields": ["low", "medium", "high", "urgent"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open Work Orders",
+      "description": "All open facilities requests with requester, queue, priority, and assignee.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["id", "title", "requester", "queue", "priority", "status", "assignee"]
+      },
+      "column_count": 7,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "My Assigned Work Orders",
+      "description": "Work orders currently assigned to the logged-in technician.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": ["id", "title", "created_at", "status"]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

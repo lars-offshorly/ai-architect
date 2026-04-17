@@ -1,6 +1,7 @@
 {
   "dashboard_name": "Marketing Dashboard Template",
   "source": "analytics",
+  "keywords": ["digital", "performance", "paid media", "ads", "google ads", "meta", "social", "ppc", "campaign", "leads"],
   "report": "# Marketing Dashboard\n\n## Overview\nThis dashboard gives Template marketing leaders a view of campaign execution, team bandwidth, and lead generation performance. It supports marketing managers, campaign owners, and creative leads in catching deadline slippage, budget overruns, and low-converting campaigns.\n\n## Key Metrics\n- Total Campaigns: 96\n- Active Campaigns: 15\n- Tasks Due Today: 18\n- Overdue Tasks: 5\n- Leads Generated: 420\n- Spend vs Budget: 57%\n\n## Insights\n- Paid Search and Email channels are on track; Social is trailing in spend utilization\n- Team workload is concentrated on two members — redistribution recommended\n- Upcoming launches are clustered in the last week of the month — staging risk",
   "widgets": [
     {

@@ -1,0 +1,134 @@
+{
+  "dashboard_name": "FP&A Dashboard Template",
+  "source": "analytics",
+  "keywords": ["fpna", "fp&a", "budget", "forecast", "enterprise", "cfo", "planning", "variance", "cost center", "department"],
+  "report": "# FP&A Dashboard\n\n## Overview\nThis dashboard gives Template enterprise finance leaders a unified view of budget performance, forecast accuracy, and cost-center variance. It supports CFO staff, FP&A analysts, and department heads in surfacing variance risk, overspend, and forecast drift.\n\n## Key Metrics\n- Total Budget: P 42.5M\n- YTD Actuals: P 18.9M\n- Forecast vs Plan: 97%\n- Variance: +P 1.2M\n- Approved POs: 126\n- Pending Approvals: 9\n\n## Insights\n- Marketing and R&D run closest to plan; G&A is under-running with reclassification risk\n- Forecast accuracy within 3% tolerance — trust is healthy\n- Two cost centers hold most of the unspent budget — Q3 reallocation candidates",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Total Budget",
+      "calculation": {
+        "datasets": [
+          {"name": "Total Budget", "data_source": "budgets", "module": "Finance", "operation": "sum"}
+        ],
+        "expected_value": "P 42,500,000"
+      }
+    },
+    {
+      "type": "number",
+      "name": "YTD Actuals",
+      "calculation": {
+        "datasets": [
+          {"name": "YTD Actuals", "data_source": "expenses", "module": "Finance", "operation": "sum"}
+        ],
+        "expected_value": "P 18,900,000"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Forecast vs Plan",
+      "calculation": {
+        "datasets": [
+          {"name": "Forecast Accuracy", "data_source": "budgets", "module": "Finance", "operation": "percentage"}
+        ],
+        "expected_value": "97%"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Pending Approvals",
+      "calculation": {
+        "datasets": [
+          {"name": "Pending Approvals", "data_source": "invoices", "module": "Finance", "operation": "count", "filters": {"status": "Pending"}}
+        ],
+        "expected_value": "9"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Budget vs Actuals by Cost Center",
+      "description": "Planned versus actual spend per cost center this fiscal year.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "budgets",
+        "group_by": ["cost_center"],
+        "fields": ["Engineering", "Sales", "Marketing", "G&A", "R&D", "Operations"],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Forecast Accuracy Trend",
+      "description": "Monthly forecast accuracy percentage over the last 12 months.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "budgets",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "percentage"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Expense Distribution",
+      "description": "Share of YTD actuals across primary categories.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "expenses",
+        "group_by": ["category"],
+        "fields": ["Payroll", "Vendors", "Cloud", "Travel", "Marketing", "Other"],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Variance by Department",
+      "description": "Favourable vs unfavourable variance per department.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "budgets",
+        "group_by": ["department"],
+        "fields": ["Engineering", "Sales", "Marketing", "G&A", "R&D"],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Budgets by Department",
+      "description": "Department budgets with planned, actuals, and variance.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "budgets",
+        "group_by": ["department", "planned", "actuals", "variance", "status"]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Pending Approvals",
+      "description": "Invoices and POs awaiting approval.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "invoices",
+        "group_by": ["id", "vendor", "amount", "requested_by", "status"]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Finance Support Tickets",
+      "description": "Open finance/FP&A tickets needing analyst action.",
+      "data_config": {
+        "module": "Finance",
+        "data_source": "tickets",
+        "group_by": ["title", "description", "status", "priority"]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

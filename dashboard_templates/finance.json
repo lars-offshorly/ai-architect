@@ -1,6 +1,7 @@
 {
   "dashboard_name": "Finance Dashboard Template",
   "source": "analytics",
+  "keywords": ["accounting", "invoicing", "receivables", "payables", "bookkeeping", "smb", "small business", "invoices", "ar", "ap"],
   "report": "# Finance Dashboard\n\n## Overview\nThis dashboard gives Template finance leaders a unified view of revenue performance, cost posture, and working capital. It supports controllers, finance managers, and FP&A analysts in surfacing cash-flow risks, budget overruns, and collections exposure.\n\n## Key Metrics\n- Total Revenue: P 1,188,000\n- Total Expenses: P 667,000\n- Net Profit: P 521,000\n- ROI: 22%\n- Cash Flow: P 350,000\n- Outstanding Invoices: 14\n\n## Insights\n- Gross margin holds at 44% month-over-month; Marketing spend is the largest single variance driver\n- Outstanding receivables are concentrated in three clients; two are >30 days overdue\n- Payroll remains the largest cost category at 68% of operating spend",
   "widgets": [
     {

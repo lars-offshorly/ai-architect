@@ -1,0 +1,134 @@
+{
+  "dashboard_name": "Real Estate Brokerage Dashboard Template",
+  "source": "analytics",
+  "keywords": ["real estate", "brokerage", "broker", "listing", "property", "buyer", "seller", "agent", "showing", "closing"],
+  "report": "# Real Estate Brokerage Dashboard\n\n## Overview\nThis dashboard gives Template brokerage leaders a real-time view of listings, buyer/seller activity, and agent pipeline performance. It supports brokers, sales managers, and agents in catching stalled deals, under-performing listings, and upcoming closings.\n\n## Key Metrics\n- Active Listings: 48\n- Open Inquiries: 26\n- Offers Submitted: 9\n- Closings This Month: 4\n- Weighted Pipeline Value: P 165M\n- Avg Days on Market: 34\n\n## Insights\n- Residential listings dominate volume; commercial listings hold highest average deal size\n- Two listings have sat >90 days without activity — price review recommended\n- Agent performance is concentrated — top 3 agents carry 50% of pipeline",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Listings",
+      "calculation": {
+        "datasets": [
+          {"name": "Active Listings", "data_source": "listings", "module": "Sales", "operation": "count", "filters": {"status": "Active"}}
+        ],
+        "expected_value": "48"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Open Inquiries",
+      "calculation": {
+        "datasets": [
+          {"name": "Open Inquiries", "data_source": "leads", "module": "Sales", "operation": "count", "filters": {"status": "New"}}
+        ],
+        "expected_value": "26"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Offers Submitted",
+      "calculation": {
+        "datasets": [
+          {"name": "Offers Submitted", "data_source": "opportunities", "module": "Sales", "operation": "count", "filters": {"stage": "Offer"}}
+        ],
+        "expected_value": "9"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Closings This Month",
+      "calculation": {
+        "datasets": [
+          {"name": "Closings This Month", "data_source": "opportunities", "module": "Sales", "operation": "count", "filters": {"stage": "Closed"}}
+        ],
+        "expected_value": "4"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Pipeline by Stage",
+      "description": "Opportunity count across brokerage pipeline stages.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "opportunities",
+        "group_by": ["stage"],
+        "fields": ["Inquiry", "Showing", "Offer", "Escrow", "Closed"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Closings Trend",
+      "description": "Monthly closings across the brokerage over the last 12 months.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "opportunities",
+        "group_by": ["custom_dates"],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Listings by Property Type",
+      "description": "Active listings split across residential, commercial, and land.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "listings",
+        "group_by": ["property_type"],
+        "fields": ["Residential", "Condo", "Commercial", "Land", "Industrial"],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Active Listings",
+      "description": "All active listings with agent, price, days on market, and status.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "listings",
+        "group_by": ["address", "property_type", "list_price", "days_on_market", "agent", "status"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "Active Opportunities",
+      "description": "All active deals with client, listing, stage, value, and owner.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "opportunities",
+        "group_by": ["name", "client", "stage", "value", "close_date", "owner"]
+      },
+      "column_count": 6,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Closings",
+      "description": "Deals expected to close in the next 30 days.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "upcoming_closures",
+        "group_by": ["client", "deal_value", "close_date"]
+      },
+      "column_count": 3,
+      "column_width": 200
+    },
+    {
+      "type": "hbar",
+      "title": "Agent Performance",
+      "description": "Deals closed and GCI per agent in the current quarter.",
+      "data_config": {
+        "module": "Sales",
+        "data_source": "sales_rep_performance",
+        "group_by": ["rep"],
+        "fields": ["deals", "revenue"],
+        "aggregation": "sum"
+      }
+    }
+  ]
+}
