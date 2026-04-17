@@ -8,6 +8,9 @@ from pathlib import Path
 from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
+from agents.preview_generator.dashboard.auth import KnitAuthService
+from agents.preview_generator.dashboard.client import DashboardClient
+from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from catalog.bundle_catalog import BundleCatalog
@@ -92,6 +95,39 @@ def get_conversation_flow() -> ConversationFlow:
 
 
 @lru_cache(maxsize=1)
+def get_knit_auth_service() -> KnitAuthService | None:
+    """Return a cached KnitAuthService, or None if credentials are not configured."""
+    settings = get_settings()
+    if not settings.KNIT_EMAIL or not settings.KNIT_PASSWORD:
+        return None
+    return KnitAuthService(
+        auth_url=settings.KNIT_AUTH_URL,
+        email=settings.KNIT_EMAIL,
+        password=settings.KNIT_PASSWORD,
+        ttl_seconds=settings.DASHBOARD_AUTH_TOKEN_TTL_SECONDS,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_dashboard_client() -> DashboardClient | None:
+    """Return a cached DashboardClient, or None if auth is not configured."""
+    auth = get_knit_auth_service()
+    if auth is None:
+        return None
+    settings = get_settings()
+    return DashboardClient(
+        base_url=settings.DASHBOARD_SERVICE_URL,
+        auth_service=auth,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_dashboard_template_registry() -> DashboardTemplateRegistry:
+    """Return a cached DashboardTemplateRegistry."""
+    return DashboardTemplateRegistry()
+
+
+@lru_cache(maxsize=1)
 def get_preview_flow() -> PreviewFlow:
     """Return a cached PreviewFlow wired to the preview generator service."""
     catalog = get_bundle_catalog()
@@ -99,6 +135,8 @@ def get_preview_flow() -> PreviewFlow:
     return PreviewFlow(
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
+        dashboard_client=get_dashboard_client(),
+        dashboard_template_registry=get_dashboard_template_registry(),
     )
 
 

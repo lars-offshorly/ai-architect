@@ -23,7 +23,6 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Output model
 # ---------------------------------------------------------------------------
@@ -109,10 +108,12 @@ class MockPayloadBuilder:
         resolved_session_id = session_id or str(uuid.uuid4())
 
         catalog_key = self._resolve_catalog_key(bundle_key)
-        generation_json, pipeline_dummy_data = self._preview_service.generate(
-            session_id=resolved_session_id,
-            bundle_key=catalog_key,
-            conversation_history=[],
+        generation_json, pipeline_dummy_data, _user_context = (
+            self._preview_service.generate(
+                session_id=resolved_session_id,
+                bundle_key=catalog_key,
+                conversation_history=[],
+            )
         )
 
         if dummy_data_override is not None:
@@ -158,7 +159,7 @@ class MockPayloadBuilder:
         """Return dummy_data_json (store seed data) for a bundle via the pipeline."""
         self._validate_render_key(bundle_key)
         catalog_key = self._resolve_catalog_key(bundle_key)
-        _, dummy_data_json = self._preview_service.generate(
+        _, dummy_data_json, _user_context = self._preview_service.generate(
             session_id=str(uuid.uuid4()),
             bundle_key=catalog_key,
             conversation_history=[],
@@ -172,7 +173,7 @@ class MockPayloadBuilder:
         """Return (feature_flags, permission_services, landing_pages) for render key."""
         self._validate_render_key(bundle_key)
         catalog_key = self._resolve_catalog_key(bundle_key)
-        generation_json, _ = self._preview_service.generate(
+        generation_json, _, _user_context = self._preview_service.generate(
             session_id=str(uuid.uuid4()),
             bundle_key=catalog_key,
             conversation_history=[],

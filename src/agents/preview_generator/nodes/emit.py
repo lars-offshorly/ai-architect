@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from core.logging import get_logger
 
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
@@ -176,11 +178,16 @@ def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, 
 def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     """Build the stores dict with frontend-correct key names for this bundle."""
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
+    dashboard_widgets = _build_dashboard_widgets(state, schema)
+    dashboard_generation_output = _build_dashboard_generation_output(
+        state, dashboard_widgets, schema
+    )
     stores: dict = {
         "kpis": [
             {"id": i + 1, **m.model_dump()} for i, m in enumerate(state.kpi_metrics)
         ],
-        "dashboard_widgets": [],
+        "dashboard_widgets": dashboard_widgets,
+        "dashboard_generation_output": dashboard_generation_output,
     }
     if schema["primary"]:
         stores[schema["primary"]] = state.sample_tickets
@@ -189,6 +196,140 @@ def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     if schema["weaves"]:
         stores[schema["weaves"]] = state.sample_weaves
     return stores
+
+
+def _build_dashboard_widgets(
+    state: PreviewGeneratorState,
+    schema: dict[str, str | None],
+) -> list[dict[str, object]]:
+    """Create lightweight dashboard layout widgets for preview and app payloads."""
+    primary_store = schema.get("primary") or "items"
+    secondary_store = schema.get("secondary") or "projects"
+    kpi_title = state.kpi_metrics[0].label if state.kpi_metrics else "KPI Snapshot"
+    return [
+        {
+            "id": "widget-kpi-overview",
+            "type": "number",
+            "title": kpi_title,
+            "position": {"row": 0, "col": 0, "width": 2, "height": 1},
+        },
+        {
+            "id": "widget-primary-breakdown",
+            "type": "bar",
+            "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
+            "position": {"row": 0, "col": 2, "width": 2, "height": 1},
+        },
+        {
+            "id": "widget-secondary-list",
+            "type": "list",
+            "title": f"{str(secondary_store).replace('_', ' ').title()} Snapshot",
+            "position": {"row": 1, "col": 0, "width": 4, "height": 1},
+        },
+    ]
+
+
+def _build_dashboard_generation_output(
+    state: PreviewGeneratorState,
+    dashboard_widgets: list[dict[str, object]],
+    schema: dict[str, str | None],
+) -> dict[str, object]:
+    """Build OpenAPI-aligned dashboard generation response structure."""
+    primary_store = schema.get("primary") or "items"
+    report_length = sum(
+        len(str(message.get("content", ""))) for message in state.conversation_history
+    )
+
+    debug_widgets: list[dict[str, object]] = []
+    if state.kpi_metrics:
+        metric = state.kpi_metrics[0]
+        debug_widgets.append(
+            {
+                "type": "number",
+                "name": metric.label,
+                "value": str(metric.sample_value),
+                "calculation": {"datasets": [{"module": "KPI", "data_source": "kpis"}]},
+            }
+        )
+    debug_widgets.append(
+        {
+            "type": "bar",
+            "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
+            "data_config": {
+                "module": "Operations",
+                "data_source": primary_store,
+                "group_by": ["status"],
+                "aggregation": "count",
+            },
+        }
+    )
+    debug_widgets.append(
+        {
+            "type": "list",
+            "name": "KPI Detail List",
+            "data_config": {"module": "KPI", "data_source": "kpis"},
+            "column_count": 4,
+            "column_width": 250,
+        }
+    )
+
+    type_counts = {
+        "text": 0,
+        "number": 0,
+        "bar": 0,
+        "hbar": 0,
+        "pie": 0,
+        "line": 0,
+        "scatter": 0,
+        "list": 0,
+        "combo": 0,
+        "embed": 0,
+    }
+    for widget in debug_widgets:
+        widget_type = widget.get("type")
+        if isinstance(widget_type, str) and widget_type in type_counts:
+            type_counts[widget_type] += 1
+    widget_count = {**type_counts, "total": len(debug_widgets)}
+
+    data_sources = sorted(
+        {
+            str(m.source_service)
+            for m in state.kpi_metrics
+            if isinstance(m.source_service, str) and m.source_service
+        }
+    )
+    if not data_sources:
+        data_sources = ["kpis", str(primary_store)]
+
+    return {
+        "success": True,
+        "dashboard": {
+            "id": f"dash-{state.session_id[:8]}",
+            "name": f"{state.bundle_key.replace('_', ' ').title()} Dashboard",
+            "url": None,
+        },
+        "widgets": widget_count,
+        "execution_time": "0m 1s",
+        "errors": [],
+        "debug_payload": {
+            "widgets": debug_widgets,
+            "total_widgets": len(debug_widgets),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "widget_breakdown": widget_count,
+        },
+        "generation_metadata": {
+            "report_length": report_length,
+            "widgets_extracted": len(dashboard_widgets),
+            "widgets_explicit": len(dashboard_widgets),
+            "data_sources_used": data_sources,
+            "processing_steps": [
+                "extract_context",
+                "resolve_feature_flags",
+                "generate_sample_data",
+                "build_kpis",
+                "emit_preview",
+            ],
+        },
+    }
 
 
 def emit_preview(state: PreviewGeneratorState) -> dict:

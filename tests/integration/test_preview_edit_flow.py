@@ -317,6 +317,7 @@ class TestProjectMgmtGenerateAndEdit:
         assert "Dashboard" not in data["modules"]
         # Dashboard widgets cascade removed
         assert "dashboard_widgets" not in data["dummy_data_json"]["stores"]
+        assert "dashboard_generation_output" not in data["dummy_data_json"]["stores"]
 
     @pytest.mark.asyncio
     async def test_edit_add_dashboard_back(self, client: AsyncClient) -> None:

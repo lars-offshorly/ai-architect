@@ -11,6 +11,9 @@ class AppPayloadContract(BaseModel):
     modules: list[str]
     generation_json: dict[str, object]
     dummy_data_json: dict[str, object]
+    # Set to True when the bundle exposes entity_relationships so the contract
+    # can warn if relationships were not injected into config.
+    has_entity_relationships: bool = False
 
     _REQUIRED_GENERATION_KEYS: frozenset[str] = frozenset(
         {"schema_version", "bundle_key", "modules", "config"}
@@ -27,4 +30,11 @@ class AppPayloadContract(BaseModel):
             errors.append(f"dummy_data_json missing keys: {dummy_missing}")
         if not self.modules:
             errors.append("modules list must not be empty")
+        if self.has_entity_relationships:
+            config = self.generation_json.get("config")
+            if not isinstance(config, dict) or "relationships" not in config:
+                errors.append(
+                    "generation_json.config missing 'relationships' key "
+                    "(bundle has entity_relationships defined)"
+                )
         return errors

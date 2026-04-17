@@ -9,7 +9,11 @@ from pydantic import BaseModel, Field, ValidationError
 
 from core.config import get_settings
 from core.exceptions import AppError, BundleRegistryValidationError
-from domain.models.bundle_metadata import BundleMetadata, EntityDefinition
+from domain.models.bundle_metadata import (
+    BundleMetadata,
+    EntityDefinition,
+    EntityRelationshipDefinition,
+)
 
 
 class BundleCatalogError(AppError):
@@ -58,11 +62,28 @@ def _parse_metadata(bundle_key: str, raw: dict | None) -> BundleMetadata | None:
                 label=str(val.get("label", key)),
                 plural=str(val.get("plural", key + "s")),
             )
+    entity_rels: list[EntityRelationshipDefinition] = []
+    for rel in raw.get("entity_relationships") or []:
+        if (
+            isinstance(rel, dict)
+            and rel.get("source")
+            and rel.get("target")
+            and rel.get("type")
+        ):
+            entity_rels.append(
+                EntityRelationshipDefinition(
+                    source=str(rel["source"]),
+                    target=str(rel["target"]),
+                    type=str(rel["type"]),
+                    label=rel.get("label"),
+                )
+            )
     return BundleMetadata(
         bundle_key=bundle_key,
         kpis=list(raw.get("kpis") or []),
         workflows=list(raw.get("workflows") or []),
         entity_definitions=entity_defs,
+        entity_relationships=entity_rels,
         onboarding_config_requirements=list(
             raw.get("onboarding_config_requirements") or []
         ),

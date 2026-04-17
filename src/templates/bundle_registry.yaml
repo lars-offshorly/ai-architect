@@ -178,6 +178,19 @@ bundles:
         - leave types
         - leave policy
         - regularization dates
+      entity_relationships:
+        - source: department
+          target: employee
+          type: has_many
+        - source: employee
+          target: department
+          type: belongs_to  
+        - source: employee
+          target: leave_request
+          type: has_many
+        - source: leave_request
+          target: employee
+          type: belongs_to
 
   # ---------------------------------------------------------------------------
   # 2. Ticketing Tool
@@ -331,6 +344,22 @@ bundles:
       settings_configurations:
         - management queue setup
         - ticket counter selection (New, Overdue, etc.)
+      entity_relationships:
+        - source: queue
+          target: ticket
+          type: has_many
+        - source: ticket
+          target: queue
+          type: belongs_to  
+        - source: queue
+          target: agent
+          type: has_many
+        - source: agent
+          target: ticket
+          type: has_many
+        - source: ticket
+          target: agent
+          type: many_to_many
 
   # ---------------------------------------------------------------------------
   # 3. Project Management
@@ -489,6 +518,19 @@ bundles:
       settings_configurations:
         - status definitions for projects
         - status definitions for tasks
+      entity_relationships:
+        - source: project
+          target: task
+          type: has_many
+        - source: task
+          target: project
+          type: belongs_to  
+        - source: project
+          target: milestone
+          type: has_many
+        - source: milestone
+          target: project
+          type: belongs_to
 
   # ---------------------------------------------------------------------------
   # 4. Finance
