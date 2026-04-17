@@ -138,6 +138,101 @@ bundles:
       industry: ["onboarding", "offboarding", "employee", "headcount", "payroll", "performance review", "hr", "human resources", "leave", "attendance", "recruitment", "hiring", "org chart"]
       industry_detail: "Human Resources"
 
+    variants:
+      - key: app-01
+        display_name: HR & Attendance
+        description: General HR management with attendance, timekeeping, and workforce oversight.
+        is_default: true
+        clarification_label: general HR & attendance
+        dashboard_template: hr_management
+        keywords:
+          - hr
+          - people
+          - human resources
+          - employees
+          - attendance
+          - workforce
+          - headcount
+          - timekeeping
+          - shifts
+          - roster
+        anti_keywords:
+          - recruiting
+          - recruitment
+          - candidate
+          - onboarding
+          - offboarding
+        typical_entities:
+          - employee
+          - department
+          - attendance_record
+          - leave_request
+        typical_intents:
+          - track attendance
+          - manage workforce
+          - monitor headcount
+          - handle leave requests
+
+      - key: app-02
+        display_name: Recruiting
+        description: Talent acquisition, candidate pipeline, interviews, and hiring.
+        clarification_label: recruiting & hiring
+        dashboard_template: hr_management_recruiting
+        keywords:
+          - recruitment
+          - recruiting
+          - hiring
+          - candidates
+          - interview
+          - applicant
+          - talent acquisition
+          - job opening
+          - pipeline
+          - offer letter
+        anti_keywords:
+          - attendance
+          - timekeeping
+          - shift
+          - onboarding
+        typical_entities:
+          - candidate
+          - applicant
+          - interview
+          - job_opening
+        typical_intents:
+          - hire a candidate
+          - run interview loop
+          - manage job openings
+          - track applicants
+
+      - key: app-03
+        display_name: Onboarding & Offboarding
+        description: New-hire orientation, probation tracking, and exit clearance.
+        clarification_label: onboarding & offboarding
+        dashboard_template: hr_management_onboarding
+        keywords:
+          - onboarding
+          - offboarding
+          - new hire
+          - exit
+          - probation
+          - separation
+          - orientation
+          - clearance
+        anti_keywords:
+          - attendance
+          - timekeeping
+          - recruiting
+          - candidate
+        typical_entities:
+          - new_hire
+          - onboarding_plan
+          - offboarding_case
+        typical_intents:
+          - onboard new hires
+          - run exit clearance
+          - track probation
+
     metadata:
       kpis:
         - active_headcount
@@ -309,6 +404,99 @@ bundles:
       industry_detail: "IT Support / Service Desk"
       work_types:
         support_request: ["support", "helpdesk", "help desk", "ticket", "issue", "request", "incident", "sla", "escalation", "resolution", "service desk"]
+
+    variants:
+      - key: app-01
+        display_name: IT Helpdesk
+        description: Internal IT support for employees — hardware, software, infrastructure, and SLAs.
+        is_default: true
+        clarification_label: IT helpdesk
+        dashboard_template: ticketing
+        keywords:
+          - it
+          - helpdesk
+          - it support
+          - incident
+          - servicedesk
+          - infrastructure
+          - sla
+          - software
+          - hardware
+          - servicenow
+        anti_keywords:
+          - customer support
+          - csat
+          - facilities
+          - housekeeping
+        typical_entities:
+          - ticket
+          - incident
+          - agent
+          - employee
+        typical_intents:
+          - resolve incidents
+          - manage helpdesk tickets
+          - monitor SLA
+
+      - key: app-02
+        display_name: Customer Support
+        description: External / B2C customer service, complaints, and CSAT tracking.
+        clarification_label: customer support
+        dashboard_template: ticketing_customer_support
+        keywords:
+          - customer support
+          - external support
+          - client
+          - csat
+          - support queue
+          - customer service
+          - complaints
+          - b2c
+          - contact center
+        anti_keywords:
+          - it helpdesk
+          - infrastructure
+          - facilities
+          - housekeeping
+        typical_entities:
+          - ticket
+          - customer
+          - agent
+          - complaint
+        typical_intents:
+          - handle customer complaints
+          - track CSAT
+          - manage support queues
+
+      - key: app-03
+        display_name: Internal Ops & Facilities
+        description: Workplace / facilities / office operations requests.
+        clarification_label: internal ops & facilities
+        dashboard_template: ticketing_facilities
+        keywords:
+          - internal ops
+          - facilities
+          - maintenance
+          - workplace
+          - office
+          - request
+          - service request
+          - admin
+          - housekeeping
+          - janitorial
+        anti_keywords:
+          - it helpdesk
+          - customer support
+          - csat
+          - infrastructure
+        typical_entities:
+          - ticket
+          - facility
+          - work_order
+        typical_intents:
+          - handle facilities requests
+          - track maintenance work
+          - coordinate office ops
 
     metadata:
       kpis:
@@ -483,6 +671,100 @@ bundles:
         sprint: ["sprint", "sprints", "scrum", "kanban", "agile", "backlog", "backlogs", "standup", "standups", "velocity", "story points", "retrospective", "epic", "epics", "iteration", "iterations"]
         waterfall: ["milestone", "phase", "waterfall", "gantt", "wbs", "work breakdown", "baseline", "deliverable", "gate review"]
 
+    variants:
+      - key: app-01
+        display_name: Software / Agile
+        description: Software delivery with sprints, backlogs, and release tracking.
+        is_default: true
+        clarification_label: software / agile delivery
+        dashboard_template: project_management
+        keywords:
+          - software
+          - agile
+          - sprint
+          - scrum
+          - kanban
+          - engineering
+          - product
+          - dev team
+          - release
+          - backlog
+        anti_keywords:
+          - consulting
+          - retainer
+          - creative agency
+          - brand campaign
+        typical_entities:
+          - project
+          - sprint
+          - task
+          - epic
+        typical_intents:
+          - plan sprints
+          - track backlog
+          - ship releases
+
+      - key: app-02
+        display_name: Client Delivery
+        description: Consulting / professional services engagements on SOW / retainer.
+        clarification_label: client delivery / consulting
+        dashboard_template: project_management_client_delivery
+        keywords:
+          - client
+          - delivery
+          - consulting
+          - services
+          - engagement
+          - professional services
+          - statement of work
+          - sow
+          - account
+          - retainer
+        anti_keywords:
+          - sprint
+          - scrum
+          - kanban
+          - creative agency
+        typical_entities:
+          - engagement
+          - client
+          - deliverable
+          - milestone
+        typical_intents:
+          - manage client engagements
+          - track deliverables
+          - monitor SOW progress
+
+      - key: app-03
+        display_name: Creative / Agency
+        description: Creative agency production, campaigns, and brand delivery.
+        clarification_label: creative / agency work
+        dashboard_template: project_management_creative
+        keywords:
+          - creative
+          - campaign
+          - agency
+          - design
+          - production
+          - content
+          - brand
+          - media
+          - storyboard
+        anti_keywords:
+          - sprint
+          - scrum
+          - software
+          - consulting
+        typical_entities:
+          - campaign
+          - creative_asset
+          - brief
+          - production_task
+        typical_intents:
+          - manage creative production
+          - deliver brand campaigns
+          - track media output
+
     metadata:
       kpis:
         - on_time_delivery_rate
@@ -608,6 +890,105 @@ bundles:
       industry: ["engagement", "consultant", "consulting", "deliverable", "client work", "statement of work", "sow", "retainer", "billable", "advisory"]
       industry_detail: "Professional Services / Consulting"
 
+    variants:
+      - key: app-01
+        display_name: SMB Accounting
+        description: Small-business bookkeeping, invoicing, and accounts receivable / payable.
+        is_default: true
+        clarification_label: SMB accounting & invoicing
+        dashboard_template: finance
+        keywords:
+          - accounting
+          - invoicing
+          - receivables
+          - payables
+          - bookkeeping
+          - smb
+          - small business
+          - invoices
+          - ar
+          - ap
+        anti_keywords:
+          - fp&a
+          - fpna
+          - budget variance
+          - real estate
+          - noi
+        typical_entities:
+          - invoice
+          - expense
+          - account
+        typical_intents:
+          - issue invoices
+          - track receivables
+          - reconcile accounts
+
+      - key: app-02
+        display_name: Enterprise FP&A
+        description: Enterprise financial planning & analysis — budgets, forecasts, variance.
+        clarification_label: enterprise FP&A / budgeting
+        dashboard_template: finance_enterprise
+        keywords:
+          - fpna
+          - fp&a
+          - budget
+          - forecast
+          - enterprise
+          - cfo
+          - planning
+          - variance
+          - cost center
+          - department
+        anti_keywords:
+          - smb
+          - small business
+          - real estate
+          - noi
+          - rental
+        typical_entities:
+          - budget
+          - forecast
+          - cost_center
+          - variance_report
+        typical_intents:
+          - plan annual budget
+          - run variance analysis
+          - forecast spend
+
+      - key: app-03
+        display_name: Real-Estate Finance
+        description: Property / investment finance — NOI, cap rate, rental performance.
+        clarification_label: real-estate finance
+        dashboard_template: finance_real_estate
+        keywords:
+          - real estate
+          - property
+          - investment
+          - rental
+          - noi
+          - cap rate
+          - yield
+          - property investment
+          - landlord
+          - lease
+        industry_hints:
+          - real estate
+          - property
+        anti_keywords:
+          - smb
+          - fpna
+          - fp&a
+          - budget variance
+        typical_entities:
+          - property
+          - rental_unit
+          - lease
+          - investor
+        typical_intents:
+          - track NOI
+          - manage rentals
+          - report cap rates
+
     metadata:
       kpis:
         - gross_profit_margin
@@ -718,6 +1099,101 @@ bundles:
     extraction_keywords:
       industry: ["marketing", "campaign", "branding", "lead generation", "advertising", "digital marketing", "social media"]
       industry_detail: "Marketing"
+
+    variants:
+      - key: app-01
+        display_name: Digital / Performance
+        description: Paid media, PPC, digital ads, performance marketing.
+        is_default: true
+        clarification_label: digital / performance marketing
+        dashboard_template: marketing
+        keywords:
+          - digital
+          - performance
+          - paid media
+          - ads
+          - google ads
+          - meta
+          - social
+          - ppc
+          - campaign
+          - leads
+        anti_keywords:
+          - content
+          - editorial
+          - seo blog
+          - events
+          - webinar
+        typical_entities:
+          - campaign
+          - ad_set
+          - channel
+          - lead
+        typical_intents:
+          - run paid campaigns
+          - optimize CAC
+          - generate leads
+
+      - key: app-02
+        display_name: Content & Brand
+        description: Editorial calendar, SEO, blog, and content marketing.
+        clarification_label: content & brand
+        dashboard_template: marketing_content
+        keywords:
+          - content
+          - brand
+          - editorial
+          - seo
+          - blog
+          - storytelling
+          - copywriting
+          - publication
+          - thought leadership
+        anti_keywords:
+          - paid media
+          - ppc
+          - ads
+          - events
+          - webinar
+        typical_entities:
+          - content_piece
+          - editorial_plan
+          - author
+        typical_intents:
+          - publish content
+          - grow organic traffic
+          - plan editorial calendar
+
+      - key: app-03
+        display_name: Events & Launches
+        description: Field marketing, events, launches, webinars, sponsorships.
+        clarification_label: events & launches
+        dashboard_template: marketing_events
+        keywords:
+          - events
+          - launch
+          - activation
+          - conference
+          - webinar
+          - field marketing
+          - booth
+          - trade show
+          - sponsorship
+        anti_keywords:
+          - paid media
+          - ppc
+          - content
+          - editorial
+          - seo
+        typical_entities:
+          - event
+          - session
+          - attendee
+          - sponsor
+        typical_intents:
+          - plan events
+          - run product launches
+          - manage webinars
 
     metadata:
       kpis:
@@ -868,6 +1344,103 @@ bundles:
       industry: ["sales", "crm", "pipeline", "deal", "opportunity", "prospect"]
       industry_detail: "Sales"
 
+    variants:
+      - key: app-01
+        display_name: B2B SaaS Pipeline
+        description: B2B SaaS CRM — opportunities, account executives, quota attainment.
+        is_default: true
+        clarification_label: B2B SaaS pipeline
+        dashboard_template: sales
+        keywords:
+          - b2b
+          - saas
+          - pipeline
+          - crm
+          - opportunities
+          - enterprise sales
+          - account executive
+          - quota
+          - forecast
+          - arr
+        anti_keywords:
+          - real estate
+          - brokerage
+          - listing
+          - wholesale
+          - distribution
+        typical_entities:
+          - lead
+          - opportunity
+          - account
+          - deal
+        typical_intents:
+          - manage pipeline
+          - close deals
+          - forecast revenue
+
+      - key: app-02
+        display_name: Real-Estate Brokerage
+        description: Real-estate sales — listings, buyers, showings, closings.
+        clarification_label: real-estate brokerage
+        dashboard_template: sales_brokerage
+        keywords:
+          - real estate
+          - brokerage
+          - broker
+          - listing
+          - property
+          - buyer
+          - seller
+          - agent
+          - showing
+          - closing
+        industry_hints:
+          - real estate
+        anti_keywords:
+          - saas
+          - b2b
+          - wholesale
+          - distribution
+        typical_entities:
+          - listing
+          - showing
+          - buyer
+          - seller
+        typical_intents:
+          - manage listings
+          - schedule showings
+          - close transactions
+
+      - key: app-03
+        display_name: Wholesale / Distribution
+        description: Wholesale / distribution — reseller channels, dealer accounts, trade orders.
+        clarification_label: wholesale / distribution
+        dashboard_template: sales_wholesale
+        keywords:
+          - wholesale
+          - distribution
+          - reseller
+          - distributor
+          - trade sales
+          - dealer
+          - channel
+          - b2b distribution
+          - fmcg
+        anti_keywords:
+          - saas
+          - brokerage
+          - listing
+          - real estate
+        typical_entities:
+          - order
+          - reseller
+          - sku
+          - dealer
+        typical_intents:
+          - manage reseller channels
+          - track trade orders
+          - monitor dealer performance
+
     metadata:
       kpis:
         - active_work_items
@@ -981,6 +1554,106 @@ bundles:
     extraction_keywords:
       industry: ["patient", "medical", "healthcare", "clinic", "hospital", "appointment", "diagnosis", "treatment", "care plan", "provider"]
       industry_detail: "Healthcare"
+
+    variants:
+      - key: app-01
+        display_name: Hospital / Inpatient
+        description: Inpatient hospital — wards, admissions, surgery, discharge.
+        is_default: true
+        clarification_label: hospital / inpatient care
+        dashboard_template: healthcare_hospital
+        keywords:
+          - hospital
+          - inpatient
+          - patient care
+          - clinical
+          - nursing
+          - icu
+          - emergency
+          - surgery
+          - admissions
+          - discharge
+          - beds
+          - census
+        anti_keywords:
+          - clinic outpatient
+          - pharmaceutical
+          - clinical trial
+          - drug research
+        typical_entities:
+          - patient
+          - admission
+          - ward
+          - provider
+        typical_intents:
+          - admit patients
+          - coordinate care
+          - discharge patients
+
+      - key: app-02
+        display_name: Clinic / Outpatient
+        description: Outpatient clinic — appointments, primary care, specialist visits.
+        clarification_label: clinic / outpatient care
+        dashboard_template: healthcare_clinic
+        keywords:
+          - clinic
+          - outpatient
+          - appointments
+          - primary care
+          - specialist
+          - scheduling
+          - physician
+          - consultation
+          - follow-up
+          - referral
+          - telehealth
+          - checkup
+        anti_keywords:
+          - inpatient
+          - hospital ward
+          - pharmaceutical
+          - clinical trial
+        typical_entities:
+          - patient
+          - appointment
+          - provider
+          - referral
+        typical_intents:
+          - schedule appointments
+          - manage primary care
+          - track referrals
+
+      - key: app-03
+        display_name: Pharmaceutical / Research
+        description: Pharmaceutical research — drugs, clinical trials, regulatory compliance.
+        clarification_label: pharmaceutical / research
+        dashboard_template: healthcare_pharma
+        keywords:
+          - pharmaceutical
+          - drug
+          - clinical trial
+          - research
+          - regulatory
+          - fda
+          - compliance
+          - lab
+          - formulation
+          - trial phase
+          - enrollment
+          - gmp
+        anti_keywords:
+          - hospital
+          - inpatient
+          - clinic appointment
+        typical_entities:
+          - trial
+          - study
+          - compound
+          - subject
+        typical_intents:
+          - run clinical trials
+          - track regulatory compliance
+          - manage research subjects
 
     metadata:
       kpis:
@@ -1140,6 +1813,107 @@ bundles:
       work_types:
         litigation: ["litigation", "matter", "attorney", "paralegal", "counsel", "court", "filing", "docket", "case", "law firm", "legal", "lawsuit", "plaintiff", "defendant", "deposition", "arbitration", "settlement", "discovery"]
 
+    variants:
+      - key: app-01
+        display_name: Litigation Firm
+        description: Traditional litigation practice — cases, depositions, motions, court filings.
+        is_default: true
+        clarification_label: litigation firm
+        dashboard_template: legal_litigation_firm
+        keywords:
+          - litigation
+          - trial
+          - plaintiff
+          - defendant
+          - discovery
+          - deposition
+          - motion
+          - court
+          - settlement
+          - attorney
+          - paralegal
+          - case management
+        anti_keywords:
+          - corporate
+          - in-house
+          - compliance officer
+          - sox
+        typical_entities:
+          - case
+          - matter
+          - motion
+          - deposition
+        typical_intents:
+          - manage litigation
+          - track motions
+          - coordinate depositions
+
+      - key: app-02
+        display_name: Corporate / In-House
+        description: In-house legal — contracts, vendor agreements, employment law.
+        clarification_label: corporate / in-house counsel
+        dashboard_template: legal_corporate_counsel
+        keywords:
+          - corporate
+          - in-house
+          - contracts
+          - compliance
+          - m&a
+          - intellectual property
+          - employment law
+          - vendor agreements
+          - risk
+          - governance
+          - nda
+          - legal review
+        anti_keywords:
+          - litigation
+          - court
+          - deposition
+          - plaintiff
+        typical_entities:
+          - contract
+          - vendor
+          - nda
+          - matter
+        typical_intents:
+          - review contracts
+          - manage vendor agreements
+          - handle M&A
+
+      - key: app-03
+        display_name: Compliance & Regulatory
+        description: Regulatory compliance, audits, KYC/AML, policy management.
+        clarification_label: compliance & regulatory
+        dashboard_template: legal_compliance_office
+        keywords:
+          - compliance
+          - regulatory
+          - audit
+          - risk
+          - financial regulation
+          - kyc
+          - aml
+          - reporting
+          - policy
+          - breach
+          - sanctions
+          - sox
+        anti_keywords:
+          - litigation
+          - trial
+          - deposition
+          - m&a
+        typical_entities:
+          - policy
+          - audit
+          - finding
+          - control
+        typical_intents:
+          - track regulatory compliance
+          - run audits
+          - manage policy attestations
+
     metadata:
       kpis:
         - avg_case_duration
@@ -1260,6 +2034,106 @@ bundles:
         - site report
       industry_detail: "Construction"
 
+    variants:
+      - key: app-01
+        display_name: General Contractor
+        description: Commercial general contracting — sites, subcontractors, permits, closeouts.
+        is_default: true
+        clarification_label: general contracting
+        dashboard_template: construction_general_contractor
+        keywords:
+          - construction
+          - general contractor
+          - site
+          - subcontractor
+          - permits
+          - build
+          - commercial
+          - rfi
+          - punch list
+          - closeout
+          - framing
+          - foundation
+        anti_keywords:
+          - infrastructure
+          - civil engineering
+          - homebuilder
+          - residential
+        typical_entities:
+          - site
+          - subcontractor
+          - rfi
+          - permit
+        typical_intents:
+          - manage subcontractors
+          - track permits
+          - run punch lists
+
+      - key: app-02
+        display_name: Infrastructure / Civil
+        description: Civil engineering & infrastructure — roads, utilities, municipal projects.
+        clarification_label: infrastructure / civil engineering
+        dashboard_template: construction_infrastructure
+        keywords:
+          - infrastructure
+          - civil engineering
+          - roads
+          - bridges
+          - utilities
+          - municipal
+          - government contract
+          - surveying
+          - earthwork
+          - drainage
+          - public works
+          - grading
+        anti_keywords:
+          - residential
+          - homebuilder
+          - subdivision
+        typical_entities:
+          - site
+          - contract
+          - survey
+          - utility
+        typical_intents:
+          - manage civil works
+          - track municipal contracts
+          - coordinate surveying
+
+      - key: app-03
+        display_name: Residential Homebuilder
+        description: Residential homebuilding — subdivisions, lots, buyers, warranty.
+        clarification_label: residential homebuilder
+        dashboard_template: construction_residential
+        keywords:
+          - homebuilder
+          - residential
+          - subdivision
+          - lot
+          - closing
+          - permitting
+          - framing
+          - roofing
+          - warranty
+          - buyer
+          - move-in
+          - spec home
+        anti_keywords:
+          - commercial
+          - infrastructure
+          - civil engineering
+          - municipal
+        typical_entities:
+          - lot
+          - home
+          - buyer
+          - warranty_claim
+        typical_intents:
+          - manage home closings
+          - track buyer warranty
+          - coordinate framing
+
     metadata:
       kpis:
         - on_time_delivery_rate
@@ -1377,6 +2251,107 @@ bundles:
         - lease
         - broker
       industry_detail: "Real Estate"
+
+    variants:
+      - key: app-01
+        display_name: Property Management
+        description: Residential / multifamily property management — tenants, leases, maintenance.
+        is_default: true
+        clarification_label: property management
+        dashboard_template: real_estate_property_mgmt
+        keywords:
+          - property management
+          - tenant
+          - lease
+          - maintenance
+          - rent
+          - vacancy
+          - occupancy
+          - unit
+          - work order
+          - renewal
+          - eviction
+          - landlord
+        anti_keywords:
+          - brokerage
+          - commercial real estate
+          - reit
+          - mls
+        typical_entities:
+          - property
+          - tenant
+          - lease
+          - work_order
+        typical_intents:
+          - manage tenants
+          - track maintenance
+          - renew leases
+
+      - key: app-02
+        display_name: Brokerage
+        description: Real-estate brokerage — listings, buyers, sellers, commissions.
+        clarification_label: real-estate brokerage
+        dashboard_template: real_estate_brokerage
+        keywords:
+          - real estate
+          - brokerage
+          - listing
+          - buyer
+          - seller
+          - commission
+          - mls
+          - open house
+          - offer
+          - closing
+          - agent
+          - escrow
+        anti_keywords:
+          - property management
+          - tenant
+          - reit
+          - commercial real estate
+        typical_entities:
+          - listing
+          - buyer
+          - seller
+          - offer
+        typical_intents:
+          - manage listings
+          - schedule showings
+          - close transactions
+
+      - key: app-03
+        display_name: Commercial Real Estate
+        description: Commercial real-estate — office, retail, industrial, REIT portfolios.
+        clarification_label: commercial real estate
+        dashboard_template: real_estate_commercial
+        keywords:
+          - commercial real estate
+          - reit
+          - office
+          - retail
+          - industrial
+          - lease
+          - noi
+          - cap rate
+          - asset management
+          - portfolio
+          - tenant mix
+          - development
+        anti_keywords:
+          - property management residential
+          - mls
+          - open house
+          - homebuyer
+        typical_entities:
+          - asset
+          - lease
+          - tenant
+          - property
+        typical_intents:
+          - manage commercial portfolio
+          - track NOI and cap rate
+          - monitor tenant mix
 
     metadata:
       kpis:
@@ -1538,6 +2513,107 @@ bundles:
         - enrollment
         - e-learning
       industry_detail: "Education"
+
+    variants:
+      - key: app-01
+        display_name: K-12 School District
+        description: K-12 schools — students, teachers, curriculum, graduation, special ed.
+        is_default: true
+        clarification_label: K-12 school district
+        dashboard_template: education_k12
+        keywords:
+          - k-12
+          - school district
+          - students
+          - teachers
+          - enrollment
+          - grades
+          - curriculum
+          - attendance
+          - graduation
+          - special education
+          - campus
+          - district
+        anti_keywords:
+          - university
+          - higher education
+          - edtech
+          - lms
+        typical_entities:
+          - student
+          - teacher
+          - classroom
+          - grade
+        typical_intents:
+          - manage students
+          - track attendance
+          - report on grades
+
+      - key: app-02
+        display_name: University / Higher Education
+        description: Higher education — faculty, enrollment, research, accreditation.
+        clarification_label: university / higher education
+        dashboard_template: education_university
+        keywords:
+          - university
+          - higher education
+          - faculty
+          - students
+          - research
+          - campus
+          - enrollment
+          - grants
+          - academic
+          - accreditation
+          - degree
+          - college
+        anti_keywords:
+          - k-12
+          - school district
+          - edtech
+          - lms platform
+        typical_entities:
+          - student
+          - faculty
+          - department
+          - course
+        typical_intents:
+          - manage enrollment
+          - track research grants
+          - support accreditation
+
+      - key: app-03
+        display_name: EdTech / Online Learning
+        description: Online learning — LMS, courses, learners, engagement, completion.
+        clarification_label: edtech / online learning
+        dashboard_template: education_edtech
+        keywords:
+          - edtech
+          - online learning
+          - lms
+          - courses
+          - learners
+          - engagement
+          - completion
+          - subscription
+          - content
+          - curriculum
+          - platform
+          - e-learning
+        anti_keywords:
+          - k-12
+          - school district
+          - university
+          - faculty
+        typical_entities:
+          - learner
+          - course
+          - module
+          - completion_record
+        typical_intents:
+          - track completion
+          - measure engagement
+          - manage subscriptions
 
     metadata:
       kpis:
@@ -1706,6 +2782,103 @@ bundles:
     terminology:
       primary_record_label: work item
 
+    variants:
+      - key: app-01
+        display_name: Enterprise SaaS
+        description: Enterprise SaaS all-in-one — multi-module, integrated platform.
+        is_default: true
+        clarification_label: enterprise SaaS suite
+        dashboard_template: all_microservices_enterprise_saas
+        keywords:
+          - enterprise
+          - saas
+          - platform
+          - multi-module
+          - all-in-one
+          - integrated
+          - scalable
+          - departments
+          - unified
+          - workspace
+          - full-stack
+          - modules
+        anti_keywords:
+          - ecommerce
+          - shopify
+          - fintech
+          - payment processing
+        typical_entities:
+          - workspace
+          - module
+          - department
+        typical_intents:
+          - run enterprise operations
+          - unify multi-department workflows
+          - scale across teams
+
+      - key: app-02
+        display_name: E-commerce
+        description: E-commerce operations — orders, products, inventory, fulfillment.
+        clarification_label: e-commerce operations
+        dashboard_template: all_microservices_ecommerce
+        keywords:
+          - ecommerce
+          - online store
+          - orders
+          - products
+          - inventory
+          - fulfillment
+          - marketplace
+          - shoppers
+          - sku
+          - cart
+          - checkout
+          - returns
+        anti_keywords:
+          - enterprise saas
+          - fintech
+          - banking
+        typical_entities:
+          - order
+          - product
+          - inventory_item
+          - shopper
+        typical_intents:
+          - track orders
+          - manage inventory
+          - handle returns
+
+      - key: app-03
+        display_name: Fintech
+        description: Fintech / payments — transactions, KYC/AML, reconciliation, ledger.
+        clarification_label: fintech / payments
+        dashboard_template: all_microservices_fintech
+        keywords:
+          - fintech
+          - financial technology
+          - payments
+          - transactions
+          - compliance
+          - banking
+          - wallet
+          - api
+          - risk
+          - kyc
+          - reconciliation
+          - ledger
+        anti_keywords:
+          - ecommerce
+          - inventory
+          - fulfillment
+        typical_entities:
+          - transaction
+          - wallet
+          - ledger_entry
+        typical_intents:
+          - process payments
+          - run reconciliation
+          - enforce KYC/AML
+
     metadata:
       kpis:
         - on_time_delivery_rate
@@ -1792,6 +2965,104 @@ bundles:
         agile: ["sprint", "sprints", "scrum", "kanban", "agile", "backlog", "backlogs", "standup", "standups", "velocity", "story points", "retrospective", "epic", "epics", "iteration", "iterations"]
         waterfall: ["milestone", "phase", "waterfall", "gantt", "wbs", "work breakdown", "baseline", "deliverable", "gate review"]
         kanban: ["kanban"]
+
+    variants:
+      - key: app-01
+        display_name: Small Business / Startup
+        description: General small-business / startup workspace — tasks, projects, daily operations.
+        is_default: true
+        clarification_label: small business / startup
+        dashboard_template: generic_small_business
+        keywords:
+          - small business
+          - startup
+          - general operations
+          - team
+          - tasks
+          - workflow
+          - daily operations
+          - work management
+          - productivity
+          - multi-purpose
+          - projects
+        anti_keywords:
+          - consulting
+          - nonprofit
+          - charity
+          - fundraising
+        typical_entities:
+          - task
+          - project
+          - team_member
+        typical_intents:
+          - track daily operations
+          - manage small team tasks
+          - coordinate projects
+
+      - key: app-02
+        display_name: Consulting / Professional Services
+        description: Consulting / advisory — client engagements, billable hours, deliverables.
+        clarification_label: consulting / professional services
+        dashboard_template: generic_consulting
+        keywords:
+          - consulting
+          - professional services
+          - client
+          - engagement
+          - deliverables
+          - billable hours
+          - utilization
+          - advisory
+          - strategy
+          - proposals
+          - retainer
+        anti_keywords:
+          - nonprofit
+          - charity
+          - fundraising
+          - small business
+        typical_entities:
+          - engagement
+          - client
+          - deliverable
+          - time_entry
+        typical_intents:
+          - manage client engagements
+          - track billable hours
+          - deliver strategy work
+
+      - key: app-03
+        display_name: Nonprofit / Charity
+        description: Nonprofit operations — donors, grants, volunteers, programs.
+        clarification_label: nonprofit / charity
+        dashboard_template: generic_nonprofit
+        keywords:
+          - nonprofit
+          - charity
+          - donors
+          - fundraising
+          - grants
+          - volunteers
+          - programs
+          - impact
+          - beneficiaries
+          - community
+          - mission
+          - outreach
+        anti_keywords:
+          - consulting
+          - billable
+          - retainer
+          - small business startup
+        typical_entities:
+          - donor
+          - grant
+          - volunteer
+          - program
+        typical_intents:
+          - manage donors
+          - track grants
+          - coordinate volunteers
 
     metadata:
       kpis: []
