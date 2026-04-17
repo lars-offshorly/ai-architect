@@ -15,6 +15,8 @@ class BundleSuggestion(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     reasoning: str = ""
     matched_signals: list[str] = Field(default_factory=list)
+    variant_key: str | None = None
+    variant_confidence: float | None = None
 
 
 class SuggestedBundles(BaseModel):
