@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "project_mgmt",
+  "keywords": ["creative", "campaign", "marketing", "agency", "design", "production", "content", "brand", "media"],
+  "stores": {
+    "projects": [
+      {"id": "proj-001", "title": "Summer Brand Relaunch", "client": "Internal", "lead": "Priya Nair", "start_date": "2026-03-01", "end_date": "2026-06-15", "status": "Active", "priority": "High", "phase": "in_progress", "completion_pct": 48},
+      {"id": "proj-002", "title": "Partner Co-Marketing — ABC Corp", "client": "ABC Corp", "lead": "Maria Santos", "start_date": "2026-04-01", "end_date": "2026-07-30", "status": "Active", "priority": "Normal", "phase": "in_progress", "completion_pct": 22},
+      {"id": "proj-003", "title": "Product Launch Video Series", "client": "Internal", "lead": "Sofia Lim", "start_date": "2026-02-15", "end_date": "2026-05-15", "status": "Active", "priority": "High", "phase": "review", "completion_pct": 70}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Keyvisual concept review", "project_id": "proj-001", "status": "review", "priority": "high", "assignee": "David Park", "due_date": "2026-04-22"},
+      {"id": "task-002", "title": "Media plan alignment", "project_id": "proj-002", "status": "in_progress", "priority": "normal", "assignee": "Maria Santos", "due_date": "2026-04-25"},
+      {"id": "task-003", "title": "Final cut — Episode 3", "project_id": "proj-003", "status": "for_deployment", "priority": "critical", "assignee": "Sofia Lim", "due_date": "2026-04-28"},
+      {"id": "task-004", "title": "Copywriting round 2", "project_id": "proj-001", "status": "in_progress", "priority": "normal", "assignee": "Priya Nair", "due_date": "2026-04-30"}
+    ],
+    "milestones": [
+      {"id": "ms-001", "project_id": "proj-001", "title": "Campaign go-live", "due_date": "2026-06-01", "status": "pending"},
+      {"id": "ms-002", "project_id": "proj-003", "title": "Series premiere", "due_date": "2026-05-10", "status": "at_risk"}
+    ],
+    "tickets": [
+      {"id": "ticket-001", "title": "Asset upload failing — DAM", "status": "in_progress", "priority": "medium", "category": "Bug Report", "assignee": "David Park", "requester": "Priya Nair", "created_at": "2026-04-10T14:00:00Z"}
+    ]
+  }
+}

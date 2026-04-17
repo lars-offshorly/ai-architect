@@ -20,15 +20,15 @@ from core.logging import get_logger
 logger = get_logger(__name__)
 
 # Map from catalog/registry bundle key → template filename (without .json).
-# Tier 3 bundles (finance, marketing, sales, …) have no entry and will
-# receive None from get(), skipping the dashboard call entirely.
+# Bundles not listed here receive None from get() and skip the dashboard call.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
-    # Group A — core bundles
     "hr_management": "hr_management",
     "hr_hub": "hr_management",  # render key alias
     "project_mgmt": "project_management",
-    # Group B — industry/domain-specific (variant 1 used as primary template;
-    # semantic variant selection is handled by the template loader, not here)
+    "ticketing": "ticketing",
+    "finance": "finance",
+    "marketing": "marketing",
+    "sales": "sales",
     "healthcare": "healthcare_hospital",
     "legal_services": "legal_litigation_firm",
     "construction_real_estate": "construction_general_contractor",

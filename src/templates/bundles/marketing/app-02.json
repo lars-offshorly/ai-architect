@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "marketing",
+  "keywords": ["content", "brand", "editorial", "seo", "blog", "storytelling", "copywriting", "publication", "thought leadership"],
+  "stores": {
+    "campaigns": [
+      {"id": "camp-001", "name": "Brand Voice Refresh", "status": "Active", "channel": "Editorial", "budget": 90000, "spend": 42000, "leads": 0, "due_date": "2026-05-15"},
+      {"id": "camp-002", "name": "Q2 Content Calendar", "status": "Planning", "channel": "Blog", "budget": 60000, "spend": 8000, "leads": 0, "due_date": "2026-06-30"},
+      {"id": "camp-003", "name": "SEO Cluster — Pricing", "status": "Active", "channel": "SEO", "budget": 45000, "spend": 20000, "leads": 140, "due_date": "2026-05-30"}
+    ],
+    "content_pieces": [
+      {"id": "cnt-001", "title": "Ultimate Guide to X", "type": "Pillar Article", "stage": "Draft", "owner": "Priya Nair", "publish_date": "2026-04-28"},
+      {"id": "cnt-002", "title": "Case Study — ABC Corp", "type": "Case Study", "stage": "Review", "owner": "Sofia Lim", "publish_date": "2026-04-22"},
+      {"id": "cnt-003", "title": "Pricing FAQ update", "type": "Blog Post", "stage": "Published", "owner": "David Park", "publish_date": "2026-04-10"}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Style guide sign-off", "project": "Brand Voice Refresh", "assigned_to": "Priya Nair", "due_date": "2026-04-20", "status": "Review"},
+      {"id": "task-002", "title": "Keyword research — pricing cluster", "project": "SEO Cluster — Pricing", "assigned_to": "David Park", "due_date": "2026-04-18", "status": "In Progress"},
+      {"id": "task-003", "title": "Editorial calendar draft", "project": "Q2 Content Calendar", "assigned_to": "Sofia Lim", "due_date": "2026-04-25", "status": "To Do"}
+    ],
+    "team_workload": [
+      {"member": "Priya Nair", "active_tasks": 5},
+      {"member": "Sofia Lim", "active_tasks": 3},
+      {"member": "David Park", "active_tasks": 4}
+    ],
+    "tickets": [
+      {"id": "ticket-001", "title": "CMS publish failing — pricing article", "status": "in_progress", "priority": "medium", "category": "Bug Report", "assignee": "David Park", "requester": "Priya Nair", "created_at": "2026-04-10T10:00:00Z"}
+    ]
+  }
+}

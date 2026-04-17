@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "sales",
+  "keywords": ["b2b", "saas", "pipeline", "crm", "opportunities", "enterprise sales", "account executive", "quota", "forecast"],
+  "stores": {
+    "leads": [
+      {"id": "lead-001", "name": "Jana Cruz", "company": "Alpha Tech", "source": "Website", "status": "New", "owner": "Maria Santos", "created_at": "2026-04-10"},
+      {"id": "lead-002", "name": "Miguel Ramos", "company": "Beta Solutions", "source": "Referral", "status": "Qualified", "owner": "Carlos Mendez", "created_at": "2026-04-08"}
+    ],
+    "opportunities": [
+      {"id": "opp-001", "name": "ABC Corp — SaaS Annual", "client": "ABC Corp", "stage": "Proposal", "value": 10000, "close_date": "2026-03-28", "owner": "Maria Santos"},
+      {"id": "opp-002", "name": "XYZ Corp — Enterprise Expansion", "client": "XYZ Corp", "stage": "Negotiation", "value": 15000, "close_date": "2026-03-22", "owner": "Carlos Mendez"},
+      {"id": "opp-003", "name": "QWE Corp — Platform Deal", "client": "QWE Corp", "stage": "Qualified", "value": 20000, "close_date": "2026-04-01", "owner": "Ana Reyes"}
+    ],
+    "proposals": [
+      {"id": "prop-001", "client": "ABC Corp", "name": "Website Revamp", "date_sent": "2026-03-01", "status": "Under Review", "value": 20000},
+      {"id": "prop-002", "client": "XYZ Corp", "name": "Software Package", "date_sent": "2026-03-01", "status": "Under Review", "value": 12000},
+      {"id": "prop-003", "client": "QWE Corp", "name": "Software Enhancement", "date_sent": "2026-03-02", "status": "Negotiation", "value": 15000},
+      {"id": "prop-004", "client": "QWE Corp", "name": "Software Package", "date_sent": "2026-03-03", "status": "Negotiation", "value": 12000}
+    ],
+    "upcoming_closures": [
+      {"id": "uc-001", "client": "ABC Corp", "deal_value": 10000, "close_date": "2026-03-28"},
+      {"id": "uc-002", "client": "XYZ Corp", "deal_value": 15000, "close_date": "2026-03-22"},
+      {"id": "uc-003", "client": "QWE Corp", "deal_value": 20000, "close_date": "2026-04-01"}
+    ],
+    "sales_rep_performance": [
+      {"rep": "Maria Santos", "deals": 4, "revenue": 120000},
+      {"rep": "Carlos Mendez", "deals": 3, "revenue": 35000},
+      {"rep": "Ana Reyes", "deals": 2, "revenue": 80000}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Discovery call", "client": "ABC Corp", "due_date": "2026-03-15", "status": "To Do"},
+      {"id": "task-002", "title": "Negotiation follow-up", "client": "XYZ Corp", "due_date": "2026-03-12", "status": "Open"},
+      {"id": "task-003", "title": "Send pricing sheet", "client": "QWE Corp", "due_date": "2026-03-13", "status": "Open"}
+    ],
+    "tickets": [
+      {"id": "ticket-001", "title": "CRM sync failing — HubSpot", "status": "in_progress", "priority": "high", "category": "Bug Report", "assignee": "Carlos Mendez", "requester": "Maria Santos", "created_at": "2026-04-11T09:00:00Z"}
+    ]
+  }
+}

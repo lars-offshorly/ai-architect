@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "marketing",
+  "keywords": ["events", "launch", "activation", "conference", "webinar", "field marketing", "booth", "trade show", "sponsorship"],
+  "stores": {
+    "campaigns": [
+      {"id": "camp-001", "name": "Annual Summit 2026", "status": "Active", "channel": "Events", "budget": 2500000, "spend": 980000, "leads": 320, "due_date": "2026-07-15"},
+      {"id": "camp-002", "name": "Product Launch Webinar", "status": "Planning", "channel": "Webinar", "budget": 150000, "spend": 20000, "leads": 0, "due_date": "2026-05-20"},
+      {"id": "camp-003", "name": "Regional Roadshow — NCR", "status": "Active", "channel": "Field", "budget": 450000, "spend": 210000, "leads": 180, "due_date": "2026-06-10"}
+    ],
+    "events": [
+      {"id": "evt-001", "name": "Annual Summit 2026", "venue": "SMX Convention", "date": "2026-07-15", "expected_attendees": 800, "registered": 540},
+      {"id": "evt-002", "name": "Product Launch Webinar", "venue": "Online — Zoom", "date": "2026-05-20", "expected_attendees": 500, "registered": 120},
+      {"id": "evt-003", "name": "NCR Roadshow — Stop 1", "venue": "BGC", "date": "2026-05-15", "expected_attendees": 150, "registered": 98}
+    ],
+    "tasks": [
+      {"id": "task-001", "title": "Finalize speaker lineup", "project": "Annual Summit 2026", "assigned_to": "Sofia Lim", "due_date": "2026-05-01", "status": "In Progress"},
+      {"id": "task-002", "title": "Webinar platform setup", "project": "Product Launch Webinar", "assigned_to": "David Park", "due_date": "2026-04-25", "status": "To Do"},
+      {"id": "task-003", "title": "Booth design review", "project": "Regional Roadshow — NCR", "assigned_to": "Priya Nair", "due_date": "2026-04-22", "status": "Review"}
+    ],
+    "team_workload": [
+      {"member": "Sofia Lim", "active_tasks": 6},
+      {"member": "David Park", "active_tasks": 3},
+      {"member": "Priya Nair", "active_tasks": 4}
+    ],
+    "tickets": [
+      {"id": "ticket-001", "title": "Venue contract amendment", "status": "open", "priority": "high", "category": "Procurement", "assignee": "Sofia Lim", "requester": "Legal", "created_at": "2026-04-09T09:00:00Z"}
+    ]
+  }
+}
