@@ -201,7 +201,12 @@ class PreviewFlow:
         if self._dashboard_client is None or self._dashboard_templates is None:
             return
 
-        template = self._dashboard_templates.get(bundle_key)
+        primary_use_case = (
+            getattr(user_context, "primary_use_case", None)
+            if user_context is not None
+            else None
+        )
+        template = self._dashboard_templates.get(bundle_key, primary_use_case)
         if template is None:
             logger.info(
                 "session=%s — no dashboard template for bundle=%s, skipping enrichment",
