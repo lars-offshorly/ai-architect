@@ -1,0 +1,215 @@
+{
+  "source_template": "education_university",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "text",
+      "title": "Dashboard Summary",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "text",
+      "title": "Key Findings",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "text",
+      "title": "Key Insights",
+      "position": {
+        "row": 6,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "text",
+      "title": "Recommendations",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "text",
+      "title": "Data Context",
+      "position": {
+        "row": 12,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "number",
+      "title": "Total Students",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-8",
+      "type": "number",
+      "title": "Faculty-Student Ratio",
+      "position": {
+        "row": 15,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-10",
+      "type": "number",
+      "title": "Total Students",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-13",
+      "type": "number",
+      "title": "Active Research Grants",
+      "position": {
+        "row": 15,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-16",
+      "type": "number",
+      "title": "Course Completion Rate",
+      "position": {
+        "row": 18,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-19",
+      "type": "number",
+      "title": "Alumni Giving Rate",
+      "position": {
+        "row": 18,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-22",
+      "type": "bar",
+      "title": "Enrollment by College",
+      "position": {
+        "row": 21,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-25",
+      "type": "text",
+      "title": "About: Enrollment by College",
+      "position": {
+        "row": 21,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-26",
+      "type": "line",
+      "title": "Research Grant Trend",
+      "position": {
+        "row": 27,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-29",
+      "type": "text",
+      "title": "About: Research Grant Trend",
+      "position": {
+        "row": 27,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-30",
+      "type": "bar",
+      "title": "Course Completion Rates by Department",
+      "position": {
+        "row": 33,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-33",
+      "type": "text",
+      "title": "About: Course Completion Rates by Department",
+      "position": {
+        "row": 33,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-34",
+      "type": "list",
+      "title": "Open University Work Items",
+      "position": {
+        "row": 39,
+        "col": 0,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-36",
+      "type": "text",
+      "title": "About: Open University Work Items",
+      "position": {
+        "row": 39,
+        "col": 6,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}
