@@ -14,7 +14,6 @@ from api.deps import (
     get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
-    get_dashboard_template_registry,
     get_session_repository,
     get_static_dashboard_output_registry,
 )
