@@ -10,6 +10,9 @@ from agents.preview_generator.bundle_template_loader import (
 )
 from agents.preview_generator.dashboard.client import DashboardClient
 from agents.preview_generator.dashboard.personalizer import personalize_template
+from agents.preview_generator.dashboard.static_output_registry import (
+    StaticDashboardOutputRegistry,
+)
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
@@ -43,12 +46,14 @@ class PreviewFlow:
         dashboard_client: DashboardClient | None = None,
         dashboard_template_registry: DashboardTemplateRegistry | None = None,
         bundle_template_loader: BundleTemplateLoader | None = None,
+        static_dashboard_outputs: StaticDashboardOutputRegistry | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
         self._dashboard_client = dashboard_client
         self._dashboard_templates = dashboard_template_registry
         self._bundle_template_loader = bundle_template_loader
+        self._static_dashboard_outputs = static_dashboard_outputs
 
     def run(
         self,
@@ -210,15 +215,37 @@ class PreviewFlow:
         conversation_history: list[dict] | None = None,
         variant_key: str | None = None,
     ) -> None:
-        """Attempt to populate dashboard_widgets in stores via the external service.
+        """Populate dashboard_widgets in stores, preferring pre-generated static outputs.
+
+        Resolution order:
+        1. ``StaticDashboardOutputRegistry`` — pre-generated widget layout (no service call).
+        2. Live ``DashboardClient`` — personalises + POSTs to the dashboard gen service.
 
         Mutates ``dummy_data_json`` in place. All failures are swallowed so the
         caller always gets a valid (if widget-less) payload.
         """
+        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+
+        # --- Static pre-generated output (preferred, no network call) ---
+        if self._static_dashboard_outputs is not None:
+            widgets = self._static_dashboard_outputs.get_widgets(
+                bundle_key, resolved_variant_key
+            )
+            if widgets is not None:
+                stores: dict = dummy_data_json.setdefault("stores", {})
+                stores["dashboard_widgets"] = widgets
+                logger.info(
+                    "session=%s — static dashboard output: %d widgets injected for bundle=%s",
+                    session_id,
+                    len(widgets),
+                    bundle_key,
+                )
+                return
+
+        # --- Live dashboard gen service (fallback for bundles without static output) ---
         if self._dashboard_client is None or self._dashboard_templates is None:
             return
 
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
         template = self._dashboard_templates.get(bundle_key, resolved_variant_key)
         if template is None:
             logger.info(
@@ -248,7 +275,7 @@ class PreviewFlow:
         raw_widgets = response.get("debug_payload", {}).get("widgets", [])
         widgets = self._to_internal_widgets(raw_widgets)
 
-        stores: dict = dummy_data_json.setdefault("stores", {})
+        stores = dummy_data_json.setdefault("stores", {})
         stores["dashboard_generation_output"] = response
         stores["dashboard_widgets"] = widgets
 

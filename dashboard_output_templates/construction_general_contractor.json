@@ -1,0 +1,171 @@
+{
+  "source_template": "construction_general_contractor",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "text",
+      "title": "Dashboard Summary",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "text",
+      "title": "Key Findings",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "text",
+      "title": "Key Insights",
+      "position": {
+        "row": 6,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "text",
+      "title": "Recommendations",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "text",
+      "title": "Data Context",
+      "position": {
+        "row": 12,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "number",
+      "title": "Active Projects",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-8",
+      "type": "number",
+      "title": "On-Schedule Rate",
+      "position": {
+        "row": 15,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-10",
+      "type": "number",
+      "title": "Safety Incident Rate Target",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-13",
+      "type": "number",
+      "title": "RFI Risk Threshold",
+      "position": {
+        "row": 15,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-16",
+      "type": "bar",
+      "title": "Project Status Distribution",
+      "position": {
+        "row": 18,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-19",
+      "type": "text",
+      "title": "About: Project Status Distribution",
+      "position": {
+        "row": 18,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-20",
+      "type": "line",
+      "title": "RFI Volume Trend",
+      "position": {
+        "row": 24,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-23",
+      "type": "text",
+      "title": "About: RFI Volume Trend",
+      "position": {
+        "row": 24,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-24",
+      "type": "list",
+      "title": "Open RFIs & Work Items",
+      "position": {
+        "row": 30,
+        "col": 0,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-26",
+      "type": "text",
+      "title": "About: Open RFIs & Work Items",
+      "position": {
+        "row": 30,
+        "col": 6,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}
