@@ -8,7 +8,7 @@ from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from repositories.template_repository import TemplateRepository
 
-from .config_assembly import map_relationships
+from .config_assembly import encode_config, map_relationships
 from .contract import AppPayloadContract
 from .formatter import AppPayloadFormatter
 from .schemas import DummyDataJsonSchema, GenerationJsonSchema
@@ -84,6 +84,19 @@ class AppGeneratorService:
                     len(relationships),
                     render_key,
                 )
+
+        # 1b. Encode and normalise the config dict (CORE-AI-014)
+        raw_config = generation_json.get("config", {})
+        encoded_config = encode_config(
+            render_key, raw_config if isinstance(raw_config, dict) else {}
+        )
+        if not encoded_config:
+            session_logger.warning(
+                "encode_config returned empty dict for render_key=%s; "
+                "proceeding with empty config.",
+                render_key,
+            )
+        generation_json["config"] = encoded_config
 
         # 2. Strict Pydantic Schema Validation (Integrated from T140)
         # This ensures config and stores sub-schemas are 100% correct.
