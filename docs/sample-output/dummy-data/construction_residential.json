@@ -1,0 +1,31 @@
+{
+  "bundle_key": "construction_real_estate",
+  "session_id": "sample-construction-residential",
+  "company_name": "Sunrise Homes LLC",
+  "keywords": ["homebuilder", "residential", "subdivision", "lot", "closing", "permitting", "framing", "roofing", "warranty", "buyer", "closing date", "move-in", "spec home"],
+  "stores": {
+    "kpis": [
+      {"id": 1, "key": "homes_under_construction", "label": "Homes Under Construction", "type": "count", "source_service": "projects", "sample_value": 34},
+      {"id": 2, "key": "homes_closed_ytd", "label": "Homes Closed YTD", "type": "count", "source_service": "projects", "sample_value": 18},
+      {"id": 3, "key": "avg_construction_days", "label": "Avg Construction Days", "type": "count", "source_service": "projects", "sample_value": 112},
+      {"id": 4, "key": "warranty_claims_open", "label": "Open Warranty Claims", "type": "count", "source_service": "ticketing", "sample_value": 9},
+      {"id": 5, "key": "sales_pipeline", "label": "Sales Pipeline (Units)", "type": "count", "source_service": "projects", "sample_value": 41}
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {"id": 101, "title": "Warranty Claim — HVAC Not Cooling Properly", "type": "Warranty Claim", "status": "Open", "priority": "High", "requester": "Maria Santos", "assignee": "Lucas Silva", "created_at": "2026-04-03"},
+      {"id": 102, "title": "Permit Request — Framing Inspection Lot 42", "type": "Permit Request", "status": "In Progress", "priority": "Medium", "requester": "Carlos Mendez", "assignee": "Ana Reyes", "created_at": "2026-04-01"},
+      {"id": 103, "title": "Buyer Change Order — Kitchen Cabinet Upgrade", "type": "Buyer Change Order", "status": "Open", "priority": "Low", "requester": "Sofia Lim", "assignee": "David Park", "created_at": "2026-04-08"},
+      {"id": 104, "title": "Final Inspection — Maplewood Lot 7", "type": "Inspection", "status": "Resolved", "priority": "High", "requester": "James Okafor", "assignee": "Priya Nair", "created_at": "2026-03-22"},
+      {"id": 105, "title": "Material Shortage — Roofing Shingles Delayed", "type": "Material Shortage", "status": "Open", "priority": "High", "requester": "Amara Diallo", "assignee": "Noah Fischer", "created_at": "2026-04-09"},
+      {"id": 106, "title": "Subcontractor Delay — Electrical Rough-In", "type": "Subcontractor Delay", "status": "In Progress", "priority": "Medium", "requester": "Noah Fischer", "assignee": "Carlos Mendez", "created_at": "2026-04-12"}
+    ],
+    "projects": [
+      {"id": 1, "name": "Maplewood Estates Phase 1", "status": "In Progress", "lead": "James Okafor", "team_size": 16, "start_date": "2025-12-15", "due_date": "2026-07-31", "completion_pct": 68},
+      {"id": 2, "name": "Oakridge Subdivision — Block 3", "status": "In Progress", "lead": "Sofia Lim", "team_size": 12, "start_date": "2026-01-20", "due_date": "2026-08-15", "completion_pct": 42},
+      {"id": 3, "name": "Model Home Construction", "status": "In Progress", "lead": "Ana Reyes", "team_size": 6, "start_date": "2026-02-10", "due_date": "2026-06-30", "completion_pct": 15},
+      {"id": 4, "name": "Greenfield Spec Homes", "status": "Completed", "lead": "David Park", "team_size": 10, "start_date": "2025-12-01", "due_date": "2026-05-01", "completion_pct": 100},
+      {"id": 5, "name": "Buyer Custom Build — Lot 42", "status": "In Progress", "lead": "Priya Nair", "team_size": 5, "start_date": "2026-03-05", "due_date": "2026-08-31", "completion_pct": 30}
+    ]
+  }
+}

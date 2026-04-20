@@ -1,0 +1,885 @@
+{
+  "generation_json": {
+    "schema_version": "1.0",
+    "bundle_key": "legal_services",
+    "feature_flags": [
+      {
+        "id": 111,
+        "name": "activity-feed-announcement-popup",
+        "description": "activity-feed-announcement-popup",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 180,
+        "name": "activity-feed-announcement-read-all",
+        "description": "activity-feed-announcement-read-all",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 113,
+        "name": "activity-feed-announcement-repeat",
+        "description": "activity-feed-announcement-repeat",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 178,
+        "name": "activity-feed-announcement-rules",
+        "description": "activity-feed-announcement-rules",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 114,
+        "name": "activity-feed-announcement-share-by-email",
+        "description": "activity-feed-announcement-share-by-email",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 147,
+        "name": "activity-feed-filter-calendar",
+        "description": "activity-feed-filter-calendar",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 148,
+        "name": "activity-feed-filter-dashboard",
+        "description": "activity-feed-filter-dashboard",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 149,
+        "name": "activity-feed-filter-hrhub",
+        "description": "activity-feed-filter-hrhub",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 150,
+        "name": "activity-feed-filter-tickets",
+        "description": "activity-feed-filter-tickets",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 151,
+        "name": "activity-feed-filter-todo",
+        "description": "activity-feed-filter-todo",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 152,
+        "name": "activity-feed-filter-weaves",
+        "description": "activity-feed-filter-weaves",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 74,
+        "name": "activity-feed-module",
+        "description": "Activity Feed Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 185,
+        "name": "activity-feed-module-scheduled-announcements",
+        "description": "activity-feed-module-scheduled-announcements",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 137,
+        "name": "activity-feed-nav-notification",
+        "description": "activity-feed-nav-notification",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 138,
+        "name": "activity-feed-nav-search",
+        "description": "activity-feed-nav-search",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 139,
+        "name": "activity-feed-nav-settings",
+        "description": "activity-feed-nav-settings",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 131,
+        "name": "activity-feed-notification",
+        "description": "activity-feed-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 110,
+        "name": "activity-feed-notifications-toast",
+        "description": "Activity Feed Notifications Toast",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 125,
+        "name": "activity-feed-unread-count",
+        "description": "activity-feed-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 187,
+        "name": "ai-toolkit-module",
+        "description": "AI Toolkit Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 181,
+        "name": "app-file-download-dialog",
+        "description": "app-file-download-dialog",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 90,
+        "name": "app-homepage-hr-hub",
+        "description": "app-homepage-hr-hub",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 83,
+        "name": "autologout-by-ttl",
+        "description": "Auto Logout by TTL",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 109,
+        "name": "calendar_module",
+        "description": "Calendar module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 92,
+        "name": "chat-bot",
+        "description": "chat-bot",
+        "isEnabled": true,
+        "module": "AI Chat Bot"
+      },
+      {
+        "id": 107,
+        "name": "chat-float",
+        "description": "Chat boxes that floats on right bottom",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 5,
+        "name": "chat-module",
+        "description": "Chat Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 130,
+        "name": "chat-notification",
+        "description": "chat-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 124,
+        "name": "chat-unread-count",
+        "description": "chat-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 157,
+        "name": "chatbot-module",
+        "description": "Chatbot Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 2,
+        "name": "dashboard-module",
+        "description": "Dashboard Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 177,
+        "name": "docbot-module",
+        "description": "AI Document Verification Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 40,
+        "name": "hrhub-admin-hangout",
+        "description": "HR Hub Admin Hangout",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 179,
+        "name": "hrhub-employee-handbook",
+        "description": "HRHUB Employee Handbook",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 38,
+        "name": "hrhub-employee-movement",
+        "description": "Hr Hub Employee Movement",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 37,
+        "name": "hrhub-live-feed",
+        "description": "Hr Hub Live Feed",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 3,
+        "name": "hrhub-module",
+        "description": "Hr Hub Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 42,
+        "name": "hrhub-my-tasks",
+        "description": "Hr Hub My Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 120,
+        "name": "hrhub-onboarding",
+        "description": "Enable Onboarding form",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 174,
+        "name": "hrhub-overview",
+        "description": "HR Hub Overview",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 39,
+        "name": "hrhub-tasks",
+        "description": "Hr Hub Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 207,
+        "name": "kpi-advanced-type",
+        "description": "kpi-advanced-type",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 123,
+        "name": "kpi-module",
+        "description": "KPI Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 188,
+        "name": "menu-ai-toolkit-nav",
+        "description": "Menu Ai Toolkit Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 65,
+        "name": "menu-calendar-nav",
+        "description": "Menu Calendar Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 59,
+        "name": "menu-dashboard-nav",
+        "description": "Menu Dashboard Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 58,
+        "name": "menu-favorites-nav",
+        "description": "Menu Favorites Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 71,
+        "name": "menu-games-nav",
+        "description": "Menu Games Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 62,
+        "name": "menu-kanban-nav",
+        "description": "Menu Kanban Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 60,
+        "name": "menu-knit-show-nav",
+        "description": "Menu Knit Show Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 61,
+        "name": "menu-know-your-knit-nav",
+        "description": "Menu Know Your Knit Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 70,
+        "name": "menu-kpi-nav",
+        "description": "Menu KPI Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 72,
+        "name": "menu-reports-nav",
+        "description": "Menu Reports Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 63,
+        "name": "menu-timeline-nav",
+        "description": "Menu Timeline Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 66,
+        "name": "menu-todos-nav",
+        "description": "Menu Todos Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 64,
+        "name": "menu-whiteboard-nav",
+        "description": "Menu Whiteboard Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 132,
+        "name": "profile-module",
+        "description": "Knit user profile module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 7,
+        "name": "projects-module",
+        "description": "Projects Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 135,
+        "name": "push-notification",
+        "description": "push-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 198,
+        "name": "rewards-module",
+        "description": "Rewards Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 54,
+        "name": "search-toolbar",
+        "description": "Search Toolbar on the Header",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 55,
+        "name": "sidebar-help-nav",
+        "description": "Help navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 57,
+        "name": "sidebar-invite-user-nav",
+        "description": "Invite user navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 56,
+        "name": "sidebar-notification-nav",
+        "description": "Notification navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 6,
+        "name": "tickets-module",
+        "description": "Tickets Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 206,
+        "name": "tickets-unread-count",
+        "description": "tickets-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 169,
+        "name": "use-office-timezone",
+        "description": "use-office-timezone",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 192,
+        "name": "user-online-status",
+        "description": "user-online-status",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 4,
+        "name": "weaves-module",
+        "description": "Weaves Module",
+        "isEnabled": true,
+        "module": "Global"
+      }
+    ],
+    "modules": [
+      "Legal Services",
+      "Project Management",
+      "Ticketing Tool",
+      "HR Management",
+      "Weaves",
+      "Dashboard",
+      "KPI",
+      "Calendar",
+      "Chat",
+      "AI Toolkit",
+      "Rewards Store"
+    ],
+    "config": {
+      "permission_services": [
+        "tickets",
+        "kpi",
+        "notifications"
+      ],
+      "landing_pages": [
+        {
+          "id": 321,
+          "module": "Tickets",
+          "selectionAutoShow": true,
+          "default": "Ticket",
+          "showTutorial": true
+        },
+        {
+          "id": 311,
+          "module": "Dashboard",
+          "selectionAutoShow": true,
+          "default": "Dashboard",
+          "showTutorial": false
+        }
+      ],
+      "ticket_statuses": [
+        "Open",
+        "In Progress",
+        "Resolved"
+      ],
+      "ticket_priorities": [
+        "High",
+        "Medium",
+        "Critical",
+        "Low"
+      ],
+      "kpi_definitions": [
+        {
+          "key": "avg_case_duration",
+          "label": "Avg. Case Duration",
+          "unit": "duration"
+        },
+        {
+          "key": "cases_per_attorney",
+          "label": "Cases per Attorney",
+          "unit": "ratio"
+        },
+        {
+          "key": "case_load_distribution",
+          "label": "Case Load Distribution",
+          "unit": "ratio"
+        },
+        {
+          "key": "upcoming_deadlines",
+          "label": "Upcoming Deadlines",
+          "unit": "count"
+        }
+      ]
+    }
+  },
+  "dummy_data_json": {
+    "bundle_key": "legal_services",
+    "session_id": "live-test-001",
+    "company_name": null,
+    "stores": {
+      "kpis": [
+        {
+          "id": 1,
+          "key": "avg_case_duration",
+          "label": "Avg. Case Duration",
+          "type": "duration",
+          "source_service": "projects",
+          "sample_value": 3.2
+        },
+        {
+          "id": 2,
+          "key": "cases_per_attorney",
+          "label": "Cases per Attorney",
+          "type": "ratio",
+          "source_service": "projects",
+          "sample_value": 0.85
+        },
+        {
+          "id": 3,
+          "key": "case_load_distribution",
+          "label": "Case Load Distribution",
+          "type": "ratio",
+          "source_service": "hr_hub",
+          "sample_value": 0.61
+        },
+        {
+          "id": 4,
+          "key": "upcoming_deadlines",
+          "label": "Upcoming Deadlines",
+          "type": "count",
+          "source_service": "projects",
+          "sample_value": 15
+        }
+      ],
+      "dashboard_widgets": [
+        {
+          "id": "widget-kpi-overview",
+          "type": "number",
+          "title": "Avg. Case Duration",
+          "position": {
+            "row": 0,
+            "col": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "id": "widget-primary-breakdown",
+          "type": "bar",
+          "title": "Items by Status",
+          "position": {
+            "row": 0,
+            "col": 2,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "id": "widget-secondary-list",
+          "type": "list",
+          "title": "Projects Snapshot",
+          "position": {
+            "row": 1,
+            "col": 0,
+            "width": 4,
+            "height": 1
+          }
+        }
+      ],
+      "dashboard_generation_output": {
+        "success": true,
+        "dashboard": {
+          "id": "dash-live-tes",
+          "name": "Legal Services Dashboard",
+          "url": null
+        },
+        "widgets": {
+          "text": 0,
+          "number": 1,
+          "bar": 1,
+          "hbar": 0,
+          "pie": 0,
+          "line": 0,
+          "scatter": 0,
+          "list": 1,
+          "combo": 0,
+          "embed": 0,
+          "total": 3
+        },
+        "execution_time": "0m 1s",
+        "errors": [],
+        "debug_payload": {
+          "widgets": [
+            {
+              "type": "number",
+              "name": "Avg. Case Duration",
+              "value": "3.2",
+              "calculation": {
+                "datasets": [
+                  {
+                    "module": "Legal Services",
+                    "data_source": "kpis"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "bar",
+              "title": "Items by Status",
+              "data_config": {
+                "module": "Legal Services",
+                "data_source": "items",
+                "group_by": [
+                  "status"
+                ],
+                "aggregation": "count"
+              }
+            },
+            {
+              "type": "list",
+              "name": "KPI Detail List",
+              "data_config": {
+                "module": "KPI",
+                "data_source": "kpis"
+              },
+              "column_count": 4,
+              "column_width": 250
+            }
+          ],
+          "total_widgets": 3,
+          "generated_at": "2026-04-15T12:18:58.623301+00:00",
+          "widget_breakdown": {
+            "text": 0,
+            "number": 1,
+            "bar": 1,
+            "hbar": 0,
+            "pie": 0,
+            "line": 0,
+            "scatter": 0,
+            "list": 1,
+            "combo": 0,
+            "embed": 0,
+            "total": 3
+          }
+        },
+        "generation_metadata": {
+          "report_length": 0,
+          "widgets_extracted": 3,
+          "widgets_explicit": 3,
+          "data_sources_used": [
+            "hr_hub",
+            "projects"
+          ],
+          "processing_steps": [
+            "extract_context",
+            "resolve_feature_flags",
+            "generate_sample_data",
+            "build_kpis",
+            "emit_preview"
+          ]
+        }
+      },
+      "items": [
+        {
+          "id": 101,
+          "title": "Login page not loading on mobile",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "High",
+          "requester": "Carlos Mendez",
+          "assignee": "Maria Santos",
+          "created_at": "2026-04-14"
+        },
+        {
+          "id": 102,
+          "title": "Export to CSV fails for large datasets",
+          "type": "Feature Request",
+          "status": "In Progress",
+          "priority": "Medium",
+          "requester": "Ana Reyes",
+          "assignee": "Carlos Mendez",
+          "created_at": "2026-04-11"
+        },
+        {
+          "id": 103,
+          "title": "Notification emails not delivered",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "Critical",
+          "requester": "James Okafor",
+          "assignee": "Ana Reyes",
+          "created_at": "2026-04-08"
+        },
+        {
+          "id": 104,
+          "title": "Dashboard widget shows incorrect totals",
+          "type": "Improvement",
+          "status": "Resolved",
+          "priority": "Low",
+          "requester": "Sofia Lim",
+          "assignee": "James Okafor",
+          "created_at": "2026-04-05"
+        },
+        {
+          "id": 105,
+          "title": "User permissions not applying on new accounts",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "Medium",
+          "requester": "David Park",
+          "assignee": "Sofia Lim",
+          "created_at": "2026-04-02"
+        },
+        {
+          "id": 106,
+          "title": "Search returns empty results intermittently",
+          "type": "Access Request",
+          "status": "In Progress",
+          "priority": "Medium",
+          "requester": "Priya Nair",
+          "assignee": "David Park",
+          "created_at": "2026-03-30"
+        }
+      ],
+      "projects": [
+        {
+          "id": 1,
+          "name": "Platform Migration \u2014 Phase 1",
+          "status": "In Progress",
+          "lead": "Maria Santos",
+          "team_size": 3,
+          "start_date": "2026-02-14",
+          "due_date": "2026-05-15",
+          "completion_pct": 68
+        },
+        {
+          "id": 2,
+          "name": "Infrastructure Rollout \u2014 Phase 2",
+          "status": "In Progress",
+          "lead": "Carlos Mendez",
+          "team_size": 4,
+          "start_date": "2026-02-24",
+          "due_date": "2026-05-29",
+          "completion_pct": 42
+        },
+        {
+          "id": 3,
+          "name": "Enterprise Deployment \u2014 Q3",
+          "status": "On Hold",
+          "lead": "Ana Reyes",
+          "team_size": 5,
+          "start_date": "2026-03-06",
+          "due_date": "2026-06-12",
+          "completion_pct": 15
+        },
+        {
+          "id": 4,
+          "name": "System Integration \u2014 Milestone 4",
+          "status": "Completed",
+          "lead": "James Okafor",
+          "team_size": 6,
+          "start_date": "2026-03-16",
+          "due_date": "2026-06-26",
+          "completion_pct": 100
+        },
+        {
+          "id": 5,
+          "name": "Platform Migration \u2014 Phase 5",
+          "status": "In Progress",
+          "lead": "Sofia Lim",
+          "team_size": 3,
+          "start_date": "2026-03-26",
+          "due_date": "2026-07-10",
+          "completion_pct": 30
+        }
+      ],
+      "tickets": [
+        {
+          "id": "ticket-001",
+          "title": "Discovery documents overdue \u2014 Harrington v. Apex",
+          "status": "pending",
+          "priority": "urgent",
+          "category": "Discovery",
+          "assignee": "Maria Santos",
+          "requester": "Carlos Mendez",
+          "created_at": "2026-04-12T09:00:00Z"
+        },
+        {
+          "id": "ticket-002",
+          "title": "Motion to compel \u2014 deadline Friday",
+          "status": "in_progress",
+          "priority": "high",
+          "category": "Motion Filing",
+          "assignee": "Carlos Mendez",
+          "requester": "Ana Reyes",
+          "created_at": "2026-04-09T09:00:00Z"
+        },
+        {
+          "id": "ticket-003",
+          "title": "Client deposition prep \u2014 Smith matter",
+          "status": "resolved",
+          "priority": "medium",
+          "category": "Deposition Prep",
+          "assignee": "Ana Reyes",
+          "requester": "James Okafor",
+          "created_at": "2026-04-06T09:00:00Z"
+        },
+        {
+          "id": "ticket-004",
+          "title": "Expert witness retainer \u2014 Dr. Franklin",
+          "status": "pending",
+          "priority": "medium",
+          "category": "Client Consultation",
+          "assignee": "James Okafor",
+          "requester": "Sofia Lim",
+          "created_at": "2026-04-03T09:00:00Z"
+        }
+      ]
+    }
+  }
+}

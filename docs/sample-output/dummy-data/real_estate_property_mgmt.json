@@ -1,0 +1,31 @@
+{
+  "bundle_key": "construction_real_estate",
+  "session_id": "sample-real-estate-property-mgmt",
+  "company_name": "Crestview Property Management",
+  "keywords": ["property management", "tenant", "lease", "maintenance", "rent", "vacancy", "occupancy", "unit", "property", "work order", "renewal", "eviction"],
+  "stores": {
+    "kpis": [
+      {"id": 1, "key": "total_units", "label": "Total Units Managed", "type": "count", "source_service": "projects", "sample_value": 480},
+      {"id": 2, "key": "occupancy_rate", "label": "Occupancy Rate", "type": "percentage", "source_service": "projects", "sample_value": 94.2},
+      {"id": 3, "key": "maintenance_requests_open", "label": "Open Maintenance Requests", "type": "count", "source_service": "ticketing", "sample_value": 37},
+      {"id": 4, "key": "avg_days_to_fill_vacancy", "label": "Avg Days to Fill Vacancy", "type": "count", "source_service": "projects", "sample_value": 18},
+      {"id": 5, "key": "rent_collection_rate", "label": "Rent Collection Rate", "type": "percentage", "source_service": "projects", "sample_value": 98.1}
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {"id": 101, "title": "Maintenance Request — Unit 214 Leaking Pipe", "type": "Maintenance Request", "status": "Open", "priority": "High", "requester": "Maria Santos", "assignee": "Carlos Mendez", "created_at": "2026-04-04"},
+      {"id": 102, "title": "Lease Renewal — Tenant Johnson, Unit 305", "type": "Lease Renewal", "status": "In Progress", "priority": "Medium", "requester": "Ana Reyes", "assignee": "Sofia Lim", "created_at": "2026-03-18"},
+      {"id": 103, "title": "Move-In Inspection — Unit 118", "type": "Move-In", "status": "Open", "priority": "Low", "requester": "James Okafor", "assignee": "David Park", "created_at": "2026-04-10"},
+      {"id": 104, "title": "Move-Out Walkthrough — Unit 402", "type": "Move-Out", "status": "Resolved", "priority": "Medium", "requester": "Priya Nair", "assignee": "Lucas Silva", "created_at": "2026-03-31"},
+      {"id": 105, "title": "Eviction Notice — Unit 509 Rent Arrears", "type": "Eviction Notice", "status": "Open", "priority": "High", "requester": "Amara Diallo", "assignee": "Noah Fischer", "created_at": "2026-04-07"},
+      {"id": 106, "title": "Annual Property Inspection — Building C", "type": "Inspection", "status": "In Progress", "priority": "Medium", "requester": "Noah Fischer", "assignee": "Ana Reyes", "created_at": "2026-04-11"}
+    ],
+    "projects": [
+      {"id": 1, "name": "Roof Replacement — Building A", "status": "In Progress", "lead": "Carlos Mendez", "team_size": 7, "start_date": "2026-01-05", "due_date": "2026-06-30", "completion_pct": 68},
+      {"id": 2, "name": "HVAC Modernization", "status": "In Progress", "lead": "James Okafor", "team_size": 5, "start_date": "2026-02-01", "due_date": "2026-07-31", "completion_pct": 42},
+      {"id": 3, "name": "Tenant Portal Launch", "status": "In Progress", "lead": "Sofia Lim", "team_size": 4, "start_date": "2026-02-20", "due_date": "2026-08-15", "completion_pct": 15},
+      {"id": 4, "name": "Annual Property Inspections", "status": "Completed", "lead": "David Park", "team_size": 6, "start_date": "2025-12-10", "due_date": "2026-05-01", "completion_pct": 100},
+      {"id": 5, "name": "Security System Upgrade", "status": "In Progress", "lead": "Priya Nair", "team_size": 3, "start_date": "2026-03-10", "due_date": "2026-08-31", "completion_pct": 30}
+    ]
+  }
+}

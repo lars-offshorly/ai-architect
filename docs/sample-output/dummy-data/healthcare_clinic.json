@@ -1,0 +1,165 @@
+{
+  "bundle_key": "healthcare",
+  "session_id": "sample-healthcare_clinic",
+  "company_name": "Sunrise Medical Clinic",
+  "keywords": ["clinic", "outpatient", "appointments", "primary care", "specialist", "scheduling", "physician", "consultation", "follow-up", "referral", "telehealth"],
+  "stores": {
+    "kpis": [
+      {
+        "id": 1,
+        "key": "daily_appointments",
+        "label": "Daily Appointments",
+        "type": "count",
+        "source_service": "healthcare_hub",
+        "sample_value": 48
+      },
+      {
+        "id": 2,
+        "key": "no_show_rate",
+        "label": "No-Show Rate",
+        "type": "percentage",
+        "source_service": "healthcare_hub",
+        "sample_value": 12.3
+      },
+      {
+        "id": 3,
+        "key": "patient_satisfaction_score",
+        "label": "Patient Satisfaction Score",
+        "type": "ratio",
+        "source_service": "healthcare_hub",
+        "sample_value": 4.1
+      },
+      {
+        "id": 4,
+        "key": "avg_wait_time_minutes",
+        "label": "Avg Wait Time (Min)",
+        "type": "count",
+        "source_service": "healthcare_hub",
+        "sample_value": 22
+      },
+      {
+        "id": 5,
+        "key": "active_patients",
+        "label": "Active Patients",
+        "type": "count",
+        "source_service": "healthcare_hub",
+        "sample_value": 1840
+      }
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {
+        "id": 101,
+        "title": "Appointment rescheduling request — Dr. Reyes morning slot",
+        "type": "Appointment Request",
+        "status": "Open",
+        "priority": "Medium",
+        "requester": "Carlos Mendez",
+        "assignee": "Maria Santos",
+        "created_at": "2026-04-14"
+      },
+      {
+        "id": 102,
+        "title": "Specialist referral follow-up — cardiology",
+        "type": "Patient Request",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Ana Reyes",
+        "assignee": "Carlos Mendez",
+        "created_at": "2026-04-11"
+      },
+      {
+        "id": 103,
+        "title": "Telehealth session setup — remote patient onboarding",
+        "type": "Appointment Request",
+        "status": "Open",
+        "priority": "Low",
+        "requester": "James Okafor",
+        "assignee": "Ana Reyes",
+        "created_at": "2026-04-08"
+      },
+      {
+        "id": 104,
+        "title": "Lab result notification failure — patient portal",
+        "type": "IT Support",
+        "status": "Resolved",
+        "priority": "High",
+        "requester": "Sofia Lim",
+        "assignee": "James Okafor",
+        "created_at": "2026-04-05"
+      },
+      {
+        "id": 105,
+        "title": "Insurance pre-authorization delay — MRI scan",
+        "type": "Patient Request",
+        "status": "Open",
+        "priority": "Medium",
+        "requester": "David Park",
+        "assignee": "Sofia Lim",
+        "created_at": "2026-04-02"
+      },
+      {
+        "id": 106,
+        "title": "New physician credentialing — Dr. Nair onboarding",
+        "type": "HR Request",
+        "status": "In Progress",
+        "priority": "Medium",
+        "requester": "Priya Nair",
+        "assignee": "David Park",
+        "created_at": "2026-03-30"
+      }
+    ],
+    "projects": [
+      {
+        "id": 1,
+        "name": "Telehealth Platform Rollout",
+        "status": "In Progress",
+        "lead": "Maria Santos",
+        "team_size": 4,
+        "start_date": "2026-02-15",
+        "due_date": "2026-06-15",
+        "completion_pct": 68
+      },
+      {
+        "id": 2,
+        "name": "Patient Portal Migration — MyChart Integration",
+        "status": "In Progress",
+        "lead": "Carlos Mendez",
+        "team_size": 5,
+        "start_date": "2026-02-25",
+        "due_date": "2026-07-10",
+        "completion_pct": 42
+      },
+      {
+        "id": 3,
+        "name": "Online Scheduling Software Upgrade",
+        "status": "Planning",
+        "lead": "Ana Reyes",
+        "team_size": 3,
+        "start_date": "2026-03-10",
+        "due_date": "2026-08-05",
+        "completion_pct": 15
+      },
+      {
+        "id": 4,
+        "name": "Preventive Care Outreach Program — Q1",
+        "status": "Completed",
+        "lead": "James Okafor",
+        "team_size": 2,
+        "start_date": "2026-01-10",
+        "due_date": "2026-04-01",
+        "completion_pct": 100
+      },
+      {
+        "id": 5,
+        "name": "Billing & Coding Accuracy Audit",
+        "status": "In Progress",
+        "lead": "Sofia Lim",
+        "team_size": 3,
+        "start_date": "2026-03-25",
+        "due_date": "2026-07-20",
+        "completion_pct": 30
+      }
+    ]
+  }
+}

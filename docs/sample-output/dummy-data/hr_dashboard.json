@@ -1,0 +1,164 @@
+{
+  "bundle_key": "hr_hub",
+  "session_id": "sample-hr_dashboard",
+  "company_name": "Crestwood HR Solutions",
+  "stores": {
+    "kpis": [
+      {
+        "id": 1,
+        "key": "active_headcount",
+        "label": "Active Headcount",
+        "type": "count",
+        "source_service": "hr_hub",
+        "sample_value": 142
+      },
+      {
+        "id": 2,
+        "key": "attendance_rate",
+        "label": "Attendance Rate",
+        "type": "percentage",
+        "source_service": "hr_hub",
+        "sample_value": 92.1
+      },
+      {
+        "id": 3,
+        "key": "leave_balance_utilization",
+        "label": "Leave Balance Utilization",
+        "type": "percentage",
+        "source_service": "hr_hub",
+        "sample_value": 78.4
+      },
+      {
+        "id": 4,
+        "key": "capacity_utilization",
+        "label": "Capacity Utilization",
+        "type": "percentage",
+        "source_service": "hr_hub",
+        "sample_value": 95.0
+      },
+      {
+        "id": 5,
+        "key": "workload_distribution",
+        "label": "Workload Distribution",
+        "type": "ratio",
+        "source_service": "hr_hub",
+        "sample_value": 0.78
+      }
+    ],
+    "dashboard_widgets": [],
+    "tickets": [
+      {
+        "id": 101,
+        "title": "New hire onboarding \u2014 Week 1 checklist",
+        "type": "Onboarding",
+        "status": "Open",
+        "priority": "High",
+        "requester": "Carlos Mendez",
+        "assignee": "Maria Santos",
+        "created_at": "2026-04-12"
+      },
+      {
+        "id": 102,
+        "title": "Laptop provisioning for Carlos",
+        "type": "IT Setup",
+        "status": "In Progress",
+        "priority": "Medium",
+        "requester": "Ana Reyes",
+        "assignee": "Carlos Mendez",
+        "created_at": "2026-04-09"
+      },
+      {
+        "id": 103,
+        "title": "Annual leave request \u2014 Ana",
+        "type": "Leave Request",
+        "status": "Open",
+        "priority": "Low",
+        "requester": "James Okafor",
+        "assignee": "Ana Reyes",
+        "created_at": "2026-04-06"
+      },
+      {
+        "id": 104,
+        "title": "Access credentials not received",
+        "type": "Equipment Request",
+        "status": "Resolved",
+        "priority": "Medium",
+        "requester": "Sofia Lim",
+        "assignee": "James Okafor",
+        "created_at": "2026-04-03"
+      },
+      {
+        "id": 105,
+        "title": "Benefits enrollment query \u2014 Sofia",
+        "type": "Policy Query",
+        "status": "Open",
+        "priority": "Low",
+        "requester": "David Park",
+        "assignee": "Sofia Lim",
+        "created_at": "2026-03-31"
+      },
+      {
+        "id": 106,
+        "title": "New hire onboarding \u2014 Week 1 checklist",
+        "type": "Onboarding",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Priya Nair",
+        "assignee": "David Park",
+        "created_at": "2026-03-28"
+      }
+    ],
+    "queues": [
+      {
+        "id": 1,
+        "name": "Onboarding Queue",
+        "status": "In Progress",
+        "lead": "Maria Santos",
+        "team_size": 2,
+        "start_date": "2026-02-12",
+        "due_date": "2026-05-13",
+        "completion_pct": 68
+      },
+      {
+        "id": 2,
+        "name": "IT Setup Queue",
+        "status": "In Progress",
+        "lead": "Carlos Mendez",
+        "team_size": 3,
+        "start_date": "2026-02-22",
+        "due_date": "2026-05-27",
+        "completion_pct": 42
+      },
+      {
+        "id": 3,
+        "name": "Leave Management Queue",
+        "status": "On Hold",
+        "lead": "Ana Reyes",
+        "team_size": 4,
+        "start_date": "2026-03-04",
+        "due_date": "2026-06-10",
+        "completion_pct": 15
+      },
+      {
+        "id": 4,
+        "name": "Equipment Requests Queue",
+        "status": "Completed",
+        "lead": "James Okafor",
+        "team_size": 2,
+        "start_date": "2026-03-14",
+        "due_date": "2026-06-24",
+        "completion_pct": 100
+      },
+      {
+        "id": 5,
+        "name": "Policy & Compliance Queue",
+        "status": "In Progress",
+        "lead": "Sofia Lim",
+        "team_size": 3,
+        "start_date": "2026-03-24",
+        "due_date": "2026-07-08",
+        "completion_pct": 30
+      }
+    ]
+  }
+}

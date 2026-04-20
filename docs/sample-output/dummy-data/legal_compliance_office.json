@@ -1,0 +1,165 @@
+{
+  "bundle_key": "legal_services",
+  "session_id": "sample-legal_compliance_office",
+  "company_name": "Meridian Financial — Compliance Division",
+  "keywords": ["compliance", "regulatory", "audit", "risk", "financial regulation", "KYC", "AML", "reporting", "policy", "breach", "sanctions", "SOX"],
+  "stores": {
+    "kpis": [
+      {
+        "id": 1,
+        "key": "open_compliance_issues",
+        "label": "Open Compliance Issues",
+        "type": "count",
+        "source_service": "legal_hub",
+        "sample_value": 19
+      },
+      {
+        "id": 2,
+        "key": "audit_findings_resolved_rate",
+        "label": "Audit Findings Resolved Rate",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 83.5
+      },
+      {
+        "id": 3,
+        "key": "policy_attestation_completion",
+        "label": "Policy Attestation Completion",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 91.0
+      },
+      {
+        "id": 4,
+        "key": "regulatory_deadlines_met",
+        "label": "Regulatory Deadlines Met",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 97.2
+      },
+      {
+        "id": 5,
+        "key": "high_risk_items",
+        "label": "High-Risk Open Items",
+        "type": "count",
+        "source_service": "legal_hub",
+        "sample_value": 6
+      }
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {
+        "id": 101,
+        "title": "Internal audit finding — transaction monitoring gaps Q1",
+        "type": "Audit Finding",
+        "status": "Open",
+        "priority": "High",
+        "requester": "Maria Santos",
+        "assignee": "Carlos Mendez",
+        "created_at": "2026-04-13"
+      },
+      {
+        "id": 102,
+        "title": "FinCEN SAR filing — Q1 2026 suspicious activity report",
+        "type": "Regulatory Filing",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Ana Reyes",
+        "assignee": "James Okafor",
+        "created_at": "2026-04-10"
+      },
+      {
+        "id": 103,
+        "title": "Unauthorized data access — potential policy breach investigation",
+        "type": "Policy Breach",
+        "status": "Open",
+        "priority": "High",
+        "requester": "James Okafor",
+        "assignee": "Sofia Lim",
+        "created_at": "2026-04-07"
+      },
+      {
+        "id": 104,
+        "title": "KYC refresh — high-risk client portfolio review",
+        "type": "KYC Review",
+        "status": "Resolved",
+        "priority": "High",
+        "requester": "Sofia Lim",
+        "assignee": "David Park",
+        "created_at": "2026-04-04"
+      },
+      {
+        "id": 105,
+        "title": "Third-party vendor risk assessment — payment processor",
+        "type": "Risk Assessment",
+        "status": "Open",
+        "priority": "Medium",
+        "requester": "David Park",
+        "assignee": "Priya Nair",
+        "created_at": "2026-04-01"
+      },
+      {
+        "id": 106,
+        "title": "AML annual training completion tracking — Q2 cohort",
+        "type": "Training Completion",
+        "status": "In Progress",
+        "priority": "Medium",
+        "requester": "Priya Nair",
+        "assignee": "Lucas Silva",
+        "created_at": "2026-03-29"
+      }
+    ],
+    "projects": [
+      {
+        "id": 1,
+        "name": "SOX Remediation Program — Q2 2026",
+        "status": "In Progress",
+        "lead": "Maria Santos",
+        "team_size": 5,
+        "start_date": "2026-02-10",
+        "due_date": "2026-06-30",
+        "completion_pct": 68
+      },
+      {
+        "id": 2,
+        "name": "AML Policy Framework Refresh",
+        "status": "In Progress",
+        "lead": "Carlos Mendez",
+        "team_size": 4,
+        "start_date": "2026-02-20",
+        "due_date": "2026-07-15",
+        "completion_pct": 42
+      },
+      {
+        "id": 3,
+        "name": "Annual Regulatory Compliance Training — All Staff",
+        "status": "In Progress",
+        "lead": "Ana Reyes",
+        "team_size": 3,
+        "start_date": "2026-03-05",
+        "due_date": "2026-06-30",
+        "completion_pct": 15
+      },
+      {
+        "id": 4,
+        "name": "Enterprise Vendor Risk Assessment Program",
+        "status": "Completed",
+        "lead": "James Okafor",
+        "team_size": 4,
+        "start_date": "2025-11-15",
+        "due_date": "2026-04-05",
+        "completion_pct": 100
+      },
+      {
+        "id": 5,
+        "name": "Basel III Regulatory Reporting System Upgrade",
+        "status": "In Progress",
+        "lead": "Sofia Lim",
+        "team_size": 6,
+        "start_date": "2026-03-15",
+        "due_date": "2026-08-31",
+        "completion_pct": 30
+      }
+    ]
+  }
+}

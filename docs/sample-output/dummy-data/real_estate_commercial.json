@@ -1,0 +1,31 @@
+{
+  "bundle_key": "construction_real_estate",
+  "session_id": "sample-real-estate-commercial",
+  "company_name": "Pinnacle Commercial REIT",
+  "keywords": ["commercial real estate", "REIT", "office", "retail", "industrial", "lease", "NOI", "cap rate", "asset management", "portfolio", "tenant mix", "development pipeline"],
+  "stores": {
+    "kpis": [
+      {"id": 1, "key": "portfolio_properties", "label": "Portfolio Properties", "type": "count", "source_service": "projects", "sample_value": 24},
+      {"id": 2, "key": "portfolio_occupancy", "label": "Portfolio Occupancy", "type": "percentage", "source_service": "projects", "sample_value": 91.7},
+      {"id": 3, "key": "noi_variance_pct", "label": "NOI Variance", "type": "percentage", "source_service": "projects", "sample_value": 2.3},
+      {"id": 4, "key": "lease_expirations_next_12mo", "label": "Lease Expirations (Next 12mo)", "type": "count", "source_service": "projects", "sample_value": 8},
+      {"id": 5, "key": "development_pipeline_value_m", "label": "Development Pipeline Value ($M)", "type": "count", "source_service": "projects", "sample_value": 142}
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {"id": 101, "title": "Lease Negotiation — Tech Campus Anchor Tenant", "type": "Lease Negotiation", "status": "Open", "priority": "High", "requester": "Maria Santos", "assignee": "James Okafor", "created_at": "2026-04-02"},
+      {"id": 102, "title": "Capital Improvement — Industrial Park Roof", "type": "Capital Improvement", "status": "In Progress", "priority": "Medium", "requester": "Carlos Mendez", "assignee": "Sofia Lim", "created_at": "2026-03-22"},
+      {"id": 103, "title": "Tenant Default — Retail Center Unit 8B", "type": "Tenant Default", "status": "Open", "priority": "Critical", "requester": "Ana Reyes", "assignee": "David Park", "created_at": "2026-04-07"},
+      {"id": 104, "title": "Asset Acquisition — Logistics Hub Site Review", "type": "Asset Acquisition", "status": "Resolved", "priority": "High", "requester": "Priya Nair", "assignee": "Lucas Silva", "created_at": "2026-03-29"},
+      {"id": 105, "title": "Disposition Review — Non-Core Retail Asset", "type": "Disposition Review", "status": "Open", "priority": "Medium", "requester": "Amara Diallo", "assignee": "Noah Fischer", "created_at": "2026-04-06"},
+      {"id": 106, "title": "Environmental Audit — Office Tower Phase II", "type": "Environmental Audit", "status": "In Progress", "priority": "Medium", "requester": "Noah Fischer", "assignee": "Ana Reyes", "created_at": "2026-04-11"}
+    ],
+    "projects": [
+      {"id": 1, "name": "Tech Campus Redevelopment", "status": "In Progress", "lead": "James Okafor", "team_size": 10, "start_date": "2025-12-20", "due_date": "2026-08-30", "completion_pct": 68},
+      {"id": 2, "name": "Industrial Park Acquisition", "status": "In Progress", "lead": "Sofia Lim", "team_size": 6, "start_date": "2026-01-10", "due_date": "2026-07-31", "completion_pct": 42},
+      {"id": 3, "name": "Retail Center Repositioning", "status": "In Progress", "lead": "David Park", "team_size": 8, "start_date": "2026-02-15", "due_date": "2026-08-15", "completion_pct": 15},
+      {"id": 4, "name": "Office Tower Lease-Up", "status": "Completed", "lead": "Carlos Mendez", "team_size": 5, "start_date": "2025-12-01", "due_date": "2026-05-01", "completion_pct": 100},
+      {"id": 5, "name": "Logistics Hub Development", "status": "In Progress", "lead": "Priya Nair", "team_size": 12, "start_date": "2026-03-08", "due_date": "2026-08-31", "completion_pct": 30}
+    ]
+  }
+}

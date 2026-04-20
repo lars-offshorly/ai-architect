@@ -1,0 +1,31 @@
+{
+  "bundle_key": "construction_real_estate",
+  "session_id": "sample-construction-general-contractor",
+  "company_name": "Apex Build Group",
+  "keywords": ["construction", "general contractor", "site", "subcontractor", "permits", "build", "framing", "foundation", "RFI", "punch list", "project closeout", "commercial build"],
+  "stores": {
+    "kpis": [
+      {"id": 1, "key": "active_projects", "label": "Active Projects", "type": "count", "source_service": "projects", "sample_value": 12},
+      {"id": 2, "key": "on_schedule_rate", "label": "On-Schedule Rate", "type": "percentage", "source_service": "projects", "sample_value": 83.3},
+      {"id": 3, "key": "rfi_open_count", "label": "Open RFIs", "type": "count", "source_service": "ticketing", "sample_value": 27},
+      {"id": 4, "key": "safety_incident_rate", "label": "Safety Incident Rate", "type": "percentage", "source_service": "projects", "sample_value": 1.4},
+      {"id": 5, "key": "budget_variance_pct", "label": "Budget Variance", "type": "percentage", "source_service": "projects", "sample_value": 4.8}
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {"id": 101, "title": "RFI #047 — Structural Steel Clarification", "type": "RFI", "status": "Open", "priority": "High", "requester": "Maria Santos", "assignee": "Carlos Mendez", "created_at": "2026-04-01"},
+      {"id": 102, "title": "Change Order #12 — Foundation Scope Expansion", "type": "Change Order", "status": "In Progress", "priority": "High", "requester": "James Okafor", "assignee": "Sofia Lim", "created_at": "2026-03-20"},
+      {"id": 103, "title": "Safety Incident — Scaffolding Near-Miss", "type": "Safety Incident", "status": "Open", "priority": "Critical", "requester": "David Park", "assignee": "Priya Nair", "created_at": "2026-04-08"},
+      {"id": 104, "title": "Punch List Item — Lobby Flooring Defect", "type": "Punch List", "status": "Resolved", "priority": "Medium", "requester": "Lucas Silva", "assignee": "Amara Diallo", "created_at": "2026-03-28"},
+      {"id": 105, "title": "Permit Request — Electrical Rough-In Inspection", "type": "Permit Request", "status": "Open", "priority": "Medium", "requester": "Noah Fischer", "assignee": "Ana Reyes", "created_at": "2026-04-05"},
+      {"id": 106, "title": "Subcontractor Issue — Plumbing Delay", "type": "Subcontractor Issue", "status": "In Progress", "priority": "High", "requester": "Carlos Mendez", "assignee": "Maria Santos", "created_at": "2026-04-10"}
+    ],
+    "projects": [
+      {"id": 1, "name": "Riverfront Office Complex", "status": "In Progress", "lead": "James Okafor", "team_size": 18, "start_date": "2025-12-10", "due_date": "2026-07-31", "completion_pct": 68},
+      {"id": 2, "name": "Downtown Retail Fit-Out", "status": "In Progress", "lead": "Sofia Lim", "team_size": 9, "start_date": "2026-01-15", "due_date": "2026-06-30", "completion_pct": 42},
+      {"id": 3, "name": "Apex Warehouse Build", "status": "In Progress", "lead": "Priya Nair", "team_size": 12, "start_date": "2026-02-20", "due_date": "2026-08-15", "completion_pct": 15},
+      {"id": 4, "name": "Airport Terminal Expansion", "status": "Completed", "lead": "David Park", "team_size": 24, "start_date": "2025-12-01", "due_date": "2026-05-01", "completion_pct": 100},
+      {"id": 5, "name": "Mixed-Use Development — Phase 1", "status": "In Progress", "lead": "Ana Reyes", "team_size": 14, "start_date": "2026-03-01", "due_date": "2026-08-31", "completion_pct": 30}
+    ]
+  }
+}

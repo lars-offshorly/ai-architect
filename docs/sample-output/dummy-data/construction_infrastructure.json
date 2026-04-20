@@ -1,0 +1,31 @@
+{
+  "bundle_key": "construction_real_estate",
+  "session_id": "sample-construction-infrastructure",
+  "company_name": "Stonebridge Civil Engineering",
+  "keywords": ["infrastructure", "civil engineering", "roads", "bridges", "utilities", "municipal", "government contract", "surveying", "earthwork", "drainage", "public works", "grading"],
+  "stores": {
+    "kpis": [
+      {"id": 1, "key": "active_contracts", "label": "Active Contracts", "type": "count", "source_service": "projects", "sample_value": 8},
+      {"id": 2, "key": "project_schedule_performance_index", "label": "Schedule Performance Index", "type": "ratio", "source_service": "projects", "sample_value": 0.92},
+      {"id": 3, "key": "punch_items_open", "label": "Open Punch Items", "type": "count", "source_service": "ticketing", "sample_value": 43},
+      {"id": 4, "key": "safety_compliance_rate", "label": "Safety Compliance Rate", "type": "percentage", "source_service": "projects", "sample_value": 97.8},
+      {"id": 5, "key": "contract_utilization_rate", "label": "Contract Utilization Rate", "type": "percentage", "source_service": "projects", "sample_value": 86.0}
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {"id": 101, "title": "Survey Request — Highway 12 Alignment Check", "type": "Survey Request", "status": "Open", "priority": "High", "requester": "Maria Santos", "assignee": "Carlos Mendez", "created_at": "2026-04-02"},
+      {"id": 102, "title": "Design Review — River Bridge Deck Drawing", "type": "Design Review", "status": "In Progress", "priority": "High", "requester": "Ana Reyes", "assignee": "James Okafor", "created_at": "2026-03-25"},
+      {"id": 103, "title": "Change Order #08 — Waterline Depth Adjustment", "type": "Change Order", "status": "Open", "priority": "Medium", "requester": "Sofia Lim", "assignee": "David Park", "created_at": "2026-04-07"},
+      {"id": 104, "title": "Safety Inspection — Excavation Site Review", "type": "Safety Inspection", "status": "Resolved", "priority": "Critical", "requester": "Priya Nair", "assignee": "Lucas Silva", "created_at": "2026-03-30"},
+      {"id": 105, "title": "Environmental Report — Stormwater Runoff", "type": "Environmental Report", "status": "Open", "priority": "Medium", "requester": "Amara Diallo", "assignee": "Noah Fischer", "created_at": "2026-04-09"},
+      {"id": 106, "title": "Permit Coordination — Grade Separation ROW", "type": "Permit Coordination", "status": "In Progress", "priority": "High", "requester": "Noah Fischer", "assignee": "Ana Reyes", "created_at": "2026-04-11"}
+    ],
+    "projects": [
+      {"id": 1, "name": "Highway 12 Resurfacing", "status": "In Progress", "lead": "Carlos Mendez", "team_size": 11, "start_date": "2026-01-10", "due_date": "2026-07-15", "completion_pct": 68},
+      {"id": 2, "name": "River Bridge Rehabilitation", "status": "In Progress", "lead": "James Okafor", "team_size": 14, "start_date": "2026-02-01", "due_date": "2026-08-30", "completion_pct": 42},
+      {"id": 3, "name": "Municipal Waterline Extension", "status": "In Progress", "lead": "David Park", "team_size": 8, "start_date": "2026-02-15", "due_date": "2026-08-01", "completion_pct": 15},
+      {"id": 4, "name": "Stormwater System Upgrade", "status": "Completed", "lead": "Priya Nair", "team_size": 7, "start_date": "2025-12-05", "due_date": "2026-05-01", "completion_pct": 100},
+      {"id": 5, "name": "Grade Separation Study", "status": "In Progress", "lead": "Sofia Lim", "team_size": 5, "start_date": "2026-03-10", "due_date": "2026-06-30", "completion_pct": 30}
+    ]
+  }
+}

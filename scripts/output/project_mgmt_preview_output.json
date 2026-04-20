@@ -1,0 +1,1832 @@
+{
+  "generation_json": {
+    "schema_version": "1.0",
+    "bundle_key": "project_mgmt",
+    "feature_flags": [
+      {
+        "id": 111,
+        "name": "activity-feed-announcement-popup",
+        "description": "activity-feed-announcement-popup",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 180,
+        "name": "activity-feed-announcement-read-all",
+        "description": "activity-feed-announcement-read-all",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 113,
+        "name": "activity-feed-announcement-repeat",
+        "description": "activity-feed-announcement-repeat",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 178,
+        "name": "activity-feed-announcement-rules",
+        "description": "activity-feed-announcement-rules",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 114,
+        "name": "activity-feed-announcement-share-by-email",
+        "description": "activity-feed-announcement-share-by-email",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 147,
+        "name": "activity-feed-filter-calendar",
+        "description": "activity-feed-filter-calendar",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 148,
+        "name": "activity-feed-filter-dashboard",
+        "description": "activity-feed-filter-dashboard",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 149,
+        "name": "activity-feed-filter-hrhub",
+        "description": "activity-feed-filter-hrhub",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 150,
+        "name": "activity-feed-filter-tickets",
+        "description": "activity-feed-filter-tickets",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 151,
+        "name": "activity-feed-filter-todo",
+        "description": "activity-feed-filter-todo",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 152,
+        "name": "activity-feed-filter-weaves",
+        "description": "activity-feed-filter-weaves",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 74,
+        "name": "activity-feed-module",
+        "description": "Activity Feed Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 185,
+        "name": "activity-feed-module-scheduled-announcements",
+        "description": "activity-feed-module-scheduled-announcements",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 137,
+        "name": "activity-feed-nav-notification",
+        "description": "activity-feed-nav-notification",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 138,
+        "name": "activity-feed-nav-search",
+        "description": "activity-feed-nav-search",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 139,
+        "name": "activity-feed-nav-settings",
+        "description": "activity-feed-nav-settings",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 131,
+        "name": "activity-feed-notification",
+        "description": "activity-feed-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 110,
+        "name": "activity-feed-notifications-toast",
+        "description": "Activity Feed Notifications Toast",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 125,
+        "name": "activity-feed-unread-count",
+        "description": "activity-feed-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 187,
+        "name": "ai-toolkit-module",
+        "description": "AI Toolkit Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 181,
+        "name": "app-file-download-dialog",
+        "description": "app-file-download-dialog",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 90,
+        "name": "app-homepage-hr-hub",
+        "description": "app-homepage-hr-hub",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 83,
+        "name": "autologout-by-ttl",
+        "description": "Auto Logout by TTL",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 109,
+        "name": "calendar_module",
+        "description": "Calendar module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 92,
+        "name": "chat-bot",
+        "description": "chat-bot",
+        "isEnabled": true,
+        "module": "AI Chat Bot"
+      },
+      {
+        "id": 107,
+        "name": "chat-float",
+        "description": "Chat boxes that floats on right bottom",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 5,
+        "name": "chat-module",
+        "description": "Chat Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 130,
+        "name": "chat-notification",
+        "description": "chat-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 124,
+        "name": "chat-unread-count",
+        "description": "chat-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 157,
+        "name": "chatbot-module",
+        "description": "Chatbot Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 2,
+        "name": "dashboard-module",
+        "description": "Dashboard Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 177,
+        "name": "docbot-module",
+        "description": "AI Document Verification Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 40,
+        "name": "hrhub-admin-hangout",
+        "description": "HR Hub Admin Hangout",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 179,
+        "name": "hrhub-employee-handbook",
+        "description": "HRHUB Employee Handbook",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 38,
+        "name": "hrhub-employee-movement",
+        "description": "Hr Hub Employee Movement",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 37,
+        "name": "hrhub-live-feed",
+        "description": "Hr Hub Live Feed",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 3,
+        "name": "hrhub-module",
+        "description": "Hr Hub Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 42,
+        "name": "hrhub-my-tasks",
+        "description": "Hr Hub My Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 120,
+        "name": "hrhub-onboarding",
+        "description": "Enable Onboarding form",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 174,
+        "name": "hrhub-overview",
+        "description": "HR Hub Overview",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 39,
+        "name": "hrhub-tasks",
+        "description": "Hr Hub Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 207,
+        "name": "kpi-advanced-type",
+        "description": "kpi-advanced-type",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 123,
+        "name": "kpi-module",
+        "description": "KPI Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 188,
+        "name": "menu-ai-toolkit-nav",
+        "description": "Menu Ai Toolkit Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 65,
+        "name": "menu-calendar-nav",
+        "description": "Menu Calendar Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 59,
+        "name": "menu-dashboard-nav",
+        "description": "Menu Dashboard Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 58,
+        "name": "menu-favorites-nav",
+        "description": "Menu Favorites Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 71,
+        "name": "menu-games-nav",
+        "description": "Menu Games Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 62,
+        "name": "menu-kanban-nav",
+        "description": "Menu Kanban Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 60,
+        "name": "menu-knit-show-nav",
+        "description": "Menu Knit Show Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 61,
+        "name": "menu-know-your-knit-nav",
+        "description": "Menu Know Your Knit Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 70,
+        "name": "menu-kpi-nav",
+        "description": "Menu KPI Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 72,
+        "name": "menu-reports-nav",
+        "description": "Menu Reports Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 63,
+        "name": "menu-timeline-nav",
+        "description": "Menu Timeline Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 66,
+        "name": "menu-todos-nav",
+        "description": "Menu Todos Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 64,
+        "name": "menu-whiteboard-nav",
+        "description": "Menu Whiteboard Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 132,
+        "name": "profile-module",
+        "description": "Knit user profile module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 7,
+        "name": "projects-module",
+        "description": "Projects Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 135,
+        "name": "push-notification",
+        "description": "push-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 198,
+        "name": "rewards-module",
+        "description": "Rewards Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 54,
+        "name": "search-toolbar",
+        "description": "Search Toolbar on the Header",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 55,
+        "name": "sidebar-help-nav",
+        "description": "Help navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 57,
+        "name": "sidebar-invite-user-nav",
+        "description": "Invite user navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 56,
+        "name": "sidebar-notification-nav",
+        "description": "Notification navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 6,
+        "name": "tickets-module",
+        "description": "Tickets Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 206,
+        "name": "tickets-unread-count",
+        "description": "tickets-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 169,
+        "name": "use-office-timezone",
+        "description": "use-office-timezone",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 192,
+        "name": "user-online-status",
+        "description": "user-online-status",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 4,
+        "name": "weaves-module",
+        "description": "Weaves Module",
+        "isEnabled": true,
+        "module": "Global"
+      }
+    ],
+    "modules": [
+      "Project Management",
+      "Ticketing Tool",
+      "HR Management",
+      "Weaves",
+      "Dashboard",
+      "KPI",
+      "Calendar",
+      "Chat",
+      "AI Toolkit",
+      "Rewards Store"
+    ],
+    "config": {
+      "permission_services": [
+        "projects",
+        "kpi",
+        "notifications"
+      ],
+      "landing_pages": [
+        {
+          "id": 108,
+          "module": "Projects",
+          "selectionAutoShow": false,
+          "default": "List",
+          "showTutorial": true
+        },
+        {
+          "id": 311,
+          "module": "Dashboard",
+          "selectionAutoShow": true,
+          "default": "Dashboard",
+          "showTutorial": false
+        }
+      ],
+      "task_statuses": [
+        "Open",
+        "In Progress",
+        "Resolved"
+      ],
+      "task_priorities": [
+        "High",
+        "Medium",
+        "Critical",
+        "Low"
+      ],
+      "milestone_statuses": [
+        "Planning",
+        "In Progress",
+        "Completed",
+        "On Hold"
+      ],
+      "kpi_definitions": [
+        {
+          "key": "on_time_delivery_rate",
+          "label": "On-time Delivery Rate",
+          "unit": "percentage"
+        },
+        {
+          "key": "project_health_status",
+          "label": "Project Health Status",
+          "unit": "status"
+        },
+        {
+          "key": "cycle_time",
+          "label": "Cycle Time",
+          "unit": "duration"
+        },
+        {
+          "key": "capacity_utilization",
+          "label": "Capacity Utilization",
+          "unit": "percentage"
+        },
+        {
+          "key": "planned_vs_actual",
+          "label": "Planned vs Actual",
+          "unit": "ratio"
+        }
+      ]
+    }
+  },
+  "dummy_data_json": {
+    "bundle_key": "project_mgmt",
+    "session_id": "live-test-001",
+    "company_name": null,
+    "stores": {
+      "kpis": [
+        {
+          "id": 1,
+          "key": "on_time_delivery_rate",
+          "label": "On-time Delivery Rate",
+          "type": "percentage",
+          "source_service": "projects",
+          "sample_value": 87.5
+        },
+        {
+          "id": 2,
+          "key": "project_health_status",
+          "label": "Project Health Status",
+          "type": "status",
+          "source_service": "projects",
+          "sample_value": "At Risk"
+        },
+        {
+          "id": 3,
+          "key": "cycle_time",
+          "label": "Cycle Time",
+          "type": "duration",
+          "source_service": "projects",
+          "sample_value": 5.4
+        },
+        {
+          "id": 4,
+          "key": "capacity_utilization",
+          "label": "Capacity Utilization",
+          "type": "percentage",
+          "source_service": "hr_hub",
+          "sample_value": 95.0
+        },
+        {
+          "id": 5,
+          "key": "planned_vs_actual",
+          "label": "Planned vs Actual",
+          "type": "ratio",
+          "source_service": "projects",
+          "sample_value": 0.78
+        }
+      ],
+      "dashboard_widgets": [
+        {
+          "id": "widget-1",
+          "type": "text",
+          "title": "Dashboard Summary",
+          "position": {
+            "row": 0,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-2",
+          "type": "text",
+          "title": "Key Insights",
+          "position": {
+            "row": 3,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-3",
+          "type": "text",
+          "title": "Recommendations",
+          "position": {
+            "row": 6,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-4",
+          "type": "number",
+          "title": "Active Projects",
+          "position": {
+            "row": 9,
+            "col": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-6",
+          "type": "number",
+          "title": "Critical Tasks Pending",
+          "position": {
+            "row": 9,
+            "col": 3,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-8",
+          "type": "number",
+          "title": "On-time Delivery Rate",
+          "position": {
+            "row": 9,
+            "col": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-11",
+          "type": "number",
+          "title": "Resource Utilization",
+          "position": {
+            "row": 9,
+            "col": 9,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-14",
+          "type": "number",
+          "title": "Project Velocity Increase",
+          "position": {
+            "row": 12,
+            "col": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-17",
+          "type": "hbar",
+          "title": "Project Status Distribution",
+          "position": {
+            "row": 15,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-20",
+          "type": "text",
+          "title": "About: Project Status Distribution",
+          "position": {
+            "row": 15,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-21",
+          "type": "pie",
+          "title": "Task Priority Breakdown",
+          "position": {
+            "row": 21,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-24",
+          "type": "text",
+          "title": "About: Task Priority Breakdown",
+          "position": {
+            "row": 21,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-25",
+          "type": "line",
+          "title": "Velocity Trend (Tasks Completed)",
+          "position": {
+            "row": 27,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-28",
+          "type": "text",
+          "title": "About: Velocity Trend (Tasks Completed)",
+          "position": {
+            "row": 27,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-29",
+          "type": "list",
+          "title": "Project Milestones",
+          "position": {
+            "row": 33,
+            "col": 0,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-35",
+          "type": "text",
+          "title": "About: Project Milestones",
+          "position": {
+            "row": 33,
+            "col": 6,
+            "width": 6,
+            "height": 3
+          }
+        }
+      ],
+      "dashboard_generation_output": {
+        "success": true,
+        "dashboard": {
+          "id": "60860",
+          "name": "Project Management Dashboard Template - 0416260420",
+          "url": "/dashboard/60860"
+        },
+        "widgets": {
+          "text": 7,
+          "number": 5,
+          "bar": 0,
+          "hbar": 1,
+          "pie": 1,
+          "line": 1,
+          "scatter": 0,
+          "list": 1,
+          "combo": 0,
+          "embed": 0,
+          "total": 16
+        },
+        "execution_time": "0m 16s",
+        "errors": [],
+        "debug_payload": {
+          "widgets": [
+            {
+              "id": 1,
+              "name": "Dashboard Summary",
+              "typeId": 2,
+              "order": 0,
+              "description": "The project management dashboard reveals that while most projects are on track, delays are noted in the 'Infrastructure' category. Resource utilization is high at 95%, and project velocity has improved by 10% due to new agile tools.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 0,
+                "id": 1
+              }
+            },
+            {
+              "id": 2,
+              "name": "Key Insights",
+              "typeId": 2,
+              "order": 0,
+              "description": "- Most projects are currently on track, but several in the 'Infrastructure' category are seeing delays.<br>- Resource utilization is peaked at 95% in the Software Development department.<br>- Project velocity has increased by 10% following the adoption of new agile tools.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 3,
+                "id": 2
+              }
+            },
+            {
+              "id": 3,
+              "name": "Recommendations",
+              "typeId": 2,
+              "order": 0,
+              "description": "Top Recommendations:<br>- Address delays in the 'Infrastructure' category to prevent project overruns.<br>- Monitor resource utilization closely to avoid burnout in the Software Development department.<br><br>Recommended Actions:<br>- Implement regular check-ins for projects in the 'Infrastructure' category.<br>- Consider hiring additional resources or redistributing tasks to balance workload.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 6,
+                "id": 3
+              }
+            },
+            {
+              "id": 4,
+              "name": "Active Projects",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 9,
+                "format": "number",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 4
+              },
+              "datasets": [
+                {
+                  "abbreviation": "ACT",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "projects",
+                  "module": "Projects",
+                  "name": "Active Projects",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": [
+                      {
+                        "filterType": "default",
+                        "type": "projectStatus",
+                        "value": "Active"
+                      }
+                    ]
+                  },
+                  "id": 5
+                }
+              ],
+              "formula": []
+            },
+            {
+              "id": 5,
+              "name": "Critical Tasks Pending",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 3,
+                "yAxis": 9,
+                "format": "number",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 6
+              },
+              "datasets": [
+                {
+                  "abbreviation": "CRI",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "tasks",
+                  "module": "Projects",
+                  "name": "Critical Tasks",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": [
+                      {
+                        "filterType": "default",
+                        "type": "priority",
+                        "value": "Critical"
+                      },
+                      {
+                        "filterType": "default",
+                        "type": "status",
+                        "value": "In Progress"
+                      }
+                    ]
+                  },
+                  "id": 7
+                }
+              ],
+              "formula": []
+            },
+            {
+              "id": 6,
+              "name": "On-time Delivery Rate",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 6,
+                "yAxis": 9,
+                "format": "percentage",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 8
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 9
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "88",
+                  "order": 0,
+                  "id": 10
+                }
+              ]
+            },
+            {
+              "id": 7,
+              "name": "Resource Utilization",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 9,
+                "yAxis": 9,
+                "format": "percentage",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 11
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 12
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "95",
+                  "order": 0,
+                  "id": 13
+                }
+              ]
+            },
+            {
+              "id": 8,
+              "name": "Project Velocity Increase",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 12,
+                "format": "percentage",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 14
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 15
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "10",
+                  "order": 0,
+                  "id": 16
+                }
+              ]
+            },
+            {
+              "id": 9,
+              "name": "Project Status Distribution",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 15,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "barHorizontal",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "projectStatus",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 17
+              },
+              "datasets": [
+                {
+                  "abbreviation": "P",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "projects",
+                  "module": "Projects",
+                  "name": "Projects",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 18
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 19,
+                  "name": "projectStatus",
+                  "displayName": "Projectstatus",
+                  "filterType": "default",
+                  "filterId": "projectStatus",
+                  "fields": [
+                    "Planning",
+                    "Implementation",
+                    "Testing",
+                    "Handoff",
+                    "Completed"
+                  ],
+                  "fieldTitles": [
+                    "Planning",
+                    "Implementation",
+                    "Testing",
+                    "Handoff",
+                    "Completed"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2025-04-16",
+                  "dateTo": "2026-04-16",
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 10,
+              "name": "About: Project Status Distribution",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Project Status Distribution**<br><br>This chart provides a visual representation of the number of projects currently in each status phase, helping to identify areas that may require additional attention.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 15,
+                "id": 20
+              }
+            },
+            {
+              "id": 11,
+              "name": "Task Priority Breakdown",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 21,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "pie",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "priority",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 21
+              },
+              "datasets": [
+                {
+                  "abbreviation": "T",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "tasks",
+                  "module": "Projects",
+                  "name": "Tasks",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 22
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 23,
+                  "name": "priority",
+                  "displayName": "Priority",
+                  "filterType": "default",
+                  "filterId": "priority",
+                  "fields": [
+                    "Critical",
+                    "High",
+                    "Medium",
+                    "Low"
+                  ],
+                  "fieldTitles": [
+                    "Critical",
+                    "High",
+                    "Medium",
+                    "Low"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2025-04-16",
+                  "dateTo": "2026-04-16",
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 12,
+              "name": "About: Task Priority Breakdown",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Task Priority Breakdown**<br><br>The pie chart illustrates the distribution of all tasks by their assigned priority level, allowing for quick assessment of where focus is needed.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 21,
+                "id": 24
+              }
+            },
+            {
+              "id": 13,
+              "name": "Velocity Trend (Tasks Completed)",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 27,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "line",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "custom_dates",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 25
+              },
+              "datasets": [
+                {
+                  "abbreviation": "T",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "tasks",
+                  "module": "Projects",
+                  "name": "Tasks",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": [
+                      {
+                        "filterType": "default",
+                        "type": "status",
+                        "value": "Completed"
+                      }
+                    ]
+                  },
+                  "id": 26
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 27,
+                  "name": "custom_dates",
+                  "displayName": "Custom Dates",
+                  "filterType": "date",
+                  "filterId": "custom_dates",
+                  "fields": [
+                    "2024-01-01T00:00:00.000Z|2024-01-07T23:59:59.999Z",
+                    "2024-01-08T00:00:00.000Z|2024-01-14T23:59:59.999Z",
+                    "2024-01-15T00:00:00.000Z|2024-01-21T23:59:59.999Z",
+                    "2024-01-22T00:00:00.000Z|2024-01-28T23:59:59.999Z",
+                    "2024-01-29T00:00:00.000Z|2024-02-04T23:59:59.999Z",
+                    "2024-02-05T00:00:00.000Z|2024-02-11T23:59:59.999Z",
+                    "2024-02-12T00:00:00.000Z|2024-02-18T23:59:59.999Z",
+                    "2024-02-19T00:00:00.000Z|2024-02-25T23:59:59.999Z",
+                    "2024-02-26T00:00:00.000Z|2024-03-03T23:59:59.999Z",
+                    "2024-03-04T00:00:00.000Z|2024-03-10T23:59:59.999Z",
+                    "2024-03-11T00:00:00.000Z|2024-03-17T23:59:59.999Z",
+                    "2024-03-18T00:00:00.000Z|2024-03-24T23:59:59.999Z",
+                    "2024-03-25T00:00:00.000Z|2024-03-31T23:59:59.999Z"
+                  ],
+                  "fieldTitles": [
+                    "2024-01-01T00:00:00.000Z|2024-01-07T23:59:59.999Z",
+                    "2024-01-08T00:00:00.000Z|2024-01-14T23:59:59.999Z",
+                    "2024-01-15T00:00:00.000Z|2024-01-21T23:59:59.999Z",
+                    "2024-01-22T00:00:00.000Z|2024-01-28T23:59:59.999Z",
+                    "2024-01-29T00:00:00.000Z|2024-02-04T23:59:59.999Z",
+                    "2024-02-05T00:00:00.000Z|2024-02-11T23:59:59.999Z",
+                    "2024-02-12T00:00:00.000Z|2024-02-18T23:59:59.999Z",
+                    "2024-02-19T00:00:00.000Z|2024-02-25T23:59:59.999Z",
+                    "2024-02-26T00:00:00.000Z|2024-03-03T23:59:59.999Z",
+                    "2024-03-04T00:00:00.000Z|2024-03-10T23:59:59.999Z",
+                    "2024-03-11T00:00:00.000Z|2024-03-17T23:59:59.999Z",
+                    "2024-03-18T00:00:00.000Z|2024-03-24T23:59:59.999Z",
+                    "2024-03-25T00:00:00.000Z|2024-03-31T23:59:59.999Z"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2024-01-01",
+                  "dateTo": "2024-03-31",
+                  "dateInterval": "weekly",
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 14,
+              "name": "About: Velocity Trend (Tasks Completed)",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Velocity Trend (Tasks Completed)**<br><br>The line chart tracks the weekly trend of completed tasks across all projects, showcasing the impact of recent agile tool implementations on project velocity.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 27,
+                "id": 28
+              }
+            },
+            {
+              "id": 15,
+              "name": "Project Milestones",
+              "typeId": 4,
+              "order": 0,
+              "settings": {
+                "width": 6,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 33,
+                "alignment": "left",
+                "columnFormats": [],
+                "listBodyColor": "#eff1f3",
+                "listBodyColorType": "theme",
+                "listBodyFont": "arial",
+                "listBodySize": "md",
+                "listBodyStyle": "normal",
+                "listColumnAuto": false,
+                "listColumnColor": "#685d79",
+                "listColumnColorType": "theme",
+                "listColumnFont": "arial",
+                "listColumnFontSize": "md",
+                "listColumnNumber": 4,
+                "listColumnStyle": "normal",
+                "listColumnWidth": 200,
+                "listFullTable": false,
+                "listHideColumn": [],
+                "id": 29
+              },
+              "datasets": [
+                {
+                  "abbreviation": "P",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "projects",
+                  "module": "Projects",
+                  "name": "Projects",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 30
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 31,
+                  "name": "projectTitle",
+                  "displayName": "Project Title",
+                  "filterType": "default",
+                  "filterId": "projectTitle",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                },
+                {
+                  "id": 32,
+                  "name": "milestoneName",
+                  "displayName": "Milestone Name",
+                  "filterType": "default",
+                  "filterId": "milestoneName",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 1,
+                  "sortType": null
+                },
+                {
+                  "id": 33,
+                  "name": "dueDate",
+                  "displayName": "Due Date",
+                  "filterType": "default",
+                  "filterId": "dueDate",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 2,
+                  "sortType": null
+                },
+                {
+                  "id": 34,
+                  "name": "responsibleParty",
+                  "displayName": "Responsible Party",
+                  "filterType": "default",
+                  "filterId": "responsibleParty",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 3,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 16,
+              "name": "About: Project Milestones",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Project Milestones**<br><br>This list outlines key milestones for each project, providing a clear view of upcoming deadlines and deliverables.",
+              "settings": {
+                "width": 6,
+                "height": 3,
+                "xAxis": 6,
+                "yAxis": 33,
+                "id": 35
+              }
+            }
+          ],
+          "total_widgets": 16,
+          "generated_at": "1776313236",
+          "widget_breakdown": {
+            "text": 7,
+            "number": 5,
+            "bar": 0,
+            "hbar": 1,
+            "pie": 1,
+            "line": 1,
+            "scatter": 0,
+            "list": 1,
+            "combo": 0,
+            "embed": 0,
+            "total": 16
+          }
+        },
+        "generation_metadata": {
+          "report_length": 596,
+          "widgets_extracted": 10,
+          "widgets_explicit": 6,
+          "data_sources_used": [],
+          "processing_steps": [
+            "Generated dashboard name",
+            "Created empty dashboard",
+            "Extracted widgets from report",
+            "Generated widget payloads",
+            "Positioned widgets on dashboard",
+            "Submitted bulk create request"
+          ]
+        }
+      },
+      "tasks": [
+        {
+          "id": 101,
+          "title": "Login page not loading on mobile",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "High",
+          "requester": "Carlos Mendez",
+          "assignee": "Maria Santos",
+          "created_at": "2026-04-15"
+        },
+        {
+          "id": 102,
+          "title": "Export to CSV fails for large datasets",
+          "type": "Feature Request",
+          "status": "In Progress",
+          "priority": "Medium",
+          "requester": "Ana Reyes",
+          "assignee": "Carlos Mendez",
+          "created_at": "2026-04-12"
+        },
+        {
+          "id": 103,
+          "title": "Notification emails not delivered",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "Critical",
+          "requester": "James Okafor",
+          "assignee": "Ana Reyes",
+          "created_at": "2026-04-09"
+        },
+        {
+          "id": 104,
+          "title": "Dashboard widget shows incorrect totals",
+          "type": "Improvement",
+          "status": "Resolved",
+          "priority": "Low",
+          "requester": "Sofia Lim",
+          "assignee": "James Okafor",
+          "created_at": "2026-04-06"
+        },
+        {
+          "id": 105,
+          "title": "User permissions not applying on new accounts",
+          "type": "Bug",
+          "status": "Open",
+          "priority": "Medium",
+          "requester": "David Park",
+          "assignee": "Sofia Lim",
+          "created_at": "2026-04-03"
+        },
+        {
+          "id": 106,
+          "title": "Search returns empty results intermittently",
+          "type": "Access Request",
+          "status": "In Progress",
+          "priority": "Medium",
+          "requester": "Priya Nair",
+          "assignee": "David Park",
+          "created_at": "2026-03-31"
+        }
+      ],
+      "milestones": [
+        {
+          "id": 1,
+          "name": "Platform Migration \u2014 Phase 1",
+          "status": "In Progress",
+          "lead": "Maria Santos",
+          "team_size": 3,
+          "start_date": "2026-02-15",
+          "due_date": "2026-05-16",
+          "completion_pct": 68
+        },
+        {
+          "id": 2,
+          "name": "Infrastructure Rollout \u2014 Phase 2",
+          "status": "In Progress",
+          "lead": "Carlos Mendez",
+          "team_size": 4,
+          "start_date": "2026-02-25",
+          "due_date": "2026-05-30",
+          "completion_pct": 42
+        },
+        {
+          "id": 3,
+          "name": "Enterprise Deployment \u2014 Q3",
+          "status": "On Hold",
+          "lead": "Ana Reyes",
+          "team_size": 5,
+          "start_date": "2026-03-07",
+          "due_date": "2026-06-13",
+          "completion_pct": 15
+        },
+        {
+          "id": 4,
+          "name": "System Integration \u2014 Milestone 4",
+          "status": "Completed",
+          "lead": "James Okafor",
+          "team_size": 6,
+          "start_date": "2026-03-17",
+          "due_date": "2026-06-27",
+          "completion_pct": 100
+        },
+        {
+          "id": 5,
+          "name": "Platform Migration \u2014 Phase 5",
+          "status": "In Progress",
+          "lead": "Sofia Lim",
+          "team_size": 3,
+          "start_date": "2026-03-27",
+          "due_date": "2026-07-11",
+          "completion_pct": 30
+        }
+      ]
+    }
+  }
+}

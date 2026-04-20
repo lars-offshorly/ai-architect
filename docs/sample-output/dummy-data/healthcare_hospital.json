@@ -1,0 +1,165 @@
+{
+  "bundle_key": "healthcare",
+  "session_id": "sample-healthcare_hospital",
+  "company_name": "Meridian Health System",
+  "keywords": ["hospital", "inpatient", "patient care", "clinical operations", "nursing", "ICU", "emergency", "surgery", "beds", "census", "discharge", "admissions"],
+  "stores": {
+    "kpis": [
+      {
+        "id": 1,
+        "key": "patient_census",
+        "label": "Patient Census",
+        "type": "count",
+        "source_service": "healthcare_hub",
+        "sample_value": 312
+      },
+      {
+        "id": 2,
+        "key": "avg_length_of_stay",
+        "label": "Avg Length of Stay (Days)",
+        "type": "ratio",
+        "source_service": "healthcare_hub",
+        "sample_value": 4.2
+      },
+      {
+        "id": 3,
+        "key": "bed_occupancy_rate",
+        "label": "Bed Occupancy Rate",
+        "type": "percentage",
+        "source_service": "healthcare_hub",
+        "sample_value": 87.5
+      },
+      {
+        "id": 4,
+        "key": "readmission_rate",
+        "label": "30-Day Readmission Rate",
+        "type": "percentage",
+        "source_service": "healthcare_hub",
+        "sample_value": 8.1
+      },
+      {
+        "id": 5,
+        "key": "er_wait_time_minutes",
+        "label": "ER Average Wait Time (Min)",
+        "type": "count",
+        "source_service": "healthcare_hub",
+        "sample_value": 34
+      }
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {
+        "id": 101,
+        "title": "Patient complaint — delayed pain management response",
+        "type": "Patient Complaint",
+        "status": "Open",
+        "priority": "High",
+        "requester": "Maria Santos",
+        "assignee": "Carlos Mendez",
+        "created_at": "2026-04-13"
+      },
+      {
+        "id": 102,
+        "title": "HVAC maintenance request — ICU Ward B",
+        "type": "Facility Request",
+        "status": "In Progress",
+        "priority": "Medium",
+        "requester": "Ana Reyes",
+        "assignee": "James Okafor",
+        "created_at": "2026-04-10"
+      },
+      {
+        "id": 103,
+        "title": "EHR system login failure — Nursing Station 3",
+        "type": "IT Support",
+        "status": "Open",
+        "priority": "High",
+        "requester": "James Okafor",
+        "assignee": "Sofia Lim",
+        "created_at": "2026-04-07"
+      },
+      {
+        "id": 104,
+        "title": "Staff scheduling conflict — Night shift surgery team",
+        "type": "HR Request",
+        "status": "Resolved",
+        "priority": "Medium",
+        "requester": "Sofia Lim",
+        "assignee": "David Park",
+        "created_at": "2026-04-04"
+      },
+      {
+        "id": 105,
+        "title": "Infection control audit — ICU compliance gap",
+        "type": "Compliance",
+        "status": "Open",
+        "priority": "High",
+        "requester": "David Park",
+        "assignee": "Priya Nair",
+        "created_at": "2026-04-01"
+      },
+      {
+        "id": 106,
+        "title": "Needle-stick incident report — Emergency Department",
+        "type": "Safety Report",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Priya Nair",
+        "assignee": "Lucas Silva",
+        "created_at": "2026-03-29"
+      }
+    ],
+    "projects": [
+      {
+        "id": 1,
+        "name": "EMR System Upgrade — Phase 2",
+        "status": "In Progress",
+        "lead": "Maria Santos",
+        "team_size": 8,
+        "start_date": "2026-02-10",
+        "due_date": "2026-06-30",
+        "completion_pct": 68
+      },
+      {
+        "id": 2,
+        "name": "Joint Commission Accreditation Renewal",
+        "status": "In Progress",
+        "lead": "Carlos Mendez",
+        "team_size": 5,
+        "start_date": "2026-02-20",
+        "due_date": "2026-07-15",
+        "completion_pct": 42
+      },
+      {
+        "id": 3,
+        "name": "ICU Capacity Expansion — 20 New Beds",
+        "status": "Planning",
+        "lead": "Ana Reyes",
+        "team_size": 6,
+        "start_date": "2026-03-05",
+        "due_date": "2026-08-01",
+        "completion_pct": 15
+      },
+      {
+        "id": 4,
+        "name": "Clinical Staff BLS/ACLS Training Rollout",
+        "status": "Completed",
+        "lead": "James Okafor",
+        "team_size": 3,
+        "start_date": "2026-01-15",
+        "due_date": "2026-04-10",
+        "completion_pct": 100
+      },
+      {
+        "id": 5,
+        "name": "Revenue Cycle & Billing Workflow Modernization",
+        "status": "In Progress",
+        "lead": "Sofia Lim",
+        "team_size": 4,
+        "start_date": "2026-03-20",
+        "due_date": "2026-07-31",
+        "completion_pct": 30
+      }
+    ]
+  }
+}

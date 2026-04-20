@@ -1,0 +1,165 @@
+{
+  "bundle_key": "legal_services",
+  "session_id": "sample-legal_litigation_firm",
+  "company_name": "Harrington & Cole LLP",
+  "keywords": ["litigation", "trial", "plaintiff", "defendant", "discovery", "deposition", "motion", "court", "settlement", "attorney", "paralegal", "case management"],
+  "stores": {
+    "kpis": [
+      {
+        "id": 1,
+        "key": "active_cases",
+        "label": "Active Cases",
+        "type": "count",
+        "source_service": "legal_hub",
+        "sample_value": 84
+      },
+      {
+        "id": 2,
+        "key": "cases_won_rate",
+        "label": "Cases Won Rate",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 71.4
+      },
+      {
+        "id": 3,
+        "key": "avg_case_duration_days",
+        "label": "Avg Case Duration (Days)",
+        "type": "count",
+        "source_service": "legal_hub",
+        "sample_value": 127
+      },
+      {
+        "id": 4,
+        "key": "billable_hours_utilization",
+        "label": "Billable Hours Utilization",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 88.2
+      },
+      {
+        "id": 5,
+        "key": "settlement_rate",
+        "label": "Settlement Rate",
+        "type": "percentage",
+        "source_service": "legal_hub",
+        "sample_value": 62.0
+      }
+    ],
+    "dashboard_widgets": [],
+    "items": [
+      {
+        "id": 101,
+        "title": "Discovery request — Harrington v. Pinnacle Corp document production",
+        "type": "Discovery Request",
+        "status": "Open",
+        "priority": "High",
+        "requester": "Maria Santos",
+        "assignee": "Carlos Mendez",
+        "created_at": "2026-04-13"
+      },
+      {
+        "id": 102,
+        "title": "Motion for summary judgment — Cole v. Westfield LLC",
+        "type": "Motion Filing",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Ana Reyes",
+        "assignee": "James Okafor",
+        "created_at": "2026-04-10"
+      },
+      {
+        "id": 103,
+        "title": "Client consultation — new personal injury matter intake",
+        "type": "Client Consultation",
+        "status": "Open",
+        "priority": "Medium",
+        "requester": "James Okafor",
+        "assignee": "Sofia Lim",
+        "created_at": "2026-04-07"
+      },
+      {
+        "id": 104,
+        "title": "Deposition preparation — expert witness briefing",
+        "type": "Deposition Prep",
+        "status": "Resolved",
+        "priority": "High",
+        "requester": "Sofia Lim",
+        "assignee": "David Park",
+        "created_at": "2026-04-04"
+      },
+      {
+        "id": 105,
+        "title": "Court hearing scheduling — Martinez v. Alpine Industries",
+        "type": "Court Hearing",
+        "status": "Open",
+        "priority": "Medium",
+        "requester": "David Park",
+        "assignee": "Priya Nair",
+        "created_at": "2026-04-01"
+      },
+      {
+        "id": 106,
+        "title": "Settlement negotiation — Rivera class action — mediation prep",
+        "type": "Settlement Negotiation",
+        "status": "In Progress",
+        "priority": "High",
+        "requester": "Priya Nair",
+        "assignee": "Lucas Silva",
+        "created_at": "2026-03-29"
+      }
+    ],
+    "projects": [
+      {
+        "id": 1,
+        "name": "Harrington v. Pinnacle Corp — Commercial Dispute",
+        "status": "In Progress",
+        "lead": "Maria Santos",
+        "team_size": 4,
+        "start_date": "2026-01-25",
+        "due_date": "2026-08-15",
+        "completion_pct": 68
+      },
+      {
+        "id": 2,
+        "name": "Rivera et al. v. Crestfield Holdings — Class Action",
+        "status": "In Progress",
+        "lead": "Carlos Mendez",
+        "team_size": 6,
+        "start_date": "2026-02-10",
+        "due_date": "2026-09-30",
+        "completion_pct": 42
+      },
+      {
+        "id": 3,
+        "name": "Martinez v. Alpine Industries — Employment Discrimination",
+        "status": "Discovery",
+        "lead": "Ana Reyes",
+        "team_size": 3,
+        "start_date": "2026-03-05",
+        "due_date": "2026-10-01",
+        "completion_pct": 15
+      },
+      {
+        "id": 4,
+        "name": "Cole v. Westfield LLC — Contract Breach Resolution",
+        "status": "Completed",
+        "lead": "James Okafor",
+        "team_size": 2,
+        "start_date": "2025-10-15",
+        "due_date": "2026-04-10",
+        "completion_pct": 100
+      },
+      {
+        "id": 5,
+        "name": "Nguyen v. Delta Logistics — Personal Injury Appeal",
+        "status": "In Progress",
+        "lead": "Sofia Lim",
+        "team_size": 3,
+        "start_date": "2026-03-18",
+        "due_date": "2026-07-31",
+        "completion_pct": 30
+      }
+    ]
+  }
+}

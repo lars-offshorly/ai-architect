@@ -1,0 +1,1787 @@
+{
+  "generation_json": {
+    "schema_version": "1.0",
+    "bundle_key": "hr_hub",
+    "feature_flags": [
+      {
+        "id": 111,
+        "name": "activity-feed-announcement-popup",
+        "description": "activity-feed-announcement-popup",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 180,
+        "name": "activity-feed-announcement-read-all",
+        "description": "activity-feed-announcement-read-all",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 113,
+        "name": "activity-feed-announcement-repeat",
+        "description": "activity-feed-announcement-repeat",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 178,
+        "name": "activity-feed-announcement-rules",
+        "description": "activity-feed-announcement-rules",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 114,
+        "name": "activity-feed-announcement-share-by-email",
+        "description": "activity-feed-announcement-share-by-email",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 147,
+        "name": "activity-feed-filter-calendar",
+        "description": "activity-feed-filter-calendar",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 148,
+        "name": "activity-feed-filter-dashboard",
+        "description": "activity-feed-filter-dashboard",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 149,
+        "name": "activity-feed-filter-hrhub",
+        "description": "activity-feed-filter-hrhub",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 150,
+        "name": "activity-feed-filter-tickets",
+        "description": "activity-feed-filter-tickets",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 151,
+        "name": "activity-feed-filter-todo",
+        "description": "activity-feed-filter-todo",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 152,
+        "name": "activity-feed-filter-weaves",
+        "description": "activity-feed-filter-weaves",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 74,
+        "name": "activity-feed-module",
+        "description": "Activity Feed Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 185,
+        "name": "activity-feed-module-scheduled-announcements",
+        "description": "activity-feed-module-scheduled-announcements",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 137,
+        "name": "activity-feed-nav-notification",
+        "description": "activity-feed-nav-notification",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 138,
+        "name": "activity-feed-nav-search",
+        "description": "activity-feed-nav-search",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 139,
+        "name": "activity-feed-nav-settings",
+        "description": "activity-feed-nav-settings",
+        "isEnabled": true,
+        "module": "Notifications"
+      },
+      {
+        "id": 131,
+        "name": "activity-feed-notification",
+        "description": "activity-feed-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 110,
+        "name": "activity-feed-notifications-toast",
+        "description": "Activity Feed Notifications Toast",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 125,
+        "name": "activity-feed-unread-count",
+        "description": "activity-feed-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 187,
+        "name": "ai-toolkit-module",
+        "description": "AI Toolkit Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 181,
+        "name": "app-file-download-dialog",
+        "description": "app-file-download-dialog",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 90,
+        "name": "app-homepage-hr-hub",
+        "description": "app-homepage-hr-hub",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 83,
+        "name": "autologout-by-ttl",
+        "description": "Auto Logout by TTL",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 109,
+        "name": "calendar_module",
+        "description": "Calendar module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 92,
+        "name": "chat-bot",
+        "description": "chat-bot",
+        "isEnabled": true,
+        "module": "AI Chat Bot"
+      },
+      {
+        "id": 107,
+        "name": "chat-float",
+        "description": "Chat boxes that floats on right bottom",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 5,
+        "name": "chat-module",
+        "description": "Chat Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 130,
+        "name": "chat-notification",
+        "description": "chat-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 124,
+        "name": "chat-unread-count",
+        "description": "chat-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 157,
+        "name": "chatbot-module",
+        "description": "Chatbot Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 2,
+        "name": "dashboard-module",
+        "description": "Dashboard Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 177,
+        "name": "docbot-module",
+        "description": "AI Document Verification Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 40,
+        "name": "hrhub-admin-hangout",
+        "description": "HR Hub Admin Hangout",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 179,
+        "name": "hrhub-employee-handbook",
+        "description": "HRHUB Employee Handbook",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 38,
+        "name": "hrhub-employee-movement",
+        "description": "Hr Hub Employee Movement",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 37,
+        "name": "hrhub-live-feed",
+        "description": "Hr Hub Live Feed",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 3,
+        "name": "hrhub-module",
+        "description": "Hr Hub Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 42,
+        "name": "hrhub-my-tasks",
+        "description": "Hr Hub My Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 120,
+        "name": "hrhub-onboarding",
+        "description": "Enable Onboarding form",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 174,
+        "name": "hrhub-overview",
+        "description": "HR Hub Overview",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 39,
+        "name": "hrhub-tasks",
+        "description": "Hr Hub Tasks",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 207,
+        "name": "kpi-advanced-type",
+        "description": "kpi-advanced-type",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 123,
+        "name": "kpi-module",
+        "description": "KPI Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 188,
+        "name": "menu-ai-toolkit-nav",
+        "description": "Menu Ai Toolkit Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 65,
+        "name": "menu-calendar-nav",
+        "description": "Menu Calendar Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 59,
+        "name": "menu-dashboard-nav",
+        "description": "Menu Dashboard Nav",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 58,
+        "name": "menu-favorites-nav",
+        "description": "Menu Favorites Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 71,
+        "name": "menu-games-nav",
+        "description": "Menu Games Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 62,
+        "name": "menu-kanban-nav",
+        "description": "Menu Kanban Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 60,
+        "name": "menu-knit-show-nav",
+        "description": "Menu Knit Show Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 61,
+        "name": "menu-know-your-knit-nav",
+        "description": "Menu Know Your Knit Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 70,
+        "name": "menu-kpi-nav",
+        "description": "Menu KPI Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 72,
+        "name": "menu-reports-nav",
+        "description": "Menu Reports Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 63,
+        "name": "menu-timeline-nav",
+        "description": "Menu Timeline Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 66,
+        "name": "menu-todos-nav",
+        "description": "Menu Todos Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 64,
+        "name": "menu-whiteboard-nav",
+        "description": "Menu Whiteboard Navigation",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 132,
+        "name": "profile-module",
+        "description": "Knit user profile module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 7,
+        "name": "projects-module",
+        "description": "Projects Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 135,
+        "name": "push-notification",
+        "description": "push-notification",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 198,
+        "name": "rewards-module",
+        "description": "Rewards Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 54,
+        "name": "search-toolbar",
+        "description": "Search Toolbar on the Header",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 55,
+        "name": "sidebar-help-nav",
+        "description": "Help navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 57,
+        "name": "sidebar-invite-user-nav",
+        "description": "Invite user navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 56,
+        "name": "sidebar-notification-nav",
+        "description": "Notification navigation on the right sidebar",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 6,
+        "name": "tickets-module",
+        "description": "Tickets Module",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 206,
+        "name": "tickets-unread-count",
+        "description": "tickets-unread-count",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 169,
+        "name": "use-office-timezone",
+        "description": "use-office-timezone",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 192,
+        "name": "user-online-status",
+        "description": "user-online-status",
+        "isEnabled": true,
+        "module": "Global"
+      },
+      {
+        "id": 4,
+        "name": "weaves-module",
+        "description": "Weaves Module",
+        "isEnabled": true,
+        "module": "Global"
+      }
+    ],
+    "modules": [
+      "Project Management",
+      "Ticketing Tool",
+      "HR Management",
+      "Weaves",
+      "Dashboard",
+      "KPI",
+      "Calendar",
+      "Chat",
+      "AI Toolkit",
+      "Rewards Store"
+    ],
+    "config": {
+      "permission_services": [
+        "hr_hub",
+        "kpi",
+        "notifications"
+      ],
+      "landing_pages": [
+        {
+          "id": 311,
+          "module": "Dashboard",
+          "selectionAutoShow": true,
+          "default": "Dashboard",
+          "showTutorial": false
+        }
+      ],
+      "ticket_categories": [
+        "Onboarding",
+        "IT Setup",
+        "Leave Request",
+        "Equipment Request",
+        "Policy Query"
+      ],
+      "default_statuses": [
+        "Open",
+        "In Progress",
+        "Resolved"
+      ],
+      "default_priorities": [
+        "High",
+        "Medium",
+        "Low"
+      ],
+      "queue_names": [
+        "Human Resources",
+        "Talent & Culture",
+        "People Ops",
+        "Finance"
+      ],
+      "kpi_definitions": [
+        {
+          "key": "active_headcount",
+          "label": "Active Headcount",
+          "unit": "count"
+        },
+        {
+          "key": "attendance_rate",
+          "label": "Attendance Rate",
+          "unit": "percentage"
+        },
+        {
+          "key": "leave_balance_utilization",
+          "label": "Leave Balance Utilization",
+          "unit": "percentage"
+        },
+        {
+          "key": "capacity_utilization",
+          "label": "Capacity Utilization",
+          "unit": "percentage"
+        },
+        {
+          "key": "workload_distribution",
+          "label": "Workload Distribution",
+          "unit": "ratio"
+        }
+      ]
+    }
+  },
+  "dummy_data_json": {
+    "bundle_key": "hr_hub",
+    "session_id": "live-test-001",
+    "company_name": null,
+    "stores": {
+      "kpis": [
+        {
+          "id": 1,
+          "key": "active_headcount",
+          "label": "Active Headcount",
+          "type": "count",
+          "source_service": "hr_hub",
+          "sample_value": 142
+        },
+        {
+          "id": 2,
+          "key": "attendance_rate",
+          "label": "Attendance Rate",
+          "type": "percentage",
+          "source_service": "hr_hub",
+          "sample_value": 92.1
+        },
+        {
+          "id": 3,
+          "key": "leave_balance_utilization",
+          "label": "Leave Balance Utilization",
+          "type": "percentage",
+          "source_service": "hr_hub",
+          "sample_value": 78.4
+        },
+        {
+          "id": 4,
+          "key": "capacity_utilization",
+          "label": "Capacity Utilization",
+          "type": "percentage",
+          "source_service": "hr_hub",
+          "sample_value": 95.0
+        },
+        {
+          "id": 5,
+          "key": "workload_distribution",
+          "label": "Workload Distribution",
+          "type": "ratio",
+          "source_service": "hr_hub",
+          "sample_value": 0.78
+        }
+      ],
+      "dashboard_widgets": [
+        {
+          "id": "widget-1",
+          "type": "text",
+          "title": "Dashboard Summary",
+          "position": {
+            "row": 0,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-2",
+          "type": "text",
+          "title": "Key Insights",
+          "position": {
+            "row": 3,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-3",
+          "type": "text",
+          "title": "Recommendations",
+          "position": {
+            "row": 6,
+            "col": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-4",
+          "type": "number",
+          "title": "Total Employees",
+          "position": {
+            "row": 9,
+            "col": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-6",
+          "type": "number",
+          "title": "Average Annual Salary",
+          "position": {
+            "row": 9,
+            "col": 3,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-8",
+          "type": "number",
+          "title": "Total Employees",
+          "position": {
+            "row": 9,
+            "col": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-11",
+          "type": "number",
+          "title": "Average Salary",
+          "position": {
+            "row": 9,
+            "col": 9,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-14",
+          "type": "number",
+          "title": "Retention Rate",
+          "position": {
+            "row": 12,
+            "col": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "id": "widget-17",
+          "type": "bar",
+          "title": "Headcount by Department",
+          "position": {
+            "row": 15,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-20",
+          "type": "text",
+          "title": "About: Headcount by Department",
+          "position": {
+            "row": 15,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-21",
+          "type": "pie",
+          "title": "Workforce Diversity (Gender)",
+          "position": {
+            "row": 21,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-24",
+          "type": "text",
+          "title": "About: Workforce Diversity (Gender)",
+          "position": {
+            "row": 21,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-25",
+          "type": "line",
+          "title": "Monthly Hiring Trend",
+          "position": {
+            "row": 27,
+            "col": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-28",
+          "type": "text",
+          "title": "About: Monthly Hiring Trend",
+          "position": {
+            "row": 27,
+            "col": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "id": "widget-29",
+          "type": "list",
+          "title": "Recent New Hires",
+          "position": {
+            "row": 33,
+            "col": 0,
+            "width": 6,
+            "height": 3
+          }
+        }
+      ],
+      "dashboard_generation_output": {
+        "success": true,
+        "dashboard": {
+          "id": "60858",
+          "name": "HR Management Dashboard Template - 0416260415",
+          "url": "/dashboard/60858"
+        },
+        "widgets": {
+          "text": 8,
+          "number": 6,
+          "bar": 1,
+          "hbar": 0,
+          "pie": 1,
+          "line": 1,
+          "scatter": 0,
+          "list": 1,
+          "combo": 0,
+          "embed": 0,
+          "total": 18
+        },
+        "execution_time": "0m 15s",
+        "errors": [],
+        "debug_payload": {
+          "widgets": [
+            {
+              "id": 1,
+              "name": "Dashboard Summary",
+              "typeId": 2,
+              "order": 0,
+              "description": "The HR Management Dashboard highlights key metrics such as a total employee count of 532 and a high retention rate of 92%. It emphasizes steady hiring trends, particularly in technical roles, and showcases a balanced gender distribution within the workforce.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 0,
+                "id": 1
+              }
+            },
+            {
+              "id": 2,
+              "name": "Key Insights",
+              "typeId": 2,
+              "order": 0,
+              "description": "- Diversity remains high with a balanced gender distribution.<br>- Engineering and Sales are the largest departments, accounting for 60% of the workforce.<br>- Hiring has been steady over the past quarter with a focus on technical roles.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 3,
+                "id": 2
+              }
+            },
+            {
+              "id": 3,
+              "name": "Recommendations",
+              "typeId": 2,
+              "order": 0,
+              "description": "Top Recommendations:<br>- Continue to monitor and promote diversity initiatives.<br>- Focus on recruitment strategies for Engineering and Sales departments.<br>- Evaluate retention strategies to maintain high retention rates.<br><br>Recommended Actions:<br>- Conduct employee satisfaction surveys to identify areas for improvement.<br>- Implement targeted training programs for technical roles to enhance skills.",
+              "settings": {
+                "width": 12,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 6,
+                "id": 3
+              }
+            },
+            {
+              "id": 4,
+              "name": "Total Employees",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 9,
+                "format": "number",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 4
+              },
+              "datasets": [
+                {
+                  "abbreviation": "ACT",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Active Employees",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": [
+                      {
+                        "filterType": "default",
+                        "type": "employmentStatus",
+                        "value": "Active"
+                      }
+                    ]
+                  },
+                  "id": 5
+                }
+              ],
+              "formula": []
+            },
+            {
+              "id": 5,
+              "name": "Average Annual Salary",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 3,
+                "yAxis": 9,
+                "format": "currency",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 6
+              },
+              "datasets": [
+                {
+                  "abbreviation": "EMP",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "salary",
+                  "module": "HR Hub",
+                  "name": "Employee Salaries",
+                  "operation": "average",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 7
+                }
+              ],
+              "formula": []
+            },
+            {
+              "id": 6,
+              "name": "Total Employees",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 6,
+                "yAxis": 9,
+                "format": "number",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 8
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 9
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "532",
+                  "order": 0,
+                  "id": 10
+                }
+              ]
+            },
+            {
+              "id": 7,
+              "name": "Average Salary",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 9,
+                "yAxis": 9,
+                "format": "currency",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 11
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 12
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "72500",
+                  "order": 0,
+                  "id": 13
+                }
+              ]
+            },
+            {
+              "id": 8,
+              "name": "Retention Rate",
+              "typeId": 1,
+              "order": 0,
+              "settings": {
+                "width": 3,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 12,
+                "format": "percentage",
+                "alignment": "center",
+                "decimal": 0,
+                "currency": "$ - USD",
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "showTimePeriod": false,
+                "showComparisonRate": false,
+                "id": 14
+              },
+              "datasets": [
+                {
+                  "abbreviation": "NUM",
+                  "color": "var(--color-happy-day-1)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Number Dataset",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 15
+                }
+              ],
+              "formula": [
+                {
+                  "type": "number",
+                  "value": "92",
+                  "order": 0,
+                  "id": 16
+                }
+              ]
+            },
+            {
+              "id": 9,
+              "name": "Headcount by Department",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 15,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "bar",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "department",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 17
+              },
+              "datasets": [
+                {
+                  "abbreviation": "E",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Employees",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 18
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 19,
+                  "name": "department",
+                  "displayName": "Department",
+                  "filterType": "default",
+                  "filterId": "department",
+                  "fields": [
+                    "Engineering",
+                    "Sales",
+                    "Marketing",
+                    "HR",
+                    "Operations"
+                  ],
+                  "fieldTitles": [
+                    "Engineering",
+                    "Sales",
+                    "Marketing",
+                    "HR",
+                    "Operations"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2025-04-16",
+                  "dateTo": "2026-04-16",
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 10,
+              "name": "About: Headcount by Department",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Headcount by Department**<br><br>This bar chart illustrates the distribution of active employees across various departments, highlighting that Engineering and Sales together account for 60% of the workforce.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 15,
+                "id": 20
+              }
+            },
+            {
+              "id": 11,
+              "name": "Workforce Diversity (Gender)",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 21,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "pie",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "gender",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 21
+              },
+              "datasets": [
+                {
+                  "abbreviation": "E",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Employees",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 22
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 23,
+                  "name": "gender",
+                  "displayName": "Gender",
+                  "filterType": "default",
+                  "filterId": "gender",
+                  "fields": [
+                    "Male",
+                    "Female",
+                    "Non-binary",
+                    "Prefer not to say"
+                  ],
+                  "fieldTitles": [
+                    "Male",
+                    "Female",
+                    "Non-binary",
+                    "Prefer not to say"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2025-04-16",
+                  "dateTo": "2026-04-16",
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 12,
+              "name": "About: Workforce Diversity (Gender)",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Workforce Diversity (Gender)**<br><br>The pie chart provides a visual breakdown of employees by gender identification, showcasing the organization's commitment to maintaining a balanced gender distribution.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 21,
+                "id": 24
+              }
+            },
+            {
+              "id": 13,
+              "name": "Monthly Hiring Trend",
+              "typeId": 3,
+              "order": 0,
+              "repopulateFields": false,
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 0,
+                "yAxis": 27,
+                "fontFamily": "arial",
+                "fontStyle": "normal",
+                "format": null,
+                "alignment": null,
+                "showTimePeriod": null,
+                "showComparisonRate": null,
+                "decimal": null,
+                "currency": null,
+                "chartType": "line",
+                "chartLegendPosition": "top",
+                "chartLegendSymbol": "square",
+                "chartShowDetails": null,
+                "chartXAxisPosition": "bottom",
+                "chartXAxisMinValueType": "auto",
+                "chartXAxisMinValue": 0,
+                "chartXAxisMaxValueType": "auto",
+                "chartXAxisMaxValue": 0,
+                "chartYAxisMinValueType": "auto",
+                "chartYAxisMinValue": 0,
+                "chartYAxisMaxValueType": "auto",
+                "chartYAxisMaxValue": 0,
+                "chartXAxisInterval": 10,
+                "chartYAxisInterval": 10,
+                "listColumnNumber": null,
+                "listColumnWidth": null,
+                "listColumnAuto": false,
+                "listHideColumn": [
+                  "value"
+                ],
+                "listColumnFont": ",",
+                "listColumnSize": null,
+                "listColumnFontSize": "center",
+                "listColumnStyle": "visible",
+                "listColumnColorType": "{}",
+                "listColumnColor": null,
+                "listBodyColorType": null,
+                "listBodyColor": null,
+                "listBodyFont": null,
+                "listBodySize": null,
+                "listBodyStyle": null,
+                "listFullTable": true,
+                "chartSeries": [
+                  {
+                    "name": "custom_dates",
+                    "colorType": "theme",
+                    "color": "var(--color-happy-day-2)",
+                    "dashType": "solid",
+                    "lineColorType": "theme",
+                    "lineColor": "var(--color-happy-day-2)",
+                    "thickness": 0,
+                    "opacity": 100,
+                    "showLabel": true,
+                    "sort": "none"
+                  }
+                ],
+                "chartYAxisPosition": [
+                  {
+                    "valueId": 0,
+                    "name": "left",
+                    "position": "left"
+                  }
+                ],
+                "columnFormats": [],
+                "fontSize": "md",
+                "showEvents": null,
+                "showDetails": null,
+                "participants": null,
+                "leaderboardRankingRule": null,
+                "startDate": null,
+                "endDate": null,
+                "isLeaderboardBonusTriggersEnabled": null,
+                "timePeriodFilters": [],
+                "id": 25
+              },
+              "datasets": [
+                {
+                  "abbreviation": "E",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Employees",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 26
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 27,
+                  "name": "custom_dates",
+                  "displayName": "Custom Dates",
+                  "filterType": "date",
+                  "filterId": "custom_dates",
+                  "fields": [
+                    "2023-01-01T00:00:00.000Z|2023-01-31T23:59:59.999Z",
+                    "2023-02-01T00:00:00.000Z|2023-02-28T23:59:59.999Z",
+                    "2023-03-01T00:00:00.000Z|2023-03-31T23:59:59.999Z",
+                    "2023-04-01T00:00:00.000Z|2023-04-30T23:59:59.999Z",
+                    "2023-05-01T00:00:00.000Z|2023-05-31T23:59:59.999Z",
+                    "2023-06-01T00:00:00.000Z|2023-06-30T23:59:59.999Z",
+                    "2023-07-01T00:00:00.000Z|2023-07-31T23:59:59.999Z",
+                    "2023-08-01T00:00:00.000Z|2023-08-31T23:59:59.999Z",
+                    "2023-09-01T00:00:00.000Z|2023-09-30T23:59:59.999Z",
+                    "2023-10-01T00:00:00.000Z|2023-10-31T23:59:59.999Z",
+                    "2023-11-01T00:00:00.000Z|2023-11-30T23:59:59.999Z",
+                    "2023-12-01T00:00:00.000Z|2023-12-31T23:59:59.999Z"
+                  ],
+                  "fieldTitles": [
+                    "2023-01-01T00:00:00.000Z|2023-01-31T23:59:59.999Z",
+                    "2023-02-01T00:00:00.000Z|2023-02-28T23:59:59.999Z",
+                    "2023-03-01T00:00:00.000Z|2023-03-31T23:59:59.999Z",
+                    "2023-04-01T00:00:00.000Z|2023-04-30T23:59:59.999Z",
+                    "2023-05-01T00:00:00.000Z|2023-05-31T23:59:59.999Z",
+                    "2023-06-01T00:00:00.000Z|2023-06-30T23:59:59.999Z",
+                    "2023-07-01T00:00:00.000Z|2023-07-31T23:59:59.999Z",
+                    "2023-08-01T00:00:00.000Z|2023-08-31T23:59:59.999Z",
+                    "2023-09-01T00:00:00.000Z|2023-09-30T23:59:59.999Z",
+                    "2023-10-01T00:00:00.000Z|2023-10-31T23:59:59.999Z",
+                    "2023-11-01T00:00:00.000Z|2023-11-30T23:59:59.999Z",
+                    "2023-12-01T00:00:00.000Z|2023-12-31T23:59:59.999Z"
+                  ],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": "2023-01-01",
+                  "dateTo": "2023-12-31",
+                  "dateInterval": "monthly",
+                  "order": 0,
+                  "sortType": null
+                }
+              ]
+            },
+            {
+              "id": 14,
+              "name": "About: Monthly Hiring Trend",
+              "typeId": 2,
+              "order": 0,
+              "description": "**Monthly Hiring Trend**<br><br>The line chart tracks the number of new hires per month over the last year, indicating a steady hiring trend with a focus on technical roles.",
+              "settings": {
+                "width": 6,
+                "height": 6,
+                "xAxis": 6,
+                "yAxis": 27,
+                "id": 28
+              }
+            },
+            {
+              "id": 15,
+              "name": "Recent New Hires",
+              "typeId": 4,
+              "order": 0,
+              "settings": {
+                "width": 6,
+                "height": 3,
+                "xAxis": 0,
+                "yAxis": 33,
+                "alignment": "left",
+                "columnFormats": [],
+                "listBodyColor": "#eff1f3",
+                "listBodyColorType": "theme",
+                "listBodyFont": "arial",
+                "listBodySize": "md",
+                "listBodyStyle": "normal",
+                "listColumnAuto": false,
+                "listColumnColor": "#685d79",
+                "listColumnColorType": "theme",
+                "listColumnFont": "arial",
+                "listColumnFontSize": "md",
+                "listColumnNumber": 4,
+                "listColumnStyle": "normal",
+                "listColumnWidth": 200,
+                "listFullTable": false,
+                "listHideColumn": [],
+                "id": 29
+              },
+              "datasets": [
+                {
+                  "abbreviation": "E",
+                  "color": "var(--color-mono-700)",
+                  "colorType": "theme",
+                  "dataSource": "employees",
+                  "module": "HR Hub",
+                  "name": "Employees",
+                  "operation": "count",
+                  "order": 1,
+                  "filters": {
+                    "items": []
+                  },
+                  "id": 30
+                }
+              ],
+              "formula": [],
+              "parameters": [
+                {
+                  "id": 31,
+                  "name": "employmentName",
+                  "displayName": "Employment Name",
+                  "filterType": "default",
+                  "filterId": "employmentName",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 0,
+                  "sortType": null
+                },
+                {
+                  "id": 32,
+                  "name": "department",
+                  "displayName": "Department",
+                  "filterType": "default",
+                  "filterId": "department",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 1,
+                  "sortType": null
+                },
+                {
+                  "id": 33,
+                  "name": "jobTitle",
+                  "displayName": "Job Title",
+                  "filterType": "default",
+                  "filterId": "jobTitle",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 2,
+                  "sortType": null
+                },
+                {
+                  "id": 34,
+                  "name": "hiredAt",
+                  "displayName": "Hired At",
+                  "filterType": "default",
+                  "filterId": "hiredAt",
+                  "fields": [],
+                  "fieldTitles": [],
+                  "numberMin": null,
+                  "numberMax": null,
+                  "numberInterval": null,
+                  "dateFrom": null,
+                  "dateTo": null,
+                  "dateInterval": null,
+                  "order": 3,
+                  "sortType": null
+                }
+              ]
+            }
+          ],
+          "total_widgets": 15,
+          "generated_at": "1776312945",
+          "widget_breakdown": {
+            "text": 6,
+            "number": 5,
+            "bar": 1,
+            "hbar": 0,
+            "pie": 1,
+            "line": 1,
+            "scatter": 0,
+            "list": 1,
+            "combo": 0,
+            "embed": 0,
+            "total": 15
+          }
+        },
+        "generation_metadata": {
+          "report_length": 601,
+          "widgets_extracted": 9,
+          "widgets_explicit": 6,
+          "data_sources_used": [],
+          "processing_steps": [
+            "Generated dashboard name",
+            "Created empty dashboard",
+            "Extracted widgets from report",
+            "Generated widget payloads",
+            "Positioned widgets on dashboard",
+            "Submitted bulk create request"
+          ]
+        }
+      },
+      "tickets": [
+        {
+          "id": 101,
+          "title": "New hire onboarding \u2014 Week 1 checklist",
+          "type": "Onboarding",
+          "status": "Open",
+          "priority": "High",
+          "requester": "Carlos Mendez",
+          "assignee": "Maria Santos",
+          "created_at": "2026-04-15"
+        },
+        {
+          "id": 102,
+          "title": "Laptop provisioning for Carlos",
+          "type": "IT Setup",
+          "status": "In Progress",
+          "priority": "Medium",
+          "requester": "Ana Reyes",
+          "assignee": "Carlos Mendez",
+          "created_at": "2026-04-12"
+        },
+        {
+          "id": 103,
+          "title": "Annual leave request \u2014 Ana",
+          "type": "Leave Request",
+          "status": "Open",
+          "priority": "Low",
+          "requester": "James Okafor",
+          "assignee": "Ana Reyes",
+          "created_at": "2026-04-09"
+        },
+        {
+          "id": 104,
+          "title": "Access credentials not received",
+          "type": "Equipment Request",
+          "status": "Resolved",
+          "priority": "Medium",
+          "requester": "Sofia Lim",
+          "assignee": "James Okafor",
+          "created_at": "2026-04-06"
+        },
+        {
+          "id": 105,
+          "title": "Benefits enrollment query \u2014 Sofia",
+          "type": "Policy Query",
+          "status": "Open",
+          "priority": "Low",
+          "requester": "David Park",
+          "assignee": "Sofia Lim",
+          "created_at": "2026-04-03"
+        },
+        {
+          "id": 106,
+          "title": "New hire onboarding \u2014 Week 1 checklist",
+          "type": "Onboarding",
+          "status": "In Progress",
+          "priority": "High",
+          "requester": "Priya Nair",
+          "assignee": "David Park",
+          "created_at": "2026-03-31"
+        }
+      ],
+      "queues": [
+        {
+          "id": 1,
+          "name": "Onboarding Queue",
+          "status": "In Progress",
+          "lead": "Maria Santos",
+          "team_size": 2,
+          "start_date": "2026-02-15",
+          "due_date": "2026-05-16",
+          "completion_pct": 68
+        },
+        {
+          "id": 2,
+          "name": "IT Setup Queue",
+          "status": "In Progress",
+          "lead": "Carlos Mendez",
+          "team_size": 3,
+          "start_date": "2026-02-25",
+          "due_date": "2026-05-30",
+          "completion_pct": 42
+        },
+        {
+          "id": 3,
+          "name": "Leave Management Queue",
+          "status": "On Hold",
+          "lead": "Ana Reyes",
+          "team_size": 4,
+          "start_date": "2026-03-07",
+          "due_date": "2026-06-13",
+          "completion_pct": 15
+        },
+        {
+          "id": 4,
+          "name": "Equipment Requests Queue",
+          "status": "Completed",
+          "lead": "James Okafor",
+          "team_size": 2,
+          "start_date": "2026-03-17",
+          "due_date": "2026-06-27",
+          "completion_pct": 100
+        },
+        {
+          "id": 5,
+          "name": "Policy & Compliance Queue",
+          "status": "In Progress",
+          "lead": "Sofia Lim",
+          "team_size": 3,
+          "start_date": "2026-03-27",
+          "due_date": "2026-07-11",
+          "completion_pct": 30
+        }
+      ]
+    }
+  }
+}
