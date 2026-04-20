@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "ticketing",
+  "stores": {
+    "tickets": [
+      {
+        "id": "TC-001",
+        "title": "VPN access \u2014 intermittent disconnects",
+        "subject": "VPN",
+        "employee": "Juan Dela Cruz",
+        "queue": "IT",
+        "status": "open",
+        "priority": "high",
+        "assignee": "John Reyes",
+        "requester": "Juan Dela Cruz",
+        "created_at": "2026-04-12T09:00:00Z"
+      },
+      {
+        "id": "TC-002",
+        "title": "Laptop replacement request",
+        "subject": "Hardware",
+        "employee": "Jose Mendoza",
+        "queue": "IT",
+        "status": "in_progress",
+        "priority": "medium",
+        "assignee": "Diane Garcia",
+        "requester": "Jose Mendoza",
+        "created_at": "2026-04-10T10:00:00Z"
+      },
+      {
+        "id": "TC-003",
+        "title": "Knit integration failing \u2014 token refresh",
+        "subject": "Knit",
+        "employee": "Olive Go",
+        "queue": "Knit",
+        "status": "open",
+        "priority": "urgent",
+        "assignee": "Mica Mendoza",
+        "requester": "Olive Go",
+        "created_at": "2026-04-11T14:15:00Z"
+      },
+      {
+        "id": "TC-004",
+        "title": "Printer offline \u2014 3F",
+        "subject": "Facilities",
+        "employee": "Sam Garcia",
+        "queue": "Facilities",
+        "status": "resolved",
+        "priority": "low",
+        "assignee": "John Reyes",
+        "requester": "Sam Garcia",
+        "created_at": "2026-04-05T11:30:00Z"
+      },
+      {
+        "id": "TC-005",
+        "title": "Password reset \u2014 SSO",
+        "subject": "IT",
+        "employee": "May Ramos",
+        "queue": "IT",
+        "status": "closed",
+        "priority": "low",
+        "assignee": "John Reyes",
+        "requester": "May Ramos",
+        "created_at": "2026-04-02T08:45:00Z"
+      }
+    ],
+    "queues": [
+      {
+        "name": "IT",
+        "ticket_count": 74
+      },
+      {
+        "name": "HR",
+        "ticket_count": 36
+      },
+      {
+        "name": "Knit",
+        "ticket_count": 3
+      },
+      {
+        "name": "Facilities",
+        "ticket_count": 1
+      },
+      {
+        "name": "Payroll",
+        "ticket_count": 16
+      },
+      {
+        "name": "Recruitment",
+        "ticket_count": 7
+      },
+      {
+        "name": "Medical",
+        "ticket_count": 95
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-001",
+        "title": "SLA review \u2014 Q2",
+        "assigned_to": "John Reyes",
+        "due_date": "2026-04-25",
+        "status": "To Do"
+      }
+    ]
+  }
+}

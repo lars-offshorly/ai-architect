@@ -1,0 +1,191 @@
+{
+  "dashboard_name": "Ticketing Dashboard Template",
+  "source": "analytics",
+  "report": "# Ticketing Dashboard\n\n## Overview\nThis dashboard gives Template support leaders a real-time view of queue health, ticket aging, and service performance. It supports IT, HR, facilities, and customer support teams in spotting SLA breaches, reopens, and backlog spikes before they escalate.\n\n## Key Metrics\n- New Tickets: 8\n- Closed Tickets: 75\n- Reopened Tickets: 3\n- On Hold: 16\n- SLA Compliance: 94%\n- Average Resolution Time: 1d 4h\n\n## Insights\n- IT queue carries the largest ticket load; Medical is the highest-priority by aging\n- Reopen rate is stable at ~2%, within the acceptable quality target\n- Resolution time trending slightly up \u2014 driven by urgent SSO and integration tickets",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "New Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "New Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "open"
+            }
+          }
+        ],
+        "expected_value": "8"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Closed Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Closed Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "closed"
+            }
+          }
+        ],
+        "expected_value": "75"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Reopened Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Reopened Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "reopened"
+            }
+          }
+        ],
+        "expected_value": "3"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Average Resolution Time",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Resolution Time",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "average"
+          }
+        ],
+        "expected_value": "1d 4h"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Ticket Status Overview",
+      "description": "Distribution of tickets by current status (Open, In Progress, Reopened, Resolved, Closed).",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "open",
+          "in_progress",
+          "reopened",
+          "resolved",
+          "closed"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Queue Distribution",
+      "description": "Active ticket count per queue. Surfaces workload imbalance across support teams.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "queue"
+        ],
+        "fields": [
+          "IT",
+          "HR",
+          "Knit",
+          "Payroll",
+          "Implementation",
+          "Recruitment",
+          "Facilities",
+          "Medical"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Inflow vs Closure Trend",
+      "description": "Daily new tickets versus closed tickets over the last 12 months \u2014 early signal of queue buildup.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Priority Distribution",
+      "description": "Breakdown of open tickets by priority \u2014 informs staffing and triage.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "priority"
+        ],
+        "fields": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Overall Tickets",
+      "description": "All active tickets with subject, employee, queue, priority, status, and assignee.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "id",
+          "title",
+          "requester",
+          "queue",
+          "priority",
+          "status",
+          "assignee"
+        ]
+      },
+      "column_count": 7,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "My Assigned Tickets",
+      "description": "Tickets currently assigned to the logged-in agent, with due date and status.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "id",
+          "title",
+          "created_at",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

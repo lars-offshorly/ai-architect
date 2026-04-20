@@ -1,12 +1,11 @@
 {
   "schema_version": "1.0",
   "bundle_key": "healthcare",
-  "keywords": ["clinic", "outpatient", "appointments", "primary care", "specialist", "scheduling", "physician", "consultation", "follow-up", "referral", "telehealth", "checkup"],
   "stores": {
     "tickets": [
       {
         "id": "ticket-001",
-        "title": "Appointment scheduling conflict — Dr. Nair",
+        "title": "Appointment scheduling conflict \u2014 Dr. Nair",
         "status": "pending",
         "priority": "medium",
         "category": "Scheduling",
@@ -16,7 +15,7 @@
       },
       {
         "id": "ticket-002",
-        "title": "Patient no-show — 3 consecutive slots",
+        "title": "Patient no-show \u2014 3 consecutive slots",
         "status": "in_progress",
         "priority": "low",
         "category": "Operations",
@@ -26,7 +25,7 @@
       },
       {
         "id": "ticket-003",
-        "title": "Billing dispute — Insurance claim #4821",
+        "title": "Billing dispute \u2014 Insurance claim #4821",
         "status": "resolved",
         "priority": "medium",
         "category": "Billing",
@@ -46,22 +45,53 @@
       }
     ],
     "kpis": [
-      {"id": 1, "key": "daily_appointments", "label": "Daily Appointments", "type": "count", "sample_value": 48, "source_service": "healthcare"},
-      {"id": 2, "key": "no_show_rate", "label": "No-Show Rate", "type": "percentage", "sample_value": 12.3, "source_service": "healthcare"},
-      {"id": 3, "key": "patient_satisfaction", "label": "Patient Satisfaction", "type": "score", "sample_value": 4.1, "source_service": "healthcare"}
+      {
+        "id": 1,
+        "key": "daily_appointments",
+        "label": "Daily Appointments",
+        "type": "count",
+        "sample_value": 48,
+        "source_service": "healthcare"
+      },
+      {
+        "id": 2,
+        "key": "no_show_rate",
+        "label": "No-Show Rate",
+        "type": "percentage",
+        "sample_value": 12.3,
+        "source_service": "healthcare"
+      },
+      {
+        "id": 3,
+        "key": "patient_satisfaction",
+        "label": "Patient Satisfaction",
+        "type": "score",
+        "sample_value": 4.1,
+        "source_service": "healthcare"
+      }
     ],
     "dashboard_widgets": [
       {
         "id": "widget-001",
         "type": "ticket_summary",
         "title": "Appointment Overview",
-        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+        "position": {
+          "row": 0,
+          "col": 0,
+          "width": 2,
+          "height": 1
+        }
       },
       {
         "id": "widget-002",
         "type": "kpi_grid",
         "title": "Clinic Metrics",
-        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+        "position": {
+          "row": 1,
+          "col": 0,
+          "width": 3,
+          "height": 1
+        }
       }
     ]
   }

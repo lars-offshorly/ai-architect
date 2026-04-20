@@ -1,112 +1,204 @@
 {
-    "dashboard_name": "HR Management Dashboard Template",
-    "source": "analytics",
-    "report": "# HR Management Dashboard\n\n## Overview\nThis dashboard provides a comprehensive view of human resource metrics, including workforce distribution, hiring trends, and employee diversity. The data aims to help management optimize staffing and improve organizational health.\n\n## Key Metrics\n- Total Employees: 532\n- Average Salary: $72,500\n- Retention Rate: 92%\n\n## Insights\n- Diversity remains high with a balanced gender distribution.\n- Engineering and Sales are the largest departments, accounting for 60% of the workforce.\n- Hiring has been steady over the past quarter with a focus on technical roles.",
-    "widgets": [
-        {
-            "type": "number",
-            "name": "Total Employees",
-            "calculation": {
-                "datasets": [
-                    {
-                        "name": "Active Employees",
-                        "data_source": "employees",
-                        "module": "HR Hub",
-                        "operation": "count",
-                        "filters": {
-                            "employmentStatus": "Active"
-                        }
-                    }
-                ],
-                "expected_value": "532"
+  "dashboard_name": "HR Management Dashboard Template",
+  "source": "analytics",
+  "report": "# HR Management Dashboard\n\n## Overview\nThis dashboard gives the Template people operations team a daily view of workforce health, attendance, and employee request throughput. It supports HR Business Partners, department heads, and people operations leads in spotting attendance exceptions, approval bottlenecks, and workforce capacity issues.\n\n## Key Metrics\n- Total Employees: 1,082\n- Present Today: 1,023\n- Attendance Rate: 95%\n- Open Employee Requests: 14\n\n## Insights\n- Attendance rate is within the 94\u201396% healthy range; late arrivals are concentrated in Morning shift\n- Open requests are trending down week-over-week, driven by faster HMO application processing\n- Engineering and Operations remain the largest departments and drive most shift distribution volume",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Total Employees",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Employees",
+            "data_source": "employees",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "Active"
             }
-        },
-        {
-            "type": "number",
-            "name": "Average Annual Salary",
-            "calculation": {
-                "datasets": [
-                    {
-                        "name": "Employee Salaries",
-                        "data_source": "salary",
-                        "module": "HR Hub",
-                        "operation": "average"
-                    }
-                ],
-                "expected_value": "$72,500"
+          }
+        ],
+        "expected_value": "1082"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Present Today",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Present Today",
+            "data_source": "attendance_logs",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "Present"
             }
-        },
-        {
-            "type": "bar",
-            "title": "Headcount by Department",
-            "description": "Distribution of active employees across different organizational departments.",
-            "data_config": {
-                "module": "HR Hub",
-                "data_source": "employees",
-                "group_by": [
-                    "department"
-                ],
-                "fields": [
-                    "Engineering",
-                    "Sales",
-                    "Marketing",
-                    "HR",
-                    "Operations"
-                ],
-                "aggregation": "count"
+          }
+        ],
+        "expected_value": "1023"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Attendance Rate",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Attendance Rate",
+            "data_source": "attendance_logs",
+            "module": "HR Hub",
+            "operation": "percentage",
+            "filters": {
+              "status": "Present"
             }
-        },
-        {
-            "type": "pie",
-            "title": "Workforce Diversity (Gender)",
-            "description": "Breakdown of employees by gender identification.",
-            "data_config": {
-                "module": "HR Hub",
-                "data_source": "employees",
-                "group_by": [
-                    "gender"
-                ],
-                "fields": [
-                    "Male",
-                    "Female",
-                    "Non-binary",
-                    "Prefer not to say"
-                ],
-                "aggregation": "count"
+          }
+        ],
+        "expected_value": "95%"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Open Employee Requests",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Requests",
+            "data_source": "requests",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "Pending"
             }
-        },
-        {
-            "type": "line",
-            "title": "Monthly Hiring Trend",
-            "description": "Number of new hires per month over the last year.",
-            "data_config": {
-                "module": "HR Hub",
-                "data_source": "employees",
-                "group_by": [
-                    "custom_dates"
-                ],
-                "date_from": "2023-01-01",
-                "date_to": "2023-12-31",
-                "date_interval": "monthly",
-                "aggregation": "count"
-            }
-        },
-        {
-            "type": "list",
-            "name": "Recent New Hires",
-            "description": "Detailed list of the most recently joined employees.",
-            "data_config": {
-                "module": "HR Hub",
-                "data_source": "employees",
-                "group_by": [
-                    "employmentName",
-                    "department",
-                    "jobTitle",
-                    "hiredAt"
-                ]
-            },
-            "column_count": 4,
-            "column_width": 200
-        }
-    ]
+          }
+        ],
+        "expected_value": "14"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Attendance Overview",
+      "description": "Breakdown of today's attendance by status (Present, Late, Absent, Leave).",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "attendance_logs",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "Present",
+          "Late",
+          "Absent",
+          "Leave"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Workforce Schedule",
+      "description": "Distribution of employees across shift windows (Morning, Mid, Night, Flexible).",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "employees",
+        "group_by": [
+          "shift"
+        ],
+        "fields": [
+          "Morning",
+          "Mid",
+          "Night",
+          "Flexible"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Headcount by Department",
+      "description": "Distribution of active employees across departments.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "employees",
+        "group_by": [
+          "department"
+        ],
+        "fields": [
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Operations",
+          "HR"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Attendance Trend",
+      "description": "Daily attendance rate over the last 12 months. Helps surface seasonal absence patterns.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "attendance_logs",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "percentage"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Overall Tasks",
+      "description": "All HR tasks assigned across the team with owner, due date, and status.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "tasks",
+        "group_by": [
+          "title",
+          "assigned_to",
+          "due_date",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    },
+    {
+      "type": "list",
+      "name": "Attendance Logs",
+      "description": "Recent attendance log entries showing time in, time out, and status.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "attendance_logs",
+        "group_by": [
+          "employee",
+          "date",
+          "time_in",
+          "time_out",
+          "status"
+        ]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Requests",
+      "description": "Pending and recent employee requests that need HR action.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "requests",
+        "group_by": [
+          "request_type",
+          "employee",
+          "status"
+        ]
+      },
+      "column_count": 3,
+      "column_width": 200
+    }
+  ]
 }

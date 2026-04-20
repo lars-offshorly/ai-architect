@@ -1,119 +1,211 @@
 {
-    "dashboard_name": "Project Management Dashboard Template",
-    "source": "analytics",
-    "report": "# Project Management Dashboard\n\n## Overview\nThis dashboard tracks project progress, resource allocation, and task completion rates across the organization. It highlights critical path items and potential bottlenecks in delivery.\n\n## Key Metrics\n- Active Projects: 24\n- Critical Tasks: 12\n- On-time Delivery Rate: 88%\n\n## Insights\n- Most projects are currently on track, but several in the 'Infrastructure' category are seeing delays.\n- Resource utilization is peaked at 95% in the Software Development department.\n- Project velocity has increased by 10% following the adoption of new agile tools.",
-    "widgets": [
-        {
-            "type": "number",
+  "dashboard_name": "Project Management Dashboard Template",
+  "source": "analytics",
+  "report": "# Project Management Dashboard\n\n## Overview\nThis dashboard gives Template delivery leaders a portfolio-level view of project health, task throughput, and execution cadence. It supports PMs, engineering managers, and delivery leads in catching slipping milestones, blocked work, and overloaded owners.\n\n## Key Metrics\n- Active Projects: 8\n- Pending Projects: 3\n- New Tasks: 36\n- In Progress Tasks: 25\n- Resolved Tasks: 162\n- Overdue Tasks: 14\n\n## Insights\n- Two high-priority projects are trending toward milestone slippage in Q2\n- Task priority distribution is skewed toward High and Low \u2014 Normal tasks are underrepresented, suggesting triage inconsistency\n- Throughput is steady week-over-week; cycle time has tightened by 6% this quarter",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Projects",
+      "calculation": {
+        "datasets": [
+          {
             "name": "Active Projects",
-            "calculation": {
-                "datasets": [
-                    {
-                        "name": "Active Projects",
-                        "data_source": "projects",
-                        "module": "Projects",
-                        "operation": "count",
-                        "filters": {
-                            "projectStatus": "Active"
-                        }
-                    }
-                ],
-                "expected_value": "24"
+            "data_source": "projects",
+            "module": "Project Management",
+            "operation": "count",
+            "filters": {
+              "status": "Active"
             }
-        },
-        {
-            "type": "number",
-            "name": "Critical Tasks Pending",
-            "calculation": {
-                "datasets": [
-                    {
-                        "name": "Critical Tasks",
-                        "data_source": "tasks",
-                        "module": "Projects",
-                        "operation": "count",
-                        "filters": {
-                            "priority": "Critical",
-                            "status": "In Progress"
-                        }
-                    }
-                ],
-                "expected_value": "12"
+          }
+        ],
+        "expected_value": "8"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Pending Projects",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Pending Projects",
+            "data_source": "projects",
+            "module": "Project Management",
+            "operation": "count",
+            "filters": {
+              "status": "Pending"
             }
-        },
-        {
-            "type": "hbar",
-            "title": "Project Status Distribution",
-            "description": "Number of projects currently in each status phase.",
-            "data_config": {
-                "module": "Projects",
-                "data_source": "projects",
-                "group_by": [
-                    "projectStatus"
-                ],
-                "fields": [
-                    "Planning",
-                    "Implementation",
-                    "Testing",
-                    "Handoff",
-                    "Completed"
-                ],
-                "aggregation": "count"
+          }
+        ],
+        "expected_value": "3"
+      }
+    },
+    {
+      "type": "number",
+      "name": "New Tasks",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "New Tasks",
+            "data_source": "tasks",
+            "module": "Project Management",
+            "operation": "count",
+            "filters": {
+              "status": "new"
             }
-        },
-        {
-            "type": "pie",
-            "title": "Task Priority Breakdown",
-            "description": "Distribution of all tasks by their assigned priority level.",
-            "data_config": {
-                "module": "Projects",
-                "data_source": "tasks",
-                "group_by": [
-                    "priority"
-                ],
-                "fields": [
-                    "Critical",
-                    "High",
-                    "Medium",
-                    "Low"
-                ],
-                "aggregation": "count"
+          }
+        ],
+        "expected_value": "36"
+      }
+    },
+    {
+      "type": "number",
+      "name": "In Progress",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "In Progress Tasks",
+            "data_source": "tasks",
+            "module": "Project Management",
+            "operation": "count",
+            "filters": {
+              "status": "in_progress"
             }
-        },
-        {
-            "type": "line",
-            "title": "Velocity Trend (Tasks Completed)",
-            "description": "Weekly trend of completed tasks across all projects.",
-            "data_config": {
-                "module": "Projects",
-                "data_source": "tasks",
-                "group_by": [
-                    "custom_dates"
-                ],
-                "date_from": "2024-01-01",
-                "date_to": "2024-03-31",
-                "date_interval": "weekly",
-                "aggregation": "count",
-                "filters": {
-                    "status": "Completed"
-                }
+          }
+        ],
+        "expected_value": "25"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Resolved Tasks",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Resolved Tasks",
+            "data_source": "tasks",
+            "module": "Project Management",
+            "operation": "count",
+            "filters": {
+              "status": "resolved"
             }
-        },
-        {
-            "type": "list",
-            "name": "Project Milestones",
-            "description": "Upcoming key milestones for high-priority projects.",
-            "data_config": {
-                "module": "Projects",
-                "data_source": "projects",
-                "group_by": [
-                    "projectTitle",
-                    "milestoneName",
-                    "dueDate",
-                    "responsibleParty"
-                ]
-            },
-            "column_count": 4,
-            "column_width": 200
-        }
-    ]
+          }
+        ],
+        "expected_value": "162"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Tasks per Status",
+      "description": "Workflow state distribution across active tasks \u2014 surfaces WIP imbalance.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "tasks",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "open",
+          "in_progress",
+          "for_deployment",
+          "for_fe_integration",
+          "new",
+          "on_hold",
+          "reopened",
+          "resolved"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "description": "Priority mix across active tasks. Helps detect triage drift.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "tasks",
+        "group_by": [
+          "priority"
+        ],
+        "fields": [
+          "critical",
+          "high",
+          "normal",
+          "low",
+          "very_low"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Project per Priority",
+      "description": "Portfolio priority distribution across active projects.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": [
+          "priority"
+        ],
+        "fields": [
+          "Critical",
+          "High",
+          "Normal",
+          "Low",
+          "Very Low"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Milestone Trend",
+      "description": "Milestones completed versus planned per month over the last 12 months.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "monthly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Project per Status",
+      "description": "All projects with client, start/end dates, and current status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "projects",
+        "group_by": [
+          "title",
+          "client",
+          "start_date",
+          "end_date",
+          "status"
+        ]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Milestones",
+      "description": "Next milestones by due date with current risk status.",
+      "data_config": {
+        "module": "Project Management",
+        "data_source": "milestones",
+        "group_by": [
+          "title",
+          "project_id",
+          "due_date",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
 }

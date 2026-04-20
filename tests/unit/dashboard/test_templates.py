@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -12,6 +12,7 @@ from agents.preview_generator.dashboard.templates import (
     DashboardTemplateRegistry,
     _BUNDLE_TO_TEMPLATE,
 )
+from catalog.bundle_catalog import BundleVariantDefinition
 
 _SAMPLE_TEMPLATE = {
     "dashboard_name": "Sample Template",
@@ -76,11 +77,19 @@ def test_project_mgmt_returns_template(registry: DashboardTemplateRegistry):
 
 @pytest.mark.parametrize(
     "bundle_key",
-    ["finance", "marketing", "sales", "unknown_bundle"],
+    ["finance", "marketing", "sales"],
 )
-def test_tier3_bundles_return_none(bundle_key: str, registry: DashboardTemplateRegistry):
+def test_legacy_mapped_bundles_return_template(
+    bundle_key: str, registry: DashboardTemplateRegistry
+):
+    """Bundles listed in _BUNDLE_TO_TEMPLATE resolve without a catalog."""
     result = registry.get(bundle_key)
-    assert result is None
+    assert result is not None
+    assert result["dashboard_name"] == f"{bundle_key} Template"
+
+
+def test_unknown_bundle_returns_none(registry: DashboardTemplateRegistry):
+    assert registry.get("unknown_bundle") is None
 
 
 # ---------------------------------------------------------------------------
@@ -114,16 +123,20 @@ def test_mutating_widgets_does_not_affect_cache(registry: DashboardTemplateRegis
 # ---------------------------------------------------------------------------
 
 
-def test_missing_file_logs_warning_and_returns_none(
+def test_empty_templates_dir_returns_none(tmp_path: Path):
+    registry = DashboardTemplateRegistry(templates_dir=tmp_path)
+    assert registry.get("hr_management") is None
+
+
+def test_missing_templates_dir_logs_warning(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ):
     import logging
 
+    missing = tmp_path / "does-not-exist"
     with caplog.at_level(logging.WARNING):
-        registry = DashboardTemplateRegistry(templates_dir=tmp_path)
+        DashboardTemplateRegistry(templates_dir=missing)
 
-    result = registry.get("hr_management")
-    assert result is None
     assert any("not found" in rec.message for rec in caplog.records)
 
 
@@ -153,8 +166,96 @@ def test_supported_bundles_contains_known_keys(registry: DashboardTemplateRegist
     assert "project_mgmt" in supported
 
 
-def test_supported_bundles_does_not_contain_tier3(registry: DashboardTemplateRegistry):
+def test_supported_bundles_contains_legacy_mapped_keys(
+    registry: DashboardTemplateRegistry,
+):
     supported = registry.supported_bundles()
-    assert "finance" not in supported
-    assert "marketing" not in supported
-    assert "sales" not in supported
+    assert "finance" in supported
+    assert "marketing" in supported
+    assert "sales" in supported
+
+
+# ---------------------------------------------------------------------------
+# Catalog-backed variant resolution
+# ---------------------------------------------------------------------------
+
+
+def _variant(key: str, template: str, is_default: bool = False) -> BundleVariantDefinition:
+    return BundleVariantDefinition(
+        key=key,
+        display_name=key,
+        description="",
+        is_default=is_default,
+        dashboard_template=template,
+    )
+
+
+def _make_catalog(bundle_key: str, variants: list) -> MagicMock:
+    catalog = MagicMock()
+    catalog.get_variants.return_value = variants
+    catalog.get_variant.side_effect = lambda bk, vk: next(
+        (v for v in variants if bk == bundle_key and v.key == vk), None
+    )
+    catalog.get_default_variant.return_value = next(
+        (v for v in variants if v.is_default), None
+    )
+    return catalog
+
+
+@pytest.fixture
+def variant_templates_dir(tmp_path: Path) -> Path:
+    """Write templates referenced by legacy map + variant-specific templates."""
+    for filename in set(_BUNDLE_TO_TEMPLATE.values()) | {
+        "hr_management_recruiting",
+        "hr_management_onboarding",
+    }:
+        template = dict(_SAMPLE_TEMPLATE)
+        template["dashboard_name"] = f"{filename} Template"
+        (tmp_path / f"{filename}.json").write_text(json.dumps(template))
+    return tmp_path
+
+
+def test_variant_key_resolves_via_catalog(variant_templates_dir: Path):
+    variants = [
+        _variant("app-01", "hr_management", is_default=True),
+        _variant("app-02", "hr_management_recruiting"),
+        _variant("app-03", "hr_management_onboarding"),
+    ]
+    catalog = _make_catalog("hr_management", variants)
+    registry = DashboardTemplateRegistry(
+        templates_dir=variant_templates_dir, catalog=catalog
+    )
+
+    result = registry.get("hr_management", variant_key="app-02")
+
+    assert result is not None
+    assert result["dashboard_name"] == "hr_management_recruiting Template"
+
+
+def test_missing_variant_key_falls_back_to_default(variant_templates_dir: Path):
+    variants = [
+        _variant("app-01", "hr_management", is_default=True),
+        _variant("app-02", "hr_management_recruiting"),
+    ]
+    catalog = _make_catalog("hr_management", variants)
+    registry = DashboardTemplateRegistry(
+        templates_dir=variant_templates_dir, catalog=catalog
+    )
+
+    # Unknown variant key → default (app-01).
+    result = registry.get("hr_management", variant_key="app-99")
+
+    assert result is not None
+    assert result["dashboard_name"] == "hr_management Template"
+
+
+def test_bundle_without_variants_uses_legacy_map(variant_templates_dir: Path):
+    catalog = _make_catalog("ticketing", [])
+    registry = DashboardTemplateRegistry(
+        templates_dir=variant_templates_dir, catalog=catalog
+    )
+
+    result = registry.get("ticketing", variant_key="app-02")
+
+    assert result is not None
+    assert result["dashboard_name"] == "ticketing Template"

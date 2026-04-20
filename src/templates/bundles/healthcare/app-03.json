@@ -1,12 +1,11 @@
 {
   "schema_version": "1.0",
   "bundle_key": "healthcare",
-  "keywords": ["pharmaceutical", "drug", "clinical trial", "research", "regulatory", "FDA", "compliance", "lab", "formulation", "trial phase", "enrollment", "GMP"],
   "stores": {
     "tickets": [
       {
         "id": "ticket-001",
-        "title": "Protocol deviation — Trial Phase III CardioMax",
+        "title": "Protocol deviation \u2014 Trial Phase III CardioMax",
         "status": "pending",
         "priority": "urgent",
         "category": "Compliance",
@@ -16,7 +15,7 @@
       },
       {
         "id": "ticket-002",
-        "title": "Lab equipment calibration overdue — Lab 3B",
+        "title": "Lab equipment calibration overdue \u2014 Lab 3B",
         "status": "in_progress",
         "priority": "high",
         "category": "Maintenance",
@@ -36,7 +35,7 @@
       },
       {
         "id": "ticket-004",
-        "title": "Clinical data discrepancy — Patient cohort 2",
+        "title": "Clinical data discrepancy \u2014 Patient cohort 2",
         "status": "pending",
         "priority": "high",
         "category": "Data Quality",
@@ -46,22 +45,53 @@
       }
     ],
     "kpis": [
-      {"id": 1, "key": "active_trials", "label": "Active Trials", "type": "count", "sample_value": 7, "source_service": "healthcare"},
-      {"id": 2, "key": "trial_enrollment_rate", "label": "Trial Enrollment Rate", "type": "percentage", "sample_value": 64.2, "source_service": "healthcare"},
-      {"id": 3, "key": "protocol_deviation_rate", "label": "Protocol Deviation Rate", "type": "percentage", "sample_value": 3.8, "source_service": "healthcare"}
+      {
+        "id": 1,
+        "key": "active_trials",
+        "label": "Active Trials",
+        "type": "count",
+        "sample_value": 7,
+        "source_service": "healthcare"
+      },
+      {
+        "id": 2,
+        "key": "trial_enrollment_rate",
+        "label": "Trial Enrollment Rate",
+        "type": "percentage",
+        "sample_value": 64.2,
+        "source_service": "healthcare"
+      },
+      {
+        "id": 3,
+        "key": "protocol_deviation_rate",
+        "label": "Protocol Deviation Rate",
+        "type": "percentage",
+        "sample_value": 3.8,
+        "source_service": "healthcare"
+      }
     ],
     "dashboard_widgets": [
       {
         "id": "widget-001",
         "type": "ticket_summary",
         "title": "Trial Overview",
-        "position": {"row": 0, "col": 0, "width": 2, "height": 1}
+        "position": {
+          "row": 0,
+          "col": 0,
+          "width": 2,
+          "height": 1
+        }
       },
       {
         "id": "widget-002",
         "type": "kpi_grid",
         "title": "Research Metrics",
-        "position": {"row": 1, "col": 0, "width": 3, "height": 1}
+        "position": {
+          "row": 1,
+          "col": 0,
+          "width": 3,
+          "height": 1
+        }
       }
     ]
   }

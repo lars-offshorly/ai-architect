@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "hr_hub",
+  "stores": {
+    "employees": [
+      {
+        "id": "emp-001",
+        "name": "Priya Nair",
+        "department": "Talent Acquisition",
+        "job_title": "Senior Recruiter",
+        "status": "Active",
+        "shift": "Morning",
+        "hired_at": "2022-04-18"
+      },
+      {
+        "id": "emp-002",
+        "name": "David Park",
+        "department": "Talent Acquisition",
+        "job_title": "Technical Recruiter",
+        "status": "Active",
+        "shift": "Mid",
+        "hired_at": "2023-02-05"
+      },
+      {
+        "id": "emp-003",
+        "name": "Sofia Lim",
+        "department": "People Ops",
+        "job_title": "HR Business Partner",
+        "status": "Active",
+        "shift": "Morning",
+        "hired_at": "2021-10-11"
+      }
+    ],
+    "candidates": [
+      {
+        "id": "cand-001",
+        "name": "Alex Tan",
+        "role": "Backend Engineer",
+        "stage": "Interview",
+        "recruiter": "David Park",
+        "applied_at": "2026-03-20"
+      },
+      {
+        "id": "cand-002",
+        "name": "Lucia Chen",
+        "role": "Product Designer",
+        "stage": "Offer",
+        "recruiter": "Priya Nair",
+        "applied_at": "2026-03-12"
+      },
+      {
+        "id": "cand-003",
+        "name": "Marco Silva",
+        "role": "Data Analyst",
+        "stage": "Screening",
+        "recruiter": "David Park",
+        "applied_at": "2026-04-02"
+      }
+    ],
+    "attendance_logs": [
+      {
+        "id": "att-001",
+        "employee": "Priya Nair",
+        "date": "2026-04-12",
+        "time_in": "08:55",
+        "time_out": "18:02",
+        "status": "Present"
+      },
+      {
+        "id": "att-002",
+        "employee": "David Park",
+        "date": "2026-04-12",
+        "time_in": "09:10",
+        "time_out": "18:20",
+        "status": "Late"
+      }
+    ],
+    "requests": [
+      {
+        "id": "req-001",
+        "request_type": "Hiring Requisition",
+        "employee": "Sofia Lim",
+        "status": "Pending",
+        "submitted_at": "2026-04-10"
+      },
+      {
+        "id": "req-002",
+        "request_type": "Leave Request",
+        "employee": "Priya Nair",
+        "status": "Approved",
+        "submitted_at": "2026-04-08"
+      }
+    ],
+    "tickets": [
+      {
+        "id": "ticket-001",
+        "title": "Update job requisition template",
+        "status": "open",
+        "priority": "medium",
+        "category": "policy",
+        "assignee": "Priya Nair",
+        "requester": "Sofia Lim",
+        "created_at": "2026-04-10T09:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "Background check delay \u2014 candidate Alex Tan",
+        "status": "in_progress",
+        "priority": "high",
+        "category": "onboarding",
+        "assignee": "David Park",
+        "requester": "Priya Nair",
+        "created_at": "2026-04-11T10:30:00Z"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-001",
+        "title": "Schedule technical interview \u2014 Alex Tan",
+        "assigned_to": "David Park",
+        "due_date": "2026-04-18",
+        "status": "To Do"
+      },
+      {
+        "id": "task-002",
+        "title": "Prepare offer \u2014 Lucia Chen",
+        "assigned_to": "Priya Nair",
+        "due_date": "2026-04-16",
+        "status": "In Progress"
+      },
+      {
+        "id": "task-003",
+        "title": "Close Q1 hiring report",
+        "assigned_to": "Sofia Lim",
+        "due_date": "2026-04-20",
+        "status": "To Do"
+      }
+    ]
+  }
+}

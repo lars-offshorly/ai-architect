@@ -160,5 +160,6 @@ class TestToExtractedInfo:
             "status_labels",
             "custom_terminology",
             "slots",
+            "bundle_variant_key",
         }
         assert set(ExtractedInfo.model_fields.keys()) == expected_fields

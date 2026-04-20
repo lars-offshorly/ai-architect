@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Validate all bundle template JSON files against required schema keys."""
+"""Validate all bundle template JSON files against required schema keys.
+
+The repository now uses two layout styles:
+- variant bundles: ``app.json`` + ``app-0*.json``
+- legacy bundles: ``preview.json`` + ``app.json`` + ``dummy_data.json``
+
+This validator accepts both, but checks the correct contract for each style.
+"""
 
 from __future__ import annotations
 
@@ -9,9 +16,10 @@ from pathlib import Path
 
 BUNDLES_DIR = Path(__file__).parent.parent / "src" / "templates" / "bundles"
 
-PREVIEW_REQUIRED = {"schema_version", "bundle_key", "stores"}
-APP_REQUIRED = {"schema_version", "bundle_key", "modules", "config"}
-DUMMY_REQUIRED = {"bundle_key", "stores"}
+ACTIVE_APP_REQUIRED = {"schema_version", "bundle_key", "config", "stores_contract"}
+VARIANT_REQUIRED = {"schema_version", "bundle_key", "stores"}
+LEGACY_PREVIEW_REQUIRED = {"schema_version", "bundle_key", "stores"}
+LEGACY_DUMMY_REQUIRED = {"bundle_key", "stores"}
 
 
 def validate_file(path: Path, required_keys: set[str]) -> list[str]:
@@ -30,6 +38,10 @@ def validate_file(path: Path, required_keys: set[str]) -> list[str]:
     return errors
 
 
+def _has_variant_files(bundle_dir: Path) -> bool:
+    return any(bundle_dir.glob("app-0*.json"))
+
+
 def main() -> int:
     all_errors: list[str] = []
     bundle_dirs = [d for d in BUNDLES_DIR.iterdir() if d.is_dir()]
@@ -38,9 +50,18 @@ def main() -> int:
         return 1
 
     for bundle_dir in sorted(bundle_dirs):
-        all_errors += validate_file(bundle_dir / "preview.json", PREVIEW_REQUIRED)
-        all_errors += validate_file(bundle_dir / "app.json", APP_REQUIRED)
-        all_errors += validate_file(bundle_dir / "dummy_data.json", DUMMY_REQUIRED)
+        json_files = list(bundle_dir.glob("*.json"))
+        if not json_files:
+            continue
+        all_errors += validate_file(bundle_dir / "app.json", ACTIVE_APP_REQUIRED)
+        if _has_variant_files(bundle_dir):
+            for variant_file in sorted(bundle_dir.glob("app-0*.json")):
+                all_errors += validate_file(variant_file, VARIANT_REQUIRED)
+        else:
+            all_errors += validate_file(
+                bundle_dir / "preview.json", LEGACY_PREVIEW_REQUIRED
+            )
+            all_errors += validate_file(bundle_dir / "dummy_data.json", LEGACY_DUMMY_REQUIRED)
 
     if all_errors:
         print("Validation FAILED:")

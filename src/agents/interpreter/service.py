@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
+from domain.enums.missing_field_type import MissingFieldType
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
@@ -15,6 +16,7 @@ from .classifier import Classifier
 from .extractor import Extractor
 from .signal_accumulator import SignalAccumulator
 from .summarizer import Summarizer
+from .variant_selector import select as select_variant
 
 logger = get_logger(__name__)
 
@@ -42,6 +44,7 @@ class InterpreterService:
             )
         )
         self._bundle_keys = bundle_keys
+        self._catalog = catalog
 
     @staticmethod
     def _inject_preselected_intent(
@@ -91,15 +94,83 @@ class InterpreterService:
             extracted=extracted,
             preselected_intent=request.preselected_intent,
         )
+
+        self._apply_variant_selection(
+            request.session_id,
+            request.user_message,
+            extracted,
+            suggested,
+        )
+
         session_logger.info(
-            "Interpreter complete: top_bundle=%s",
+            "Interpreter complete: top_bundle=%s variant=%s",
             (
                 suggested.selected_bundle.bundle_key
                 if suggested.selected_bundle is not None
                 else None
             ),
+            (
+                suggested.selected_bundle.variant_key
+                if suggested.selected_bundle is not None
+                else None
+            ),
         )
         return extracted, suggested
+
+    def _apply_variant_selection(
+        self,
+        session_id: str,
+        user_message: str,
+        extracted: ExtractionResult,
+        suggested: ClassificationResult,
+    ) -> None:
+        """Run the deterministic ``VariantSelector`` on the classifier's pick.
+
+        On a confident selection, writes ``variant_key`` /
+        ``variant_confidence`` on ``suggested.selected_bundle`` and mirrors
+        ``variant_key`` onto ``extracted``. When the selector is ambiguous,
+        appends ``MissingFieldType.BUNDLE_VARIANT`` to
+        ``extracted.missing_fields`` so the replier can ask a clarification
+        question.
+        """
+        top = suggested.selected_bundle
+        if top is None:
+            return
+        bundle = self._catalog.get(top.bundle_key)
+        if bundle is None or not bundle.variants:
+            return
+
+        selection = select_variant(
+            bundle=bundle,
+            extracted=extracted,
+            user_message=user_message,
+        )
+
+        if selection.variant_key is not None:
+            top.variant_key = selection.variant_key
+            top.variant_confidence = _normalize_variant_confidence(
+                selection.top_score
+            )
+            extracted.bundle_variant_key = selection.variant_key
+            if MissingFieldType.BUNDLE_VARIANT in extracted.missing_fields:
+                extracted.missing_fields = [
+                    mf
+                    for mf in extracted.missing_fields
+                    if mf != MissingFieldType.BUNDLE_VARIANT
+                ]
+            return
+
+        if MissingFieldType.BUNDLE_VARIANT not in extracted.missing_fields:
+            extracted.missing_fields.append(MissingFieldType.BUNDLE_VARIANT)
+        logger.info(
+            "session=%s bundle=%s: variant ambiguous (reason=%s top=%d gap=%d) "
+            "→ clarification needed",
+            session_id,
+            bundle.bundle_key,
+            selection.reason,
+            selection.top_score,
+            selection.score_gap,
+        )
 
     def top_bundle(self, suggested: ClassificationResult) -> BundleSuggestion | None:
         return suggested.selected_bundle
@@ -114,3 +185,13 @@ class InterpreterService:
             session_id, history, extracted=extracted
         )
         return summary.summary_text
+
+
+def _normalize_variant_confidence(score: int) -> float:
+    """Map an integer variant score to a 0.0–1.0 confidence."""
+    if score <= 0:
+        return 0.0
+    # 9 is roughly the cap of a clean 3-keyword + 1-entity + 1-intent match;
+    # anything beyond that is treated as saturated.
+    saturated = min(score, 9)
+    return round(saturated / 9.0, 3)

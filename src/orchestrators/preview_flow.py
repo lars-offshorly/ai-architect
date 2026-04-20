@@ -57,6 +57,7 @@ class PreviewFlow:
         conversation_history: list[dict],
         extraction_result: ExtractionResult | None = None,
         preselected_intent: str | None = None,
+        variant_key: str | None = None,
     ) -> AppPayload:
         """Execute the preview pipeline, enrich with dashboard widgets.
 
@@ -66,9 +67,23 @@ class PreviewFlow:
             extraction_result:  Dev A's accumulated ExtractionResult. When present,
                                 the pipeline skips its own keyword scan / LLM call.
             preselected_intent: User-chosen intent before conversation started.
+            variant_key:        Bundle variant (``app-01``/``app-02``/``app-03``)
+                                chosen by the interpreter's VariantSelector. When
+                                omitted, ``extraction_result.bundle_variant_key``
+                                is used; when both are absent, the default variant
+                                is used for template + dashboard resolution.
         """
         session_logger = get_session_logger(__name__, session_id)
-        session_logger.info("Running preview flow for bundle=%s", bundle_key)
+        resolved_variant_key = variant_key or (
+            extraction_result.bundle_variant_key
+            if extraction_result is not None
+            else None
+        )
+        session_logger.info(
+            "Running preview flow for bundle=%s variant=%s",
+            bundle_key,
+            resolved_variant_key,
+        )
 
         generation_json, dummy_data_json, user_context = self._preview_gen.generate(
             session_id=session_id,
@@ -88,6 +103,7 @@ class PreviewFlow:
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
+            variant_key=resolved_variant_key,
         )
 
         # --- Dashboard enrichment (best-effort, never blocks preview) ---
@@ -97,6 +113,7 @@ class PreviewFlow:
             dummy_data_json=dummy_data_json,
             user_context=user_context,
             conversation_history=conversation_history,
+            variant_key=resolved_variant_key,
         )
 
         display_name = self._display_names.get(bundle_key, bundle_key)
@@ -129,14 +146,15 @@ class PreviewFlow:
         bundle_key: str,
         dummy_data_json: dict,
         user_context: Any,
+        variant_key: str | None = None,
     ) -> None:
         """Overlay operational stores from a static app-0*.json variant.
 
-        Picks the best-matching variant for *bundle_key* using keyword scoring
-        against ``user_context.primary_use_case``.  Writes directly into
-        ``dummy_data_json["stores"]``, skipping keys owned by the pipeline
-        (``kpis``) and the dashboard enrichment step (``dashboard_widgets``,
-        ``dashboard_generation_output``).
+        Resolves the variant by ``variant_key`` (emitted upstream by the
+        interpreter's ``VariantSelector``) and overlays the variant's
+        ``stores`` dict into ``dummy_data_json["stores"]``. Pipeline-owned
+        keys (``kpis``) and dashboard-owned keys (``dashboard_widgets``,
+        ``dashboard_generation_output``) are skipped.
 
         All failures are swallowed; the preview is returned with pipeline-
         generated data if anything goes wrong.
@@ -144,13 +162,11 @@ class PreviewFlow:
         if self._bundle_template_loader is None:
             return
 
+        resolved_variant_key = variant_key or _extract_variant_key(user_context)
         try:
-            primary_use_case: str | None = (
-                getattr(user_context, "primary_use_case", None)
-                if user_context is not None
-                else None
+            template = self._bundle_template_loader.load(
+                bundle_key, resolved_variant_key
             )
-            template = self._bundle_template_loader.load(bundle_key, primary_use_case)
         except Exception as exc:  # pylint: disable=broad-except
             logger.warning(
                 "session=%s — bundle template load error: %s", session_id, exc
@@ -192,6 +208,7 @@ class PreviewFlow:
         dummy_data_json: dict,
         user_context: Any,
         conversation_history: list[dict] | None = None,
+        variant_key: str | None = None,
     ) -> None:
         """Attempt to populate dashboard_widgets in stores via the external service.
 
@@ -201,7 +218,8 @@ class PreviewFlow:
         if self._dashboard_client is None or self._dashboard_templates is None:
             return
 
-        template = self._dashboard_templates.get(bundle_key)
+        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        template = self._dashboard_templates.get(bundle_key, resolved_variant_key)
         if template is None:
             logger.info(
                 "session=%s — no dashboard template for bundle=%s, skipping enrichment",
@@ -328,3 +346,22 @@ class PreviewFlow:
             )
 
         return widgets
+
+
+def _extract_variant_key(user_context: Any) -> str | None:
+    """Pull ``bundle_variant_key`` off a ``UserContext`` / ExtractedInfo-like object.
+
+    Uses attribute access first (pydantic models, dataclasses), then falls
+    back to ``.slots['bundle_variant_key']`` when present.
+    """
+    if user_context is None:
+        return None
+    value = getattr(user_context, "bundle_variant_key", None)
+    if isinstance(value, str) and value:
+        return value
+    slots = getattr(user_context, "slots", None)
+    if isinstance(slots, dict):
+        slot_value = slots.get("bundle_variant_key")
+        if isinstance(slot_value, str) and slot_value:
+            return slot_value
+    return None

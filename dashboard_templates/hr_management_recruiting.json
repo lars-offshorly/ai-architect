@@ -1,0 +1,209 @@
+{
+  "dashboard_name": "Recruiting Dashboard Template",
+  "source": "analytics",
+  "report": "# Recruiting Dashboard\n\n## Overview\nThis dashboard gives the Template talent acquisition team a daily view of hiring pipeline health, open roles, and time-to-hire performance. It supports recruiters, hiring managers, and TA leads in spotting stalled candidates, bottlenecked stages, and roles at risk of missing their target start date.\n\n## Key Metrics\n- Open Roles: 18\n- Candidates in Pipeline: 142\n- Interviews This Week: 24\n- Offers Extended: 6\n\n## Insights\n- Engineering and Sales drive 70% of open headcount; Engineering has the longest time-to-hire\n- Offer acceptance rate is tracking at 82% \u2014 within the healthy band for competitive roles\n- Screening-stage drop-off is elevated versus last quarter; sourcer calibration review recommended",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Open Roles",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Open Roles",
+            "data_source": "requests",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "request_type": "Requisition",
+              "status": "Open"
+            }
+          }
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Candidates in Pipeline",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Candidates",
+            "data_source": "candidates",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "status": "Active"
+            }
+          }
+        ],
+        "expected_value": "142"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Interviews This Week",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Scheduled Interviews",
+            "data_source": "candidates",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "stage": "Interview"
+            }
+          }
+        ],
+        "expected_value": "24"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Offers Extended",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Offers Extended",
+            "data_source": "candidates",
+            "module": "HR Hub",
+            "operation": "count",
+            "filters": {
+              "stage": "Offer"
+            }
+          }
+        ],
+        "expected_value": "6"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Candidate Stage Distribution",
+      "description": "Breakdown of active candidates across pipeline stages.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "candidates",
+        "group_by": [
+          "stage"
+        ],
+        "fields": [
+          "Applied",
+          "Screen",
+          "Interview",
+          "Offer",
+          "Hired"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Candidate Source",
+      "description": "Where active candidates are coming from.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "candidates",
+        "group_by": [
+          "source"
+        ],
+        "fields": [
+          "Referral",
+          "LinkedIn",
+          "Job Board",
+          "Agency",
+          "Direct"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Open Roles by Department",
+      "description": "Open requisitions per department \u2014 surfaces hiring load imbalance.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "requests",
+        "group_by": [
+          "department"
+        ],
+        "fields": [
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Operations",
+          "HR"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Interview Volume Trend",
+      "description": "Interviews scheduled per week over the last 12 months.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "candidates",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open Requisitions",
+      "description": "All open roles with department, hiring manager, and age.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "requests",
+        "group_by": [
+          "title",
+          "department",
+          "hiring_manager",
+          "opened_at",
+          "status"
+        ]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Candidates in Pipeline",
+      "description": "Active candidates with role, stage, and last activity.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "candidates",
+        "group_by": [
+          "name",
+          "role",
+          "stage",
+          "source",
+          "last_activity"
+        ]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Interviews",
+      "description": "Interviews scheduled in the next 7 days.",
+      "data_config": {
+        "module": "HR Hub",
+        "data_source": "tasks",
+        "group_by": [
+          "title",
+          "assigned_to",
+          "due_date",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

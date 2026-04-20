@@ -35,6 +35,7 @@ class ExtractionResult(BaseModel):
         default_factory=PersonalizationSignals
     )
     missing_fields: list[MissingFieldType] = Field(default_factory=list)
+    bundle_variant_key: str | None = None
 
     def to_extracted_info(self) -> ExtractedInfo:
         cs = self.classification_signals
@@ -47,6 +48,8 @@ class ExtractionResult(BaseModel):
             slots["primary_use_case"] = cs.workflow_hints[0]
         if cs.entities:
             slots["entity_type"] = cs.entities[0]
+        if self.bundle_variant_key:
+            slots["bundle_variant_key"] = self.bundle_variant_key
 
         return ExtractedInfo(
             session_id=self.session_id,
@@ -54,6 +57,7 @@ class ExtractionResult(BaseModel):
             industry_hint=cs.domain_hints[0] if cs.domain_hints else None,
             primary_use_case=cs.workflow_hints[0] if cs.workflow_hints else None,
             entity_type=cs.entities[0] if cs.entities else None,
+            bundle_variant_key=self.bundle_variant_key,
             employee_names=ps.employee_names,
             role_names=ps.role_names,
             department_names=ps.department_names,

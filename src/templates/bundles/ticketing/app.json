@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "ticketing",
+  "config": {
+    "permission_services": ["ticketing", "chat", "dashboard", "notifications"],
+    "landing_pages": [
+      {"service": "ticketing", "path": "/tickets"},
+      {"service": "dashboard", "path": "/dashboard"}
+    ],
+    "ticket_categories": ["IT Support", "HR", "Facilities", "Medical", "Knit", "Recruitment", "Payroll", "Implementation"],
+    "default_statuses": ["open", "in_progress", "on_hold", "resolved", "reopened", "closed"],
+    "default_priorities": ["low", "medium", "high", "urgent"],
+    "queue_names": ["IT", "HR", "Facilities", "Knit", "Medical", "Payroll"],
+    "kpi_definitions": [
+      {"key": "new_tickets", "label": "New Tickets", "unit": "count"},
+      {"key": "closed_tickets", "label": "Closed Tickets", "unit": "count"},
+      {"key": "reopened_tickets", "label": "Reopened Tickets", "unit": "count"},
+      {"key": "avg_resolution_time", "label": "Average Resolution Time", "unit": "duration"},
+      {"key": "sla_compliance", "label": "SLA Compliance", "unit": "percentage"}
+    ]
+  },
+  "stores_contract": {
+    "required": ["tickets", "kpis"],
+    "optional": ["weaves", "dashboard_widgets", "announcements"]
+  },
+  "slots_used": ["team_size", "primary_use_case", "company_name", "industry_hint"]
+}

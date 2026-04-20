@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_mgmt",
+  "bundle_key": "sales",
   "config": {
     "permission_services": ["project_mgmt", "weaves", "chat", "video_call", "kpi", "dashboard"],
     "landing_pages": [
