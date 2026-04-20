@@ -38,9 +38,8 @@ REGISTRY_PATH = (
 
 
 @pytest.fixture(name="svc")
-def fixture_service() -> PreviewGeneratorService:
-    catalog = BundleCatalog(REGISTRY_PATH)
-    return PreviewGeneratorService(catalog)
+def fixture_service(shared_catalog: BundleCatalog) -> PreviewGeneratorService:
+    return PreviewGeneratorService(shared_catalog)
 
 
 # ---------------------------------------------------------------------------

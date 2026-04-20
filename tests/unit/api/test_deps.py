@@ -23,6 +23,7 @@ def test_get_bundle_catalog_runs_both_validators(
         lambda: SimpleNamespace(
             BUNDLE_REGISTRY_PATH="tmp/registry.yaml",
             TEMPLATES_DIR="tmp/templates",
+            SKIP_CATALOG_VALIDATION=False,
         ),
     )
 

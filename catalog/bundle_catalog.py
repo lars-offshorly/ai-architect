@@ -117,7 +117,7 @@ def _parse_metadata(bundle_key: str, raw: dict | None) -> BundleMetadata | None:
     )
 
 
-class BundleCatalog:
+class BundleCatalog:  # pylint: disable=too-many-public-methods
     def __init__(self, catalog_path: Path | None = None) -> None:
         include_legacy_aliases = catalog_path is None
         if catalog_path is None:
@@ -408,9 +408,7 @@ class BundleCatalog:
             return []
         return list(bundle.variants)
 
-    def get_default_variant(
-        self, bundle_key: str
-    ) -> BundleVariantDefinition | None:
+    def get_default_variant(self, bundle_key: str) -> BundleVariantDefinition | None:
         for variant in self.get_variants(bundle_key):
             if variant.is_default:
                 return variant

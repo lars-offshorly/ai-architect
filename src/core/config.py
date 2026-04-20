@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
 
     ENABLE_MOCK_ENDPOINTS: bool = False
+    DISABLE_LLM_CALLS: bool = False
+    DISABLE_DASHBOARD_CALLS: bool = False
+    SKIP_CATALOG_VALIDATION: bool = False
 
     # Dashboard service integration
     DASHBOARD_SERVICE_URL: str = "https://dashboard-generator-ai.idealforliving.com"

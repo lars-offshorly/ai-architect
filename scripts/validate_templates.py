@@ -61,7 +61,9 @@ def main() -> int:
             all_errors += validate_file(
                 bundle_dir / "preview.json", LEGACY_PREVIEW_REQUIRED
             )
-            all_errors += validate_file(bundle_dir / "dummy_data.json", LEGACY_DUMMY_REQUIRED)
+            all_errors += validate_file(
+                bundle_dir / "dummy_data.json", LEGACY_DUMMY_REQUIRED
+            )
 
     if all_errors:
         print("Validation FAILED:")

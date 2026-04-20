@@ -3,7 +3,6 @@ from __future__ import annotations
 from langchain_openai import ChatOpenAI
 
 from catalog.bundle_catalog import BundleCatalog
-from core.config import get_settings
 from core.constants import normalize_variant_confidence
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
@@ -27,25 +26,22 @@ def _build_catalog_context(bundle_keys: list[str]) -> str:
 
 
 class InterpreterService:
-    def __init__(self, bundle_keys: list[str], catalog: BundleCatalog) -> None:
-        settings = get_settings()
-        model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
-            temperature=settings.CLASSIFIER_TEMPERATURE,
-            api_key=settings.OPENAI_API_KEY,
-        )
-        catalog_context = _build_catalog_context(bundle_keys)
-        self._extractor = Extractor(model, catalog)
-        self._classifier = Classifier(model, catalog_context, catalog)
-        self._summarizer = Summarizer(
-            ChatOpenAI(
-                model=settings.OPENAI_MODEL,
-                temperature=settings.CONVERSATIONAL_TEMPERATURE,
-                api_key=settings.OPENAI_API_KEY,
-            )
-        )
+    def __init__(
+        self,
+        bundle_keys: list[str],
+        catalog: BundleCatalog,
+        model: ChatOpenAI | None = None,
+        summarizer_model: ChatOpenAI | None = None,
+    ) -> None:
         self._bundle_keys = bundle_keys
         self._catalog = catalog
+        self._extractor = Extractor(model, catalog) if model else None
+        self._classifier = (
+            Classifier(model, _build_catalog_context(bundle_keys), catalog)
+            if model
+            else None
+        )
+        self._summarizer = Summarizer(summarizer_model) if summarizer_model else None
 
     @staticmethod
     def _inject_preselected_intent(
@@ -63,6 +59,11 @@ class InterpreterService:
         Used when the bundle is already known (preselected path) so the classifier
         round-trip cost and latency can be avoided entirely.
         """
+        if not self._extractor:
+            return request.accumulated_extraction or ExtractionResult(
+                session_id=request.session_id
+            )
+
         current = await self._extractor.extract(
             request.session_id,
             request.user_message,
@@ -78,6 +79,36 @@ class InterpreterService:
     ) -> tuple[ExtractionResult, ClassificationResult]:
         session_logger = get_session_logger(__name__, request.session_id)
         session_logger.info("Running interpreter")
+
+        if not self._extractor or not self._classifier:
+            # Deterministic stub for testing/CI when LLMs are disabled
+            extracted = request.accumulated_extraction or ExtractionResult(
+                session_id=request.session_id
+            )
+            # Default to the first bundle in the catalog if available
+            default_bundle_key = (
+                self._bundle_keys[0] if self._bundle_keys else "generic"
+            )
+            bundle = self._catalog.get(default_bundle_key)
+            selected_bundle = (
+                BundleSuggestion(
+                    bundle_key=default_bundle_key,
+                    display_name=bundle.display_name if bundle else default_bundle_key,
+                    confidence=1.0,
+                    reasoning="Stubbed selection (LLM disabled)",
+                )
+                if bundle
+                else None
+            )
+            suggested = ClassificationResult(
+                session_id=request.session_id,
+                selected_bundle=selected_bundle,
+                ranked_candidates=[selected_bundle] if selected_bundle else [],
+                confidence_status="proceed",
+                top_confidence=1.0,
+                reasoning="Deterministic stub",
+            )
+            return extracted, suggested
 
         current = await self._extractor.extract(
             request.session_id,
@@ -180,6 +211,8 @@ class InterpreterService:
         history: list[ConversationMessage],
         extracted: ExtractionResult | None = None,
     ) -> str:
+        if not self._summarizer:
+            return ""
         summary = await self._summarizer.summarize(
             session_id, history, extracted=extracted
         )

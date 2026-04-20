@@ -19,8 +19,8 @@ from catalog.bundle_catalog import BundleCatalog
 
 
 @pytest.fixture(name="catalog")
-def fixture_catalog() -> BundleCatalog:
-    return BundleCatalog()
+def fixture_catalog(shared_catalog: BundleCatalog) -> BundleCatalog:
+    return shared_catalog
 
 
 def _valid_generation() -> GenerationJSON:
