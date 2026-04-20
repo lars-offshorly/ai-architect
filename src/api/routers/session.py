@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 # pylint: disable=duplicate-code
+import asyncio
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from api.deps import (
     get_bundle_catalog,
+    get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
+    get_dashboard_template_registry,
     get_session_repository,
 )
 from api.schemas.debug import (
@@ -44,6 +47,17 @@ from repositories.session_repository import SessionRepository
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 logger = get_logger(__name__)
+
+
+async def _warm_template_caches() -> None:
+    """Warm BundleTemplateLoader and DashboardTemplateRegistry caches in a thread.
+
+    Called as a FastAPI BackgroundTask after session start so templates are
+    ready before the first preview request arrives.
+    """
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, get_bundle_template_loader)
+    await loop.run_in_executor(None, get_dashboard_template_registry)
 
 
 def _persist_result_bundle_key(session: Session, result: dict[str, object]) -> None:
@@ -134,6 +148,7 @@ def _build_recommendation_info(
 )
 async def start_session(
     body: StartSessionRequest,
+    background_tasks: BackgroundTasks,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[ConversationFlow, Depends(get_conversation_flow)],
@@ -167,6 +182,7 @@ async def start_session(
             )
 
     session_id = str(uuid4())
+    background_tasks.add_task(_warm_template_caches)
     session = Session(session_id=session_id, user_id=body.user_id)
     if preselected_bundle_key is not None:
         session.selected_bundle_key = preselected_bundle_key

@@ -104,6 +104,13 @@ def mock_catalog() -> MagicMock:
 
 
 @pytest.fixture()
+def background_tasks() -> MagicMock:
+    from fastapi import BackgroundTasks
+
+    return BackgroundTasks()
+
+
+@pytest.fixture()
 def flow_override() -> MagicMock:
     mock = AsyncMock()
     mock.process_turn.return_value = {
@@ -150,6 +157,7 @@ class TestStartSessionPersistsExtraction:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         """start_session must persist result['extracted'] on the session."""
         from api.routers.session import start_session
@@ -159,6 +167,7 @@ class TestStartSessionPersistsExtraction:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -183,6 +192,7 @@ class TestStartSessionPersistsExtraction:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -191,6 +201,7 @@ class TestStartSessionPersistsExtraction:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -209,6 +220,7 @@ class TestStartSessionValidatesPreselectedFields:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from fastapi import HTTPException
 
@@ -223,6 +235,7 @@ class TestStartSessionValidatesPreselectedFields:
         with pytest.raises(HTTPException) as exc_info:
             await start_session(
                 body=body,
+                background_tasks=background_tasks,
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
@@ -239,6 +252,7 @@ class TestStartSessionValidatesPreselectedFields:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -250,6 +264,7 @@ class TestStartSessionValidatesPreselectedFields:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -265,6 +280,7 @@ class TestStartSessionValidatesPreselectedFields:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from fastapi import HTTPException
 
@@ -279,6 +295,7 @@ class TestStartSessionValidatesPreselectedFields:
         with pytest.raises(HTTPException) as exc_info:
             await start_session(
                 body=body,
+                background_tasks=background_tasks,
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
@@ -295,6 +312,7 @@ class TestStartSessionValidatesPreselectedFields:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -306,6 +324,7 @@ class TestStartSessionValidatesPreselectedFields:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -321,6 +340,7 @@ class TestStartSessionValidatesPreselectedFields:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from fastapi import HTTPException
 
@@ -335,6 +355,7 @@ class TestStartSessionValidatesPreselectedFields:
         with pytest.raises(HTTPException) as exc_info:
             await start_session(
                 body=body,
+                background_tasks=background_tasks,
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
@@ -418,6 +439,7 @@ class TestStartSessionPersistsLatestClassification:
         session_repo: SessionRepository,
         conv_repo: ConversationRepository,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         async def _process_turn(request):  # type: ignore[no-untyped-def]
             classification = _make_classification(request.session_id)
@@ -440,6 +462,7 @@ class TestStartSessionPersistsLatestClassification:
         body = StartSessionRequest(message="I need HR")
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
@@ -457,6 +480,7 @@ class TestStartSessionPersistsLatestClassification:
         session_repo: SessionRepository,
         conv_repo: ConversationRepository,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         flow = MagicMock()
         flow.process_turn = AsyncMock(
@@ -474,6 +498,7 @@ class TestStartSessionPersistsLatestClassification:
         body = StartSessionRequest(message="I need something")
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
@@ -659,6 +684,7 @@ class TestReplySessionForwardsPreselectedBundleKey:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -670,6 +696,7 @@ class TestReplySessionForwardsPreselectedBundleKey:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -688,6 +715,7 @@ class TestStartSessionCaseInsensitiveIntent:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -699,6 +727,7 @@ class TestStartSessionCaseInsensitiveIntent:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
@@ -714,6 +743,7 @@ class TestStartSessionCaseInsensitiveIntent:
         conv_repo: ConversationRepository,
         mock_flow: MagicMock,
         mock_catalog: MagicMock,
+        background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
         from api.schemas.request import StartSessionRequest
@@ -725,6 +755,7 @@ class TestStartSessionCaseInsensitiveIntent:
 
         response = await start_session(
             body=body,
+            background_tasks=background_tasks,
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
