@@ -1,19 +1,31 @@
+# Environment and Virtual Environment
 .env
 /venv/
-__pycache__/ 
-.windsurf/ 
-.claude/ 
-.agent/
-.ruff_cache/
+
+# Python Cache Directories
+__pycache__/
 .pytest_cache/
 .mypy_cache/
-changes_*.md 
+.ruff_cache/
+
+# IDE and Tool Directories
+.windsurf/
+.claude/
+.agent/
+.codex 
+
+# Coverage and Testing
 test-results/
 .coverage
 coverage.xml
-coverage*.xml 
-AGENTS.md 
-docs/archive/data-flow-architecture.md 
-docs/archive/frontend_data_structure.md 
+coverage*.xml
+
+# Documentation and Changelogs
+changes_*.md
+AGENTS.md
+docs/archive/
+
+# Archived Documentation Files
+docs/archive/data-flow-architecture.md
+docs/archive/frontend_data_structure.md
 docs/archive/reference-exchange.md
-docs/archive/ 
