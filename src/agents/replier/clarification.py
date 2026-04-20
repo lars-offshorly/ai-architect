@@ -69,21 +69,16 @@ def build_bundle_variant_question(
             f"{bundle_key.replace('_', ' ')} workspace?"
         )
     labels = [
-        (v.clarification_label or v.display_name or v.key).strip()
-        for v in variants
+        (v.clarification_label or v.display_name or v.key).strip() for v in variants
     ]
     labels = [label for label in labels if label]
     if len(labels) == 1:
-        return (
-            f"Should I set this up for {labels[0]}?"
-        )
+        return f"Should I set this up for {labels[0]}?"
     if len(labels) == 2:
         joined = f"{labels[0]} or {labels[1]}"
     else:
         joined = ", ".join(labels[:-1]) + f", or {labels[-1]}"
-    return (
-        f"Which best describes how you'll use this workspace: {joined}?"
-    )
+    return f"Which best describes how you'll use this workspace: {joined}?"
 
 
 def _fallback_question(field: MissingFieldType) -> str:

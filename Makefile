@@ -1,4 +1,4 @@
-.PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr ci-preflight ci-preflight-commit ci-preflight-mr ci-security validate-templates generate-template seed help
+.PHONY: install run dev test test-unit test-integration lint format lint-file lint-staged lint-mr check-mr ci-test-unit ci-test-integration ci-coverage-unit ci-preflight ci-preflight-commit ci-preflight-mr ci-preflight-full ci-security validate-templates generate-template seed help
 
 POETRY := poetry
 POETRY_QUIET := env PYTHONWARNINGS="ignore::Warning" $(POETRY)
@@ -7,12 +7,7 @@ TEST_DIR := tests
 LINT_PATHS := $(wildcard src onboarding catalog scripts)
 FLAKE8_FLAGS := --max-line-length=88
 PYLINT_FLAGS := --disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,too-few-public-methods,too-many-arguments,too-many-positional-arguments,too-many-return-statements,duplicate-code,import-outside-toplevel,fixme
-CI_PYTEST_IGNORES := \
-	--ignore=tests/integration/test_api_phase4.py \
-	--ignore=tests/integration/test_full_pipeline_phase5.py \
-	--ignore=tests/integration/test_generator_personaliser.py \
-	--ignore=tests/integration/test_generator_validator.py \
-	--ignore=tests/integration/test_onboarding_flow_hr_hub.py
+PYTEST_ARGS := --durations=20
 
 export PYTHONPATH := $(SRC_DIR):.
 
@@ -48,17 +43,17 @@ dev:
 	PYTHONPATH=$(SRC_DIR) $(POETRY) run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 test:
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors || true
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors $(PYTEST_ARGS) || true
 	@echo "\n========== TEST SUMMARY =========="
 	@echo "Tests completed. Check output above for pass/fail details."
 
 test-unit:
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR)/unit -v --tb=short --continue-on-collection-errors || true
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -m "not integration" -v --tb=short --continue-on-collection-errors $(PYTEST_ARGS) || true
 	@echo "\n========== TEST SUMMARY =========="
 	@echo "Unit tests completed. Check output above for pass/fail details."
 
 test-integration:
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR)/integration -v --tb=short --continue-on-collection-errors || true
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -m "integration" -v --tb=short --continue-on-collection-errors $(PYTEST_ARGS) || true
 	@echo "\n========== TEST SUMMARY =========="
 	@echo "Integration tests completed. Check output above for pass/fail details."
 
@@ -188,18 +183,25 @@ check-mr:
 		echo "$$FILES" | xargs $(POETRY_QUIET) run vulture --min-confidence 90; \
 	fi
 
+ci-test-unit:
+	@mkdir -p test-results
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -m "not integration" -v --tb=short --continue-on-collection-errors \
+		--junitxml=test-results/unit-junit.xml $(PYTEST_ARGS)
+
+ci-test-integration:
+	@mkdir -p test-results
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -m "integration" -v --tb=short --continue-on-collection-errors \
+		--junitxml=test-results/integration-junit.xml $(PYTEST_ARGS)
+
+ci-coverage-unit:
+	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -m "not integration" --cov=src --cov-report=term --cov-report=xml:coverage.xml $(PYTEST_ARGS)
+
 ci-preflight: ci-preflight-commit
 
 ci-preflight-commit:
 	@echo "========== CI PREFLIGHT (COMMIT) =========="
-	@mkdir -p test-results
-	@echo "tests..."
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors \
-		--junitxml=test-results/junit.xml \
-		$(CI_PYTEST_IGNORES)
-	@echo "coverage..."
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) --cov=src --cov-report=term --cov-report=xml:coverage.xml \
-		$(CI_PYTEST_IGNORES)
+	@$(MAKE) ci-test-unit
+	@$(MAKE) ci-coverage-unit
 	@echo "lint..."
 	@$(MAKE) lint
 	@echo "security (non-blocking)..."
@@ -207,16 +209,20 @@ ci-preflight-commit:
 
 ci-preflight-mr:
 	@echo "========== CI PREFLIGHT (MR) =========="
-	@mkdir -p test-results
-	@echo "tests..."
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) -v --tb=short --continue-on-collection-errors \
-		--junitxml=test-results/junit.xml \
-		$(CI_PYTEST_IGNORES)
-	@echo "coverage..."
-	PYTHONPATH=$(SRC_DIR):. $(POETRY) run pytest $(TEST_DIR) --cov=src --cov-report=term --cov-report=xml:coverage.xml \
-		$(CI_PYTEST_IGNORES)
+	@$(MAKE) ci-test-unit
+	@$(MAKE) ci-coverage-unit
 	@echo "lint-mr..."
 	@$(MAKE) lint-mr
+	@echo "security (non-blocking)..."
+	@$(MAKE) ci-security
+
+ci-preflight-full:
+	@echo "========== CI PREFLIGHT (FULL) =========="
+	@$(MAKE) ci-test-unit
+	@$(MAKE) ci-test-integration
+	@$(MAKE) ci-coverage-unit
+	@echo "lint..."
+	@$(MAKE) lint
 	@echo "security (non-blocking)..."
 	@$(MAKE) ci-security
 

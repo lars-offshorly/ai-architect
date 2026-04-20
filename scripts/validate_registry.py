@@ -271,8 +271,9 @@ def validate_no_stray_keywords() -> list[str]:
             continue
         if isinstance(data, dict) and "keywords" in data:
             errors.append(
-                f"Stray 'keywords' field in {path.relative_to(Path(__file__).parent.parent)}; "
-                f"move to variants block in bundle_registry.yaml."
+                "Stray 'keywords' field in "
+                f"{path.relative_to(Path(__file__).parent.parent)}; "
+                "move to variants block in bundle_registry.yaml."
             )
     return errors
 

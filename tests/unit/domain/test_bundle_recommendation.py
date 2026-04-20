@@ -34,8 +34,8 @@ def _classification(status: str) -> ClassificationResult:
     )
 
 
-def test_recommend_ready_from_proceed() -> None:
-    service = BundleRecommendationService(BundleCatalog(REGISTRY_PATH))
+def test_recommend_ready_from_proceed(shared_catalog: BundleCatalog) -> None:
+    service = BundleRecommendationService(shared_catalog)
     result = service.recommend(
         _classification("proceed"),
         ExtractionResult(session_id="s1"),
@@ -44,8 +44,8 @@ def test_recommend_ready_from_proceed() -> None:
     assert result.primary_bundle is not None
 
 
-def test_recommend_suggest_alternatives_keeps_fallbacks() -> None:
-    service = BundleRecommendationService(BundleCatalog(REGISTRY_PATH))
+def test_recommend_suggest_alternatives_keeps_fallbacks(shared_catalog: BundleCatalog) -> None:
+    service = BundleRecommendationService(shared_catalog)
     result = service.recommend(
         _classification("suggest_alternatives"),
         ExtractionResult(session_id="s1"),
@@ -54,8 +54,8 @@ def test_recommend_suggest_alternatives_keeps_fallbacks() -> None:
     assert len(result.fallback_bundles) == 1
 
 
-def test_recommend_preselected_override() -> None:
-    service = BundleRecommendationService(BundleCatalog(REGISTRY_PATH))
+def test_recommend_preselected_override(shared_catalog: BundleCatalog) -> None:
+    service = BundleRecommendationService(shared_catalog)
     result = service.recommend(
         _classification("proceed"),
         ExtractionResult(session_id="s1"),

@@ -74,6 +74,9 @@ select = ["E", "F", "I", "UP", "B", "C4"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 pythonpath = ["src", "."]
+markers = [
+    "integration: mark test as an integration test (slow, exercises full stack)",
+]
 
 [tool.vulture]
 ignore_names = ["cls"]

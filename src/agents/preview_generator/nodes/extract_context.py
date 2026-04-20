@@ -490,7 +490,9 @@ def extract_user_context(  # pylint: disable=too-many-locals
     history = state.conversation_history
     extraction_result = state.extraction_result
     preselected_intent = state.preselected_intent
-    catalog = _get_catalog()
+    catalog = state.catalog
+    if catalog is None:
+        catalog = _get_catalog()
 
     # --- Tier 1: ExtractionResult present — map directly ---
     if extraction_result is not None:

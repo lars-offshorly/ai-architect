@@ -31,13 +31,13 @@ _PRESELECTED_KEY = "hr_management"
 def _make_flow(
     interpreter: InterpreterPort,
     replier: ReplierPort,
+    shared_catalog: BundleCatalog,
 ) -> ConversationFlow:
-    catalog = BundleCatalog(REGISTRY_PATH)
-    required_slots = {b.bundle_key: b.required_slots for b in catalog.list_all()}
+    required_slots = {b.bundle_key: b.required_slots for b in shared_catalog.list_all()}
     return ConversationFlow(
         interpreter_service=interpreter,
         replier_service=replier,
-        bundle_catalog=catalog,
+        bundle_catalog=shared_catalog,
         required_slots_by_bundle=required_slots,
     )
 
@@ -76,11 +76,11 @@ def _make_replier_mock() -> MagicMock:
 
 class TestPreselectedBundleBypassesClassification:
     @pytest.mark.asyncio
-    async def test_top_bundle_not_called_when_preselected(self) -> None:
+    async def test_top_bundle_not_called_when_preselected(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s1",
@@ -94,11 +94,11 @@ class TestPreselectedBundleBypassesClassification:
         interpreter.top_bundle.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_extract_only_called_on_preselected_path(self) -> None:
+    async def test_extract_only_called_on_preselected_path(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s1",
@@ -113,13 +113,13 @@ class TestPreselectedBundleBypassesClassification:
         interpreter.interpret.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_mock_suggestion_has_full_confidence(self) -> None:
+    async def test_mock_suggestion_has_full_confidence(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
         replier.build_clarification = AsyncMock(return_value=(None, None))
         replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s1",
@@ -137,13 +137,13 @@ class TestPreselectedBundleBypassesClassification:
         assert classification.selected_bundle.reasoning == "Pre-selected by user"
 
     @pytest.mark.asyncio
-    async def test_bundle_key_in_result_matches_preselected(self) -> None:
+    async def test_bundle_key_in_result_matches_preselected(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
         replier.build_clarification = AsyncMock(return_value=(None, None))
         replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s1",
@@ -159,11 +159,11 @@ class TestPreselectedBundleBypassesClassification:
 
 class TestPreselectedBundleDoesNotBreakNormalFlow:
     @pytest.mark.asyncio
-    async def test_normal_flow_without_preselection_unchanged(self) -> None:
+    async def test_normal_flow_without_preselection_unchanged(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s2")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s2",
@@ -177,11 +177,11 @@ class TestPreselectedBundleDoesNotBreakNormalFlow:
         interpreter.interpret.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_missing_field_detection_runs_with_preselected_bundle(self) -> None:
+    async def test_missing_field_detection_runs_with_preselected_bundle(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s1",
@@ -202,11 +202,11 @@ _PRESELECTED_INTENT = "manage employees"
 
 class TestPrefilledIntentInjection:
     @pytest.mark.asyncio
-    async def test_interpret_called_with_preselected_intent(self) -> None:
+    async def test_interpret_called_with_preselected_intent(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s3")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s3",
@@ -221,13 +221,13 @@ class TestPrefilledIntentInjection:
         assert request.preselected_intent == _PRESELECTED_INTENT
 
     @pytest.mark.asyncio
-    async def test_extract_only_called_with_intent_and_preselected_bundle(self) -> None:
+    async def test_extract_only_called_with_intent_and_preselected_bundle(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s4")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
         replier.build_clarification = AsyncMock(return_value=(None, None))
         replier.build_bundle_suggestion = AsyncMock(return_value="Suggestion")
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s4",
@@ -247,11 +247,11 @@ class TestPrefilledIntentInjection:
         assert classification.selected_bundle.bundle_key == _PRESELECTED_KEY
 
     @pytest.mark.asyncio
-    async def test_no_intent_forwarded_when_not_provided(self) -> None:
+    async def test_no_intent_forwarded_when_not_provided(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s5")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s5",
@@ -267,14 +267,14 @@ class TestPrefilledIntentInjection:
 
 class TestForcePreviewing:
     @pytest.mark.asyncio
-    async def test_force_preview_returns_ready_for_preview_with_warning(self) -> None:
+    async def test_force_preview_returns_ready_for_preview_with_warning(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s6")
         interpreter = _make_interpreter_mock(extraction)
         interpreter.top_bundle = MagicMock(
             return_value=MagicMock(bundle_key="hr_management")
         )
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s6",
@@ -291,14 +291,14 @@ class TestForcePreviewing:
         assert result.get("preview_type") == "early"
 
     @pytest.mark.asyncio
-    async def test_force_preview_does_not_call_replier(self) -> None:
+    async def test_force_preview_does_not_call_replier(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s7")
         interpreter = _make_interpreter_mock(extraction)
         interpreter.top_bundle = MagicMock(
             return_value=MagicMock(bundle_key="ticketing")
         )
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             session_id="s7",
@@ -313,14 +313,14 @@ class TestForcePreviewing:
         replier.build_bundle_suggestion.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_preview_keyword_in_message_triggers_early_preview(self) -> None:
+    async def test_preview_keyword_in_message_triggers_early_preview(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(session_id="s8")
         interpreter = _make_interpreter_mock(extraction)
         interpreter.top_bundle = MagicMock(
             return_value=MagicMock(bundle_key="ticketing")
         )
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s8",
@@ -337,12 +337,12 @@ class TestForcePreviewing:
 
     @pytest.mark.asyncio
     async def test_force_preview_with_preselected_bundle_returns_preselected_key(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s9")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s9",
@@ -360,12 +360,12 @@ class TestForcePreviewing:
 
     @pytest.mark.asyncio
     async def test_force_preview_falls_back_to_generic_when_no_bundle(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s11")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s11",
@@ -383,7 +383,7 @@ class TestForcePreviewing:
 
     @pytest.mark.asyncio
     async def test_confirmed_path_returns_preview_type_confirmed(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s12")
         interpreter = _make_interpreter_mock(extraction)
@@ -392,7 +392,7 @@ class TestForcePreviewing:
         )
         replier = _make_replier_mock()
         replier.build_clarification = AsyncMock(return_value=(None, None))
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s12",
@@ -408,12 +408,12 @@ class TestForcePreviewing:
 
     @pytest.mark.asyncio
     async def test_no_force_preview_and_no_keyword_continues_normal_flow(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s10")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             session_id="s10",

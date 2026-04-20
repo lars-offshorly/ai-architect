@@ -46,9 +46,7 @@ class ReplierService:
             return None, ""
 
         slots = extracted.to_extracted_info().slots
-        variants = (
-            self._catalog.get_variants(bundle_key) if self._catalog else None
-        )
+        variants = self._catalog.get_variants(bundle_key) if self._catalog else None
         question = await generate_clarification_question(
             self._model,
             target,

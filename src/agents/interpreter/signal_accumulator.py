@@ -50,9 +50,7 @@ class SignalAccumulator:
         # Prefer current's variant_key when present (latest turn wins); keep
         # the previously accumulated value otherwise so early-set selections
         # survive the next extraction turn.
-        merged_variant_key = (
-            current.bundle_variant_key or base.bundle_variant_key
-        )
+        merged_variant_key = current.bundle_variant_key or base.bundle_variant_key
 
         return ExtractionResult(
             session_id=current.session_id,

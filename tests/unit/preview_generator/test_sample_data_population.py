@@ -26,9 +26,9 @@ REGISTRY_PATH = (
 )
 
 
-@pytest.fixture
-def catalog() -> BundleCatalog:
-    return BundleCatalog(REGISTRY_PATH)
+@pytest.fixture(name="catalog")
+def fixture_catalog(shared_catalog: BundleCatalog) -> BundleCatalog:
+    return shared_catalog
 
 
 # ---------------------------------------------------------------------------

@@ -27,16 +27,9 @@ from domain.services.bundle_recommendation import BundleRecommendationService
 
 
 @pytest.fixture(name="catalog")
-def fixture_catalog() -> BundleCatalog:
-    """Load the real bundle catalog for evaluation.
-
-    Uses a hardcoded path to avoid environment coupling issues.
-    Tests should be hermetic and not depend on external env vars.
-    """
-    # Use project-relative path instead of get_settings() to avoid env coupling
-    project_root = Path(__file__).parent.parent.parent
-    registry_path = project_root / "src" / "templates" / "bundle_registry.yaml"
-    return BundleCatalog(catalog_path=registry_path)
+def fixture_catalog(shared_catalog: BundleCatalog) -> BundleCatalog:
+    """Use the session-scoped bundle catalog for evaluation."""
+    return shared_catalog
 
 
 @pytest.fixture(name="fallback_handler")

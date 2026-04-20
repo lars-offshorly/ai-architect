@@ -20,10 +20,9 @@ REGISTRY_PATH = (
 
 
 @pytest.mark.asyncio
-async def test_process_turn_summarizes_prior_history_and_forwards_summary() -> None:
-    catalog = BundleCatalog(REGISTRY_PATH)
+async def test_process_turn_summarizes_prior_history_and_forwards_summary(shared_catalog: BundleCatalog) -> None:
     required_slots = {
-        bundle.bundle_key: bundle.required_slots for bundle in catalog.list_all()
+        bundle.bundle_key: bundle.required_slots for bundle in shared_catalog.list_all()
     }
 
     interpreter = MagicMock()
@@ -53,7 +52,7 @@ async def test_process_turn_summarizes_prior_history_and_forwards_summary() -> N
     flow = ConversationFlow(
         interpreter_service=interpreter,
         replier_service=replier,
-        bundle_catalog=catalog,
+        bundle_catalog=shared_catalog,
         required_slots_by_bundle=required_slots,
     )
     history = [

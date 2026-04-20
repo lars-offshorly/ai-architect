@@ -5,6 +5,8 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from langchain_openai import ChatOpenAI
+
 from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
@@ -35,9 +37,10 @@ def get_bundle_catalog() -> BundleCatalog:
     """
     settings = get_settings()
     catalog = BundleCatalog(Path(settings.BUNDLE_REGISTRY_PATH))
-    templates_dir = Path(settings.TEMPLATES_DIR)
-    catalog.validate(templates_dir=templates_dir)
-    catalog.validate_template_consistency(templates_dir=templates_dir)
+    if not settings.SKIP_CATALOG_VALIDATION:
+        templates_dir = Path(settings.TEMPLATES_DIR)
+        catalog.validate(templates_dir=templates_dir)
+        catalog.validate_template_consistency(templates_dir=templates_dir)
     return catalog
 
 
@@ -63,8 +66,30 @@ def get_conversation_repository() -> ConversationRepository:
 @lru_cache(maxsize=1)
 def get_interpreter_service() -> InterpreterService:
     """Return a cached InterpreterService seeded with all known bundle keys."""
+    settings = get_settings()
     catalog = get_bundle_catalog()
-    return InterpreterService(bundle_keys=catalog.list_keys(), catalog=catalog)
+
+    if settings.DISABLE_LLM_CALLS:
+        model = None
+        summarizer_model = None
+    else:
+        model = ChatOpenAI(
+            model=settings.OPENAI_MODEL,
+            temperature=settings.CLASSIFIER_TEMPERATURE,
+            api_key=settings.OPENAI_API_KEY,
+        )
+        summarizer_model = ChatOpenAI(
+            model=settings.OPENAI_MODEL,
+            temperature=settings.CONVERSATIONAL_TEMPERATURE,
+            api_key=settings.OPENAI_API_KEY,
+        )
+
+    return InterpreterService(
+        bundle_keys=catalog.list_keys(),
+        catalog=catalog,
+        model=model,
+        summarizer_model=summarizer_model,
+    )
 
 
 @lru_cache(maxsize=1)
@@ -115,10 +140,13 @@ def get_knit_auth_service() -> KnitAuthService | None:
 @lru_cache(maxsize=1)
 def get_dashboard_client() -> DashboardClient | None:
     """Return a cached DashboardClient, or None if auth is not configured."""
+    settings = get_settings()
+    if settings.DISABLE_DASHBOARD_CALLS:
+        return None
+
     auth = get_knit_auth_service()
     if auth is None:
         return None
-    settings = get_settings()
     return DashboardClient(
         base_url=settings.DASHBOARD_SERVICE_URL,
         auth_service=auth,

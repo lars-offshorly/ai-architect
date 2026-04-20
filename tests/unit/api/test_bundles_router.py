@@ -15,14 +15,13 @@ REGISTRY_PATH = (
 )
 
 
-def test_get_bundle_metadata_returns_existing_bundle_metadata() -> None:
-    catalog = BundleCatalog(REGISTRY_PATH)
-    service = BundleMetadataService(catalog)
+def test_get_bundle_metadata_returns_existing_bundle_metadata(shared_catalog: BundleCatalog) -> None:
+    service = BundleMetadataService(shared_catalog)
 
     metadata = get_bundle_metadata(
         bundle_key="hr_management",
         metadata_service=service,
-        catalog=catalog,
+        catalog=shared_catalog,
     )
 
     assert isinstance(metadata, BundleMetadata)
@@ -30,15 +29,14 @@ def test_get_bundle_metadata_returns_existing_bundle_metadata() -> None:
     assert metadata.kpis
 
 
-def test_get_bundle_metadata_raises_404_for_unknown_bundle() -> None:
-    catalog = BundleCatalog(REGISTRY_PATH)
-    service = BundleMetadataService(catalog)
+def test_get_bundle_metadata_raises_404_for_unknown_bundle(shared_catalog: BundleCatalog) -> None:
+    service = BundleMetadataService(shared_catalog)
 
     with pytest.raises(HTTPException) as exc:
         get_bundle_metadata(
             bundle_key="unknown_bundle",
             metadata_service=service,
-            catalog=catalog,
+            catalog=shared_catalog,
         )
 
     assert exc.value.status_code == 404

@@ -18,8 +18,8 @@ EXPECTED_BUNDLE_COUNT = 13
 
 
 @pytest.fixture(name="catalog")
-def fixture_catalog() -> BundleCatalog:
-    return BundleCatalog(REGISTRY_PATH)
+def fixture_catalog(shared_catalog: BundleCatalog) -> BundleCatalog:
+    return shared_catalog
 
 
 def test_loads_all_thirteen_bundles(catalog: BundleCatalog) -> None:

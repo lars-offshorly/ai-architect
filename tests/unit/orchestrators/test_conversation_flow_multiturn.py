@@ -39,13 +39,13 @@ REGISTRY_PATH = (
 def _make_flow(
     interpreter: InterpreterPort,
     replier: ReplierPort,
+    shared_catalog: BundleCatalog,
 ) -> ConversationFlow:
-    catalog = BundleCatalog(REGISTRY_PATH)
-    required_slots = {b.bundle_key: b.required_slots for b in catalog.list_all()}
+    required_slots = {b.bundle_key: b.required_slots for b in shared_catalog.list_all()}
     return ConversationFlow(
         interpreter_service=interpreter,
         replier_service=replier,
-        bundle_catalog=catalog,
+        bundle_catalog=shared_catalog,
         required_slots_by_bundle=required_slots,
     )
 
@@ -91,7 +91,7 @@ class TestMultiTurnAccumulatedExtractionPassing:
     """Verify `accumulated_extraction` is carried across turns."""
 
     @pytest.mark.asyncio
-    async def test_turn1_result_contains_extracted(self) -> None:
+    async def test_turn1_result_contains_extracted(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(
             session_id="s1",
             classification_signals=ClassificationSignals(keywords=["hr"]),
@@ -100,7 +100,7 @@ class TestMultiTurnAccumulatedExtractionPassing:
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             ConversationTurnRequest(
@@ -119,7 +119,7 @@ class TestMultiTurnAccumulatedExtractionPassing:
         assert isinstance(extracted, ExtractionResult)
 
     @pytest.mark.asyncio
-    async def test_turn2_receives_accumulated_extraction_from_turn1(self) -> None:
+    async def test_turn2_receives_accumulated_extraction_from_turn1(self, shared_catalog: BundleCatalog) -> None:
         turn1_extraction = ExtractionResult(
             session_id="s1",
             classification_signals=ClassificationSignals(keywords=["hr"]),
@@ -128,7 +128,7 @@ class TestMultiTurnAccumulatedExtractionPassing:
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         turn1_result = await flow.process_turn(
             ConversationTurnRequest(
@@ -189,14 +189,14 @@ class TestMultiTurnAccumulatedExtractionPassing:
 
     @pytest.mark.asyncio
     async def test_turn1_passes_none_accumulated_extraction_to_interpreter(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             ConversationTurnRequest(
@@ -217,14 +217,14 @@ class TestMultiTurnSummarizerReceivesAccumulatedExtraction:
 
     @pytest.mark.asyncio
     async def test_first_turn_summarizer_receives_no_accumulated_extraction(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         extraction = ExtractionResult(session_id="s1")
         interpreter = _make_interpreter_mock(extraction)
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         await flow.process_turn(
             ConversationTurnRequest(
@@ -240,7 +240,7 @@ class TestMultiTurnSummarizerReceivesAccumulatedExtraction:
 
     @pytest.mark.asyncio
     async def test_second_turn_summarizer_receives_prior_accumulated_extraction(
-        self,
+        self, shared_catalog: BundleCatalog
     ) -> None:
         prior_extraction = ExtractionResult(
             session_id="s1",
@@ -251,7 +251,7 @@ class TestMultiTurnSummarizerReceivesAccumulatedExtraction:
         replier = _make_replier_clarify_mock(
             MissingFieldType.ENTITY_TYPE, "What entity do you track?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         history = [
             ConversationMessage(role="user", content="Turn 1"),
@@ -278,7 +278,7 @@ class TestMissingFieldsRecomputedPerTurn:
     """Missing fields are re-evaluated each turn on merged extraction."""
 
     @pytest.mark.asyncio
-    async def test_missing_fields_populated_on_result_extraction(self) -> None:
+    async def test_missing_fields_populated_on_result_extraction(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(
             session_id="s1",
             classification_signals=ClassificationSignals(
@@ -289,7 +289,7 @@ class TestMissingFieldsRecomputedPerTurn:
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             ConversationTurnRequest(
@@ -306,7 +306,7 @@ class TestMissingFieldsRecomputedPerTurn:
         assert isinstance(result_extraction.missing_fields, list)
 
     @pytest.mark.asyncio
-    async def test_no_missing_fields_when_full_extraction_provided(self) -> None:
+    async def test_no_missing_fields_when_full_extraction_provided(self, shared_catalog: BundleCatalog) -> None:
         extraction = ExtractionResult(
             session_id="s1",
             classification_signals=ClassificationSignals(
@@ -338,7 +338,7 @@ class TestMissingFieldsRecomputedPerTurn:
         )
         interpreter.interpret = AsyncMock(return_value=(extraction, classification))
         replier = _make_replier_no_missing_mock()
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         result = await flow.process_turn(
             ConversationTurnRequest(
@@ -360,7 +360,7 @@ class TestSessionStatePersistenceSimulation:
     """Simulate persistence where turn N feeds turn N+1 extraction."""
 
     @pytest.mark.asyncio
-    async def test_three_turn_session_carries_extraction_chain(self) -> None:
+    async def test_three_turn_session_carries_extraction_chain(self, shared_catalog: BundleCatalog) -> None:
         turn1_extraction = ExtractionResult(
             session_id="s1",
             classification_signals=ClassificationSignals(keywords=["hr"]),
@@ -369,7 +369,7 @@ class TestSessionStatePersistenceSimulation:
         replier = _make_replier_clarify_mock(
             MissingFieldType.PRIMARY_USE_CASE, "What do you want to manage?"
         )
-        flow = _make_flow(interpreter, replier)
+        flow = _make_flow(interpreter, replier, shared_catalog)
 
         t1_result = await flow.process_turn(
             ConversationTurnRequest(
