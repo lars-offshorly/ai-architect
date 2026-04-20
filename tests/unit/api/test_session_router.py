@@ -7,7 +7,17 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from fastapi import BackgroundTasks, HTTPException
+from fastapi.testclient import TestClient
 
+from api.app import create_app
+from api.deps import (
+    get_bundle_catalog,
+    get_conversation_flow,
+    get_conversation_repository,
+    get_session_repository,
+)
+from api.schemas.request import ReplyRequest, StartSessionRequest
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
@@ -105,8 +115,6 @@ def mock_catalog() -> MagicMock:
 
 @pytest.fixture()
 def background_tasks() -> MagicMock:
-    from fastapi import BackgroundTasks
-
     return BackgroundTasks()
 
 
@@ -128,14 +136,6 @@ def flow_override() -> MagicMock:
 
 @pytest.fixture()
 def client(flow_override: MagicMock) -> TestClient:
-    from api.app import create_app
-    from api.deps import (
-        get_bundle_catalog,
-        get_conversation_flow,
-        get_conversation_repository,
-        get_session_repository,
-    )
-
     app = create_app()
     app.dependency_overrides[get_conversation_flow] = lambda: flow_override
     catalog_mock = MagicMock()
@@ -143,9 +143,12 @@ def client(flow_override: MagicMock) -> TestClient:
     catalog_mock.get_all_typical_intents.return_value = ["manage employees"]
     catalog_mock.list_all.return_value = []
     app.dependency_overrides[get_bundle_catalog] = lambda: catalog_mock
-    app.dependency_overrides[get_session_repository] = lambda: SessionRepository()
-    app.dependency_overrides[get_conversation_repository] = lambda: ConversationRepository()
-    from fastapi.testclient import TestClient
+    app.dependency_overrides[get_session_repository] = (
+        lambda: SessionRepository()
+    )
+    app.dependency_overrides[get_conversation_repository] = (
+        lambda: ConversationRepository()
+    )
     return TestClient(app)
 
 
@@ -161,7 +164,6 @@ class TestStartSessionPersistsExtraction:
     ) -> None:
         """start_session must persist result['extracted'] on the session."""
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(user_id="u1", message="I need HR management")
 
@@ -195,7 +197,6 @@ class TestStartSessionPersistsExtraction:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(user_id="u1", message="I need HR management")
 
@@ -222,10 +223,7 @@ class TestStartSessionValidatesPreselectedFields:
         mock_catalog: MagicMock,
         background_tasks: MagicMock,
     ) -> None:
-        from fastapi import HTTPException
-
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an app",
@@ -255,7 +253,6 @@ class TestStartSessionValidatesPreselectedFields:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an HR app",
@@ -282,10 +279,7 @@ class TestStartSessionValidatesPreselectedFields:
         mock_catalog: MagicMock,
         background_tasks: MagicMock,
     ) -> None:
-        from fastapi import HTTPException
-
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an app",
@@ -315,7 +309,6 @@ class TestStartSessionValidatesPreselectedFields:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an HR app",
@@ -342,10 +335,7 @@ class TestStartSessionValidatesPreselectedFields:
         mock_catalog: MagicMock,
         background_tasks: MagicMock,
     ) -> None:
-        from fastapi import HTTPException
-
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an app",
@@ -375,7 +365,6 @@ class TestReplySessionPersistsExtraction:
     ) -> None:
         """reply_to_session forwards session.accumulated_extraction to the flow."""
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         prior_extraction = _make_extraction(session_id="s-existing")
         session = Session(
@@ -410,7 +399,6 @@ class TestReplySessionPersistsExtraction:
         mock_flow: MagicMock,
     ) -> None:
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         session = Session(session_id="sess-2")
         session_repo.save(session)
@@ -457,7 +445,6 @@ class TestStartSessionPersistsLatestClassification:
         flow.process_turn = AsyncMock(side_effect=_process_turn)
 
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(message="I need HR")
         response = await start_session(
@@ -493,7 +480,6 @@ class TestStartSessionPersistsLatestClassification:
         )
 
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(message="I need something")
         response = await start_session(
@@ -539,7 +525,6 @@ class TestReplySessionPersistsLatestClassification:
         )
 
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         body = ReplyRequest(message="Tell me more")
         await reply_to_session(
@@ -574,7 +559,6 @@ class TestReplySessionForwardsPreselectedIntent:
         )
 
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         body = ReplyRequest(message="More about HR")
         await reply_to_session(
@@ -602,7 +586,6 @@ class TestReplySessionForwardsPreselectedIntent:
         )
 
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         body = ReplyRequest(message="More info")
         await reply_to_session(
@@ -635,7 +618,6 @@ class TestReplySessionForwardsPreselectedBundleKey:
         )
 
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         body = ReplyRequest(message="More about HR")
         await reply_to_session(
@@ -663,7 +645,6 @@ class TestReplySessionForwardsPreselectedBundleKey:
         )
 
         from api.routers.session import reply_to_session
-        from api.schemas.request import ReplyRequest
 
         body = ReplyRequest(message="More info")
         await reply_to_session(
@@ -687,7 +668,6 @@ class TestReplySessionForwardsPreselectedBundleKey:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an HR app",
@@ -718,7 +698,6 @@ class TestStartSessionCaseInsensitiveIntent:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an HR app",
@@ -746,7 +725,6 @@ class TestStartSessionCaseInsensitiveIntent:
         background_tasks: MagicMock,
     ) -> None:
         from api.routers.session import start_session
-        from api.schemas.request import StartSessionRequest
 
         body = StartSessionRequest(
             message="Build me an HR app",
@@ -774,7 +752,8 @@ class TestStartSessionCaseInsensitiveIntent:
 def test_start_session_schedules_background_template_warm(
     client: TestClient, flow_override: MagicMock
 ) -> None:
-    """POST /sessions must schedule exactly one background task to warm template caches."""
+    """POST /sessions must schedule exactly one background task
+    to warm template caches."""
     import api.routers.session as session_module
 
     with patch.object(session_module, "_warm_template_caches") as mock_warm:
@@ -783,7 +762,8 @@ def test_start_session_schedules_background_template_warm(
             json={"user_id": "u1", "message": "I need an HR dashboard"},
         )
         assert resp.status_code == 201
-        # BackgroundTasks schedules the coroutine function; verify it was added
+        # TestClient runs background tasks inline after the response, so
+        # assert_called_once verifies actual execution, not just scheduling.
         mock_warm.assert_called_once()
 
 
@@ -793,8 +773,12 @@ async def test_warm_template_caches_calls_both_providers() -> None:
     from api.routers.session import _warm_template_caches
 
     with (
-        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
-        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
+        patch(
+            "api.routers.session.get_bundle_template_loader"
+        ) as mock_loader,
+        patch(
+            "api.routers.session.get_dashboard_template_registry"
+        ) as mock_registry,
     ):
         await _warm_template_caches()
         mock_loader.assert_called_once()
@@ -803,13 +787,18 @@ async def test_warm_template_caches_calls_both_providers() -> None:
 
 @pytest.mark.asyncio
 async def test_warm_template_caches_is_idempotent() -> None:
-    """Calling _warm_template_caches twice must not raise and must call providers twice
-    (lru_cache de-duplication is the provider's responsibility, not the warm function)."""
+    """Calling _warm_template_caches twice must not raise and must
+    call providers twice (lru_cache de-duplication is the provider's
+    responsibility, not the warm function)."""
     from api.routers.session import _warm_template_caches
 
     with (
-        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
-        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
+        patch(
+            "api.routers.session.get_bundle_template_loader"
+        ) as mock_loader,
+        patch(
+            "api.routers.session.get_dashboard_template_registry"
+        ) as mock_registry,
     ):
         await _warm_template_caches()
         await _warm_template_caches()

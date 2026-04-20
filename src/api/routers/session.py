@@ -55,7 +55,7 @@ async def _warm_template_caches() -> None:
     Called as a FastAPI BackgroundTask after session start so templates are
     ready before the first preview request arrives.
     """
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, get_bundle_template_loader)
     await loop.run_in_executor(None, get_dashboard_template_registry)
 
@@ -65,6 +65,22 @@ def _persist_result_bundle_key(session: Session, result: dict[str, object]) -> N
     bundle_key = result.get("bundle_key")
     if isinstance(bundle_key, str) and bundle_key:
         session.selected_bundle_key = bundle_key
+
+
+def _apply_turn_result_to_session(session: Session, result: dict[str, object]) -> None:
+    """Merge flow turn result into session state in-place."""
+    if isinstance(result.get("classification"), ClassificationResult):
+        session.latest_classification = result[
+            "classification"
+        ]  # type: ignore[assignment]
+    if isinstance(result.get("recommendation"), RecommendationResult):
+        session.latest_recommendation = result[
+            "recommendation"
+        ]  # type: ignore[assignment]
+    extracted = result.get("extracted")
+    if isinstance(extracted, ExtractionResult):
+        session.accumulated_extraction = extracted
+    _persist_result_bundle_key(session, result)
 
 
 def _build_debug_info(extracted: ExtractionResult | None) -> DebugInfo | None:
@@ -182,7 +198,6 @@ async def start_session(
             )
 
     session_id = str(uuid4())
-    background_tasks.add_task(_warm_template_caches)
     session = Session(session_id=session_id, user_id=body.user_id)
     if preselected_bundle_key is not None:
         session.selected_bundle_key = preselected_bundle_key
@@ -190,6 +205,7 @@ async def start_session(
     if preselected_intent is not None:
         session.preselected_intent = preselected_intent
     session_repo.save(session)
+    background_tasks.add_task(_warm_template_caches)
 
     user_msg = ConversationMessage(role="user", content=body.message)
     conv_repo.append_message(session_id, user_msg)
@@ -203,18 +219,7 @@ async def start_session(
             options=TurnOptions(preselected_intent=preselected_intent),
         )
     )
-    latest_classification = session.latest_classification
-    if isinstance(result.get("classification"), ClassificationResult):
-        latest_classification = result["classification"]  # type: ignore[assignment]
-    latest_recommendation = session.latest_recommendation
-    if isinstance(result.get("recommendation"), RecommendationResult):
-        latest_recommendation = result["recommendation"]  # type: ignore[assignment]
-    extracted = result.get("extracted")
-    if isinstance(extracted, ExtractionResult):
-        session.accumulated_extraction = extracted
-    session.latest_classification = latest_classification
-    session.latest_recommendation = latest_recommendation
-    _persist_result_bundle_key(session, result)
+    _apply_turn_result_to_session(session, result)
     session_repo.save(session)
 
     return SessionStartedResponse(
@@ -227,8 +232,8 @@ async def start_session(
         warning=result.get("warning"),  # type: ignore[arg-type]
         preview_type=result.get("preview_type"),  # type: ignore[arg-type]
         debug=_build_debug_info(result.get("extracted")),  # type: ignore[arg-type]
-        classification=_build_classification_info(latest_classification),
-        recommendation=_build_recommendation_info(latest_recommendation),
+        classification=_build_classification_info(session.latest_classification),
+        recommendation=_build_recommendation_info(session.latest_recommendation),
     )
 
 
