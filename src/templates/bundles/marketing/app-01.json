@@ -1,33 +1,121 @@
 {
   "schema_version": "1.0",
   "bundle_key": "marketing",
-  "keywords": ["digital", "performance", "paid media", "ads", "google ads", "meta", "social", "ppc", "campaign", "leads"],
   "stores": {
     "campaigns": [
-      {"id": "camp-001", "name": "Spring Promo", "status": "In Progress", "channel": "Paid Search", "budget": 120000, "spend": 68000, "leads": 420, "due_date": "2026-03-28"},
-      {"id": "camp-002", "name": "Product Launch", "status": "To Start", "channel": "Social", "budget": 180000, "spend": 0, "leads": 0, "due_date": "2026-03-22"},
-      {"id": "camp-003", "name": "Email Blast", "status": "To Start", "channel": "Email", "budget": 15000, "spend": 0, "leads": 0, "due_date": "2026-04-01"}
+      {
+        "id": "camp-001",
+        "name": "Spring Promo",
+        "status": "In Progress",
+        "channel": "Paid Search",
+        "budget": 120000,
+        "spend": 68000,
+        "leads": 420,
+        "due_date": "2026-03-28"
+      },
+      {
+        "id": "camp-002",
+        "name": "Product Launch",
+        "status": "To Start",
+        "channel": "Social",
+        "budget": 180000,
+        "spend": 0,
+        "leads": 0,
+        "due_date": "2026-03-22"
+      },
+      {
+        "id": "camp-003",
+        "name": "Email Blast",
+        "status": "To Start",
+        "channel": "Email",
+        "budget": 15000,
+        "spend": 0,
+        "leads": 0,
+        "due_date": "2026-04-01"
+      }
     ],
     "tasks": [
-      {"id": "task-001", "title": "Design Banner", "project": "ABC", "assigned_to": "David Park", "due_date": "2026-03-15", "status": "To Do"},
-      {"id": "task-002", "title": "Compose email", "project": "XYZ", "assigned_to": "Priya Nair", "due_date": "2026-03-12", "status": "Open"},
-      {"id": "task-003", "title": "Post copy — social", "project": "QWE", "assigned_to": "Sofia Lim", "due_date": "2026-03-13", "status": "Open"}
+      {
+        "id": "task-001",
+        "title": "Design Banner",
+        "project": "ABC",
+        "assigned_to": "David Park",
+        "due_date": "2026-03-15",
+        "status": "To Do"
+      },
+      {
+        "id": "task-002",
+        "title": "Compose email",
+        "project": "XYZ",
+        "assigned_to": "Priya Nair",
+        "due_date": "2026-03-12",
+        "status": "Open"
+      },
+      {
+        "id": "task-003",
+        "title": "Post copy \u2014 social",
+        "project": "QWE",
+        "assigned_to": "Sofia Lim",
+        "due_date": "2026-03-13",
+        "status": "Open"
+      }
     ],
     "upcoming_deadlines": [
-      {"id": "dl-001", "campaign": "Spring Promo", "due_date": "2026-03-28"},
-      {"id": "dl-002", "campaign": "Product Launch", "due_date": "2026-03-22"},
-      {"id": "dl-003", "campaign": "Email Blast", "due_date": "2026-04-01"}
+      {
+        "id": "dl-001",
+        "campaign": "Spring Promo",
+        "due_date": "2026-03-28"
+      },
+      {
+        "id": "dl-002",
+        "campaign": "Product Launch",
+        "due_date": "2026-03-22"
+      },
+      {
+        "id": "dl-003",
+        "campaign": "Email Blast",
+        "due_date": "2026-04-01"
+      }
     ],
     "team_workload": [
-      {"member": "David Park", "active_tasks": 4},
-      {"member": "Priya Nair", "active_tasks": 3},
-      {"member": "Sofia Lim", "active_tasks": 2}
+      {
+        "member": "David Park",
+        "active_tasks": 4
+      },
+      {
+        "member": "Priya Nair",
+        "active_tasks": 3
+      },
+      {
+        "member": "Sofia Lim",
+        "active_tasks": 2
+      }
     ],
     "projects": [
-      {"id": "proj-001", "title": "Spring Promo Campaign", "client": "Internal", "lead": "David Park", "start_date": "2026-03-01", "end_date": "2026-03-28", "status": "Active", "priority": "High", "phase": "in_progress", "completion_pct": 55}
+      {
+        "id": "proj-001",
+        "title": "Spring Promo Campaign",
+        "client": "Internal",
+        "lead": "David Park",
+        "start_date": "2026-03-01",
+        "end_date": "2026-03-28",
+        "status": "Active",
+        "priority": "High",
+        "phase": "in_progress",
+        "completion_pct": 55
+      }
     ],
     "tickets": [
-      {"id": "ticket-001", "title": "Ad account access issue", "status": "open", "priority": "high", "category": "Access", "assignee": "David Park", "requester": "Priya Nair", "created_at": "2026-04-11T09:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Ad account access issue",
+        "status": "open",
+        "priority": "high",
+        "category": "Access",
+        "assignee": "David Park",
+        "requester": "Priya Nair",
+        "created_at": "2026-04-11T09:00:00Z"
+      }
     ]
   }
 }

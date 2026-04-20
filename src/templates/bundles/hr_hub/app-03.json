@@ -1,36 +1,141 @@
 {
   "schema_version": "1.0",
   "bundle_key": "hr_hub",
-  "keywords": ["onboarding", "offboarding", "new hire", "exit", "probation", "separation", "orientation", "clearance"],
   "stores": {
     "employees": [
-      {"id": "emp-001", "name": "Lucas Silva", "department": "Engineering", "job_title": "Software Engineer", "status": "Onboarding", "shift": "Morning", "hired_at": "2026-04-01"},
-      {"id": "emp-002", "name": "Ana Reyes", "department": "Operations", "job_title": "Operations Analyst", "status": "Active", "shift": "Mid", "hired_at": "2025-11-20"},
-      {"id": "emp-003", "name": "James Okafor", "department": "Engineering", "job_title": "Staff Engineer", "status": "Offboarding", "shift": "Flexible", "hired_at": "2019-07-15"}
+      {
+        "id": "emp-001",
+        "name": "Lucas Silva",
+        "department": "Engineering",
+        "job_title": "Software Engineer",
+        "status": "Onboarding",
+        "shift": "Morning",
+        "hired_at": "2026-04-01"
+      },
+      {
+        "id": "emp-002",
+        "name": "Ana Reyes",
+        "department": "Operations",
+        "job_title": "Operations Analyst",
+        "status": "Active",
+        "shift": "Mid",
+        "hired_at": "2025-11-20"
+      },
+      {
+        "id": "emp-003",
+        "name": "James Okafor",
+        "department": "Engineering",
+        "job_title": "Staff Engineer",
+        "status": "Offboarding",
+        "shift": "Flexible",
+        "hired_at": "2019-07-15"
+      }
     ],
     "onboarding_plans": [
-      {"id": "onb-001", "employee": "Lucas Silva", "start_date": "2026-04-01", "status": "In Progress", "completion_pct": 40, "buddy": "Ana Reyes"},
-      {"id": "onb-002", "employee": "Marco Silva", "start_date": "2026-04-15", "status": "Not Started", "completion_pct": 0, "buddy": "Priya Nair"}
+      {
+        "id": "onb-001",
+        "employee": "Lucas Silva",
+        "start_date": "2026-04-01",
+        "status": "In Progress",
+        "completion_pct": 40,
+        "buddy": "Ana Reyes"
+      },
+      {
+        "id": "onb-002",
+        "employee": "Marco Silva",
+        "start_date": "2026-04-15",
+        "status": "Not Started",
+        "completion_pct": 0,
+        "buddy": "Priya Nair"
+      }
     ],
     "offboarding_cases": [
-      {"id": "off-001", "employee": "James Okafor", "last_day": "2026-04-30", "clearance_status": "In Progress", "exit_interview": "Scheduled"}
+      {
+        "id": "off-001",
+        "employee": "James Okafor",
+        "last_day": "2026-04-30",
+        "clearance_status": "In Progress",
+        "exit_interview": "Scheduled"
+      }
     ],
     "attendance_logs": [
-      {"id": "att-001", "employee": "Lucas Silva", "date": "2026-04-12", "time_in": "09:00", "time_out": "17:55", "status": "Present"},
-      {"id": "att-002", "employee": "Ana Reyes", "date": "2026-04-12", "time_in": "08:45", "time_out": "18:00", "status": "Present"}
+      {
+        "id": "att-001",
+        "employee": "Lucas Silva",
+        "date": "2026-04-12",
+        "time_in": "09:00",
+        "time_out": "17:55",
+        "status": "Present"
+      },
+      {
+        "id": "att-002",
+        "employee": "Ana Reyes",
+        "date": "2026-04-12",
+        "time_in": "08:45",
+        "time_out": "18:00",
+        "status": "Present"
+      }
     ],
     "requests": [
-      {"id": "req-001", "request_type": "Equipment Return", "employee": "James Okafor", "status": "Pending", "submitted_at": "2026-04-10"},
-      {"id": "req-002", "request_type": "Onboarding Access", "employee": "Lucas Silva", "status": "Approved", "submitted_at": "2026-04-01"}
+      {
+        "id": "req-001",
+        "request_type": "Equipment Return",
+        "employee": "James Okafor",
+        "status": "Pending",
+        "submitted_at": "2026-04-10"
+      },
+      {
+        "id": "req-002",
+        "request_type": "Onboarding Access",
+        "employee": "Lucas Silva",
+        "status": "Approved",
+        "submitted_at": "2026-04-01"
+      }
     ],
     "tickets": [
-      {"id": "ticket-001", "title": "Laptop provisioning — new hire", "status": "in_progress", "priority": "high", "category": "onboarding", "assignee": "Ana Reyes", "requester": "Lucas Silva", "created_at": "2026-04-01T09:00:00Z"},
-      {"id": "ticket-002", "title": "Exit clearance — James Okafor", "status": "open", "priority": "medium", "category": "offboarding", "assignee": "Priya Nair", "requester": "James Okafor", "created_at": "2026-04-11T10:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Laptop provisioning \u2014 new hire",
+        "status": "in_progress",
+        "priority": "high",
+        "category": "onboarding",
+        "assignee": "Ana Reyes",
+        "requester": "Lucas Silva",
+        "created_at": "2026-04-01T09:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "Exit clearance \u2014 James Okafor",
+        "status": "open",
+        "priority": "medium",
+        "category": "offboarding",
+        "assignee": "Priya Nair",
+        "requester": "James Okafor",
+        "created_at": "2026-04-11T10:00:00Z"
+      }
     ],
     "tasks": [
-      {"id": "task-001", "title": "Deliver welcome kit", "assigned_to": "Ana Reyes", "due_date": "2026-04-02", "status": "Done"},
-      {"id": "task-002", "title": "Knowledge transfer session", "assigned_to": "James Okafor", "due_date": "2026-04-25", "status": "To Do"},
-      {"id": "task-003", "title": "Final payroll computation", "assigned_to": "Priya Nair", "due_date": "2026-04-28", "status": "To Do"}
+      {
+        "id": "task-001",
+        "title": "Deliver welcome kit",
+        "assigned_to": "Ana Reyes",
+        "due_date": "2026-04-02",
+        "status": "Done"
+      },
+      {
+        "id": "task-002",
+        "title": "Knowledge transfer session",
+        "assigned_to": "James Okafor",
+        "due_date": "2026-04-25",
+        "status": "To Do"
+      },
+      {
+        "id": "task-003",
+        "title": "Final payroll computation",
+        "assigned_to": "Priya Nair",
+        "due_date": "2026-04-28",
+        "status": "To Do"
+      }
     ]
   }
 }

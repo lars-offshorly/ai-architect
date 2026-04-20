@@ -1,18 +1,21 @@
 """Dashboard template registry.
 
 Loads dashboard templates from the ``dashboard_templates/`` directory and
-resolves the correct template for a given bundle key.
+resolves the correct template for a (bundle_key, variant_key) pair.
 
-Templates are loaded once on first access and cached for the process lifetime.
-Adding support for a new bundle requires dropping a new ``.json`` file into
-``dashboard_templates/`` and adding a mapping entry to ``_BUNDLE_TO_TEMPLATE``
-(primary/fallback) and, optionally, additional filenames to
-``_BUNDLE_VARIANTS`` (flavour variants selected by keyword scoring).
+Resolution
+----------
+1. If ``variant_key`` is given and the bundle's registry entry has a
+   ``BundleVariantDefinition`` with a matching ``key``, the variant's
+   ``dashboard_template`` filename is used.
+2. Otherwise, the bundle's default variant (``is_default: true``) is used.
+3. If the bundle has no variants, ``_BUNDLE_TO_TEMPLATE`` is consulted as a
+   legacy fallback — this keeps single-template industry bundles working
+   until they are migrated to variants.
 
-Variant selection mirrors ``BundleTemplateLoader``: when a ``primary_use_case``
-string is provided, each candidate's top-level ``keywords`` list is scored
-(case-insensitive substring match) and the best-scoring file wins.  Ties and
-zero-score cases fall back to the primary filename.
+Templates are loaded once at construction time and cached for the process
+lifetime. Deep copies are returned so callers (the personalizer) can mutate
+them without affecting the cached originals.
 """
 
 from __future__ import annotations
@@ -21,15 +24,18 @@ import copy
 import json
 from pathlib import Path
 
+from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Map from catalog/registry bundle key → primary template filename (without .json).
-# Bundles not listed here receive None from get() and skip the dashboard call.
+# Legacy fallback mapping for bundles that do not yet declare ``variants`` in
+# the registry YAML. Keep this in sync with registry aliases; multi-variant
+# bundles should drive selection through ``BundleCatalog.get_variant`` / the
+# variant's ``dashboard_template`` field and do NOT need an entry here.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "hr_management": "hr_management",
-    "hr_hub": "hr_management",  # render key alias
+    "hr_hub": "hr_management",
     "project_mgmt": "project_management",
     "ticketing": "ticketing",
     "finance": "finance",
@@ -43,34 +49,26 @@ _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "generic": "generic_small_business",
 }
 
-# Additional flavour variants per bundle.  Scored against ``primary_use_case``
-# (see ``DashboardTemplateRegistry.get``).  The primary filename from
-# ``_BUNDLE_TO_TEMPLATE`` is always a candidate and also acts as fallback.
-_BUNDLE_VARIANTS: dict[str, list[str]] = {
-    "hr_management": ["hr_management_recruiting", "hr_management_onboarding"],
-    "hr_hub": ["hr_management_recruiting", "hr_management_onboarding"],
-    "project_mgmt": [
-        "project_management_client_delivery",
-        "project_management_creative",
-    ],
-    "ticketing": ["ticketing_customer_support", "ticketing_facilities"],
-    "finance": ["finance_enterprise", "finance_real_estate"],
-    "marketing": ["marketing_content", "marketing_events"],
-    "sales": ["sales_brokerage", "sales_wholesale"],
-}
-
 _DEFAULT_TEMPLATES_DIR = Path(__file__).parents[4] / "dashboard_templates"
 
 
 class DashboardTemplateRegistry:
-    """Resolves and returns deep-copied dashboard template dicts by bundle key.
+    """Resolves and returns deep-copied dashboard template dicts.
 
-    Deep copies are returned so callers (the personalizer) can safely mutate
-    them without affecting the cached originals.
+    The registry preloads every ``.json`` file under
+    ``dashboard_templates/``. Selection is driven by
+    ``BundleCatalog.get_variant(bundle_key, variant_key)`` when a catalog is
+    provided, and falls back to ``_BUNDLE_TO_TEMPLATE`` for bundles that
+    declare no variants.
     """
 
-    def __init__(self, templates_dir: Path = _DEFAULT_TEMPLATES_DIR) -> None:
+    def __init__(
+        self,
+        templates_dir: Path = _DEFAULT_TEMPLATES_DIR,
+        catalog: BundleCatalog | None = None,
+    ) -> None:
         self._dir = templates_dir
+        self._catalog = catalog
         self._cache: dict[str, dict] = {}
         self._load_all()
 
@@ -81,89 +79,70 @@ class DashboardTemplateRegistry:
     def get(
         self,
         bundle_key: str,
-        primary_use_case: str | None = None,
+        variant_key: str | None = None,
     ) -> dict | None:
-        """Return a deep copy of the best template for ``bundle_key``, or None.
+        """Return a deep copy of the template for ``(bundle_key, variant_key)``.
 
-        When ``primary_use_case`` is supplied and the bundle has flavour
-        variants registered in ``_BUNDLE_VARIANTS``, the variant whose
-        ``keywords`` field best matches the string wins.  Falls back to the
-        primary filename on ties, zero-score matches, or when no variants are
-        registered.
+        Falls back to the bundle's default variant when ``variant_key`` is
+        omitted or does not match. Returns ``None`` when the bundle has no
+        variants and no legacy ``_BUNDLE_TO_TEMPLATE`` entry.
         """
-        primary = _BUNDLE_TO_TEMPLATE.get(bundle_key)
-        if primary is None:
+        filename = self._resolve_filename(bundle_key, variant_key)
+        if filename is None:
             return None
-
-        variants = _BUNDLE_VARIANTS.get(bundle_key, [])
-        if not variants or not primary_use_case:
-            template = self._cache.get(primary)
-            return copy.deepcopy(template) if template is not None else None
-
-        # Candidates: primary first (tiebreaker and fallback), then variants.
-        candidates: list[str] = [primary, *variants]
-        scored = [
-            (self._score(self._cache.get(name, {}).get("keywords", []), primary_use_case), i, name)
-            for i, name in enumerate(candidates)
-            if name in self._cache
-        ]
-        if not scored:
+        template = self._cache.get(filename)
+        if template is None:
             return None
-
-        scored.sort(key=lambda x: (-x[0], x[1]))
-        best_score, _, chosen = scored[0]
-
-        # Zero score → fall back to primary so we never pick a flavour by accident.
-        if best_score == 0:
-            chosen = primary
-
         logger.info(
-            "dashboard_template_registry: bundle=%s primary_use_case=%r → %s (score=%d)",
+            "dashboard_template_registry: bundle=%s variant=%s → %s",
             bundle_key,
-            primary_use_case,
-            chosen,
-            best_score,
+            variant_key,
+            filename,
         )
-        template = self._cache.get(chosen)
-        return copy.deepcopy(template) if template is not None else None
-
-    @staticmethod
-    def _score(keywords: list, use_case: str) -> int:
-        """Count how many keywords appear (case-insensitive) in *use_case*."""
-        use_case_lower = use_case.lower()
-        return sum(
-            1
-            for kw in keywords
-            if isinstance(kw, str) and kw.lower() in use_case_lower
-        )
+        return copy.deepcopy(template)
 
     def supported_bundles(self) -> list[str]:
-        """Return the bundle keys that have a registered template."""
-        return list(_BUNDLE_TO_TEMPLATE.keys())
+        """Return bundle keys that can resolve a template."""
+        if self._catalog is None:
+            return list(_BUNDLE_TO_TEMPLATE.keys())
+        keys = set(_BUNDLE_TO_TEMPLATE.keys())
+        for bundle in self._catalog.list_all():
+            if bundle.variants:
+                keys.add(bundle.bundle_key)
+        return sorted(keys)
 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
 
+    def _resolve_filename(self, bundle_key: str, variant_key: str | None) -> str | None:
+        if self._catalog is not None:
+            variants = self._catalog.get_variants(bundle_key)
+            if variants:
+                resolved = None
+                if variant_key is not None:
+                    resolved = self._catalog.get_variant(bundle_key, variant_key)
+                if resolved is None:
+                    resolved = self._catalog.get_default_variant(bundle_key)
+                if resolved is not None and resolved.dashboard_template:
+                    return resolved.dashboard_template
+        return _BUNDLE_TO_TEMPLATE.get(bundle_key)
+
     def _load_all(self) -> None:
-        """Load every template referenced by the registry mappings at init."""
-        filenames: set[str] = set(_BUNDLE_TO_TEMPLATE.values())
-        for variant_list in _BUNDLE_VARIANTS.values():
-            filenames.update(variant_list)
-        for filename in filenames:
-            path = self._dir / f"{filename}.json"
-            if not path.exists():
-                logger.warning(
-                    "Dashboard template not found: %s — "
-                    "bundle(s) using it will skip dashboard enrichment",
-                    path,
-                )
-                continue
+        """Load every ``.json`` template found in the templates directory."""
+        if not self._dir.is_dir():
+            logger.warning(
+                "DashboardTemplateRegistry: templates_dir not found: %s",
+                self._dir,
+            )
+            return
+        for path in sorted(self._dir.glob("*.json")):
             try:
                 with path.open(encoding="utf-8") as f:
-                    self._cache[filename] = json.load(f)
-                logger.info("Loaded dashboard template: %s", path.name)
+                    self._cache[path.stem] = json.load(f)
             except (json.JSONDecodeError, OSError) as exc:
                 logger.warning(
                     "Failed to load dashboard template %s: %s", path.name, exc
                 )
+                continue
+            logger.info("Loaded dashboard template: %s", path.name)

@@ -1,15 +1,19 @@
 {
   "dashboard_name": "Real Estate Finance Dashboard Template",
   "source": "analytics",
-  "keywords": ["real estate", "property", "investment", "rental", "noi", "cap rate", "yield", "property investment", "landlord", "lease"],
-  "report": "# Real Estate Finance Dashboard\n\n## Overview\nThis dashboard gives Template real-estate investors and property finance leaders a portfolio view of property income, operating costs, and yield. It supports asset managers, property controllers, and investment leads in catching yield drift, rising operating costs, and under-performing assets.\n\n## Key Metrics\n- Total Monthly Revenue: P 7.8M\n- Operating Expenses: P 2.4M\n- NOI: P 5.4M\n- Portfolio Cap Rate: 7.3%\n- Occupancy: 94%\n- Outstanding Receivables: P 1.1M\n\n## Insights\n- Portfolio cap rate holds at 7.3%; one asset dragging below 6% is a divestiture candidate\n- Maintenance spend has trended up 9% QoQ — vendor review recommended\n- Receivables concentration across three tenants; two are >30 days overdue",
+  "report": "# Real Estate Finance Dashboard\n\n## Overview\nThis dashboard gives Template real-estate investors and property finance leaders a portfolio view of property income, operating costs, and yield. It supports asset managers, property controllers, and investment leads in catching yield drift, rising operating costs, and under-performing assets.\n\n## Key Metrics\n- Total Monthly Revenue: P 7.8M\n- Operating Expenses: P 2.4M\n- NOI: P 5.4M\n- Portfolio Cap Rate: 7.3%\n- Occupancy: 94%\n- Outstanding Receivables: P 1.1M\n\n## Insights\n- Portfolio cap rate holds at 7.3%; one asset dragging below 6% is a divestiture candidate\n- Maintenance spend has trended up 9% QoQ \u2014 vendor review recommended\n- Receivables concentration across three tenants; two are >30 days overdue",
   "widgets": [
     {
       "type": "number",
       "name": "Total Monthly Revenue",
       "calculation": {
         "datasets": [
-          {"name": "Monthly Revenue", "data_source": "properties", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Monthly Revenue",
+            "data_source": "properties",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 7,800,000"
       }
@@ -19,7 +23,12 @@
       "name": "Operating Expenses",
       "calculation": {
         "datasets": [
-          {"name": "Operating Expenses", "data_source": "expenses", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Operating Expenses",
+            "data_source": "expenses",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 2,400,000"
       }
@@ -29,7 +38,12 @@
       "name": "Net Operating Income",
       "calculation": {
         "datasets": [
-          {"name": "NOI", "data_source": "properties", "module": "Finance", "operation": "sum"}
+          {
+            "name": "NOI",
+            "data_source": "properties",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 5,400,000"
       }
@@ -39,7 +53,12 @@
       "name": "Portfolio Cap Rate",
       "calculation": {
         "datasets": [
-          {"name": "Cap Rate", "data_source": "properties", "module": "Finance", "operation": "average"}
+          {
+            "name": "Cap Rate",
+            "data_source": "properties",
+            "module": "Finance",
+            "operation": "average"
+          }
         ],
         "expected_value": "7.3%"
       }
@@ -49,7 +68,12 @@
       "name": "Outstanding Receivables",
       "calculation": {
         "datasets": [
-          {"name": "Outstanding Receivables", "data_source": "receivables", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Outstanding Receivables",
+            "data_source": "receivables",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 1,100,000"
       }
@@ -61,8 +85,16 @@
       "data_config": {
         "module": "Finance",
         "data_source": "properties",
-        "group_by": ["name"],
-        "fields": ["Makati Tower A", "BGC Plaza", "Ortigas One", "Cebu Hub", "Others"],
+        "group_by": [
+          "name"
+        ],
+        "fields": [
+          "Makati Tower A",
+          "BGC Plaza",
+          "Ortigas One",
+          "Cebu Hub",
+          "Others"
+        ],
         "aggregation": "sum"
       }
     },
@@ -73,7 +105,9 @@
       "data_config": {
         "module": "Finance",
         "data_source": "properties",
-        "group_by": ["custom_dates"],
+        "group_by": [
+          "custom_dates"
+        ],
         "date_from": null,
         "date_to": null,
         "date_interval": "monthly",
@@ -87,8 +121,17 @@
       "data_config": {
         "module": "Finance",
         "data_source": "expenses",
-        "group_by": ["category"],
-        "fields": ["Maintenance", "Utilities", "Property Tax", "Insurance", "Management Fees", "Other"],
+        "group_by": [
+          "category"
+        ],
+        "fields": [
+          "Maintenance",
+          "Utilities",
+          "Property Tax",
+          "Insurance",
+          "Management Fees",
+          "Other"
+        ],
         "aggregation": "sum"
       }
     },
@@ -99,7 +142,14 @@
       "data_config": {
         "module": "Finance",
         "data_source": "properties",
-        "group_by": ["name", "units", "occupied", "monthly_revenue", "noi", "cap_rate"]
+        "group_by": [
+          "name",
+          "units",
+          "occupied",
+          "monthly_revenue",
+          "noi",
+          "cap_rate"
+        ]
       },
       "column_count": 6,
       "column_width": 150
@@ -111,7 +161,11 @@
       "data_config": {
         "module": "Finance",
         "data_source": "receivables",
-        "group_by": ["client", "outstanding", "due_date"]
+        "group_by": [
+          "client",
+          "outstanding",
+          "due_date"
+        ]
       },
       "column_count": 3,
       "column_width": 200
@@ -123,7 +177,14 @@
       "data_config": {
         "module": "Finance",
         "data_source": "invoices",
-        "group_by": ["id", "client", "amount", "issue_date", "due_date", "status"]
+        "group_by": [
+          "id",
+          "client",
+          "amount",
+          "issue_date",
+          "due_date",
+          "status"
+        ]
       },
       "column_count": 6,
       "column_width": 150

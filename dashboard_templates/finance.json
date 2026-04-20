@@ -1,7 +1,6 @@
 {
   "dashboard_name": "Finance Dashboard Template",
   "source": "analytics",
-  "keywords": ["accounting", "invoicing", "receivables", "payables", "bookkeeping", "smb", "small business", "invoices", "ar", "ap"],
   "report": "# Finance Dashboard\n\n## Overview\nThis dashboard gives Template finance leaders a unified view of revenue performance, cost posture, and working capital. It supports controllers, finance managers, and FP&A analysts in surfacing cash-flow risks, budget overruns, and collections exposure.\n\n## Key Metrics\n- Total Revenue: P 1,188,000\n- Total Expenses: P 667,000\n- Net Profit: P 521,000\n- ROI: 22%\n- Cash Flow: P 350,000\n- Outstanding Invoices: 14\n\n## Insights\n- Gross margin holds at 44% month-over-month; Marketing spend is the largest single variance driver\n- Outstanding receivables are concentrated in three clients; two are >30 days overdue\n- Payroll remains the largest cost category at 68% of operating spend",
   "widgets": [
     {
@@ -9,7 +8,12 @@
       "name": "Total Revenue",
       "calculation": {
         "datasets": [
-          {"name": "Total Revenue", "data_source": "revenue", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Total Revenue",
+            "data_source": "revenue",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 1,188,000"
       }
@@ -19,7 +23,12 @@
       "name": "Total Expenses",
       "calculation": {
         "datasets": [
-          {"name": "Total Expenses", "data_source": "expenses", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Total Expenses",
+            "data_source": "expenses",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 667,000"
       }
@@ -29,7 +38,12 @@
       "name": "Net Profit",
       "calculation": {
         "datasets": [
-          {"name": "Net Profit", "data_source": "revenue", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Net Profit",
+            "data_source": "revenue",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 521,000"
       }
@@ -39,7 +53,12 @@
       "name": "ROI",
       "calculation": {
         "datasets": [
-          {"name": "ROI", "data_source": "revenue", "module": "Finance", "operation": "percentage"}
+          {
+            "name": "ROI",
+            "data_source": "revenue",
+            "module": "Finance",
+            "operation": "percentage"
+          }
         ],
         "expected_value": "22%"
       }
@@ -49,7 +68,15 @@
       "name": "Outstanding Invoices",
       "calculation": {
         "datasets": [
-          {"name": "Outstanding Invoices", "data_source": "invoices", "module": "Finance", "operation": "count", "filters": {"status": "Pending"}}
+          {
+            "name": "Outstanding Invoices",
+            "data_source": "invoices",
+            "module": "Finance",
+            "operation": "count",
+            "filters": {
+              "status": "Pending"
+            }
+          }
         ],
         "expected_value": "14"
       }
@@ -59,20 +86,35 @@
       "name": "Cash Flow",
       "calculation": {
         "datasets": [
-          {"name": "Cash Flow", "data_source": "revenue", "module": "Finance", "operation": "sum"}
+          {
+            "name": "Cash Flow",
+            "data_source": "revenue",
+            "module": "Finance",
+            "operation": "sum"
+          }
         ],
         "expected_value": "P 350,000"
       }
     },
     {
       "type": "bar",
-      "title": "Financial Performance — Income vs Expenses",
+      "title": "Financial Performance \u2014 Income vs Expenses",
       "description": "Monthly comparison of revenue and expenses to surface margin movement.",
       "data_config": {
         "module": "Finance",
         "data_source": "revenue",
-        "group_by": ["category"],
-        "fields": ["Product Sales", "Services", "Other Income", "Payroll", "Operations", "Marketing", "Utilities"],
+        "group_by": [
+          "category"
+        ],
+        "fields": [
+          "Product Sales",
+          "Services",
+          "Other Income",
+          "Payroll",
+          "Operations",
+          "Marketing",
+          "Utilities"
+        ],
         "aggregation": "sum"
       }
     },
@@ -83,7 +125,9 @@
       "data_config": {
         "module": "Finance",
         "data_source": "revenue",
-        "group_by": ["custom_dates"],
+        "group_by": [
+          "custom_dates"
+        ],
         "date_from": null,
         "date_to": null,
         "date_interval": "monthly",
@@ -97,8 +141,15 @@
       "data_config": {
         "module": "Finance",
         "data_source": "expenses",
-        "group_by": ["category"],
-        "fields": ["Payroll", "Operations", "Marketing", "Utilities"],
+        "group_by": [
+          "category"
+        ],
+        "fields": [
+          "Payroll",
+          "Operations",
+          "Marketing",
+          "Utilities"
+        ],
         "aggregation": "sum"
       }
     },
@@ -109,7 +160,11 @@
       "data_config": {
         "module": "Finance",
         "data_source": "receivables",
-        "group_by": ["client", "outstanding", "due_date"]
+        "group_by": [
+          "client",
+          "outstanding",
+          "due_date"
+        ]
       },
       "column_count": 3,
       "column_width": 200
@@ -121,7 +176,14 @@
       "data_config": {
         "module": "Finance",
         "data_source": "invoices",
-        "group_by": ["id", "client", "amount", "issue_date", "due_date", "status"]
+        "group_by": [
+          "id",
+          "client",
+          "amount",
+          "issue_date",
+          "due_date",
+          "status"
+        ]
       },
       "column_count": 6,
       "column_width": 150
@@ -133,7 +195,12 @@
       "data_config": {
         "module": "Finance",
         "data_source": "tickets",
-        "group_by": ["title", "description", "status", "priority"]
+        "group_by": [
+          "title",
+          "description",
+          "status",
+          "priority"
+        ]
       },
       "column_count": 4,
       "column_width": 180

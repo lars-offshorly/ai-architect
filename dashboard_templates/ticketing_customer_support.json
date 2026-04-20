@@ -1,15 +1,22 @@
 {
   "dashboard_name": "Customer Support Dashboard Template",
   "source": "analytics",
-  "keywords": ["customer support", "external support", "client", "csat", "support queue", "customer service", "complaints", "b2c", "contact center"],
-  "report": "# Customer Support Dashboard\n\n## Overview\nThis dashboard gives Template customer support leaders a real-time view of external ticket flow, CSAT, and agent performance. It supports support managers, team leads, and contact center operations in catching SLA breaches, unhappy customers, and under-staffed queues.\n\n## Key Metrics\n- New Tickets: 28\n- Resolved Today: 42\n- Reopened Tickets: 5\n- SLA Compliance: 92%\n- CSAT: 4.4 / 5\n- Average First Response: 18m\n\n## Insights\n- Billing and Access queues carry the largest ticket load; Billing trends highest priority\n- Reopen rate ticked up to 4% this week — refund workflow candidate for review\n- First response time is inside target; resolution time has drifted up on complex access tickets",
+  "report": "# Customer Support Dashboard\n\n## Overview\nThis dashboard gives Template customer support leaders a real-time view of external ticket flow, CSAT, and agent performance. It supports support managers, team leads, and contact center operations in catching SLA breaches, unhappy customers, and under-staffed queues.\n\n## Key Metrics\n- New Tickets: 28\n- Resolved Today: 42\n- Reopened Tickets: 5\n- SLA Compliance: 92%\n- CSAT: 4.4 / 5\n- Average First Response: 18m\n\n## Insights\n- Billing and Access queues carry the largest ticket load; Billing trends highest priority\n- Reopen rate ticked up to 4% this week \u2014 refund workflow candidate for review\n- First response time is inside target; resolution time has drifted up on complex access tickets",
   "widgets": [
     {
       "type": "number",
       "name": "New Tickets",
       "calculation": {
         "datasets": [
-          {"name": "New Tickets", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "open"}}
+          {
+            "name": "New Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "open"
+            }
+          }
         ],
         "expected_value": "28"
       }
@@ -19,7 +26,15 @@
       "name": "Resolved Today",
       "calculation": {
         "datasets": [
-          {"name": "Resolved Today", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "resolved"}}
+          {
+            "name": "Resolved Today",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "resolved"
+            }
+          }
         ],
         "expected_value": "42"
       }
@@ -29,7 +44,15 @@
       "name": "Reopened Tickets",
       "calculation": {
         "datasets": [
-          {"name": "Reopened Tickets", "data_source": "tickets", "module": "Ticketing", "operation": "count", "filters": {"status": "reopened"}}
+          {
+            "name": "Reopened Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "reopened"
+            }
+          }
         ],
         "expected_value": "5"
       }
@@ -39,7 +62,12 @@
       "name": "Average First Response",
       "calculation": {
         "datasets": [
-          {"name": "First Response", "data_source": "tickets", "module": "Ticketing", "operation": "average"}
+          {
+            "name": "First Response",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "average"
+          }
         ],
         "expected_value": "18m"
       }
@@ -51,8 +79,16 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["status"],
-        "fields": ["open", "in_progress", "on_hold", "resolved", "closed"],
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "open",
+          "in_progress",
+          "on_hold",
+          "resolved",
+          "closed"
+        ],
         "aggregation": "count"
       }
     },
@@ -63,8 +99,17 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["queue"],
-        "fields": ["Billing", "Access", "Product", "Shipping", "Returns", "Complaints"],
+        "group_by": [
+          "queue"
+        ],
+        "fields": [
+          "Billing",
+          "Access",
+          "Product",
+          "Shipping",
+          "Returns",
+          "Complaints"
+        ],
         "aggregation": "count"
       }
     },
@@ -75,7 +120,9 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["custom_dates"],
+        "group_by": [
+          "custom_dates"
+        ],
         "date_from": null,
         "date_to": null,
         "date_interval": "daily",
@@ -89,8 +136,15 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["priority"],
-        "fields": ["low", "medium", "high", "urgent"],
+        "group_by": [
+          "priority"
+        ],
+        "fields": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ],
         "aggregation": "count"
       }
     },
@@ -101,7 +155,15 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["id", "title", "requester", "queue", "priority", "status", "assignee"]
+        "group_by": [
+          "id",
+          "title",
+          "requester",
+          "queue",
+          "priority",
+          "status",
+          "assignee"
+        ]
       },
       "column_count": 7,
       "column_width": 150
@@ -113,7 +175,12 @@
       "data_config": {
         "module": "Ticketing",
         "data_source": "tickets",
-        "group_by": ["id", "title", "created_at", "status"]
+        "group_by": [
+          "id",
+          "title",
+          "created_at",
+          "status"
+        ]
       },
       "column_count": 4,
       "column_width": 180

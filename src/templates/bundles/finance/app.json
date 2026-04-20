@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_mgmt",
+  "bundle_key": "finance",
   "config": {
     "permission_services": ["project_mgmt", "weaves", "dashboard", "notifications"],
     "landing_pages": [

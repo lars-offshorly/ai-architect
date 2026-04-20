@@ -1,15 +1,19 @@
 {
   "dashboard_name": "Events & Launches Dashboard Template",
   "source": "analytics",
-  "keywords": ["events", "launch", "activation", "conference", "webinar", "field marketing", "booth", "trade show", "sponsorship"],
-  "report": "# Events & Launches Dashboard\n\n## Overview\nThis dashboard gives Template event and field marketing leaders a view of upcoming activations, registration health, and production readiness. It supports event producers, field marketers, and launch owners in catching under-registered events, budget overruns, and vendor risk.\n\n## Key Metrics\n- Upcoming Events: 6\n- Total Registered: 758\n- Spend vs Budget: 48%\n- Tasks Due This Week: 14\n- Leads Generated: 500\n\n## Insights\n- Flagship summit is pacing behind on registration — push demand gen support\n- Webinar-series conversion holds at 22%; webinar #2 is on track\n- Roadshow spend is concentrated in NCR — consider reallocating to secondary cities",
+  "report": "# Events & Launches Dashboard\n\n## Overview\nThis dashboard gives Template event and field marketing leaders a view of upcoming activations, registration health, and production readiness. It supports event producers, field marketers, and launch owners in catching under-registered events, budget overruns, and vendor risk.\n\n## Key Metrics\n- Upcoming Events: 6\n- Total Registered: 758\n- Spend vs Budget: 48%\n- Tasks Due This Week: 14\n- Leads Generated: 500\n\n## Insights\n- Flagship summit is pacing behind on registration \u2014 push demand gen support\n- Webinar-series conversion holds at 22%; webinar #2 is on track\n- Roadshow spend is concentrated in NCR \u2014 consider reallocating to secondary cities",
   "widgets": [
     {
       "type": "number",
       "name": "Upcoming Events",
       "calculation": {
         "datasets": [
-          {"name": "Upcoming Events", "data_source": "events", "module": "Marketing", "operation": "count"}
+          {
+            "name": "Upcoming Events",
+            "data_source": "events",
+            "module": "Marketing",
+            "operation": "count"
+          }
         ],
         "expected_value": "6"
       }
@@ -19,7 +23,12 @@
       "name": "Total Registered",
       "calculation": {
         "datasets": [
-          {"name": "Total Registered", "data_source": "events", "module": "Marketing", "operation": "sum"}
+          {
+            "name": "Total Registered",
+            "data_source": "events",
+            "module": "Marketing",
+            "operation": "sum"
+          }
         ],
         "expected_value": "758"
       }
@@ -29,7 +38,12 @@
       "name": "Tasks Due This Week",
       "calculation": {
         "datasets": [
-          {"name": "Tasks Due This Week", "data_source": "tasks", "module": "Marketing", "operation": "count"}
+          {
+            "name": "Tasks Due This Week",
+            "data_source": "tasks",
+            "module": "Marketing",
+            "operation": "count"
+          }
         ],
         "expected_value": "14"
       }
@@ -39,7 +53,12 @@
       "name": "Leads Generated",
       "calculation": {
         "datasets": [
-          {"name": "Leads Generated", "data_source": "campaigns", "module": "Marketing", "operation": "sum"}
+          {
+            "name": "Leads Generated",
+            "data_source": "campaigns",
+            "module": "Marketing",
+            "operation": "sum"
+          }
         ],
         "expected_value": "500"
       }
@@ -51,8 +70,16 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "campaigns",
-        "group_by": ["channel"],
-        "fields": ["Events", "Webinar", "Field", "Trade Show", "Sponsorship"],
+        "group_by": [
+          "channel"
+        ],
+        "fields": [
+          "Events",
+          "Webinar",
+          "Field",
+          "Trade Show",
+          "Sponsorship"
+        ],
         "aggregation": "count"
       }
     },
@@ -63,8 +90,15 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "tasks",
-        "group_by": ["status"],
-        "fields": ["To Do", "In Progress", "Review", "Completed"],
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "To Do",
+          "In Progress",
+          "Review",
+          "Completed"
+        ],
         "aggregation": "count"
       }
     },
@@ -75,8 +109,16 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "campaigns",
-        "group_by": ["name"],
-        "fields": ["Annual Summit", "Product Launch", "Regional Roadshow", "Webinar Series", "Others"],
+        "group_by": [
+          "name"
+        ],
+        "fields": [
+          "Annual Summit",
+          "Product Launch",
+          "Regional Roadshow",
+          "Webinar Series",
+          "Others"
+        ],
         "aggregation": "sum"
       }
     },
@@ -87,7 +129,9 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "events",
-        "group_by": ["custom_dates"],
+        "group_by": [
+          "custom_dates"
+        ],
         "date_from": null,
         "date_to": null,
         "date_interval": "weekly",
@@ -101,7 +145,13 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "events",
-        "group_by": ["name", "venue", "date", "expected_attendees", "registered"]
+        "group_by": [
+          "name",
+          "venue",
+          "date",
+          "expected_attendees",
+          "registered"
+        ]
       },
       "column_count": 5,
       "column_width": 160
@@ -113,7 +163,12 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "tasks",
-        "group_by": ["title", "project", "due_date", "status"]
+        "group_by": [
+          "title",
+          "project",
+          "due_date",
+          "status"
+        ]
       },
       "column_count": 4,
       "column_width": 180
@@ -125,8 +180,12 @@
       "data_config": {
         "module": "Marketing",
         "data_source": "team_workload",
-        "group_by": ["member"],
-        "fields": ["active_tasks"],
+        "group_by": [
+          "member"
+        ],
+        "fields": [
+          "active_tasks"
+        ],
         "aggregation": "sum"
       }
     }
