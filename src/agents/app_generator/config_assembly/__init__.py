@@ -12,12 +12,13 @@ from __future__ import annotations
 
 from .config_encoder import encode_config
 from .config_optimizer import optimize_config
-from .customization_merger import merge_customization
+from .customization_merger import extract_customization, merge_customization
 from .relationship_mapper import map_relationships
 
 __all__ = [
     "map_relationships",
     "encode_config",
+    "extract_customization",
     "merge_customization",
     "optimize_config",
 ]

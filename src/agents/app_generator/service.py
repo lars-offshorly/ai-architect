@@ -8,7 +8,7 @@ from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from repositories.template_repository import TemplateRepository
 
-from .config_assembly import encode_config, map_relationships
+from .config_assembly import encode_config, extract_customization, merge_customization, map_relationships
 from .contract import AppPayloadContract
 from .formatter import AppPayloadFormatter
 from .schemas import DummyDataJsonSchema, GenerationJsonSchema
@@ -97,6 +97,10 @@ class AppGeneratorService:
                 render_key,
             )
         generation_json["config"] = encoded_config
+
+        # 1c. Merge workspace customisation into the encoded config (CORE-AI-012)
+        customization = extract_customization(normalized_dummy_data, render_key)
+        generation_json["config"] = merge_customization(encoded_config, customization)
 
         # 2. Strict Pydantic Schema Validation (Integrated from T140)
         # This ensures config and stores sub-schemas are 100% correct.
