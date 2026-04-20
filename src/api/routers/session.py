@@ -14,6 +14,7 @@ from api.deps import (
     get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
+    get_dashboard_template_registry,
     get_session_repository,
     get_static_dashboard_output_registry,
 )
@@ -198,6 +199,7 @@ async def start_session(
             )
 
     session_id = str(uuid4())
+    background_tasks.add_task(_warm_template_caches)
     session = Session(session_id=session_id, user_id=body.user_id)
     if preselected_bundle_key is not None:
         session.selected_bundle_key = preselected_bundle_key
