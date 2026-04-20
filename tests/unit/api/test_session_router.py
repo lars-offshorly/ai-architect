@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -101,6 +101,45 @@ def mock_catalog() -> MagicMock:
     catalog.has_bundle.side_effect = lambda key: key == _VALID_BUNDLE_KEY
     catalog.get_all_typical_intents.return_value = [_VALID_INTENT, "track attendance"]
     return catalog
+
+
+@pytest.fixture()
+def flow_override() -> MagicMock:
+    mock = AsyncMock()
+    mock.process_turn.return_value = {
+        "status": "awaiting_input",
+        "message": "What industry?",
+        "question": None,
+        "bundle_key": None,
+        "slots": {},
+        "warning": None,
+        "preview_type": None,
+        "extracted": None,
+    }
+    return mock
+
+
+@pytest.fixture()
+def client(flow_override: MagicMock) -> TestClient:
+    from api.app import create_app
+    from api.deps import (
+        get_bundle_catalog,
+        get_conversation_flow,
+        get_conversation_repository,
+        get_session_repository,
+    )
+
+    app = create_app()
+    app.dependency_overrides[get_conversation_flow] = lambda: flow_override
+    catalog_mock = MagicMock()
+    catalog_mock.has_bundle.return_value = True
+    catalog_mock.get_all_typical_intents.return_value = ["manage employees"]
+    catalog_mock.list_all.return_value = []
+    app.dependency_overrides[get_bundle_catalog] = lambda: catalog_mock
+    app.dependency_overrides[get_session_repository] = lambda: SessionRepository()
+    app.dependency_overrides[get_conversation_repository] = lambda: ConversationRepository()
+    from fastapi.testclient import TestClient
+    return TestClient(app)
 
 
 class TestStartSessionPersistsExtraction:
@@ -694,3 +733,54 @@ class TestStartSessionCaseInsensitiveIntent:
 
         saved = session_repo.get(response.session_id)
         assert saved.preselected_intent == "manage employees"
+
+
+# ---------------------------------------------------------------------------
+# Background template preload — Task 1
+# ---------------------------------------------------------------------------
+
+
+def test_start_session_schedules_background_template_warm(
+    client: TestClient, flow_override: MagicMock
+) -> None:
+    """POST /sessions must schedule exactly one background task to warm template caches."""
+    import api.routers.session as session_module
+
+    with patch.object(session_module, "_warm_template_caches") as mock_warm:
+        resp = client.post(
+            "/sessions",
+            json={"user_id": "u1", "message": "I need an HR dashboard"},
+        )
+        assert resp.status_code == 201
+        # BackgroundTasks schedules the coroutine function; verify it was added
+        mock_warm.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_warm_template_caches_calls_both_providers() -> None:
+    """_warm_template_caches must call both dep providers via run_in_executor."""
+    from api.routers.session import _warm_template_caches
+
+    with (
+        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
+        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
+    ):
+        await _warm_template_caches()
+        mock_loader.assert_called_once()
+        mock_registry.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_warm_template_caches_is_idempotent() -> None:
+    """Calling _warm_template_caches twice must not raise and must call providers twice
+    (lru_cache de-duplication is the provider's responsibility, not the warm function)."""
+    from api.routers.session import _warm_template_caches
+
+    with (
+        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
+        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
+    ):
+        await _warm_template_caches()
+        await _warm_template_caches()
+        assert mock_loader.call_count == 2
+        assert mock_registry.call_count == 2
