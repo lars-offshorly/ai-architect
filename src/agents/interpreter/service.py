@@ -4,6 +4,7 @@ from langchain_openai import ChatOpenAI
 
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
+from core.constants import normalize_variant_confidence
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
 from domain.models.bundle import BundleSuggestion
@@ -148,9 +149,7 @@ class InterpreterService:
 
         if selection.variant_key is not None:
             top.variant_key = selection.variant_key
-            top.variant_confidence = _normalize_variant_confidence(
-                selection.top_score
-            )
+            top.variant_confidence = normalize_variant_confidence(selection.top_score)
             extracted.bundle_variant_key = selection.variant_key
             if MissingFieldType.BUNDLE_VARIANT in extracted.missing_fields:
                 extracted.missing_fields = [
@@ -185,13 +184,3 @@ class InterpreterService:
             session_id, history, extracted=extracted
         )
         return summary.summary_text
-
-
-def _normalize_variant_confidence(score: int) -> float:
-    """Map an integer variant score to a 0.0–1.0 confidence."""
-    if score <= 0:
-        return 0.0
-    # 9 is roughly the cap of a clean 3-keyword + 1-entity + 1-intent match;
-    # anything beyond that is treated as saturated.
-    saturated = min(score, 9)
-    return round(saturated / 9.0, 3)

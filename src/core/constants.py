@@ -20,3 +20,15 @@ BUNDLE_REGISTRY_FILENAME: str = "bundle_registry.yaml"
 PREVIEW_JSON_FILENAME: str = "preview.json"
 APP_JSON_FILENAME: str = "app.json"
 DUMMY_DATA_FILENAME: str = "dummy_data.json"
+
+
+def normalize_variant_confidence(score: int) -> float:
+    """Map an integer variant score to a 0.0–1.0 confidence.
+
+    9 is roughly the cap of a clean 3-keyword + 1-entity + 1-intent match;
+    anything beyond that is treated as saturated.
+    """
+    if score <= 0:
+        return 0.0
+    saturated = min(score, 9)
+    return round(saturated / 9.0, 3)
