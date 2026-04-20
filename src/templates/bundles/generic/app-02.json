@@ -1,22 +1,98 @@
 {
   "schema_version": "1.0",
   "bundle_key": "generic",
-  "keywords": ["consulting", "professional services", "client", "engagement", "deliverables", "billable hours", "utilization", "advisory", "strategy", "proposals", "retainer"],
   "stores": {
     "tickets": [
-      {"id": "ticket-001", "title": "Client deliverable review — Apex Corp Phase 2", "status": "pending", "priority": "high", "category": "Deliverable Review", "assignee": "Sofia Lim", "requester": "David Park", "created_at": "2026-04-11T09:00:00Z"},
-      {"id": "ticket-002", "title": "Proposal draft — Nexus strategy engagement", "status": "in_progress", "priority": "medium", "category": "Proposal", "assignee": "David Park", "requester": "Priya Nair", "created_at": "2026-04-08T10:00:00Z"},
-      {"id": "ticket-003", "title": "Resource request — analyst for Q2 project", "status": "resolved", "priority": "medium", "category": "Resource Request", "assignee": "Priya Nair", "requester": "Lucas Silva", "created_at": "2026-04-05T08:00:00Z"},
-      {"id": "ticket-004", "title": "Client feedback — Digital transformation kickoff", "status": "pending", "priority": "low", "category": "Client Feedback", "assignee": "Lucas Silva", "requester": "Maria Santos", "created_at": "2026-04-02T11:00:00Z"}
+      {
+        "id": "ticket-001",
+        "title": "Client deliverable review \u2014 Apex Corp Phase 2",
+        "status": "pending",
+        "priority": "high",
+        "category": "Deliverable Review",
+        "assignee": "Sofia Lim",
+        "requester": "David Park",
+        "created_at": "2026-04-11T09:00:00Z"
+      },
+      {
+        "id": "ticket-002",
+        "title": "Proposal draft \u2014 Nexus strategy engagement",
+        "status": "in_progress",
+        "priority": "medium",
+        "category": "Proposal",
+        "assignee": "David Park",
+        "requester": "Priya Nair",
+        "created_at": "2026-04-08T10:00:00Z"
+      },
+      {
+        "id": "ticket-003",
+        "title": "Resource request \u2014 analyst for Q2 project",
+        "status": "resolved",
+        "priority": "medium",
+        "category": "Resource Request",
+        "assignee": "Priya Nair",
+        "requester": "Lucas Silva",
+        "created_at": "2026-04-05T08:00:00Z"
+      },
+      {
+        "id": "ticket-004",
+        "title": "Client feedback \u2014 Digital transformation kickoff",
+        "status": "pending",
+        "priority": "low",
+        "category": "Client Feedback",
+        "assignee": "Lucas Silva",
+        "requester": "Maria Santos",
+        "created_at": "2026-04-02T11:00:00Z"
+      }
     ],
     "kpis": [
-      {"id": 1, "key": "active_engagements", "label": "Active Engagements", "type": "count", "sample_value": 18, "source_service": "generic"},
-      {"id": 2, "key": "billable_utilization_rate", "label": "Billable Utilization Rate", "type": "percentage", "sample_value": 78.4, "source_service": "generic"},
-      {"id": 3, "key": "deliverables_on_time_rate", "label": "Deliverables On-Time Rate", "type": "percentage", "sample_value": 86.0, "source_service": "generic"}
+      {
+        "id": 1,
+        "key": "active_engagements",
+        "label": "Active Engagements",
+        "type": "count",
+        "sample_value": 18,
+        "source_service": "generic"
+      },
+      {
+        "id": 2,
+        "key": "billable_utilization_rate",
+        "label": "Billable Utilization Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "generic"
+      },
+      {
+        "id": 3,
+        "key": "deliverables_on_time_rate",
+        "label": "Deliverables On-Time Rate",
+        "type": "percentage",
+        "sample_value": 86.0,
+        "source_service": "generic"
+      }
     ],
     "dashboard_widgets": [
-      {"id": "widget-001", "type": "ticket_summary", "title": "Engagement Overview", "position": {"row": 0, "col": 0, "width": 2, "height": 1}},
-      {"id": "widget-002", "type": "kpi_grid", "title": "Consulting Metrics", "position": {"row": 1, "col": 0, "width": 3, "height": 1}}
+      {
+        "id": "widget-001",
+        "type": "ticket_summary",
+        "title": "Engagement Overview",
+        "position": {
+          "row": 0,
+          "col": 0,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "id": "widget-002",
+        "type": "kpi_grid",
+        "title": "Consulting Metrics",
+        "position": {
+          "row": 1,
+          "col": 0,
+          "width": 3,
+          "height": 1
+        }
+      }
     ]
   }
 }

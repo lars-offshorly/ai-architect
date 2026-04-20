@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "project_mgmt",
+  "stores": {
+    "projects": [
+      {
+        "id": "proj-001",
+        "title": "ABC Corp \u2014 CRM Implementation",
+        "client": "ABC Corp",
+        "lead": "Maria Santos",
+        "start_date": "2026-01-20",
+        "end_date": "2026-07-15",
+        "status": "Active",
+        "priority": "High",
+        "phase": "in_progress",
+        "completion_pct": 55
+      },
+      {
+        "id": "proj-002",
+        "title": "XYZ Ltd \u2014 Data Migration",
+        "client": "XYZ Ltd",
+        "lead": "Carlos Mendez",
+        "start_date": "2026-03-01",
+        "end_date": "2026-06-30",
+        "status": "Active",
+        "priority": "Critical",
+        "phase": "in_progress",
+        "completion_pct": 30
+      },
+      {
+        "id": "proj-003",
+        "title": "QWE Inc \u2014 Process Review",
+        "client": "QWE Inc",
+        "lead": "Ana Reyes",
+        "start_date": "2026-04-01",
+        "end_date": "2026-08-01",
+        "status": "Pending",
+        "priority": "Normal",
+        "phase": "backlog",
+        "completion_pct": 5
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-001",
+        "title": "Client kickoff \u2014 ABC Corp",
+        "project_id": "proj-001",
+        "status": "in_progress",
+        "priority": "high",
+        "assignee": "Maria Santos",
+        "due_date": "2026-04-18"
+      },
+      {
+        "id": "task-002",
+        "title": "Data mapping workshop",
+        "project_id": "proj-002",
+        "status": "new",
+        "priority": "critical",
+        "assignee": "Carlos Mendez",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "task-003",
+        "title": "Discovery interviews \u2014 QWE",
+        "project_id": "proj-003",
+        "status": "open",
+        "priority": "medium",
+        "assignee": "Ana Reyes",
+        "due_date": "2026-04-25"
+      },
+      {
+        "id": "task-004",
+        "title": "Status report \u2014 week 12",
+        "project_id": "proj-001",
+        "status": "for_deployment",
+        "priority": "normal",
+        "assignee": "Maria Santos",
+        "due_date": "2026-04-19"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "ms-001",
+        "project_id": "proj-001",
+        "title": "UAT sign-off",
+        "due_date": "2026-06-15",
+        "status": "pending"
+      },
+      {
+        "id": "ms-002",
+        "project_id": "proj-002",
+        "title": "Go-live",
+        "due_date": "2026-06-30",
+        "status": "at_risk"
+      }
+    ],
+    "tickets": [
+      {
+        "id": "ticket-001",
+        "title": "Change request \u2014 ABC scope expansion",
+        "status": "open",
+        "priority": "high",
+        "category": "Change Request",
+        "assignee": "Maria Santos",
+        "requester": "Client ABC",
+        "created_at": "2026-04-11T09:30:00Z"
+      }
+    ]
+  }
+}

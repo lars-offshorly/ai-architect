@@ -31,6 +31,7 @@ class ExtractedInfo(BaseModel):
     industry_hint: str | None = None
     primary_use_case: str | None = None
     entity_type: str | None = None
+    bundle_variant_key: str | None = None
     employee_names: list[str] = Field(default_factory=list)
     role_names: list[str] = Field(default_factory=list)
     department_names: list[str] = Field(default_factory=list)

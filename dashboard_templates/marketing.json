@@ -1,0 +1,212 @@
+{
+  "dashboard_name": "Marketing Dashboard Template",
+  "source": "analytics",
+  "report": "# Marketing Dashboard\n\n## Overview\nThis dashboard gives Template marketing leaders a view of campaign execution, team bandwidth, and lead generation performance. It supports marketing managers, campaign owners, and creative leads in catching deadline slippage, budget overruns, and low-converting campaigns.\n\n## Key Metrics\n- Total Campaigns: 96\n- Active Campaigns: 15\n- Tasks Due Today: 18\n- Overdue Tasks: 5\n- Leads Generated: 420\n- Spend vs Budget: 57%\n\n## Insights\n- Paid Search and Email channels are on track; Social is trailing in spend utilization\n- Team workload is concentrated on two members \u2014 redistribution recommended\n- Upcoming launches are clustered in the last week of the month \u2014 staging risk",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Total Campaigns",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Total Campaigns",
+            "data_source": "campaigns",
+            "module": "Marketing",
+            "operation": "count"
+          }
+        ],
+        "expected_value": "96"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Active Campaigns",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Campaigns",
+            "data_source": "campaigns",
+            "module": "Marketing",
+            "operation": "count",
+            "filters": {
+              "status": "Active"
+            }
+          }
+        ],
+        "expected_value": "15"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Tasks Due Today",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Tasks Due Today",
+            "data_source": "tasks",
+            "module": "Marketing",
+            "operation": "count"
+          }
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Overdue Tasks",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Overdue Tasks",
+            "data_source": "tasks",
+            "module": "Marketing",
+            "operation": "count"
+          }
+        ],
+        "expected_value": "5"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Campaign Status Overview",
+      "description": "Campaigns split by lifecycle stage (Planning, Active, On Hold, Completed).",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "campaigns",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "Planning",
+          "Active",
+          "On Hold",
+          "Completed"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Tasks Status Overview",
+      "description": "Active marketing tasks by workflow state.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "tasks",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "To Do",
+          "In Progress",
+          "For Review",
+          "Completed"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Channel Performance by Spend and Leads",
+      "description": "Spend and leads generated per channel over the current quarter.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "campaigns",
+        "group_by": [
+          "channel"
+        ],
+        "fields": [
+          "Paid Search",
+          "Social",
+          "Email",
+          "Events",
+          "Webinar",
+          "Field",
+          "Editorial",
+          "Blog",
+          "SEO"
+        ],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Campaign Launches by Week",
+      "description": "Number of campaigns launched per week over the last 12 months.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "campaigns",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Active Campaigns",
+      "description": "All active campaigns with status and due date.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "campaigns",
+        "group_by": [
+          "name",
+          "status",
+          "due_date"
+        ]
+      },
+      "column_count": 3,
+      "column_width": 200
+    },
+    {
+      "type": "list",
+      "name": "My Tasks",
+      "description": "Tasks assigned to the current user with project, due date, and status.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "tasks",
+        "group_by": [
+          "title",
+          "project",
+          "due_date",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    },
+    {
+      "type": "list",
+      "name": "Upcoming Campaign Deadlines",
+      "description": "Campaigns ordered by upcoming due dates.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "upcoming_deadlines",
+        "group_by": [
+          "campaign",
+          "due_date"
+        ]
+      },
+      "column_count": 2,
+      "column_width": 220
+    },
+    {
+      "type": "hbar",
+      "title": "Team Workload",
+      "description": "Active tasks per team member \u2014 surfaces over/under-allocation.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "team_workload",
+        "group_by": [
+          "member"
+        ],
+        "fields": [
+          "active_tasks"
+        ],
+        "aggregation": "sum"
+      }
+    }
+  ]
+}

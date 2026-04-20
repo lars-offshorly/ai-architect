@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "bundle_key": "finance",
+  "stores": {
+    "properties": [
+      {
+        "id": "prop-001",
+        "name": "Makati Tower A",
+        "units": 48,
+        "occupied": 44,
+        "monthly_revenue": 2400000,
+        "operating_expense": 780000,
+        "noi": 1620000,
+        "cap_rate": 7.5,
+        "gross_yield": 9.2
+      },
+      {
+        "id": "prop-002",
+        "name": "Quezon City Residences",
+        "units": 32,
+        "occupied": 28,
+        "monthly_revenue": 1280000,
+        "operating_expense": 420000,
+        "noi": 860000,
+        "cap_rate": 6.8,
+        "gross_yield": 8.4
+      }
+    ],
+    "invoices": [
+      {
+        "id": "INV-2001",
+        "client": "Tenant \u2014 Unit 401",
+        "amount": 55000,
+        "issue_date": "2026-03-01",
+        "due_date": "2026-03-10",
+        "status": "Paid"
+      },
+      {
+        "id": "INV-2002",
+        "client": "Tenant \u2014 Unit 503",
+        "amount": 62000,
+        "issue_date": "2026-03-01",
+        "due_date": "2026-03-10",
+        "status": "Pending"
+      },
+      {
+        "id": "INV-2003",
+        "client": "Tenant \u2014 Unit 705",
+        "amount": 58000,
+        "issue_date": "2026-03-01",
+        "due_date": "2026-03-10",
+        "status": "Pending"
+      }
+    ],
+    "receivables": [
+      {
+        "id": "ar-001",
+        "client": "Tenant \u2014 Unit 503",
+        "outstanding": 62000,
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "ar-002",
+        "client": "Tenant \u2014 Unit 705",
+        "outstanding": 58000,
+        "due_date": "2026-03-10"
+      }
+    ],
+    "payments": [
+      {
+        "id": "pay-001",
+        "payment_type": "Property Tax",
+        "recipient": "BIR",
+        "amount": 320000,
+        "due_date": "2026-04-30",
+        "status": "Scheduled"
+      },
+      {
+        "id": "pay-002",
+        "payment_type": "Utilities",
+        "recipient": "Meralco",
+        "amount": 180000,
+        "due_date": "2026-04-20",
+        "status": "Scheduled"
+      }
+    ],
+    "expenses": [
+      {
+        "id": "exp-001",
+        "category": "Maintenance",
+        "amount": 210000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-002",
+        "category": "Property Tax",
+        "amount": 320000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-003",
+        "category": "Utilities",
+        "amount": 180000,
+        "month": "2026-03"
+      },
+      {
+        "id": "exp-004",
+        "category": "Management Fee",
+        "amount": 90000,
+        "month": "2026-03"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-001",
+        "title": "Follow up rent \u2014 Unit 503",
+        "client": "Tenant",
+        "due_date": "2026-04-15",
+        "status": "To Do"
+      },
+      {
+        "id": "task-002",
+        "title": "Annual property tax filing",
+        "client": "Internal",
+        "due_date": "2026-04-30",
+        "status": "To Do"
+      }
+    ],
+    "tickets": [
+      {
+        "id": "ticket-001",
+        "title": "Rent overdue \u2014 Unit 503",
+        "description": "Third month late",
+        "status": "open",
+        "priority": "high",
+        "category": "Collections",
+        "assignee": "Carlos Mendez",
+        "requester": "Property Manager",
+        "created_at": "2026-04-10T09:00:00Z"
+      }
+    ]
+  }
+}

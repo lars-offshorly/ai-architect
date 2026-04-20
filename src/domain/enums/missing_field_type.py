@@ -15,3 +15,4 @@ class MissingFieldType(str, Enum):
     LOCATION_COUNT = "location_count"
     SERVICE_ZONES = "service_zones"
     TECHNICIAN_COUNT = "technician_count"
+    BUNDLE_VARIANT = "bundle_variant"

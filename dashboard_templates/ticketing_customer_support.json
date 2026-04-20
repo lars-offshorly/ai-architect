@@ -1,0 +1,189 @@
+{
+  "dashboard_name": "Customer Support Dashboard Template",
+  "source": "analytics",
+  "report": "# Customer Support Dashboard\n\n## Overview\nThis dashboard gives Template customer support leaders a real-time view of external ticket flow, CSAT, and agent performance. It supports support managers, team leads, and contact center operations in catching SLA breaches, unhappy customers, and under-staffed queues.\n\n## Key Metrics\n- New Tickets: 28\n- Resolved Today: 42\n- Reopened Tickets: 5\n- SLA Compliance: 92%\n- CSAT: 4.4 / 5\n- Average First Response: 18m\n\n## Insights\n- Billing and Access queues carry the largest ticket load; Billing trends highest priority\n- Reopen rate ticked up to 4% this week \u2014 refund workflow candidate for review\n- First response time is inside target; resolution time has drifted up on complex access tickets",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "New Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "New Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "open"
+            }
+          }
+        ],
+        "expected_value": "28"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Resolved Today",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Resolved Today",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "resolved"
+            }
+          }
+        ],
+        "expected_value": "42"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Reopened Tickets",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Reopened Tickets",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "count",
+            "filters": {
+              "status": "reopened"
+            }
+          }
+        ],
+        "expected_value": "5"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Average First Response",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "First Response",
+            "data_source": "tickets",
+            "module": "Ticketing",
+            "operation": "average"
+          }
+        ],
+        "expected_value": "18m"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Ticket Status Overview",
+      "description": "Distribution of customer tickets by current status.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "status"
+        ],
+        "fields": [
+          "open",
+          "in_progress",
+          "on_hold",
+          "resolved",
+          "closed"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Queue Distribution",
+      "description": "Active customer tickets per queue.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "queue"
+        ],
+        "fields": [
+          "Billing",
+          "Access",
+          "Product",
+          "Shipping",
+          "Returns",
+          "Complaints"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Inflow vs Resolution Trend",
+      "description": "Daily new versus resolved customer tickets over the last 12 months.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "daily",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Priority Distribution",
+      "description": "Breakdown of open customer tickets by priority.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "priority"
+        ],
+        "fields": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Open Customer Tickets",
+      "description": "All active customer tickets with subject, queue, priority, status, and assignee.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "id",
+          "title",
+          "requester",
+          "queue",
+          "priority",
+          "status",
+          "assignee"
+        ]
+      },
+      "column_count": 7,
+      "column_width": 150
+    },
+    {
+      "type": "list",
+      "name": "My Assigned Tickets",
+      "description": "Tickets currently assigned to the logged-in agent with due date and status.",
+      "data_config": {
+        "module": "Ticketing",
+        "data_source": "tickets",
+        "group_by": [
+          "id",
+          "title",
+          "created_at",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    }
+  ]
+}

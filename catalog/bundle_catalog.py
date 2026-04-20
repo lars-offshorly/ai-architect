@@ -20,6 +20,29 @@ class BundleCatalogError(AppError):
     pass
 
 
+class BundleVariantDefinition(BaseModel):
+    """A single flavour (``app-01``/``app-02``/``app-03``) within a bundle.
+
+    Owns the classification signals used by the deterministic
+    ``VariantSelector`` to disambiguate between flavours of the same bundle
+    (e.g. HR general vs. HR recruiting vs. HR onboarding). The ``key`` must
+    match the filename stem of a ``src/templates/bundles/<folder>/<key>.json``
+    variant file whose ``bundle_key`` equals the parent bundle's key.
+    """
+
+    key: str
+    display_name: str
+    description: str = ""
+    is_default: bool = False
+    keywords: list[str] = Field(default_factory=list)
+    anti_keywords: list[str] = Field(default_factory=list)
+    typical_entities: list[str] = Field(default_factory=list)
+    typical_intents: list[str] = Field(default_factory=list)
+    industry_hints: list[str] = Field(default_factory=list)
+    dashboard_template: str | None = None
+    clarification_label: str = ""
+
+
 class BundleDefinition(BaseModel):
     bundle_key: str
     render_key: str
@@ -48,6 +71,8 @@ class BundleDefinition(BaseModel):
     signal_boosts: dict[str, float] = Field(default_factory=dict)
     terminology: dict[str, str] = Field(default_factory=dict)
     extraction_keywords: dict[str, Any] = Field(default_factory=dict)
+
+    variants: list[BundleVariantDefinition] = Field(default_factory=list)
 
     metadata: BundleMetadata | None = None
 
@@ -160,6 +185,7 @@ class BundleCatalog:
             required_signals=list(base.required_signals),
             signal_boosts=dict(base.signal_boosts),
             terminology=dict(base.terminology),
+            variants=[v.model_copy() for v in base.variants],
             metadata=base.metadata,
         )
 
@@ -307,6 +333,98 @@ class BundleCatalog:
                             f"Registry takes precedence (AD-2)."
                         )
 
+    def validate_variants(
+        self,
+        templates_dir: Path | None = None,
+        dashboards_dir: Path | None = None,
+    ) -> None:
+        """Assert each variants block is internally consistent.
+
+        For every bundle declaring ``variants``:
+
+        - non-empty
+        - exactly one ``is_default: true``
+        - unique ``key`` values
+        - every ``key`` matches a file ``<key>.json`` in the variant folder
+          (resolved by scanning all subfolders for ``app-0*.json`` files whose
+          ``bundle_key`` matches)
+        - every ``dashboard_template`` (if set) resolves to
+          ``<dashboards_dir>/<name>.json``.
+
+        When ``dashboards_dir`` is omitted it defaults to
+        ``<templates_dir>/../../../dashboard_templates`` (i.e. the repo-root
+        ``dashboard_templates`` directory when ``templates_dir`` points at
+        ``src/templates/bundles``).
+        """
+        on_disk = _discover_variant_files(templates_dir)
+        if dashboards_dir is None and templates_dir is not None:
+            # templates_dir is typically src/templates/bundles, so parents[2]
+            # resolves to the repo root, where dashboard_templates/ lives.
+            dashboards_dir = templates_dir.parents[2] / "dashboard_templates"
+        for bundle in self._bundles.values():
+            if not bundle.variants:
+                continue
+
+            default_count = sum(1 for v in bundle.variants if v.is_default)
+            if default_count != 1:
+                raise BundleRegistryValidationError(
+                    f"Bundle '{bundle.bundle_key}': variants must contain "
+                    f"exactly one is_default: true entry (found {default_count})."
+                )
+
+            keys = [v.key for v in bundle.variants]
+            if len(set(keys)) != len(keys):
+                raise BundleRegistryValidationError(
+                    f"Bundle '{bundle.bundle_key}': variant keys must be "
+                    f"unique; found duplicates in {keys}."
+                )
+
+            disk_keys = on_disk.get(bundle.bundle_key, set())
+            for variant in bundle.variants:
+                if disk_keys and variant.key not in disk_keys:
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}': variant key "
+                        f"'{variant.key}' has no matching "
+                        f"app file on disk (available: {sorted(disk_keys)})."
+                    )
+
+                if (
+                    variant.dashboard_template
+                    and dashboards_dir is not None
+                    and not (
+                        dashboards_dir / f"{variant.dashboard_template}.json"
+                    ).is_file()
+                ):
+                    raise BundleRegistryValidationError(
+                        f"Bundle '{bundle.bundle_key}' variant "
+                        f"'{variant.key}': dashboard_template "
+                        f"'{variant.dashboard_template}' not found in "
+                        f"{dashboards_dir}."
+                    )
+
+    def get_variants(self, bundle_key: str) -> list[BundleVariantDefinition]:
+        bundle = self.get(bundle_key)
+        if bundle is None:
+            return []
+        return list(bundle.variants)
+
+    def get_default_variant(
+        self, bundle_key: str
+    ) -> BundleVariantDefinition | None:
+        for variant in self.get_variants(bundle_key):
+            if variant.is_default:
+                return variant
+        variants = self.get_variants(bundle_key)
+        return variants[0] if variants else None
+
+    def get_variant(
+        self, bundle_key: str, variant_key: str
+    ) -> BundleVariantDefinition | None:
+        for variant in self.get_variants(bundle_key):
+            if variant.key == variant_key:
+                return variant
+        return None
+
     def get(self, bundle_key: str) -> BundleDefinition | None:
         return self._bundles.get(bundle_key)
 
@@ -408,6 +526,32 @@ class BundleCatalog:
                 "Catalog is missing required fallback bundle: generic"
             )
         return fallback_bundle
+
+
+def _discover_variant_files(
+    templates_dir: Path | None,
+) -> dict[str, set[str]]:
+    """Scan ``templates_dir/*/app-0*.json`` and index by declared ``bundle_key``.
+
+    Returns ``{bundle_key: {variant_key, …}}`` where variant_key is the
+    filename stem (e.g. ``app-01``). Returns an empty dict if ``templates_dir``
+    is None or does not exist.
+    """
+    if templates_dir is None or not templates_dir.is_dir():
+        return {}
+    index: dict[str, set[str]] = {}
+    for variant_path in sorted(templates_dir.glob("*/app-0*.json")):
+        try:
+            data = json.loads(variant_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        bundle_key = data.get("bundle_key")
+        if not isinstance(bundle_key, str) or not bundle_key:
+            continue
+        index.setdefault(bundle_key, set()).add(variant_path.stem)
+    return index
 
 
 def _exported_key_sets() -> tuple[frozenset[str], frozenset[str]]:

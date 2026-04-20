@@ -132,6 +132,18 @@ class TestSignalAccumulatorMerge:
         result = SignalAccumulator.merge(base, current)
         assert result.missing_fields == [MissingFieldType.PRIMARY_USE_CASE]
 
+    def test_merge_preserves_variant_key_from_latest_turn(self) -> None:
+        base = ExtractionResult(
+            session_id="s1",
+            bundle_variant_key="app-01",
+        )
+        current = ExtractionResult(
+            session_id="s1",
+            bundle_variant_key="app-02",
+        )
+        result = SignalAccumulator.merge(base, current)
+        assert result.bundle_variant_key == "app-02"
+
     def test_merge_preserves_session_id_from_current(self) -> None:
         base = ExtractionResult(session_id="old-session")
         current = ExtractionResult(session_id="new-session")

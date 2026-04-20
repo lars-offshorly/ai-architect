@@ -1,22 +1,21 @@
-"""Loads and selects bundle dummy-data templates from src/templates/bundles/.
+"""Loads and returns bundle app-0*.json variants from ``src/templates/bundles/``.
 
-Each bundle directory may contain up to 3 variant files (app-01.json,
-app-02.json, app-03.json).  Each variant carries a ``keywords`` list used for
-semantic matching against the intent classifier's ``primary_use_case`` field.
+Each bundle directory may contain up to 3 variant files (``app-01.json``,
+``app-02.json``, ``app-03.json``). Variants are keyed by the filename stem
+(e.g. ``app-01``); that key is what the interpreter's ``VariantSelector``
+emits on ``BundleSuggestion.variant_key``.
 
 Selection logic
 ---------------
-1. Collect all variants whose ``bundle_key`` matches the requested key.
-2. If ``primary_use_case`` is given, score each variant by counting how many
-   of its keywords appear (case-insensitive substring) in the string.
-3. Return the highest-scoring variant; ties resolved by file order (app-01
-   wins over app-02, etc.).  Falls back to the first variant when
-   ``primary_use_case`` is absent or produces all-zero scores.
+1. If ``variant_key`` is provided and matches a loaded variant, return it.
+2. Otherwise, return the first variant loaded (``app-01`` by filename order),
+   which corresponds to the bundle's default flavour.
 
 The caller (PreviewFlow) overlays the template's ``stores`` dict onto the
 pipeline-generated ``dummy_data_json``, replacing operational data (tickets,
 projects, tasks …) with realistic, domain-specific fixtures while keeping the
-pipeline-generated KPIs and letting dashboard enrichment fill ``dashboard_widgets``.
+pipeline-generated KPIs and letting dashboard enrichment fill
+``dashboard_widgets``.
 """
 
 from __future__ import annotations
@@ -39,7 +38,7 @@ _PIPELINE_OWNED_STORE_KEYS: frozenset[str] = frozenset(
 
 
 class BundleTemplateLoader:
-    """Loads all app-0*.json variants per bundle and returns the best match.
+    """Loads all ``app-0*.json`` variants per bundle and resolves by variant key.
 
     All variants are loaded once at construction time and cached.  ``load()``
     is a pure in-memory look-up after that.
@@ -47,8 +46,10 @@ class BundleTemplateLoader:
 
     def __init__(self, bundles_dir: Path = _DEFAULT_BUNDLES_DIR) -> None:
         self._dir = bundles_dir
-        # bundle_key → list of parsed variant dicts, ordered by filename
+        # bundle_key → [variant_dicts in filename order]
         self._variants: dict[str, list[dict]] = {}
+        # (bundle_key, variant_key) → variant_dict
+        self._by_variant: dict[tuple[str, str], dict] = {}
         self._load_all()
 
     # ------------------------------------------------------------------
@@ -58,47 +59,55 @@ class BundleTemplateLoader:
     def load(
         self,
         bundle_key: str,
-        primary_use_case: str | None = None,
+        variant_key: str | None = None,
     ) -> dict | None:
-        """Return the best-matching variant for *bundle_key*, or None.
+        """Return the variant dict for ``(bundle_key, variant_key)`` or None.
 
-        The returned dict is a direct reference to the cached object — callers
-        that need to mutate it should ``copy.deepcopy`` first.  PreviewFlow
-        only reads ``stores`` values, so a shallow dict reference is fine.
+        When ``variant_key`` is ``None`` or not found for this bundle, the
+        first variant in filename order (``app-01``) is returned.  The caller
+        gets a direct reference to the cached object — callers that need to
+        mutate it should ``copy.deepcopy`` first.
         """
         candidates = self._variants.get(bundle_key)
         if not candidates:
             return None
 
-        if len(candidates) == 1 or not primary_use_case:
-            chosen = candidates[0]
+        if variant_key is not None:
+            chosen = self._by_variant.get((bundle_key, variant_key))
+            if chosen is not None:
+                logger.info(
+                    "bundle_template_loader: bundle=%s variant=%s → %s",
+                    bundle_key,
+                    variant_key,
+                    chosen.get("_source_file", "?"),
+                )
+                return chosen
             logger.info(
-                "bundle_template_loader: bundle=%s → %s (first/only variant)",
+                "bundle_template_loader: bundle=%s variant=%s not found; "
+                "falling back to default",
                 bundle_key,
-                chosen.get("_source_file", "?"),
+                variant_key,
             )
-            return chosen
 
-        scored = [
-            (self._score(c.get("keywords", []), primary_use_case), i, c)
-            for i, c in enumerate(candidates)
-        ]
-        # sort descending by score, then ascending by index (app-01 wins ties)
-        scored.sort(key=lambda x: (-x[0], x[1]))
-        best_score, _, chosen = scored[0]
-
+        chosen = candidates[0]
         logger.info(
-            "bundle_template_loader: bundle=%s primary_use_case=%r → %s (score=%d)",
+            "bundle_template_loader: bundle=%s → %s (default variant)",
             bundle_key,
-            primary_use_case,
             chosen.get("_source_file", "?"),
-            best_score,
         )
         return chosen
 
     def supported_bundles(self) -> list[str]:
         """Return bundle keys that have at least one variant loaded."""
         return list(self._variants.keys())
+
+    def variant_keys(self, bundle_key: str) -> list[str]:
+        """Return the variant keys loaded for ``bundle_key`` in filename order."""
+        return [
+            variant["_variant_key"]
+            for variant in self._variants.get(bundle_key, [])
+            if "_variant_key" in variant
+        ]
 
     # ------------------------------------------------------------------
     # Internal
@@ -129,19 +138,14 @@ class BundleTemplateLoader:
                 )
                 continue
 
-            # Stash source path (folder/filename) for debug logging (not part of schema)
+            variant_key = variant_path.stem
             data["_source_file"] = f"{variant_path.parent.name}/{variant_path.name}"
+            data["_variant_key"] = variant_key
             self._variants.setdefault(bundle_key, []).append(data)
+            self._by_variant[(bundle_key, variant_key)] = data
             logger.info(
-                "BundleTemplateLoader: loaded %s → bundle_key=%s",
+                "BundleTemplateLoader: loaded %s → bundle_key=%s variant_key=%s",
                 variant_path.name,
                 bundle_key,
+                variant_key,
             )
-
-    @staticmethod
-    def _score(keywords: list, use_case: str) -> int:
-        """Count how many keywords appear (case-insensitive) in *use_case*."""
-        use_case_lower = use_case.lower()
-        return sum(
-            1 for kw in keywords if isinstance(kw, str) and kw.lower() in use_case_lower
-        )

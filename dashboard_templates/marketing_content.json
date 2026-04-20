@@ -1,0 +1,204 @@
+{
+  "dashboard_name": "Content & Brand Dashboard Template",
+  "source": "analytics",
+  "report": "# Content & Brand Dashboard\n\n## Overview\nThis dashboard gives Template content and brand leaders a view of editorial velocity, publishing health, and SEO performance. It supports editorial leads, content managers, and brand strategists in catching stalled pieces, review bottlenecks, and underperforming topics.\n\n## Key Metrics\n- Active Content Pieces: 42\n- Published This Month: 18\n- In Review: 9\n- Organic Traffic: 58K\n- SEO Keywords Tracked: 120\n\n## Insights\n- Pillar articles dominate review queue \u2014 reviewer capacity is the bottleneck\n- SEO traffic trending up 12% MoM driven by pricing cluster\n- Two authors carry 60% of in-flight pieces \u2014 rebalancing recommended",
+  "widgets": [
+    {
+      "type": "number",
+      "name": "Active Content Pieces",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Content",
+            "data_source": "content_pieces",
+            "module": "Marketing",
+            "operation": "count"
+          }
+        ],
+        "expected_value": "42"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Published This Month",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Published",
+            "data_source": "content_pieces",
+            "module": "Marketing",
+            "operation": "count",
+            "filters": {
+              "stage": "Published"
+            }
+          }
+        ],
+        "expected_value": "18"
+      }
+    },
+    {
+      "type": "number",
+      "name": "In Review",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "In Review",
+            "data_source": "content_pieces",
+            "module": "Marketing",
+            "operation": "count",
+            "filters": {
+              "stage": "Review"
+            }
+          }
+        ],
+        "expected_value": "9"
+      }
+    },
+    {
+      "type": "number",
+      "name": "Active Campaigns",
+      "calculation": {
+        "datasets": [
+          {
+            "name": "Active Campaigns",
+            "data_source": "campaigns",
+            "module": "Marketing",
+            "operation": "count",
+            "filters": {
+              "status": "Active"
+            }
+          }
+        ],
+        "expected_value": "6"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Content Stage Overview",
+      "description": "Content pieces split across editorial stages.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "content_pieces",
+        "group_by": [
+          "stage"
+        ],
+        "fields": [
+          "Idea",
+          "Draft",
+          "Review",
+          "Approved",
+          "Published"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "pie",
+      "title": "Content by Type",
+      "description": "Active content pieces by format.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "content_pieces",
+        "group_by": [
+          "type"
+        ],
+        "fields": [
+          "Blog Post",
+          "Pillar Article",
+          "Case Study",
+          "Whitepaper",
+          "Video",
+          "Newsletter"
+        ],
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "bar",
+      "title": "Channel Performance",
+      "description": "Spend and reach per editorial channel over the current quarter.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "campaigns",
+        "group_by": [
+          "channel"
+        ],
+        "fields": [
+          "Editorial",
+          "Blog",
+          "SEO",
+          "Newsletter",
+          "Thought Leadership"
+        ],
+        "aggregation": "sum"
+      }
+    },
+    {
+      "type": "line",
+      "title": "Publishing Cadence",
+      "description": "Content pieces published per week over the last 12 months.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "content_pieces",
+        "group_by": [
+          "custom_dates"
+        ],
+        "date_from": null,
+        "date_to": null,
+        "date_interval": "weekly",
+        "aggregation": "count"
+      }
+    },
+    {
+      "type": "list",
+      "name": "Editorial Calendar",
+      "description": "All content pieces with owner, stage, and publish date.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "content_pieces",
+        "group_by": [
+          "title",
+          "type",
+          "stage",
+          "owner",
+          "publish_date"
+        ]
+      },
+      "column_count": 5,
+      "column_width": 160
+    },
+    {
+      "type": "list",
+      "name": "My Tasks",
+      "description": "Tasks assigned to the current user with project, due date, and status.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "tasks",
+        "group_by": [
+          "title",
+          "project",
+          "due_date",
+          "status"
+        ]
+      },
+      "column_count": 4,
+      "column_width": 180
+    },
+    {
+      "type": "hbar",
+      "title": "Team Workload",
+      "description": "Active tasks per team member \u2014 surfaces over/under-allocation.",
+      "data_config": {
+        "module": "Marketing",
+        "data_source": "team_workload",
+        "group_by": [
+          "member"
+        ],
+        "fields": [
+          "active_tasks"
+        ],
+        "aggregation": "sum"
+      }
+    }
+  ]
+}
