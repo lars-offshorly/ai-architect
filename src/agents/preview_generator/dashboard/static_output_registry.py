@@ -1,9 +1,9 @@
-"""Static pre-generated dashboard widget outputs for Group B bundles.
+"""Static pre-generated dashboard widget outputs.
 
 Instead of calling the live Dashboard Gen service, the Preview Generator
 loads these pre-computed widget layouts directly.  Each file under
-``dashboard_output_templates/`` was generated from the corresponding
-``dashboard_templates/`` input and contains the final internal widget format.
+``dashboard_output_templates/`` contains the final internal widget format used
+by preview payloads.
 """
 
 from __future__ import annotations
@@ -17,10 +17,15 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Maps catalog bundle_key → template stem (filename without .json).
-# Mirrors DashboardTemplateRegistry._BUNDLE_TO_TEMPLATE so resolution
-# is consistent between the two registries.
+# Legacy fallback mapping for bundles without catalog variants.
 _BUNDLE_TO_OUTPUT: dict[str, str] = {
+    "hr_management": "hr_management",
+    "hr_hub": "hr_management",
+    "project_mgmt": "project_management",
+    "ticketing": "ticketing",
+    "finance": "finance",
+    "marketing": "marketing",
+    "sales": "sales",
     "healthcare": "healthcare_hospital",
     "legal_services": "legal_litigation_firm",
     "construction_real_estate": "construction_general_contractor",
@@ -33,9 +38,9 @@ _DEFAULT_OUTPUT_DIR = Path(__file__).parents[4] / "dashboard_output_templates"
 
 
 class StaticDashboardOutputRegistry:
-    """Returns pre-generated widget lists for Group B bundles.
+    """Returns pre-generated widget lists.
 
-    Resolution order (mirrors DashboardTemplateRegistry):
+    Resolution order:
     1. BundleCatalog variant → ``dashboard_template`` field (same stem used for outputs)
     2. ``_BUNDLE_TO_OUTPUT`` legacy fallback
 
@@ -88,7 +93,10 @@ class StaticDashboardOutputRegistry:
                 if not bundle.variants:
                     continue
                 for variant in bundle.variants:
-                    if variant.dashboard_template and variant.dashboard_template in self._cache:
+                    if (
+                        variant.dashboard_template
+                        and variant.dashboard_template in self._cache
+                    ):
                         if bundle.bundle_key not in supported:
                             supported.append(bundle.bundle_key)
                         break
@@ -121,10 +129,17 @@ class StaticDashboardOutputRegistry:
             try:
                 with path.open(encoding="utf-8") as f:
                     data = json.load(f)
-                self._cache[path.stem] = data.get("widgets", [])
+                widgets = data.get("widgets")
+                if not isinstance(widgets, list) or not widgets:
+                    raise ValueError("missing or empty widgets list")
+                if not all(isinstance(widget, dict) for widget in widgets):
+                    raise ValueError("widgets must contain only objects")
+                self._cache[path.stem] = widgets
             except (json.JSONDecodeError, OSError) as exc:
                 logger.warning(
                     "Failed to load static dashboard output %s: %s", path.name, exc
                 )
+            except ValueError as exc:
+                logger.warning("Invalid static dashboard output %s: %s", path.name, exc)
             else:
                 logger.info("Loaded static dashboard output: %s", path.name)

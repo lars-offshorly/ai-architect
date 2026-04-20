@@ -40,13 +40,6 @@ class Settings(BaseSettings):
     DISABLE_DASHBOARD_CALLS: bool = False
     SKIP_CATALOG_VALIDATION: bool = False
 
-    # Dashboard service integration
-    DASHBOARD_SERVICE_URL: str = "https://dashboard-generator-ai.idealforliving.com"
-    KNIT_AUTH_URL: str = "https://orchestration.idealforliving.com/api/v1/login/"
-    KNIT_EMAIL: str = ""
-    KNIT_PASSWORD: str = ""
-    DASHBOARD_AUTH_TOKEN_TTL_SECONDS: int = Field(default=2700, ge=60)  # 45 min
-
     SENTRY_DSN: str = ""
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_API_KEY: str = ""

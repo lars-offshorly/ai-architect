@@ -352,15 +352,15 @@ class BundleCatalog:  # pylint: disable=too-many-public-methods
           ``<dashboards_dir>/<name>.json``.
 
         When ``dashboards_dir`` is omitted it defaults to
-        ``<templates_dir>/../../../dashboard_templates`` (i.e. the repo-root
-        ``dashboard_templates`` directory when ``templates_dir`` points at
-        ``src/templates/bundles``).
+        ``<templates_dir>/../../../dashboard_output_templates`` (i.e. the
+        repo-root ``dashboard_output_templates`` directory when
+        ``templates_dir`` points at ``src/templates/bundles``).
         """
         on_disk = _discover_variant_files(templates_dir)
         if dashboards_dir is None and templates_dir is not None:
             # templates_dir is typically src/templates/bundles, so parents[2]
-            # resolves to the repo root, where dashboard_templates/ lives.
-            dashboards_dir = templates_dir.parents[2] / "dashboard_templates"
+            # resolves to the repo root, where dashboard_output_templates/ lives.
+            dashboards_dir = templates_dir.parents[2] / "dashboard_output_templates"
         for bundle in self._bundles.values():
             if not bundle.variants:
                 continue

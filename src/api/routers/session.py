@@ -14,7 +14,6 @@ from api.deps import (
     get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
-    get_dashboard_template_registry,
     get_session_repository,
     get_static_dashboard_output_registry,
 )
@@ -51,14 +50,13 @@ logger = get_logger(__name__)
 
 
 async def _warm_template_caches() -> None:
-    """Warm BundleTemplateLoader, DashboardTemplateRegistry, and StaticDashboardOutputRegistry caches in a thread.
+    """Warm BundleTemplateLoader and StaticDashboardOutputRegistry caches in a thread.
 
     Called as a FastAPI BackgroundTask after session start so templates are
     ready before the first preview request arrives.
     """
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, get_bundle_template_loader)
-    await loop.run_in_executor(None, get_dashboard_template_registry)
     await loop.run_in_executor(None, get_static_dashboard_output_registry)
 
 

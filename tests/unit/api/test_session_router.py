@@ -777,7 +777,7 @@ async def test_warm_template_caches_calls_both_providers() -> None:
             "api.routers.session.get_bundle_template_loader"
         ) as mock_loader,
         patch(
-            "api.routers.session.get_dashboard_template_registry"
+            "api.routers.session.get_static_dashboard_output_registry"
         ) as mock_registry,
     ):
         await _warm_template_caches()
@@ -797,7 +797,7 @@ async def test_warm_template_caches_is_idempotent() -> None:
             "api.routers.session.get_bundle_template_loader"
         ) as mock_loader,
         patch(
-            "api.routers.session.get_dashboard_template_registry"
+            "api.routers.session.get_static_dashboard_output_registry"
         ) as mock_registry,
     ):
         await _warm_template_caches()

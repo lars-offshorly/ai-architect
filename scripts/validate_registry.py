@@ -223,7 +223,7 @@ def validate_catalog_loading() -> tuple[list[str], list[str]]:
 
     Runs ``BundleCatalog.validate`` (template_dir consistency) AND
     ``BundleCatalog.validate_variants`` (default-count, unique keys,
-    on-disk app-0*.json and dashboard_templates/*.json presence).
+    on-disk app-0*.json and dashboard_output_templates/*.json presence).
     """
     errors: list[str] = []
     warnings: list[str] = []
@@ -251,20 +251,19 @@ def validate_catalog_loading() -> tuple[list[str], list[str]]:
 def validate_no_stray_keywords() -> list[str]:
     """Ensure ``keywords`` lives only in bundle_registry.yaml variants.
 
-    Legacy ``keywords`` fields in ``app-0*.json`` / ``dashboard_templates/*.json``
-    were removed once variant selection moved into the catalog. Re-introducing
-    them silently desyncs the source of truth, so we fail loudly.
+    Legacy ``keywords`` fields in ``app-0*.json`` /
+    ``dashboard_output_templates/*.json`` were removed once variant
+    selection moved into the catalog. Re-introducing them silently desyncs
+    the source of truth, so we fail loudly.
     """
     import json  # pylint: disable=import-outside-toplevel
 
     errors: list[str] = []
     app_files = list(TEMPLATES_BASE.glob("*/app-0*.json"))
-    dashboards_base = Path(__file__).parent.parent / "dashboard_templates"
-    dashboard_files = (
-        list(dashboards_base.glob("*.json")) if dashboards_base.is_dir() else []
-    )
+    outputs_base = Path(__file__).parent.parent / "dashboard_output_templates"
+    output_files = list(outputs_base.glob("*.json")) if outputs_base.is_dir() else []
 
-    for path in app_files + dashboard_files:
+    for path in app_files + output_files:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
