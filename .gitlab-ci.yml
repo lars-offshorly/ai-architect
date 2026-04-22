@@ -2,11 +2,24 @@ stages:
   - test
   - quality
   - security
+  - build
+  - deploy
+
+default:
+  image: public.ecr.aws/v5v9u0r4/docker-awscli:latest
 
 variables:
   PYTHONPATH: "src:."
   POETRY_VIRTUALENVS_IN_PROJECT: "true"
   POETRY_CACHE_DIR: "$CI_PROJECT_DIR/.poetry-cache"
+
+.docker_aws_variables:
+  variables: &deploy_variables
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    AWS_ACCESS_KEY_ID: "$AWS_ACCESS_KEY_ID"
+    AWS_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
+    AWS_DEFAULT_REGION: "$AWS_DEFAULT_REGION"
 
 workflow:
   rules:
@@ -130,3 +143,47 @@ security_scan:
     expire_in: 1 week
     paths:
       - ci-requirements.txt
+
+.build_template:
+  stage: build
+  services:
+    - name: docker:20.10.16-dind
+      alias: docker
+  script:
+    - docker build -t "$REGISTRY_URL" -f docker/Dockerfile .
+    - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_REGISTRY_URL"
+    - docker push "$REGISTRY_URL"
+
+.deploy_template:
+  stage: deploy
+  services:
+    - name: docker:20.10.16-dind
+      alias: docker
+  script:
+    - aws s3 cp .env "s3://knit-ecs-config/knit-ai-architect/${CI_ENVIRONMENT_NAME}/"
+    - aws ecs update-service --region "$AWS_DEFAULT_REGION" --cluster "$CI_AWS_ECS_CLUSTER" --service "$CI_AWS_ECS_SERVICE" --desired-count 1 --force-new-deployment
+
+build_dev:
+  extends: .build_template
+  variables:
+    <<: *deploy_variables
+    REGISTRY_URL: "$AWS_REGISTRY_URL/${CI_ENVIRONMENT_NAME}-knit-ai-architect"
+  environment:
+    name: dev
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+deploy_dev:
+  extends: .deploy_template
+  needs:
+    - job: build_dev
+  before_script:
+    - cp "$DEV_VARIABLES" .env
+  variables:
+    <<: *deploy_variables
+    CI_AWS_ECS_CLUSTER: "${CI_ENVIRONMENT_NAME}-knit"
+    CI_AWS_ECS_SERVICE: "${CI_ENVIRONMENT_NAME}-knit-ai-architect"
+  environment:
+    name: dev
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
