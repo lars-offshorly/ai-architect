@@ -2,137 +2,128 @@
   "schema_version": "1.0",
   "bundle_key": "sales",
   "stores": {
-    "leads": [
+    "projects": [
       {
-        "id": "lead-001",
-        "name": "Northside Traders",
-        "company": "Northside Traders",
-        "source": "Trade Show",
-        "status": "New",
-        "owner": "Carlos Mendez",
-        "created_at": "2026-04-08"
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
+        "status": "active",
+        "priority": "high",
+        "phase": "in_progress",
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
       },
       {
-        "id": "lead-002",
-        "name": "South Depot Inc.",
-        "company": "South Depot Inc.",
-        "source": "Referral",
-        "status": "Qualified",
-        "owner": "Maria Santos",
-        "created_at": "2026-04-05"
-      }
-    ],
-    "opportunities": [
-      {
-        "id": "opp-001",
-        "name": "Northside \u2014 Q2 Replenishment",
-        "client": "Northside Traders",
-        "stage": "Proposal",
-        "value": 480000,
-        "close_date": "2026-05-15",
-        "owner": "Carlos Mendez"
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
+        "status": "active",
+        "priority": "normal",
+        "phase": "review",
+        "completion_pct": 38,
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30"
       },
       {
-        "id": "opp-002",
-        "name": "South Depot \u2014 Annual Contract",
-        "client": "South Depot Inc.",
-        "stage": "Negotiation",
-        "value": 2100000,
-        "close_date": "2026-04-30",
-        "owner": "Maria Santos"
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
+        "phase": "backlog",
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
       },
       {
-        "id": "opp-003",
-        "name": "East Hub \u2014 New Line Launch",
-        "client": "East Hub Trading",
-        "stage": "Qualified",
-        "value": 950000,
-        "close_date": "2026-06-10",
-        "owner": "Ana Reyes"
-      }
-    ],
-    "orders": [
-      {
-        "id": "ord-001",
-        "distributor": "Northside Traders",
-        "sku_count": 42,
-        "order_value": 380000,
-        "status": "Confirmed",
-        "ship_date": "2026-04-20"
-      },
-      {
-        "id": "ord-002",
-        "distributor": "South Depot Inc.",
-        "sku_count": 128,
-        "order_value": 1750000,
-        "status": "Pending",
-        "ship_date": "2026-04-25"
-      }
-    ],
-    "upcoming_closures": [
-      {
-        "id": "uc-001",
-        "client": "South Depot Inc.",
-        "deal_value": 2100000,
-        "close_date": "2026-04-30"
-      },
-      {
-        "id": "uc-002",
-        "client": "Northside Traders",
-        "deal_value": 480000,
-        "close_date": "2026-05-15"
-      }
-    ],
-    "sales_rep_performance": [
-      {
-        "rep": "Maria Santos",
-        "deals": 6,
-        "revenue": 3200000
-      },
-      {
-        "rep": "Carlos Mendez",
-        "deals": 4,
-        "revenue": 1400000
-      },
-      {
-        "rep": "Ana Reyes",
-        "deals": 3,
-        "revenue": 1100000
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
       }
     ],
     "tasks": [
       {
-        "id": "task-001",
-        "title": "Finalize price schedule \u2014 Q2",
-        "client": "Northside Traders",
-        "due_date": "2026-04-20",
-        "status": "In Progress"
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "P-001",
+        "status": "in_progress",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-04-25"
       },
       {
-        "id": "task-002",
-        "title": "Contract review \u2014 South Depot",
-        "client": "South Depot Inc.",
-        "due_date": "2026-04-22",
-        "status": "Review"
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "P-001",
+        "status": "for_deployment",
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
       },
       {
-        "id": "task-003",
-        "title": "Sample shipment \u2014 East Hub",
-        "client": "East Hub Trading",
-        "due_date": "2026-04-25",
-        "status": "To Do"
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "P-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "P-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
+        "due_date": "2026-04-28"
+      },
+      {
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "P-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      },
+      {
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "P-004",
+        "status": "resolved",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "P-004",
+        "status": "closed",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "P-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
       }
     ],
-    "tickets": [
+    "accounts": [
       {
-        "id": "ticket-001",
-        "title": "Stockout risk \u2014 SKU-4821",
-        "status": "open",
-        "priority": "high",
-        "category": "Inventory",
-        "assignee": "Maria Santos",
-        "requester": "Warehouse Ops",
-        "created_at": "2026-04-11T09:00:00Z"
+        "id": "acct-001",
+        "name": "Northside Traders",
+        "tier": "Gold",
+        "orders": 12
       }
     ],
     "kpis": [

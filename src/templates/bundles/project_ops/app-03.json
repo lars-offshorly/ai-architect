@@ -1,109 +1,129 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_mgmt",
+  "bundle_key": "project_ops",
   "stores": {
     "projects": [
       {
-        "id": "proj-001",
-        "title": "Summer Brand Relaunch",
-        "client": "Internal",
-        "lead": "Priya Nair",
-        "start_date": "2026-03-01",
-        "end_date": "2026-06-15",
-        "status": "Active",
-        "priority": "High",
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
+        "status": "active",
+        "priority": "high",
         "phase": "in_progress",
-        "completion_pct": 48
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
       },
       {
-        "id": "proj-002",
-        "title": "Partner Co-Marketing \u2014 ABC Corp",
-        "client": "ABC Corp",
-        "lead": "Maria Santos",
-        "start_date": "2026-04-01",
-        "end_date": "2026-07-30",
-        "status": "Active",
-        "priority": "Normal",
-        "phase": "in_progress",
-        "completion_pct": 22
-      },
-      {
-        "id": "proj-003",
-        "title": "Product Launch Video Series",
-        "client": "Internal",
-        "lead": "Sofia Lim",
-        "start_date": "2026-02-15",
-        "end_date": "2026-05-15",
-        "status": "Active",
-        "priority": "High",
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
+        "status": "active",
+        "priority": "normal",
         "phase": "review",
-        "completion_pct": 70
+        "completion_pct": 38,
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30"
+      },
+      {
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
+        "phase": "backlog",
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
+      },
+      {
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
       }
     ],
     "tasks": [
       {
-        "id": "task-001",
-        "title": "Keyvisual concept review",
-        "project_id": "proj-001",
-        "status": "review",
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "P-001",
+        "status": "in_progress",
         "priority": "high",
         "assignee": "David Park",
-        "due_date": "2026-04-22"
-      },
-      {
-        "id": "task-002",
-        "title": "Media plan alignment",
-        "project_id": "proj-002",
-        "status": "in_progress",
-        "priority": "normal",
-        "assignee": "Maria Santos",
         "due_date": "2026-04-25"
       },
       {
-        "id": "task-003",
-        "title": "Final cut \u2014 Episode 3",
-        "project_id": "proj-003",
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "P-001",
         "status": "for_deployment",
         "priority": "critical",
-        "assignee": "Sofia Lim",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "P-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "P-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
         "due_date": "2026-04-28"
       },
       {
-        "id": "task-004",
-        "title": "Copywriting round 2",
-        "project_id": "proj-001",
-        "status": "in_progress",
-        "priority": "normal",
-        "assignee": "Priya Nair",
-        "due_date": "2026-04-30"
-      }
-    ],
-    "milestones": [
-      {
-        "id": "ms-001",
-        "project_id": "proj-001",
-        "title": "Campaign go-live",
-        "due_date": "2026-06-01",
-        "status": "pending"
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "P-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
       },
       {
-        "id": "ms-002",
-        "project_id": "proj-003",
-        "title": "Series premiere",
-        "due_date": "2026-05-10",
-        "status": "at_risk"
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "P-004",
+        "status": "resolved",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "P-004",
+        "status": "closed",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "P-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
       }
     ],
-    "tickets": [
+    "deliverables": [
       {
-        "id": "ticket-001",
-        "title": "Asset upload failing \u2014 DAM",
-        "status": "in_progress",
-        "priority": "medium",
-        "category": "Bug Report",
-        "assignee": "David Park",
-        "requester": "Priya Nair",
-        "created_at": "2026-04-10T14:00:00Z"
+        "id": "del-001",
+        "project_id": "P-001",
+        "name": "Design mockups",
+        "status": "approved"
       }
     ],
     "kpis": [

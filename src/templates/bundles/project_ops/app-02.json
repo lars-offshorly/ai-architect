@@ -1,109 +1,129 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "project_mgmt",
+  "bundle_key": "project_ops",
   "stores": {
     "projects": [
       {
-        "id": "proj-001",
-        "title": "ABC Corp \u2014 CRM Implementation",
-        "client": "ABC Corp",
-        "lead": "Maria Santos",
-        "start_date": "2026-01-20",
-        "end_date": "2026-07-15",
-        "status": "Active",
-        "priority": "High",
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
+        "status": "active",
+        "priority": "high",
         "phase": "in_progress",
-        "completion_pct": 55
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
       },
       {
-        "id": "proj-002",
-        "title": "XYZ Ltd \u2014 Data Migration",
-        "client": "XYZ Ltd",
-        "lead": "Carlos Mendez",
-        "start_date": "2026-03-01",
-        "end_date": "2026-06-30",
-        "status": "Active",
-        "priority": "Critical",
-        "phase": "in_progress",
-        "completion_pct": 30
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
+        "status": "active",
+        "priority": "normal",
+        "phase": "review",
+        "completion_pct": 38,
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30"
       },
       {
-        "id": "proj-003",
-        "title": "QWE Inc \u2014 Process Review",
-        "client": "QWE Inc",
-        "lead": "Ana Reyes",
-        "start_date": "2026-04-01",
-        "end_date": "2026-08-01",
-        "status": "Pending",
-        "priority": "Normal",
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
         "phase": "backlog",
-        "completion_pct": 5
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
+      },
+      {
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
       }
     ],
     "tasks": [
       {
-        "id": "task-001",
-        "title": "Client kickoff \u2014 ABC Corp",
-        "project_id": "proj-001",
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "P-001",
         "status": "in_progress",
         "priority": "high",
-        "assignee": "Maria Santos",
-        "due_date": "2026-04-18"
-      },
-      {
-        "id": "task-002",
-        "title": "Data mapping workshop",
-        "project_id": "proj-002",
-        "status": "new",
-        "priority": "critical",
-        "assignee": "Carlos Mendez",
-        "due_date": "2026-04-20"
-      },
-      {
-        "id": "task-003",
-        "title": "Discovery interviews \u2014 QWE",
-        "project_id": "proj-003",
-        "status": "open",
-        "priority": "medium",
-        "assignee": "Ana Reyes",
+        "assignee": "David Park",
         "due_date": "2026-04-25"
       },
       {
-        "id": "task-004",
-        "title": "Status report \u2014 week 12",
-        "project_id": "proj-001",
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "P-001",
         "status": "for_deployment",
-        "priority": "normal",
-        "assignee": "Maria Santos",
-        "due_date": "2026-04-19"
-      }
-    ],
-    "milestones": [
-      {
-        "id": "ms-001",
-        "project_id": "proj-001",
-        "title": "UAT sign-off",
-        "due_date": "2026-06-15",
-        "status": "pending"
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
       },
       {
-        "id": "ms-002",
-        "project_id": "proj-002",
-        "title": "Go-live",
-        "due_date": "2026-06-30",
-        "status": "at_risk"
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "P-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "P-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
+        "due_date": "2026-04-28"
+      },
+      {
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "P-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      },
+      {
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "P-004",
+        "status": "resolved",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "P-004",
+        "status": "closed",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "P-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
       }
     ],
-    "tickets": [
+    "clients": [
       {
-        "id": "ticket-001",
-        "title": "Change request \u2014 ABC scope expansion",
-        "status": "open",
-        "priority": "high",
-        "category": "Change Request",
-        "assignee": "Maria Santos",
-        "requester": "Client ABC",
-        "created_at": "2026-04-11T09:30:00Z"
+        "id": "client-001",
+        "name": "Acme Corp",
+        "active_projects": 2,
+        "health": "green"
       }
     ],
     "kpis": [

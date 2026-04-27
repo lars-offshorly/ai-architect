@@ -7,18 +7,84 @@
       {"service": "project_mgmt", "path": "/projects"},
       {"service": "dashboard", "path": "/dashboard"}
     ],
-    "task_statuses": ["backlog", "in_progress", "review", "done", "blocked"],
-    "task_priorities": ["low", "medium", "high", "critical"],
-    "milestone_statuses": ["pending", "at_risk", "achieved"],
+    "task_statuses": [
+      "backlog",
+      "in_progress",
+      "review",
+      "done",
+      "blocked"
+    ],
+    "task_priorities": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "milestone_statuses": [
+      "pending",
+      "at_risk",
+      "achieved"
+    ],
     "kpi_definitions": [
-      {"key": "on_time_delivery_rate", "label": "On-Time Delivery Rate", "unit": "percentage"},
-      {"key": "project_health_status", "label": "Project Health Status", "unit": "percentage"},
-      {"key": "active_work_items", "label": "Active Work Items", "unit": "count"}
+      {
+        "key": "new_tasks",
+        "label": "New Tasks",
+        "unit": "count"
+      },
+      {
+        "key": "resolved_tasks",
+        "label": "Resolved Tasks",
+        "unit": "count"
+      },
+      {
+        "key": "closed_tasks",
+        "label": "Closed Tasks",
+        "unit": "count"
+      },
+      {
+        "key": "pending_projects",
+        "label": "Pending Projects",
+        "unit": "count"
+      },
+      {
+        "key": "projects_per_priority",
+        "label": "Projects per Priority",
+        "unit": "count"
+      },
+      {
+        "key": "tasks_per_priority",
+        "label": "Tasks per Priority",
+        "unit": "count"
+      },
+      {
+        "key": "projects_per_status",
+        "label": "Projects per Status",
+        "unit": "count"
+      },
+      {
+        "key": "tasks_per_status",
+        "label": "Tasks per Status",
+        "unit": "count"
+      }
     ]
   },
   "stores_contract": {
-    "required": ["projects", "tasks", "kpis"],
-    "optional": ["tickets", "weaves", "dashboard_widgets", "announcements", "calendar"]
+    "required": [
+      "projects",
+      "tasks",
+      "kpis"
+    ],
+    "optional": [
+      "tickets",
+      "weaves",
+      "dashboard_widgets",
+      "announcements",
+      "calendar"
+    ]
   },
-  "slots_used": ["primary_use_case", "company_name", "industry_hint"]
+  "slots_used": [
+    "primary_use_case",
+    "company_name",
+    "industry_hint"
+  ]
 }
