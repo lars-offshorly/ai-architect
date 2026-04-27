@@ -1,0 +1,193 @@
+{
+  "source_template": "legal_corporate_counsel",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "text",
+      "title": "Dashboard Summary",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "text",
+      "title": "Key Findings",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "text",
+      "title": "Recommendations",
+      "position": {
+        "row": 6,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "text",
+      "title": "Data Context",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "number",
+      "title": "Open Contracts",
+      "position": {
+        "row": 12,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-7",
+      "type": "number",
+      "title": "Avg Contract Review Turnaround (Days)",
+      "position": {
+        "row": 12,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-9",
+      "type": "number",
+      "title": "IP Filings YTD",
+      "position": {
+        "row": 12,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-12",
+      "type": "number",
+      "title": "Annual Target for IP Filings",
+      "position": {
+        "row": 12,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-15",
+      "type": "number",
+      "title": "Legal Spend Variance",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-18",
+      "type": "number",
+      "title": "Percentage Under Budget",
+      "position": {
+        "row": 15,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-21",
+      "type": "bar",
+      "title": "Contracts by Type",
+      "position": {
+        "row": 18,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-24",
+      "type": "text",
+      "title": "About: Contracts by Type",
+      "position": {
+        "row": 18,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-25",
+      "type": "pie",
+      "title": "Compliance Incidents by Category",
+      "position": {
+        "row": 24,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-28",
+      "type": "text",
+      "title": "About: Compliance Incidents by Category",
+      "position": {
+        "row": 24,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-29",
+      "type": "line",
+      "title": "Monthly Legal Matters Trend",
+      "position": {
+        "row": 30,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-32",
+      "type": "text",
+      "title": "About: Monthly Legal Matters Trend",
+      "position": {
+        "row": 30,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-33",
+      "type": "list",
+      "title": "Contracts Pending Review",
+      "position": {
+        "row": 36,
+        "col": 0,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}

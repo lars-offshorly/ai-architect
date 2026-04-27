@@ -1,0 +1,116 @@
+{
+  "source_template": "project_management_client_delivery",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "number",
+      "title": "Active Engagements",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "number",
+      "title": "Pending Engagements",
+      "position": {
+        "row": 0,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "number",
+      "title": "Milestones Due This Month",
+      "position": {
+        "row": 0,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "number",
+      "title": "Overdue Milestones",
+      "position": {
+        "row": 0,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "bar",
+      "title": "Engagements per Status",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "position": {
+        "row": 3,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-7",
+      "type": "pie",
+      "title": "Engagement by Client",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-8",
+      "type": "line",
+      "title": "Milestone Trend",
+      "position": {
+        "row": 9,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-9",
+      "type": "list",
+      "title": "Engagement Portfolio",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": "widget-10",
+      "type": "list",
+      "title": "Upcoming Milestones",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 6,
+        "height": 4
+      }
+    }
+  ]
+}

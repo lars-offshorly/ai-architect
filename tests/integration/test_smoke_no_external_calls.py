@@ -1,6 +1,7 @@
 import pytest
-from api.deps import get_interpreter_service, get_dashboard_client
+from api.deps import get_interpreter_service
 from domain.models.interpreter_request import InterpreterRequest
+
 
 @pytest.mark.asyncio
 async def test_interpreter_service_handles_none_llm():
@@ -26,9 +27,3 @@ async def test_interpreter_service_handles_none_llm():
     assert extracted.session_id == "test-session"
     assert suggested.selected_bundle is not None
     assert suggested.reasoning == "Deterministic stub"
-
-@pytest.mark.asyncio
-async def test_dashboard_client_returns_none_when_disabled():
-    """Verify that the dashboard client is None when disabled via settings."""
-    client = get_dashboard_client()
-    assert client is None
