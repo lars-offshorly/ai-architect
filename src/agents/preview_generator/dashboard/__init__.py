@@ -1,1 +1,1 @@
-"""Dashboard service integration: auth, client, templates, and personalizer."""
+"""Dashboard preview helpers: static outputs and template registries."""

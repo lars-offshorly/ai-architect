@@ -13,16 +13,16 @@ def clean_settings_cache():
     # Clear before
     deps.get_settings.cache_clear()
     deps.get_interpreter_service.cache_clear()
-    deps.get_dashboard_client.cache_clear()
     deps.get_bundle_catalog.cache_clear()
-    
+    deps.get_preview_flow.cache_clear()
+
     yield
-    
+
     # Clear after
     deps.get_settings.cache_clear()
     deps.get_interpreter_service.cache_clear()
-    deps.get_dashboard_client.cache_clear()
     deps.get_bundle_catalog.cache_clear()
+    deps.get_preview_flow.cache_clear()
 
 def test_settings_flags_default_to_false():
     """Verify that the new CI speedup flags default to False."""
@@ -73,13 +73,6 @@ async def test_get_interpreter_service_when_llm_disabled(monkeypatch):
     # Summarization is safely no-op without LLM model wiring
     summary = await service.summarize_history("test-session", history=[])
     assert summary == ""
-
-def test_get_dashboard_client_when_disabled(monkeypatch):
-    """Verify that dashboard client is disabled by settings flag."""
-    monkeypatch.setenv("DISABLE_DASHBOARD_CALLS", "true")
-
-    client = deps.get_dashboard_client()
-    assert client is None
 
 def test_get_bundle_catalog_respects_skip_validation(monkeypatch):
     """Verify catalog validation is skipped when configured."""

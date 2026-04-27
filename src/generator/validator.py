@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from catalog.bundle_catalog import BundleCatalog
+from catalog.bundle_catalog import BundleCatalog, BundleDefinition
 
 from .schemas import DummyDataJSON, GenerationJSON
 
@@ -18,23 +18,72 @@ class ValidationResult:
     errors: list[str]
 
 
+_LEGACY_RENDER_KEY_REQUIRED_MODULES: dict[str, tuple[str, ...]] = {
+    "hr_hub": ("tickets", "queues", "kpis", "dashboard"),
+}
+
+
+def _bundle_candidates_for_key(
+    bundle_key_or_render_key: str,
+    catalog: BundleCatalog,
+) -> list[BundleDefinition]:
+    """Resolve candidate bundles from catalog key first, then render key."""
+    direct = catalog.get(bundle_key_or_render_key)
+    if direct is not None:
+        return [direct]
+
+    return [
+        bundle
+        for bundle in catalog.list_all()
+        if bundle.render_key == bundle_key_or_render_key
+    ]
+
+
+def _validate_modules_against_bundle(
+    generation: GenerationJSON,
+    bundle: BundleDefinition,
+) -> None:
+    module_keys = [m.module_key for m in generation.modules]
+    required_modules = list(bundle.default_modules)
+    known_modules = set(bundle.default_modules) | set(bundle.optional_modules)
+
+    legacy_required = _LEGACY_RENDER_KEY_REQUIRED_MODULES.get(generation.bundle)
+    if (
+        legacy_required is not None
+        and generation.bundle == bundle.render_key
+        and generation.bundle != bundle.bundle_key
+    ):
+        required_modules = list(legacy_required)
+        known_modules = set(legacy_required)
+
+    for required in required_modules:
+        if required not in module_keys:
+            raise ValidationError([f"Missing default module: {required}"])
+
+    for key in module_keys:
+        if key not in known_modules:
+            raise ValidationError([f"Unknown module_key: {key}"])
+
+
+
 def validate_generation_json(
     generation: GenerationJSON,
     catalog: BundleCatalog,
 ) -> None:
-    bundle = catalog.get(generation.bundle)
-    if bundle is None:
+    bundles = _bundle_candidates_for_key(generation.bundle, catalog)
+    if not bundles:
         raise ValidationError([f"Unknown bundle: {generation.bundle}"])
 
-    module_keys = [m.module_key for m in generation.modules]
-    for required in bundle.default_modules:
-        if required not in module_keys:
-            raise ValidationError([f"Missing default module: {required}"])
+    last_error: ValidationError | None = None
+    for bundle in bundles:
+        try:
+            _validate_modules_against_bundle(generation, bundle)
+            return
+        except ValidationError as exc:
+            last_error = exc
 
-    known_modules = set(bundle.default_modules) | set(bundle.optional_modules)
-    for key in module_keys:
-        if key not in known_modules:
-            raise ValidationError([f"Unknown module_key: {key}"])
+    if last_error is not None:
+        raise last_error
 
 
 def validate_dummy_data_json(

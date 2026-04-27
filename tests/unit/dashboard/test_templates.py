@@ -15,14 +15,13 @@ from agents.preview_generator.dashboard.templates import (
 from catalog.bundle_catalog import BundleVariantDefinition
 
 _SAMPLE_TEMPLATE = {
-    "dashboard_name": "Sample Template",
-    "source": "analytics",
-    "report": "Sample report text.",
+    "source_template": "sample_template",
+    "generated_at": "2026-04-20",
     "widgets": [
         {
             "type": "number",
-            "name": "Total Count",
-            "calculation": {"datasets": [], "expected_value": "0"},
+            "title": "Total Count",
+            "position": {"row": 0, "col": 0, "width": 3, "height": 3},
         }
     ],
 }
@@ -34,7 +33,7 @@ def templates_dir(tmp_path: Path) -> Path:
     filenames = set(_BUNDLE_TO_TEMPLATE.values())
     for filename in filenames:
         template = dict(_SAMPLE_TEMPLATE)
-        template["dashboard_name"] = f"{filename} Template"
+        template["source_template"] = filename
         (tmp_path / f"{filename}.json").write_text(json.dumps(template))
     return tmp_path
 
@@ -53,7 +52,7 @@ def test_hr_management_returns_template(registry: DashboardTemplateRegistry):
     result = registry.get("hr_management")
     assert result is not None
     assert isinstance(result, dict)
-    assert "dashboard_name" in result
+    assert "source_template" in result
 
 
 def test_hr_hub_alias_resolves_same_as_hr_management(registry: DashboardTemplateRegistry):
@@ -61,7 +60,7 @@ def test_hr_hub_alias_resolves_same_as_hr_management(registry: DashboardTemplate
     hr_hub = registry.get("hr_hub")
     assert hr_management is not None
     assert hr_hub is not None
-    assert hr_management["dashboard_name"] == hr_hub["dashboard_name"]
+    assert hr_management["source_template"] == hr_hub["source_template"]
 
 
 def test_project_mgmt_returns_template(registry: DashboardTemplateRegistry):
@@ -85,7 +84,7 @@ def test_legacy_mapped_bundles_return_template(
     """Bundles listed in _BUNDLE_TO_TEMPLATE resolve without a catalog."""
     result = registry.get(bundle_key)
     assert result is not None
-    assert result["dashboard_name"] == f"{bundle_key} Template"
+    assert result["source_template"] == bundle_key
 
 
 def test_unknown_bundle_returns_none(registry: DashboardTemplateRegistry):
@@ -100,11 +99,11 @@ def test_unknown_bundle_returns_none(registry: DashboardTemplateRegistry):
 def test_get_returns_deep_copy(registry: DashboardTemplateRegistry):
     copy1 = registry.get("hr_management")
     assert copy1 is not None
-    copy1["dashboard_name"] = "MUTATED"
+    copy1["source_template"] = "mutated"
 
     copy2 = registry.get("hr_management")
     assert copy2 is not None
-    assert copy2["dashboard_name"] != "MUTATED"
+    assert copy2["source_template"] != "mutated"
 
 
 def test_mutating_widgets_does_not_affect_cache(registry: DashboardTemplateRegistry):
@@ -210,7 +209,7 @@ def variant_templates_dir(tmp_path: Path) -> Path:
         "hr_management_onboarding",
     }:
         template = dict(_SAMPLE_TEMPLATE)
-        template["dashboard_name"] = f"{filename} Template"
+        template["source_template"] = filename
         (tmp_path / f"{filename}.json").write_text(json.dumps(template))
     return tmp_path
 
@@ -229,7 +228,7 @@ def test_variant_key_resolves_via_catalog(variant_templates_dir: Path):
     result = registry.get("hr_management", variant_key="app-02")
 
     assert result is not None
-    assert result["dashboard_name"] == "hr_management_recruiting Template"
+    assert result["source_template"] == "hr_management_recruiting"
 
 
 def test_missing_variant_key_falls_back_to_default(variant_templates_dir: Path):
@@ -246,7 +245,7 @@ def test_missing_variant_key_falls_back_to_default(variant_templates_dir: Path):
     result = registry.get("hr_management", variant_key="app-99")
 
     assert result is not None
-    assert result["dashboard_name"] == "hr_management Template"
+    assert result["source_template"] == "hr_management"
 
 
 def test_bundle_without_variants_uses_legacy_map(variant_templates_dir: Path):
@@ -258,4 +257,4 @@ def test_bundle_without_variants_uses_legacy_map(variant_templates_dir: Path):
     result = registry.get("ticketing", variant_key="app-02")
 
     assert result is not None
-    assert result["dashboard_name"] == "ticketing Template"
+    assert result["source_template"] == "ticketing"

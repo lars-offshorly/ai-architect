@@ -1,0 +1,182 @@
+{
+  "source_template": "real_estate_brokerage",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "text",
+      "title": "Dashboard Summary",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "text",
+      "title": "Key Insights",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "text",
+      "title": "Recommendations",
+      "position": {
+        "row": 6,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "text",
+      "title": "Data Context",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "number",
+      "title": "Active Listings Count",
+      "position": {
+        "row": 12,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-7",
+      "type": "number",
+      "title": "Monthly Closed Deals",
+      "position": {
+        "row": 12,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-9",
+      "type": "number",
+      "title": "Pending Listings",
+      "position": {
+        "row": 12,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-12",
+      "type": "number",
+      "title": "Top 10 Agents Contribution to Volume",
+      "position": {
+        "row": 12,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-15",
+      "type": "pie",
+      "title": "Listing Status Distribution",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-18",
+      "type": "text",
+      "title": "About: Listing Status Distribution",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-19",
+      "type": "line",
+      "title": "Days on Market Trend",
+      "position": {
+        "row": 21,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-22",
+      "type": "text",
+      "title": "About: Days on Market Trend",
+      "position": {
+        "row": 21,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-23",
+      "type": "bar",
+      "title": "Agent Performance",
+      "position": {
+        "row": 27,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-26",
+      "type": "text",
+      "title": "About: Agent Performance",
+      "position": {
+        "row": 27,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-27",
+      "type": "list",
+      "title": "Active Listings & Deal Pipeline",
+      "position": {
+        "row": 33,
+        "col": 0,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-29",
+      "type": "text",
+      "title": "About: Active Listings & Deal Pipeline",
+      "position": {
+        "row": 33,
+        "col": 6,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}

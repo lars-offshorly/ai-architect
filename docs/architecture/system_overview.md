@@ -3,19 +3,19 @@
 Repo: `ai-architect` (standalone)
 Updated: 2026-04-20 · Author: Lars Lenon
 
-Current priority: production preview generation flow — classify onboarding intent, select bundle + variant, run the LangGraph preview pipeline, overlay realistic `app-0*.json` fixtures, enrich dashboard widgets through Knit, and return an `AppPayload` for workspace preview rendering.
+Current priority: production preview generation flow — classify onboarding intent, select bundle + variant, run the LangGraph preview pipeline, overlay realistic `app-0*.json` fixtures, enrich dashboard widgets from static outputs, and return an `AppPayload` for workspace preview rendering.
 
 ## 1. What We're Building
 
 AI-driven onboarding wizard: user describes what they need, the system interprets the business context, classifies the best bundle, selects a bundle variant, asks clarifying questions when confidence or required information is insufficient, then produces preview-ready workspace JSON.
 
-We produce the JSON. Backend/API returns it. Knit renders generated dashboards when dashboard enrichment is available.
+We produce the JSON. Backend/API returns it.
 
 | Decision | Answer |
 | --- | --- |
 | Client files? | No client-uploaded files in the main flow; preview data is generated from extraction signals, catalog metadata, and curated templates. |
 | Code sharing with `ai-chat-bot`? | Same conventions (`JWT`, `pydantic-settings`, `.env`) — no shared imports. |
-| Current priority | Conversation interpretation + preview generation with bundle variants and dashboard enrichment. |
+| Current priority | Conversation interpretation + preview generation with bundle variants and static dashboard output enrichment. |
 | Legacy path | `AppGeneratorService.assemble()` is still available for older `/generate` paths, but `PreviewFlow` intentionally bypasses it. |
 | RAG generator status | `src/generator/*` contains Pinecone-backed retrieval/personalisation primitives, but the operational preview path uses the LangGraph preview pipeline plus static bundle/dashboard templates. |
 
@@ -24,7 +24,7 @@ We produce the JSON. Backend/API returns it. Knit renders generated dashboards w
 Two-stage pipeline:
 
 1. Conversation and interpretation — `ConversationFlow.process_turn()` runs summarisation, extraction, classification, deterministic variant selection, missing-field checks, fallback handling, and bundle confirmation.
-2. Preview generation — `PreviewFlow.run()` runs the LangGraph preview pipeline, overlays the selected bundle variant template, enriches dashboards through Knit, and assembles the final `AppPayload`.
+2. Preview generation — `PreviewFlow.run()` runs the LangGraph preview pipeline, overlays the selected bundle variant template, enriches dashboards from static outputs, and assembles the final `AppPayload`.
 
 ```text
 User message
@@ -47,7 +47,7 @@ ConversationFlow.process_turn()
 PreviewFlow.run()
   ├── PreviewGeneratorService.generate()  LangGraph pipeline
   ├── _apply_bundle_template()            overlay src/templates/bundles/{bundle}/app-0*.json stores
-  ├── _enrich_dashboard_widgets()         dashboard_templates + Knit /api/v1/dashboards/generate/
+  ├── _enrich_dashboard_widgets()         dashboard_output_templates/*.json (static)
   └── AppPayload                          final preview payload
 ```
 
@@ -285,7 +285,7 @@ Outputs:
 
 - `generation_json` — Knit workspace config: feature flags, modules, permissions, landing pages, and config.
 - `dummy_data_json` — generated sample stores.
-- `user_context` — extracted business context used by dashboard personalization.
+- `user_context` — extracted business context used by post-pipeline enrichment steps.
 
 ### Stage 3 — Bundle Template Overlay (`app-0*.json`)
 
@@ -296,19 +296,16 @@ After the pipeline completes, `PreviewFlow._apply_bundle_template()` uses `Bundl
 3. Overlay the template's `stores` into `dummy_data_json["stores"]`.
 4. Skip dashboard-owned store keys: `dashboard_widgets` and `dashboard_generation_output`.
 
-This replaces generic operational stores with curated, domain-specific fixtures while preserving dashboard-generated data. Implementation note: comments in `bundle_template_loader.py` mention `kpis` as pipeline-owned, but the current `_PIPELINE_OWNED_STORE_KEYS` constant does not include `kpis`; if a variant template includes `stores.kpis`, it can currently overwrite pipeline KPIs.
+This replaces generic operational stores with curated, domain-specific fixtures while preserving pipeline-owned dashboard stores.
 
 ### Stage 4 — Dashboard Enrichment
 
 `PreviewFlow._enrich_dashboard_widgets()` does:
 
-1. `DashboardTemplateRegistry.get(bundle_key, variant_key)` resolves the correct `dashboard_templates/*.json` file.
-2. `personalize_template()` injects user context: company name, report text, date ranges, and team names.
-3. `DashboardClient.generate()` posts to Knit: `POST /api/v1/dashboards/generate/` using `KnitAuthService`.
-4. The response's `debug_payload.widgets` are mapped to internal widget format.
-5. `dummy_data_json["stores"]["dashboard_widgets"]` and `dummy_data_json["stores"]["dashboard_generation_output"]` are populated.
+1. `StaticDashboardOutputRegistry.get_widgets(bundle_key, variant_key)` resolves the correct pre-generated `dashboard_output_templates/*.json` payload.
+2. `dummy_data_json["stores"]["dashboard_widgets"]` is populated from the static payload.
 
-All dashboard enrichment failures are swallowed. The preview still returns without generated dashboard widgets if Knit auth, network, template resolution, or response validation fails.
+All dashboard enrichment failures are swallowed. The preview still returns with `dashboard_widgets: []` when static output resolution fails.
 
 ### Stage 5 — Final Assembly
 
@@ -347,7 +344,7 @@ Current documented preview path is request/response JSON through FastAPI routers
 | Concern | Approach |
 | --- | --- |
 | Secrets | Environment variables via `pydantic-settings`; no hardcoded API keys. |
-| Auth | JWT middleware in `src/api/middleware/auth.py`; dashboard calls use `KnitAuthService`. |
+| Auth | JWT middleware in `src/api/middleware/auth.py`. |
 | Prompt injection | Structured system/user prompt separation; sanitization utilities live in `src/core/sanitize.py`. |
 | Rate limiting | API middleware in `src/api/middleware/rate_limiter.py`. |
 | LLM temperatures | Classifier uses `CLASSIFIER_TEMPERATURE`; conversational/report/assembler paths use their configured temperatures. |
@@ -361,7 +358,7 @@ Current documented preview path is request/response JSON through FastAPI routers
 ai-architect/
 ├── catalog/
 │   └── bundle_catalog.py                  # bundle + variant registry loader/models
-├── dashboard_templates/                   # dashboard JSON templates resolved by bundle/variant
+├── dashboard_output_templates/            # pre-generated dashboard widget outputs
 ├── docs/
 │   └── architecture/
 │       └── system_overview.md
@@ -389,10 +386,8 @@ ai-architect/
 │   │   │   ├── nodes/                     # extract, flags, data tier, sample data, KPI, validate, emit
 │   │   │   ├── bundle_template_loader.py  # app-0*.json overlay loader
 │   │   │   └── dashboard/
-│   │   │       ├── templates.py           # dashboard template registry
-│   │   │       ├── personalizer.py        # user-context personalization
-│   │   │       ├── client.py              # Knit dashboard generate client
-│   │   │       └── auth.py                # Knit auth service
+│   │   │       ├── static_output_registry.py   # static widget output resolver
+│   │   │       └── templates.py                # compatibility registry over static outputs
 │   │   ├── app_generator/                 # legacy assemble path
 │   │   └── replier/                       # clarification and bundle suggestion messages
 │   ├── core/                              # settings, llm, logging, database, pinecone, sanitize
@@ -430,11 +425,8 @@ ai-architect/
 | Preview generator service | `src/agents/preview_generator/service.py` |
 | Bundle template loader | `src/agents/preview_generator/bundle_template_loader.py` |
 | Bundle variant fixtures | `src/templates/bundles/{bundle}/app-0*.json` |
-| Dashboard template registry | `src/agents/preview_generator/dashboard/templates.py` |
-| Dashboard templates | `dashboard_templates/*.json` |
-| Dashboard personalizer | `src/agents/preview_generator/dashboard/personalizer.py` |
-| Knit dashboard API client | `src/agents/preview_generator/dashboard/client.py` |
-| Knit auth service | `src/agents/preview_generator/dashboard/auth.py` |
+| Static dashboard output registry | `src/agents/preview_generator/dashboard/static_output_registry.py` |
+| Dashboard output payloads | `dashboard_output_templates/*.json` |
 | App generator legacy path | `src/agents/app_generator/service.py` |
 | RAG retriever | `src/generator/retriever.py` |
 | RAG personaliser | `src/generator/personaliser.py` |
