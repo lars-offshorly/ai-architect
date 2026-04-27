@@ -1,11 +1,13 @@
 {
   "source_template": "ticketing_facilities",
-  "generated_at": "2026-04-20",
+  "murad_template_id": 48,
+  "murad_template_name": "KNIT Tickets Dashboard",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
-      "id": "widget-1",
+      "id": "widget-2",
       "type": "number",
-      "title": "Open Requests",
+      "title": "Aging Duration",
       "position": {
         "row": 0,
         "col": 0,
@@ -14,9 +16,9 @@
       }
     },
     {
-      "id": "widget-2",
+      "id": "widget-3",
       "type": "number",
-      "title": "Completed Today",
+      "title": "Closure Hours",
       "position": {
         "row": 0,
         "col": 3,
@@ -25,9 +27,9 @@
       }
     },
     {
-      "id": "widget-3",
+      "id": "widget-5",
       "type": "number",
-      "title": "On Hold",
+      "title": "Resolution Duration",
       "position": {
         "row": 0,
         "col": 6,
@@ -36,9 +38,9 @@
       }
     },
     {
-      "id": "widget-4",
+      "id": "widget-8",
       "type": "number",
-      "title": "Average Resolution Time",
+      "title": "Tickets",
       "position": {
         "row": 0,
         "col": 9,
@@ -47,9 +49,9 @@
       }
     },
     {
-      "id": "widget-5",
+      "id": "widget-1",
       "type": "pie",
-      "title": "Request Status Overview",
+      "title": "Ticket Level (Knit Details)",
       "position": {
         "row": 3,
         "col": 0,
@@ -58,12 +60,23 @@
       }
     },
     {
-      "id": "widget-6",
-      "type": "bar",
-      "title": "Requests by Category",
+      "id": "widget-4",
+      "type": "line",
+      "title": "Aging Rate",
       "position": {
         "row": 3,
         "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "line",
+      "title": "Closure Rate",
+      "position": {
+        "row": 9,
+        "col": 0,
         "width": 6,
         "height": 6
       }
@@ -71,45 +84,12 @@
     {
       "id": "widget-7",
       "type": "line",
-      "title": "Request Volume Trend",
-      "position": {
-        "row": 9,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-8",
-      "type": "pie",
-      "title": "Priority Distribution",
+      "title": "Resolution Rate",
       "position": {
         "row": 9,
         "col": 6,
         "width": 6,
         "height": 6
-      }
-    },
-    {
-      "id": "widget-9",
-      "type": "list",
-      "title": "Open Work Orders",
-      "position": {
-        "row": 15,
-        "col": 0,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "list",
-      "title": "My Assigned Work Orders",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 6,
-        "height": 4
       }
     }
   ]

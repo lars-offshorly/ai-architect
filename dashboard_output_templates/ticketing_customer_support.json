@@ -1,11 +1,13 @@
 {
   "source_template": "ticketing_customer_support",
-  "generated_at": "2026-04-20",
+  "murad_template_id": 56,
+  "murad_template_name": "Queue Dashboard",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
       "type": "number",
-      "title": "New Tickets",
+      "title": "Reopen Tickets",
       "position": {
         "row": 0,
         "col": 0,
@@ -16,7 +18,7 @@
     {
       "id": "widget-2",
       "type": "number",
-      "title": "Resolved Today",
+      "title": "Tickets on Hold",
       "position": {
         "row": 0,
         "col": 3,
@@ -25,9 +27,9 @@
       }
     },
     {
-      "id": "widget-3",
+      "id": "widget-6",
       "type": "number",
-      "title": "Reopened Tickets",
+      "title": "Closed Tickets",
       "position": {
         "row": 0,
         "col": 6,
@@ -36,9 +38,9 @@
       }
     },
     {
-      "id": "widget-4",
+      "id": "widget-7",
       "type": "number",
-      "title": "Average First Response",
+      "title": "New Tickets",
       "position": {
         "row": 0,
         "col": 9,
@@ -47,9 +49,9 @@
       }
     },
     {
-      "id": "widget-5",
+      "id": "widget-3",
       "type": "pie",
-      "title": "Ticket Status Overview",
+      "title": "Tickets per Priority",
       "position": {
         "row": 3,
         "col": 0,
@@ -58,9 +60,9 @@
       }
     },
     {
-      "id": "widget-6",
-      "type": "bar",
-      "title": "Queue Distribution",
+      "id": "widget-4",
+      "type": "line",
+      "title": "Tickets per Status per Week",
       "position": {
         "row": 3,
         "col": 6,
@@ -69,9 +71,9 @@
       }
     },
     {
-      "id": "widget-7",
-      "type": "line",
-      "title": "Inflow vs Resolution Trend",
+      "id": "widget-5",
+      "type": "pie",
+      "title": "Tickets per Impact Level",
       "position": {
         "row": 9,
         "col": 0,
@@ -81,35 +83,13 @@
     },
     {
       "id": "widget-8",
-      "type": "pie",
-      "title": "Priority Distribution",
+      "type": "bar",
+      "title": "Tickets per Assignee",
       "position": {
         "row": 9,
         "col": 6,
         "width": 6,
         "height": 6
-      }
-    },
-    {
-      "id": "widget-9",
-      "type": "list",
-      "title": "Open Customer Tickets",
-      "position": {
-        "row": 15,
-        "col": 0,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "list",
-      "title": "My Assigned Tickets",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 6,
-        "height": 4
       }
     }
   ]
