@@ -1,11 +1,13 @@
 {
   "source_template": "sales_wholesale",
-  "generated_at": "2026-04-20",
+  "murad_template_id": 54,
+  "murad_template_name": "Projects Dashboard",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
       "type": "number",
-      "title": "Active Distributors",
+      "title": "New Tasks",
       "position": {
         "row": 0,
         "col": 0,
@@ -14,9 +16,9 @@
       }
     },
     {
-      "id": "widget-2",
+      "id": "widget-3",
       "type": "number",
-      "title": "Open Orders",
+      "title": "Resolved Tasks",
       "position": {
         "row": 0,
         "col": 3,
@@ -25,9 +27,9 @@
       }
     },
     {
-      "id": "widget-3",
+      "id": "widget-6",
       "type": "number",
-      "title": "Orders Shipped Today",
+      "title": "Closed Tasks",
       "position": {
         "row": 0,
         "col": 6,
@@ -36,9 +38,9 @@
       }
     },
     {
-      "id": "widget-4",
+      "id": "widget-8",
       "type": "number",
-      "title": "Active Opportunities",
+      "title": "Pending Projects",
       "position": {
         "row": 0,
         "col": 9,
@@ -47,9 +49,9 @@
       }
     },
     {
-      "id": "widget-5",
-      "type": "bar",
-      "title": "Sales Pipeline",
+      "id": "widget-2",
+      "type": "pie",
+      "title": "Projects per Priority",
       "position": {
         "row": 3,
         "col": 0,
@@ -58,12 +60,23 @@
       }
     },
     {
-      "id": "widget-6",
-      "type": "line",
-      "title": "Order Volume Trend",
+      "id": "widget-4",
+      "type": "pie",
+      "title": "Tasks per Priority",
       "position": {
         "row": 3,
         "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "pie",
+      "title": "Projects per Status",
+      "position": {
+        "row": 9,
+        "col": 0,
         "width": 6,
         "height": 6
       }
@@ -71,54 +84,10 @@
     {
       "id": "widget-7",
       "type": "pie",
-      "title": "Orders by Territory",
-      "position": {
-        "row": 9,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-8",
-      "type": "list",
-      "title": "Open Orders",
+      "title": "Tasks per Status",
       "position": {
         "row": 9,
         "col": 6,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-9",
-      "type": "list",
-      "title": "Active Distributors",
-      "position": {
-        "row": 15,
-        "col": 0,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "list",
-      "title": "Active Opportunities",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-11",
-      "type": "hbar",
-      "title": "Rep Performance",
-      "position": {
-        "row": 19,
-        "col": 0,
         "width": 6,
         "height": 6
       }

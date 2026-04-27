@@ -1,69 +1,38 @@
 {
   "source_template": "real_estate_property_mgmt",
-  "generated_at": "2026-04-20",
+  "murad_template_id": 54,
+  "murad_template_name": "Projects Dashboard",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "text",
-      "title": "Dashboard Summary",
+      "type": "number",
+      "title": "New Tasks",
       "position": {
         "row": 0,
         "col": 0,
-        "width": 12,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-2",
-      "type": "text",
-      "title": "Key Findings",
-      "position": {
-        "row": 3,
-        "col": 0,
-        "width": 12,
+        "width": 3,
         "height": 3
       }
     },
     {
       "id": "widget-3",
-      "type": "text",
-      "title": "Key Insights",
+      "type": "number",
+      "title": "Resolved Tasks",
       "position": {
-        "row": 6,
-        "col": 0,
-        "width": 12,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-4",
-      "type": "text",
-      "title": "Recommendations",
-      "position": {
-        "row": 9,
-        "col": 0,
-        "width": 12,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-5",
-      "type": "text",
-      "title": "Data Context",
-      "position": {
-        "row": 12,
-        "col": 0,
-        "width": 12,
+        "row": 0,
+        "col": 3,
+        "width": 3,
         "height": 3
       }
     },
     {
       "id": "widget-6",
       "type": "number",
-      "title": "Total Units",
+      "title": "Closed Tasks",
       "position": {
-        "row": 15,
-        "col": 0,
+        "row": 0,
+        "col": 6,
         "width": 3,
         "height": 3
       }
@@ -71,144 +40,56 @@
     {
       "id": "widget-8",
       "type": "number",
-      "title": "Occupancy Rate",
+      "title": "Pending Projects",
       "position": {
-        "row": 15,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "number",
-      "title": "Open Eviction Notices",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-13",
-      "type": "number",
-      "title": "Vacant Units",
-      "position": {
-        "row": 15,
+        "row": 0,
         "col": 9,
         "width": 3,
         "height": 3
       }
     },
     {
-      "id": "widget-16",
-      "type": "number",
-      "title": "Average Days to Fill Vacancy",
-      "position": {
-        "row": 18,
-        "col": 0,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-19",
-      "type": "number",
-      "title": "Total Maintenance Requests",
-      "position": {
-        "row": 18,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-22",
+      "id": "widget-2",
       "type": "pie",
-      "title": "Maintenance Request Type Breakdown",
+      "title": "Projects per Priority",
       "position": {
-        "row": 21,
+        "row": 3,
         "col": 0,
         "width": 6,
         "height": 6
       }
     },
     {
-      "id": "widget-25",
-      "type": "text",
-      "title": "About: Maintenance Request Type Breakdown",
+      "id": "widget-4",
+      "type": "pie",
+      "title": "Tasks per Priority",
       "position": {
-        "row": 21,
+        "row": 3,
         "col": 6,
         "width": 6,
         "height": 6
       }
     },
     {
-      "id": "widget-26",
-      "type": "line",
-      "title": "Monthly Work Orders Trend",
+      "id": "widget-5",
+      "type": "pie",
+      "title": "Projects per Status",
       "position": {
-        "row": 27,
+        "row": 9,
         "col": 0,
         "width": 6,
         "height": 6
       }
     },
     {
-      "id": "widget-29",
-      "type": "text",
-      "title": "About: Monthly Work Orders Trend",
+      "id": "widget-7",
+      "type": "pie",
+      "title": "Tasks per Status",
       "position": {
-        "row": 27,
+        "row": 9,
         "col": 6,
         "width": 6,
         "height": 6
-      }
-    },
-    {
-      "id": "widget-30",
-      "type": "bar",
-      "title": "Lease Expiry Pipeline",
-      "position": {
-        "row": 33,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-33",
-      "type": "text",
-      "title": "About: Lease Expiry Pipeline",
-      "position": {
-        "row": 33,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-34",
-      "type": "list",
-      "title": "Open Maintenance & Lease Items",
-      "position": {
-        "row": 39,
-        "col": 0,
-        "width": 6,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-36",
-      "type": "text",
-      "title": "About: Open Maintenance & Lease Items",
-      "position": {
-        "row": 39,
-        "col": 6,
-        "width": 6,
-        "height": 3
       }
     }
   ]
