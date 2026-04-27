@@ -18,20 +18,41 @@ class ValidationResult:
     errors: list[str]
 
 
+_LEGACY_RENDER_MODULES: dict[str, set[str]] = {
+    "hr_hub": {"tickets", "queues", "kpis", "dashboard"},
+}
+
+
 def validate_generation_json(
     generation: GenerationJSON,
     catalog: BundleCatalog,
 ) -> None:
     bundle = catalog.get(generation.bundle)
+    using_render_key = False
+    if bundle is None:
+        bundle = next(
+            (
+                candidate
+                for candidate in catalog.list_all()
+                if candidate.render_key == generation.bundle
+            ),
+            None,
+        )
+        using_render_key = bundle is not None
     if bundle is None:
         raise ValidationError([f"Unknown bundle: {generation.bundle}"])
 
+    required_modules = set(bundle.default_modules)
+    known_modules = set(bundle.default_modules) | set(bundle.optional_modules)
+    if using_render_key and generation.bundle in _LEGACY_RENDER_MODULES:
+        required_modules = set(_LEGACY_RENDER_MODULES[generation.bundle])
+        known_modules = set(_LEGACY_RENDER_MODULES[generation.bundle])
+
     module_keys = [m.module_key for m in generation.modules]
-    for required in bundle.default_modules:
+    for required in required_modules:
         if required not in module_keys:
             raise ValidationError([f"Missing default module: {required}"])
 
-    known_modules = set(bundle.default_modules) | set(bundle.optional_modules)
     for key in module_keys:
         if key not in known_modules:
             raise ValidationError([f"Unknown module_key: {key}"])

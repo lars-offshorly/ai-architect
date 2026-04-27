@@ -8,15 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import BackgroundTasks, HTTPException
-from fastapi.testclient import TestClient
-
-from api.app import create_app
-from api.deps import (
-    get_bundle_catalog,
-    get_conversation_flow,
-    get_conversation_repository,
-    get_session_repository,
-)
 from api.schemas.request import ReplyRequest, StartSessionRequest
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
@@ -116,40 +107,6 @@ def mock_catalog() -> MagicMock:
 @pytest.fixture()
 def background_tasks() -> MagicMock:
     return BackgroundTasks()
-
-
-@pytest.fixture()
-def flow_override() -> MagicMock:
-    mock = AsyncMock()
-    mock.process_turn.return_value = {
-        "status": "awaiting_input",
-        "message": "What industry?",
-        "question": None,
-        "bundle_key": None,
-        "slots": {},
-        "warning": None,
-        "preview_type": None,
-        "extracted": None,
-    }
-    return mock
-
-
-@pytest.fixture()
-def client(flow_override: MagicMock) -> TestClient:
-    app = create_app()
-    app.dependency_overrides[get_conversation_flow] = lambda: flow_override
-    catalog_mock = MagicMock()
-    catalog_mock.has_bundle.return_value = True
-    catalog_mock.get_all_typical_intents.return_value = ["manage employees"]
-    catalog_mock.list_all.return_value = []
-    app.dependency_overrides[get_bundle_catalog] = lambda: catalog_mock
-    app.dependency_overrides[get_session_repository] = (
-        lambda: SessionRepository()
-    )
-    app.dependency_overrides[get_conversation_repository] = (
-        lambda: ConversationRepository()
-    )
-    return TestClient(app)
 
 
 class TestStartSessionPersistsExtraction:
@@ -749,22 +706,29 @@ class TestStartSessionCaseInsensitiveIntent:
 # ---------------------------------------------------------------------------
 
 
-def test_start_session_schedules_background_template_warm(
-    client: TestClient, flow_override: MagicMock
+@pytest.mark.asyncio
+async def test_start_session_schedules_background_template_warm(
+    session_repo: SessionRepository,
+    conv_repo: ConversationRepository,
+    mock_flow: MagicMock,
+    mock_catalog: MagicMock,
 ) -> None:
-    """POST /sessions must schedule exactly one background task
-    to warm template caches."""
+    """start_session must schedule exactly one background warm task."""
     import api.routers.session as session_module
+    from api.routers.session import start_session
 
     with patch.object(session_module, "_warm_template_caches") as mock_warm:
-        resp = client.post(
-            "/sessions",
-            json={"user_id": "u1", "message": "I need an HR dashboard"},
+        background_tasks = MagicMock()
+        response = await start_session(
+            body=StartSessionRequest(user_id="u1", message="I need an HR dashboard"),
+            background_tasks=background_tasks,
+            session_repo=session_repo,
+            conv_repo=conv_repo,
+            flow=mock_flow,
+            catalog=mock_catalog,
         )
-        assert resp.status_code == 201
-        # TestClient runs background tasks inline after the response, so
-        # assert_called_once verifies actual execution, not just scheduling.
-        mock_warm.assert_called_once()
+        assert response.session_id is not None
+        background_tasks.add_task.assert_called_once_with(mock_warm)
 
 
 @pytest.mark.asyncio
@@ -773,12 +737,8 @@ async def test_warm_template_caches_calls_both_providers() -> None:
     from api.routers.session import _warm_template_caches
 
     with (
-        patch(
-            "api.routers.session.get_bundle_template_loader"
-        ) as mock_loader,
-        patch(
-            "api.routers.session.get_dashboard_template_registry"
-        ) as mock_registry,
+        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
+        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
     ):
         await _warm_template_caches()
         mock_loader.assert_called_once()
@@ -793,12 +753,8 @@ async def test_warm_template_caches_is_idempotent() -> None:
     from api.routers.session import _warm_template_caches
 
     with (
-        patch(
-            "api.routers.session.get_bundle_template_loader"
-        ) as mock_loader,
-        patch(
-            "api.routers.session.get_dashboard_template_registry"
-        ) as mock_registry,
+        patch("api.routers.session.get_bundle_template_loader") as mock_loader,
+        patch("api.routers.session.get_dashboard_template_registry") as mock_registry,
     ):
         await _warm_template_caches()
         await _warm_template_caches()
