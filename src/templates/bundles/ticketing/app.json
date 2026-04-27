@@ -14,7 +14,13 @@
     "kpi_definitions": [
       {"key": "new_tickets", "label": "New Tickets", "unit": "count"},
       {"key": "closed_tickets", "label": "Closed Tickets", "unit": "count"},
-      {"key": "reopened_tickets", "label": "Reopened Tickets", "unit": "count"},
+      {"key": "reopened_tickets", "label": "Reopen Tickets", "unit": "count"},
+      {"key": "tickets_on_hold", "label": "Tickets on Hold", "unit": "count"},
+      {"key": "tickets_per_queue", "label": "Tickets per Queue", "unit": "count"},
+      {"key": "tickets_per_assignee", "label": "Tickets per Assignee", "unit": "count"},
+      {"key": "tickets_per_type", "label": "Tickets per Type", "unit": "count"},
+      {"key": "tickets_per_priority", "label": "Tickets per Priority", "unit": "count"},
+      {"key": "tickets_per_impact_level", "label": "Tickets per Impact Level", "unit": "count"},
       {"key": "avg_resolution_time", "label": "Average Resolution Time", "unit": "duration"},
       {"key": "sla_compliance", "label": "SLA Compliance", "unit": "percentage"}
     ]

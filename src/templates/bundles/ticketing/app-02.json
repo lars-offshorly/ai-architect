@@ -4,79 +4,107 @@
   "stores": {
     "tickets": [
       {
-        "id": "TC-001",
-        "title": "Login issue after password reset",
-        "subject": "Access",
-        "employee": "Customer: Alex Tan",
-        "queue": "Customer Support",
+        "id": "T-001",
+        "title": "VPN access issue",
+        "queue": "IT",
+        "assignee": "John Reyes",
         "status": "open",
         "priority": "high",
-        "assignee": "Maria Santos",
-        "requester": "Alex Tan",
-        "created_at": "2026-04-12T09:00:00Z"
+        "type": "Access",
+        "created_at": "2026-04-12T09:00:00Z",
+        "impact_level": "High"
       },
       {
-        "id": "TC-002",
-        "title": "Refund request \u2014 Order #98234",
-        "subject": "Billing",
-        "employee": "Customer: Lucia Chen",
-        "queue": "Billing",
+        "id": "T-002",
+        "title": "Laptop replacement",
+        "queue": "IT",
+        "assignee": "Diane Garcia",
         "status": "in_progress",
         "priority": "medium",
-        "assignee": "Carlos Mendez",
-        "requester": "Lucia Chen",
-        "created_at": "2026-04-10T10:00:00Z"
+        "type": "Hardware",
+        "created_at": "2026-04-10T10:00:00Z",
+        "impact_level": "Medium"
       },
       {
-        "id": "TC-003",
-        "title": "Feature not working on mobile app",
-        "subject": "Bug",
-        "employee": "Customer: Marco Silva",
-        "queue": "Product Support",
-        "status": "reopened",
-        "priority": "high",
-        "assignee": "Ana Reyes",
-        "requester": "Marco Silva",
-        "created_at": "2026-04-06T08:00:00Z"
+        "id": "T-003",
+        "title": "Printer offline 3F",
+        "queue": "Facilities",
+        "assignee": "John Reyes",
+        "status": "on_hold",
+        "priority": "low",
+        "type": "Facilities",
+        "created_at": "2026-04-05T11:30:00Z",
+        "impact_level": "Low"
       },
       {
-        "id": "TC-004",
-        "title": "Cancellation request",
-        "subject": "Account",
-        "employee": "Customer: Priya Nair",
-        "queue": "Retention",
-        "status": "resolved",
+        "id": "T-004",
+        "title": "Password reset SSO",
+        "queue": "IT",
+        "assignee": "John Reyes",
+        "status": "closed",
+        "priority": "low",
+        "type": "Access",
+        "created_at": "2026-04-02T08:45:00Z",
+        "reopened": true,
+        "impact_level": "Low"
+      },
+      {
+        "id": "T-005",
+        "title": "Email not syncing",
+        "queue": "IT",
+        "assignee": "Diane Garcia",
+        "status": "open",
         "priority": "medium",
-        "assignee": "James Okafor",
-        "requester": "Priya Nair",
-        "created_at": "2026-04-03T11:00:00Z"
+        "type": "Email",
+        "created_at": "2026-04-11T14:00:00Z",
+        "impact_level": "Medium"
+      },
+      {
+        "id": "T-006",
+        "title": "Conference room booking",
+        "queue": "Facilities",
+        "assignee": "Sam Lee",
+        "status": "new",
+        "priority": "low",
+        "type": "Booking",
+        "created_at": "2026-04-13T09:00:00Z",
+        "impact_level": "Low"
+      },
+      {
+        "id": "T-007",
+        "title": "Server downtime alert",
+        "queue": "IT",
+        "assignee": "John Reyes",
+        "status": "resolved",
+        "priority": "urgent",
+        "type": "Infrastructure",
+        "created_at": "2026-04-01T08:00:00Z",
+        "impact_level": "High"
+      },
+      {
+        "id": "T-008",
+        "title": "Knit integration failing",
+        "queue": "Knit",
+        "assignee": "Mica Mendoza",
+        "status": "open",
+        "priority": "urgent",
+        "type": "Integration",
+        "created_at": "2026-04-11T14:15:00Z",
+        "impact_level": "High"
       }
     ],
     "queues": [
       {
-        "name": "Customer Support",
-        "ticket_count": 112
+        "name": "Support",
+        "ticket_count": 4
+      },
+      {
+        "name": "Technical",
+        "ticket_count": 3
       },
       {
         "name": "Billing",
-        "ticket_count": 48
-      },
-      {
-        "name": "Product Support",
-        "ticket_count": 65
-      },
-      {
-        "name": "Retention",
-        "ticket_count": 12
-      }
-    ],
-    "tasks": [
-      {
-        "id": "task-001",
-        "title": "CSAT survey rollout",
-        "assigned_to": "Maria Santos",
-        "due_date": "2026-04-22",
-        "status": "In Progress"
+        "ticket_count": 1
       }
     ]
   }

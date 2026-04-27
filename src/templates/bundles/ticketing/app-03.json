@@ -4,79 +4,155 @@
   "stores": {
     "tickets": [
       {
-        "id": "TC-001",
-        "title": "AC repair \u2014 5F meeting room",
-        "subject": "Facilities",
-        "employee": "Juan Dela Cruz",
+        "id": "T-001",
+        "title": "VPN access issue",
+        "queue": "IT",
+        "assignee": "John Reyes",
+        "status": "open",
+        "priority": "high",
+        "type": "Access",
+        "created_at": "2026-04-12T09:00:00Z",
+        "knit_level": "Level 2",
+        "aging_duration": 48,
+        "closure_hours": 0,
+        "aging_rate": 12.5,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
+      },
+      {
+        "id": "T-002",
+        "title": "Laptop replacement",
+        "queue": "IT",
+        "assignee": "Diane Garcia",
+        "status": "in_progress",
+        "priority": "medium",
+        "type": "Hardware",
+        "created_at": "2026-04-10T10:00:00Z",
+        "knit_level": "Level 3",
+        "aging_duration": 48,
+        "closure_hours": 0,
+        "aging_rate": 12.5,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
+      },
+      {
+        "id": "T-003",
+        "title": "Printer offline 3F",
         "queue": "Facilities",
+        "assignee": "John Reyes",
+        "status": "on_hold",
+        "priority": "low",
+        "type": "Facilities",
+        "created_at": "2026-04-05T11:30:00Z",
+        "knit_level": "Level 3",
+        "aging_duration": 0,
+        "closure_hours": 0,
+        "aging_rate": 0,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
+      },
+      {
+        "id": "T-004",
+        "title": "Password reset SSO",
+        "queue": "IT",
+        "assignee": "John Reyes",
+        "status": "closed",
+        "priority": "low",
+        "type": "Access",
+        "created_at": "2026-04-02T08:45:00Z",
+        "reopened": true,
+        "knit_level": "Level 3",
+        "aging_duration": 0,
+        "closure_hours": 72,
+        "aging_rate": 0,
+        "resolution_duration": 0,
+        "closure_rate": 8.2,
+        "resolution_rate": 0
+      },
+      {
+        "id": "T-005",
+        "title": "Email not syncing",
+        "queue": "IT",
+        "assignee": "Diane Garcia",
         "status": "open",
         "priority": "medium",
-        "assignee": "John Reyes",
-        "requester": "Juan Dela Cruz",
-        "created_at": "2026-04-12T09:00:00Z"
+        "type": "Email",
+        "created_at": "2026-04-11T14:00:00Z",
+        "knit_level": "Level 3",
+        "aging_duration": 48,
+        "closure_hours": 0,
+        "aging_rate": 12.5,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
       },
       {
-        "id": "TC-002",
-        "title": "Pantry restock request",
-        "subject": "Admin",
-        "employee": "May Ramos",
-        "queue": "Admin",
-        "status": "in_progress",
-        "priority": "low",
-        "assignee": "Diane Garcia",
-        "requester": "May Ramos",
-        "created_at": "2026-04-10T10:00:00Z"
-      },
-      {
-        "id": "TC-003",
-        "title": "Desk relocation \u2014 new hires",
-        "subject": "Facilities",
-        "employee": "Ana Reyes",
+        "id": "T-006",
+        "title": "Conference room booking",
         "queue": "Facilities",
-        "status": "resolved",
-        "priority": "medium",
-        "assignee": "John Reyes",
-        "requester": "Ana Reyes",
-        "created_at": "2026-04-07T08:30:00Z"
+        "assignee": "Sam Lee",
+        "status": "new",
+        "priority": "low",
+        "type": "Booking",
+        "created_at": "2026-04-13T09:00:00Z",
+        "knit_level": "Level 3",
+        "aging_duration": 0,
+        "closure_hours": 0,
+        "aging_rate": 0,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
       },
       {
-        "id": "TC-004",
-        "title": "Nurse station supplies",
-        "subject": "Medical",
-        "employee": "Nurse Lim",
-        "queue": "Medical",
-        "status": "closed",
-        "priority": "high",
+        "id": "T-007",
+        "title": "Server downtime alert",
+        "queue": "IT",
+        "assignee": "John Reyes",
+        "status": "resolved",
+        "priority": "urgent",
+        "type": "Infrastructure",
+        "created_at": "2026-04-01T08:00:00Z",
+        "knit_level": "Level 1",
+        "aging_duration": 0,
+        "closure_hours": 0,
+        "aging_rate": 0,
+        "resolution_duration": 24,
+        "closure_rate": 0,
+        "resolution_rate": 15.0
+      },
+      {
+        "id": "T-008",
+        "title": "Knit integration failing",
+        "queue": "Knit",
         "assignee": "Mica Mendoza",
-        "requester": "Nurse Lim",
-        "created_at": "2026-04-01T11:00:00Z"
+        "status": "open",
+        "priority": "urgent",
+        "type": "Integration",
+        "created_at": "2026-04-11T14:15:00Z",
+        "knit_level": "Level 1",
+        "aging_duration": 48,
+        "closure_hours": 0,
+        "aging_rate": 12.5,
+        "resolution_duration": 0,
+        "closure_rate": 0,
+        "resolution_rate": 0
       }
     ],
     "queues": [
       {
-        "name": "Facilities",
-        "ticket_count": 42
+        "name": "Knit L1",
+        "ticket_count": 2
       },
       {
-        "name": "Admin",
-        "ticket_count": 28
+        "name": "Knit L2",
+        "ticket_count": 4
       },
       {
-        "name": "Medical",
-        "ticket_count": 14
-      },
-      {
-        "name": "Security",
-        "ticket_count": 9
-      }
-    ],
-    "tasks": [
-      {
-        "id": "task-001",
-        "title": "Quarterly facility audit",
-        "assigned_to": "John Reyes",
-        "due_date": "2026-04-30",
-        "status": "To Do"
+        "name": "Knit L3",
+        "ticket_count": 2
       }
     ]
   }

@@ -2,114 +2,129 @@
   "schema_version": "1.0",
   "bundle_key": "marketing",
   "stores": {
-    "campaigns": [
+    "projects": [
       {
-        "id": "camp-001",
-        "name": "Annual Summit 2026",
-        "status": "Active",
-        "channel": "Events",
-        "budget": 2500000,
-        "spend": 980000,
-        "leads": 320,
-        "due_date": "2026-07-15"
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
+        "status": "active",
+        "priority": "high",
+        "phase": "in_progress",
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
       },
       {
-        "id": "camp-002",
-        "name": "Product Launch Webinar",
-        "status": "Planning",
-        "channel": "Webinar",
-        "budget": 150000,
-        "spend": 20000,
-        "leads": 0,
-        "due_date": "2026-05-20"
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
+        "status": "active",
+        "priority": "normal",
+        "phase": "review",
+        "completion_pct": 38,
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30"
       },
       {
-        "id": "camp-003",
-        "name": "Regional Roadshow \u2014 NCR",
-        "status": "Active",
-        "channel": "Field",
-        "budget": 450000,
-        "spend": 210000,
-        "leads": 180,
-        "due_date": "2026-06-10"
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
+        "phase": "backlog",
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
+      },
+      {
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "MKT-001",
+        "status": "in_progress",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-04-25"
+      },
+      {
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "MKT-001",
+        "status": "for_deployment",
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "MKT-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "MKT-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
+        "due_date": "2026-04-28"
+      },
+      {
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "MKT-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      },
+      {
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "MKT-004",
+        "status": "resolved",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "MKT-004",
+        "status": "closed",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "MKT-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
       }
     ],
     "events": [
       {
         "id": "evt-001",
-        "name": "Annual Summit 2026",
-        "venue": "SMX Convention",
+        "title": "Annual Summit",
+        "status": "Planning",
         "date": "2026-07-15",
-        "expected_attendees": 800,
-        "registered": 540
-      },
-      {
-        "id": "evt-002",
-        "name": "Product Launch Webinar",
-        "venue": "Online \u2014 Zoom",
-        "date": "2026-05-20",
-        "expected_attendees": 500,
-        "registered": 120
-      },
-      {
-        "id": "evt-003",
-        "name": "NCR Roadshow \u2014 Stop 1",
-        "venue": "BGC",
-        "date": "2026-05-15",
-        "expected_attendees": 150,
-        "registered": 98
-      }
-    ],
-    "tasks": [
-      {
-        "id": "task-001",
-        "title": "Finalize speaker lineup",
-        "project": "Annual Summit 2026",
-        "assigned_to": "Sofia Lim",
-        "due_date": "2026-05-01",
-        "status": "In Progress"
-      },
-      {
-        "id": "task-002",
-        "title": "Webinar platform setup",
-        "project": "Product Launch Webinar",
-        "assigned_to": "David Park",
-        "due_date": "2026-04-25",
-        "status": "To Do"
-      },
-      {
-        "id": "task-003",
-        "title": "Booth design review",
-        "project": "Regional Roadshow \u2014 NCR",
-        "assigned_to": "Priya Nair",
-        "due_date": "2026-04-22",
-        "status": "Review"
-      }
-    ],
-    "team_workload": [
-      {
-        "member": "Sofia Lim",
-        "active_tasks": 6
-      },
-      {
-        "member": "David Park",
-        "active_tasks": 3
-      },
-      {
-        "member": "Priya Nair",
-        "active_tasks": 4
-      }
-    ],
-    "tickets": [
-      {
-        "id": "ticket-001",
-        "title": "Venue contract amendment",
-        "status": "open",
-        "priority": "high",
-        "category": "Procurement",
-        "assignee": "Sofia Lim",
-        "requester": "Legal",
-        "created_at": "2026-04-09T09:00:00Z"
+        "budget": 2500000
       }
     ]
   }

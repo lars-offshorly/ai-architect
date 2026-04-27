@@ -1,125 +1,129 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "real_estate",
   "stores": {
     "projects": [
       {
-        "id": "proj-001",
-        "title": "CRM Migration \u2014 Q2",
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
         "status": "active",
+        "priority": "high",
         "phase": "in_progress",
-        "lead": "Maria Santos",
-        "start_date": "2026-01-20",
-        "due_date": "2026-05-31",
-        "completion_pct": 68
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
       },
       {
-        "id": "proj-002",
-        "title": "Agent Onboarding Cohort 3",
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
         "status": "active",
-        "phase": "in_progress",
-        "lead": "Carlos Mendez",
-        "start_date": "2026-02-15",
-        "due_date": "2026-06-15",
-        "completion_pct": 42
-      },
-      {
-        "id": "proj-003",
-        "title": "Commercial Division Launch",
-        "status": "on_hold",
-        "phase": "planning",
-        "lead": "Ana Reyes",
+        "priority": "normal",
+        "phase": "review",
+        "completion_pct": 38,
         "start_date": "2026-03-15",
-        "due_date": "2026-09-30",
-        "completion_pct": 15
+        "end_date": "2026-08-30"
+      },
+      {
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
+        "phase": "backlog",
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
+      },
+      {
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
       }
     ],
     "tasks": [
       {
-        "id": "task-001",
-        "title": "Listing review \u2014 42 Maple St",
-        "project_id": "proj-001",
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "P-001",
         "status": "in_progress",
         "priority": "high",
-        "assignee": "James Okafor",
-        "due_date": "2026-04-27"
+        "assignee": "David Park",
+        "due_date": "2026-04-25"
       },
       {
-        "id": "task-002",
-        "title": "Open house coordination \u2014 18 Oak Ave",
-        "project_id": "proj-002",
-        "status": "backlog",
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "P-001",
+        "status": "for_deployment",
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "P-002",
+        "status": "review",
         "priority": "medium",
-        "assignee": "Sofia Lim",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "P-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
         "due_date": "2026-04-28"
       },
       {
-        "id": "task-003",
-        "title": "Offer negotiation \u2014 buyer Reyes / seller Park",
-        "project_id": "proj-001",
-        "status": "review",
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "P-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      },
+      {
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "P-004",
+        "status": "resolved",
         "priority": "high",
         "assignee": "David Park",
-        "due_date": "2026-04-24"
+        "due_date": "2026-03-15"
       },
       {
-        "id": "task-004",
-        "title": "MLS integration testing",
-        "project_id": "proj-001",
-        "status": "in_progress",
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "P-004",
+        "status": "closed",
         "priority": "medium",
         "assignee": "Priya Nair",
-        "due_date": "2026-05-03"
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "P-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
       }
     ],
-    "kpis": [
+    "leases": [
       {
-        "id": 1,
-        "key": "active_listings",
-        "label": "Active Listings",
-        "type": "count",
-        "sample_value": 63,
-        "source_service": "construction_real_estate"
-      },
-      {
-        "id": 2,
-        "key": "avg_days_on_market",
-        "label": "Avg Days on Market",
-        "type": "days",
-        "sample_value": 22,
-        "source_service": "construction_real_estate"
-      },
-      {
-        "id": 3,
-        "key": "listings_closed_mtd",
-        "label": "Listings Closed MTD",
-        "type": "count",
-        "sample_value": 11,
-        "source_service": "construction_real_estate"
-      }
-    ],
-    "dashboard_widgets": [
-      {
-        "id": "widget-001",
-        "type": "project_summary",
-        "title": "Listings Overview",
-        "position": {
-          "row": 0,
-          "col": 0,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "id": "widget-002",
-        "type": "kpi_grid",
-        "title": "Brokerage Metrics",
-        "position": {
-          "row": 1,
-          "col": 0,
-          "width": 3,
-          "height": 1
-        }
+        "id": "lease-001",
+        "tenant": "ABC Corp",
+        "space": "Floor 3",
+        "rate": 45.0
       }
     ]
   }

@@ -2,6 +2,122 @@
   "schema_version": "1.0",
   "bundle_key": "sales",
   "stores": {
+    "projects": [
+      {
+        "id": "P-001",
+        "title": "Checkout Service Refactor",
+        "status": "active",
+        "priority": "high",
+        "phase": "in_progress",
+        "completion_pct": 62,
+        "start_date": "2026-02-01",
+        "end_date": "2026-06-30"
+      },
+      {
+        "id": "P-002",
+        "title": "Analytics Dashboard v2",
+        "status": "active",
+        "priority": "normal",
+        "phase": "review",
+        "completion_pct": 38,
+        "start_date": "2026-03-15",
+        "end_date": "2026-08-30"
+      },
+      {
+        "id": "P-003",
+        "title": "Mobile SDK Launch",
+        "status": "pending",
+        "priority": "critical",
+        "phase": "backlog",
+        "completion_pct": 12,
+        "start_date": "2026-01-10",
+        "end_date": "2026-05-15"
+      },
+      {
+        "id": "P-004",
+        "title": "Q2 Marketing Campaign",
+        "status": "completed",
+        "priority": "high",
+        "phase": "completed",
+        "completion_pct": 100,
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "TK-001",
+        "title": "Design checkout state machine",
+        "project_id": "P-001",
+        "status": "in_progress",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-04-25"
+      },
+      {
+        "id": "TK-002",
+        "title": "Implement caching layer",
+        "project_id": "P-001",
+        "status": "for_deployment",
+        "priority": "critical",
+        "assignee": "Lucas Silva",
+        "due_date": "2026-04-20"
+      },
+      {
+        "id": "TK-003",
+        "title": "QA regression sweep",
+        "project_id": "P-002",
+        "status": "review",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-05-02"
+      },
+      {
+        "id": "TK-004",
+        "title": "API contract finalization",
+        "project_id": "P-003",
+        "status": "new",
+        "priority": "high",
+        "assignee": "James Okafor",
+        "due_date": "2026-04-28"
+      },
+      {
+        "id": "TK-005",
+        "title": "SDK docs draft",
+        "project_id": "P-003",
+        "status": "on_hold",
+        "priority": "low",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-10"
+      },
+      {
+        "id": "TK-006",
+        "title": "Banner design",
+        "project_id": "P-004",
+        "status": "resolved",
+        "priority": "high",
+        "assignee": "David Park",
+        "due_date": "2026-03-15"
+      },
+      {
+        "id": "TK-007",
+        "title": "Email copy",
+        "project_id": "P-004",
+        "status": "closed",
+        "priority": "medium",
+        "assignee": "Priya Nair",
+        "due_date": "2026-03-10"
+      },
+      {
+        "id": "TK-008",
+        "title": "Landing page dev",
+        "project_id": "P-001",
+        "status": "pending",
+        "priority": "normal",
+        "assignee": "Sofia Lim",
+        "due_date": "2026-05-01"
+      }
+    ],
     "leads": [
       {
         "id": "lead-001",
@@ -25,136 +141,12 @@
     "opportunities": [
       {
         "id": "opp-001",
-        "name": "ABC Corp \u2014 SaaS Annual",
+        "name": "ABC Corp SaaS Annual",
         "client": "ABC Corp",
         "stage": "Proposal",
         "value": 10000,
         "close_date": "2026-03-28",
         "owner": "Maria Santos"
-      },
-      {
-        "id": "opp-002",
-        "name": "XYZ Corp \u2014 Enterprise Expansion",
-        "client": "XYZ Corp",
-        "stage": "Negotiation",
-        "value": 15000,
-        "close_date": "2026-03-22",
-        "owner": "Carlos Mendez"
-      },
-      {
-        "id": "opp-003",
-        "name": "QWE Corp \u2014 Platform Deal",
-        "client": "QWE Corp",
-        "stage": "Qualified",
-        "value": 20000,
-        "close_date": "2026-04-01",
-        "owner": "Ana Reyes"
-      }
-    ],
-    "proposals": [
-      {
-        "id": "prop-001",
-        "client": "ABC Corp",
-        "name": "Website Revamp",
-        "date_sent": "2026-03-01",
-        "status": "Under Review",
-        "value": 20000
-      },
-      {
-        "id": "prop-002",
-        "client": "XYZ Corp",
-        "name": "Software Package",
-        "date_sent": "2026-03-01",
-        "status": "Under Review",
-        "value": 12000
-      },
-      {
-        "id": "prop-003",
-        "client": "QWE Corp",
-        "name": "Software Enhancement",
-        "date_sent": "2026-03-02",
-        "status": "Negotiation",
-        "value": 15000
-      },
-      {
-        "id": "prop-004",
-        "client": "QWE Corp",
-        "name": "Software Package",
-        "date_sent": "2026-03-03",
-        "status": "Negotiation",
-        "value": 12000
-      }
-    ],
-    "upcoming_closures": [
-      {
-        "id": "uc-001",
-        "client": "ABC Corp",
-        "deal_value": 10000,
-        "close_date": "2026-03-28"
-      },
-      {
-        "id": "uc-002",
-        "client": "XYZ Corp",
-        "deal_value": 15000,
-        "close_date": "2026-03-22"
-      },
-      {
-        "id": "uc-003",
-        "client": "QWE Corp",
-        "deal_value": 20000,
-        "close_date": "2026-04-01"
-      }
-    ],
-    "sales_rep_performance": [
-      {
-        "rep": "Maria Santos",
-        "deals": 4,
-        "revenue": 120000
-      },
-      {
-        "rep": "Carlos Mendez",
-        "deals": 3,
-        "revenue": 35000
-      },
-      {
-        "rep": "Ana Reyes",
-        "deals": 2,
-        "revenue": 80000
-      }
-    ],
-    "tasks": [
-      {
-        "id": "task-001",
-        "title": "Discovery call",
-        "client": "ABC Corp",
-        "due_date": "2026-03-15",
-        "status": "To Do"
-      },
-      {
-        "id": "task-002",
-        "title": "Negotiation follow-up",
-        "client": "XYZ Corp",
-        "due_date": "2026-03-12",
-        "status": "Open"
-      },
-      {
-        "id": "task-003",
-        "title": "Send pricing sheet",
-        "client": "QWE Corp",
-        "due_date": "2026-03-13",
-        "status": "Open"
-      }
-    ],
-    "tickets": [
-      {
-        "id": "ticket-001",
-        "title": "CRM sync failing \u2014 HubSpot",
-        "status": "in_progress",
-        "priority": "high",
-        "category": "Bug Report",
-        "assignee": "Carlos Mendez",
-        "requester": "Maria Santos",
-        "created_at": "2026-04-11T09:00:00Z"
       }
     ]
   }
