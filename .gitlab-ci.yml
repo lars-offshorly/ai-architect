@@ -187,4 +187,3 @@ deploy_dev:
     name: dev
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
- 
