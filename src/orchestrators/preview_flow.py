@@ -11,7 +11,7 @@ from agents.preview_generator.bundle_template_loader import (
 from agents.preview_generator.dashboard.templates import (
     DashboardTemplateRegistry,
 )
-from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD
+from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -233,14 +233,15 @@ class PreviewFlow:
         resolved_variant_key = variant_key or _extract_variant_key(user_context)
         stores: dict = dummy_data_json.setdefault("stores", {})
 
-        widgets = self._resolve_static_widgets(
+        payload = self._resolve_static_payload(
             session_id, bundle_key, resolved_variant_key
         )
-        if widgets is None:
+        if payload is None:
             return
 
+        widgets = payload["widgets"]
         stores["dashboard_widgets"] = widgets
-        self._patch_generation_output(stores, bundle_key, widgets)
+        self._patch_generation_output(stores, payload, widgets)
 
         logger.info(
             "session=%s: static dashboard output injected bundle=%s variant=%s widgets=%d",
@@ -250,13 +251,13 @@ class PreviewFlow:
             len(widgets),
         )
 
-    def _resolve_static_widgets(
+    def _resolve_static_payload(
         self,
         session_id: str,
         bundle_key: str,
         resolved_variant_key: str | None,
-    ) -> list | None:
-        """Return the widget list from the static template, or None on any failure."""
+    ) -> dict | None:
+        """Return the full template payload, or None on any failure."""
         if self._static_dashboard_outputs is None:
             logger.warning(
                 "session=%s: DashboardTemplateRegistry not initialized", session_id
@@ -273,8 +274,7 @@ class PreviewFlow:
             )
             return None
 
-        widgets = payload.get("widgets") or []
-        if not widgets:
+        if not payload.get("widgets"):
             logger.warning(
                 "session=%s: empty widgets in static dashboard output for bundle=%s variant=%s",
                 session_id,
@@ -283,21 +283,26 @@ class PreviewFlow:
             )
             return None
 
-        return widgets
+        return payload
 
     @staticmethod
     def _patch_generation_output(
         stores: dict,
-        bundle_key: str,
+        payload: dict,
         widgets: list,
     ) -> None:
-        """Sync ``dashboard_generation_output`` counts with the injected widgets."""
+        """Sync ``dashboard_generation_output`` with the injected static payload.
+
+        Uses murad_template_id / murad_template_name from the payload as the
+        authoritative dashboard identity, falling back to BUNDLE_TO_DASHBOARD
+        + DASHBOARD_IDS if either field is absent.
+        """
         gen_output = stores.get("dashboard_generation_output")
         if not isinstance(gen_output, dict):
             return
 
-        dash_name = BUNDLE_TO_DASHBOARD.get(bundle_key, "Tickets Dashboard")
-        dash_id = DASHBOARD_IDS.get(dash_name, 57)
+        dash_name = payload.get("murad_template_name") or "Tickets Dashboard"
+        dash_id = payload.get("murad_template_id") or DASHBOARD_IDS.get(dash_name, 57)
 
         dashboard = gen_output.setdefault("dashboard", {})
         dashboard["name"] = dash_name
