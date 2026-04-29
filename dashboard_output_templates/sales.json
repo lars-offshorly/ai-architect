@@ -2,94 +2,102 @@
   "source_template": "sales",
   "murad_template_id": 54,
   "murad_template_name": "Projects Dashboard",
-  "generated_at": "2026-04-27",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
+      "external_id": 329,
       "type": "number",
       "title": "New Tasks",
       "position": {
-        "row": 0,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-3",
-      "type": "number",
-      "title": "Resolved Tasks",
-      "position": {
-        "row": 0,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-6",
-      "type": "number",
-      "title": "Closed Tasks",
-      "position": {
-        "row": 0,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-8",
-      "type": "number",
-      "title": "Pending Projects",
-      "position": {
-        "row": 0,
-        "col": 9,
-        "width": 3,
-        "height": 3
+        "row": 0
       }
     },
     {
       "id": "widget-2",
+      "external_id": 328,
       "type": "pie",
       "title": "Projects per Priority",
       "position": {
-        "row": 3,
-        "col": 0,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 0
+      }
+    },
+    {
+      "id": "widget-3",
+      "external_id": 327,
+      "type": "number",
+      "title": "Resolved Tasks",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
+      "external_id": 326,
       "type": "pie",
       "title": "Tasks per Priority",
       "position": {
-        "row": 3,
-        "col": 6,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 0
       }
     },
     {
       "id": "widget-5",
+      "external_id": 325,
       "type": "pie",
       "title": "Projects per Status",
       "position": {
-        "row": 9,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 6,
-        "height": 6
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "external_id": 324,
+      "type": "bar",
+      "title": "Closed Tasks",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 3
       }
     },
     {
       "id": "widget-7",
+      "external_id": 323,
       "type": "pie",
       "title": "Tasks per Status",
       "position": {
-        "row": 9,
+        "width": 3,
+        "height": 3,
         "col": 6,
-        "width": 6,
-        "height": 6
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-8",
+      "external_id": 322,
+      "type": "pie",
+      "title": "Pending Projects",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 3
       }
     }
   ]

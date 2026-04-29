@@ -1,127 +1,188 @@
 {
   "source_template": "hr_management",
-  "generated_at": "2026-04-20",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "number",
-      "title": "Total Employees",
+      "external_id": 460,
+      "type": "bar",
+      "title": "Employee per Age Bracket",
       "position": {
-        "row": 0,
-        "col": 0,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 0,
+        "row": 0
       }
     },
     {
       "id": "widget-2",
+      "external_id": 459,
       "type": "number",
-      "title": "Present Today",
+      "title": "New Hires",
       "position": {
-        "row": 0,
-        "col": 3,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 3,
+        "row": 0
       }
     },
     {
       "id": "widget-3",
-      "type": "number",
-      "title": "Attendance Rate",
+      "external_id": 458,
+      "type": "bar",
+      "title": "New Hire per Department",
       "position": {
-        "row": 0,
-        "col": 6,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
+      "external_id": 457,
       "type": "number",
-      "title": "Open Employee Requests",
+      "title": "Headcount",
       "position": {
-        "row": 0,
-        "col": 9,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 9,
+        "row": 0
       }
     },
     {
       "id": "widget-5",
-      "type": "pie",
-      "title": "Attendance Overview",
+      "external_id": 456,
+      "type": "bar",
+      "title": "Attrition Rate",
       "position": {
-        "row": 3,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 6,
-        "height": 6
+        "row": 3
       }
     },
     {
       "id": "widget-6",
-      "type": "pie",
-      "title": "Workforce Schedule",
+      "external_id": 455,
+      "type": "bar",
+      "title": "Employee Growth Rate",
       "position": {
-        "row": 3,
-        "col": 6,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 3
       }
     },
     {
       "id": "widget-7",
-      "type": "bar",
-      "title": "Headcount by Department",
+      "external_id": 454,
+      "type": "pie",
+      "title": "Salary Change Rate",
       "position": {
-        "row": 9,
-        "col": 0,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 3
       }
     },
     {
       "id": "widget-8",
-      "type": "line",
-      "title": "Attendance Trend",
+      "external_id": 453,
+      "type": "pie",
+      "title": "Separated Employees",
       "position": {
-        "row": 9,
-        "col": 6,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 3
       }
     },
     {
       "id": "widget-9",
-      "type": "list",
-      "title": "Overall Tasks",
+      "external_id": 452,
+      "type": "pie",
+      "title": "Employee per Employment Status",
       "position": {
-        "row": 15,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 6,
-        "height": 4
+        "row": 6
       }
     },
     {
       "id": "widget-10",
-      "type": "list",
-      "title": "Attendance Logs",
+      "external_id": 451,
+      "type": "bar",
+      "title": "Employee per Employment Group",
       "position": {
-        "row": 15,
-        "col": 6,
-        "width": 6,
-        "height": 4
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 6
       }
     },
     {
       "id": "widget-11",
-      "type": "list",
-      "title": "Requests",
+      "external_id": 450,
+      "type": "bar",
+      "title": "Employees per Gender",
       "position": {
-        "row": 19,
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 6
+      }
+    },
+    {
+      "id": "widget-12",
+      "external_id": 449,
+      "type": "pie",
+      "title": "Absenteeism Rate",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 6
+      }
+    },
+    {
+      "id": "widget-13",
+      "external_id": 448,
+      "type": "pie",
+      "title": "Accession Rate",
+      "position": {
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 6,
-        "height": 4
+        "row": 9
+      }
+    },
+    {
+      "id": "widget-14",
+      "external_id": 447,
+      "type": "pie",
+      "title": "Average Salary",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 9
+      }
+    },
+    {
+      "id": "widget-15",
+      "external_id": 446,
+      "type": "pie",
+      "title": "90 Day Quit Rate",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 9
       }
     }
-  ]
+  ],
+  "murad_template_id": 64,
+  "murad_template_name": "HR Admin Dashboard"
 }

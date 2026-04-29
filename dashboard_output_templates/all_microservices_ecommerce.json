@@ -1,12 +1,12 @@
 {
   "source_template": "all_microservices_ecommerce",
-  "generated_at": "2026-04-27",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
-      "external_id": 436,
-      "type": "number",
-      "title": "My Tasks",
+      "external_id": 438,
+      "type": "pie",
+      "title": "Tasks per Priority",
       "position": {
         "width": 3,
         "height": 3,
@@ -16,9 +16,9 @@
     },
     {
       "id": "widget-2",
-      "external_id": 435,
-      "type": "number",
-      "title": "My Tickets",
+      "external_id": 437,
+      "type": "pie",
+      "title": "My Tickets per Priority",
       "position": {
         "width": 3,
         "height": 3,
@@ -28,9 +28,9 @@
     },
     {
       "id": "widget-3",
-      "external_id": 434,
-      "type": "hbar",
-      "title": "Attendance Widget",
+      "external_id": 436,
+      "type": "number",
+      "title": "My Tasks",
       "position": {
         "width": 6,
         "height": 3,
@@ -40,9 +40,9 @@
     },
     {
       "id": "widget-4",
-      "external_id": 438,
-      "type": "bar",
-      "title": "Tasks per Priority",
+      "external_id": 435,
+      "type": "number",
+      "title": "My Tickets",
       "position": {
         "width": 6,
         "height": 6,
@@ -52,9 +52,9 @@
     },
     {
       "id": "widget-5",
-      "external_id": 437,
-      "type": "bar",
-      "title": "My Tickets per Priority",
+      "external_id": 434,
+      "type": "hbar",
+      "title": "Attendance Widget",
       "position": {
         "width": 6,
         "height": 6,
@@ -62,5 +62,7 @@
         "row": 3
       }
     }
-  ]
+  ],
+  "murad_template_id": 62,
+  "murad_template_name": "Home Dashboard"
 }

@@ -1,12 +1,12 @@
 {
   "source_template": "healthcare_hospital",
-  "generated_at": "2026-04-27",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
-      "external_id": 361,
-      "type": "number",
-      "title": "New Tickets",
+      "external_id": 363,
+      "type": "bar",
+      "title": "Tickets per Queue",
       "position": {
         "width": 3,
         "height": 3,
@@ -16,9 +16,9 @@
     },
     {
       "id": "widget-2",
-      "external_id": 356,
-      "type": "number",
-      "title": "Closed Tickets",
+      "external_id": 362,
+      "type": "bar",
+      "title": "Tickets per Assignee",
       "position": {
         "width": 3,
         "height": 3,
@@ -28,9 +28,9 @@
     },
     {
       "id": "widget-3",
-      "external_id": 360,
+      "external_id": 361,
       "type": "number",
-      "title": "Reopen Tickets",
+      "title": "New Tickets",
       "position": {
         "width": 3,
         "height": 3,
@@ -40,9 +40,9 @@
     },
     {
       "id": "widget-4",
-      "external_id": 357,
+      "external_id": 360,
       "type": "number",
-      "title": "Tickets on Hold",
+      "title": "Reopen Tickets",
       "position": {
         "width": 3,
         "height": 3,
@@ -52,51 +52,53 @@
     },
     {
       "id": "widget-5",
-      "external_id": 363,
-      "type": "bar",
-      "title": "Tickets per Queue",
+      "external_id": 359,
+      "type": "pie",
+      "title": "Tickets per Status per Week",
       "position": {
-        "width": 6,
-        "height": 6,
+        "width": 3,
+        "height": 3,
         "col": 0,
         "row": 3
       }
     },
     {
       "id": "widget-6",
-      "external_id": 362,
+      "external_id": 358,
       "type": "bar",
-      "title": "Tickets per Assignee",
+      "title": "Tickets per Type",
       "position": {
-        "width": 6,
-        "height": 6,
-        "col": 6,
+        "width": 3,
+        "height": 3,
+        "col": 3,
         "row": 3
       }
     },
     {
       "id": "widget-7",
-      "external_id": 359,
-      "type": "line",
-      "title": "Tickets per Status per Week",
+      "external_id": 357,
+      "type": "pie",
+      "title": "Tickets on Hold",
       "position": {
-        "width": 6,
-        "height": 6,
-        "col": 0,
-        "row": 9
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 3
       }
     },
     {
       "id": "widget-8",
-      "external_id": 358,
+      "external_id": 356,
       "type": "pie",
-      "title": "Tickets per Type",
+      "title": "Closed Tickets",
       "position": {
-        "width": 6,
-        "height": 6,
-        "col": 6,
-        "row": 9
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 3
       }
     }
-  ]
+  ],
+  "murad_template_id": 57,
+  "murad_template_name": "Tickets Dashboard"
 }

@@ -81,6 +81,7 @@ def _derive_modules(
 # "weaves"    → sample_weaves   (only included for weaves-enabled bundles)
 _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     # Tier 1 — canonical registry keys
+    # Note: hr_management has render_key=hr_hub, so emit.py translates it before lookup
     "project_mgmt": {"primary": "tasks", "secondary": "milestones", "weaves": None},
     "hr_management": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "hr_hub": {"primary": "tickets", "secondary": "queues", "weaves": None},

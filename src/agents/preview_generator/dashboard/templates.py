@@ -36,7 +36,6 @@ logger = get_logger(__name__)
 # the registry YAML.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "hr_management": "hr_management",
-    "hr_hub": "hr_management",
     "project_mgmt": "project_management",
     "ticketing": "ticketing",
     "finance": "finance",

@@ -1,95 +1,103 @@
 {
   "source_template": "ticketing_customer_support",
-  "murad_template_id": 56,
-  "murad_template_name": "Queue Dashboard",
-  "generated_at": "2026-04-27",
+  "murad_template_id": 57,
+  "murad_template_name": "Tickets Dashboard",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "number",
-      "title": "Reopen Tickets",
+      "external_id": 363,
+      "type": "bar",
+      "title": "Tickets per Queue",
       "position": {
-        "row": 0,
-        "col": 0,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 0,
+        "row": 0
       }
     },
     {
       "id": "widget-2",
-      "type": "number",
-      "title": "Tickets on Hold",
+      "external_id": 362,
+      "type": "bar",
+      "title": "Tickets per Assignee",
       "position": {
-        "row": 0,
+        "width": 3,
+        "height": 3,
         "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-6",
-      "type": "number",
-      "title": "Closed Tickets",
-      "position": {
-        "row": 0,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-7",
-      "type": "number",
-      "title": "New Tickets",
-      "position": {
-        "row": 0,
-        "col": 9,
-        "width": 3,
-        "height": 3
+        "row": 0
       }
     },
     {
       "id": "widget-3",
-      "type": "pie",
-      "title": "Tickets per Priority",
+      "external_id": 361,
+      "type": "number",
+      "title": "New Tickets",
       "position": {
-        "row": 3,
-        "col": 0,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
-      "type": "line",
-      "title": "Tickets per Status per Week",
+      "external_id": 360,
+      "type": "number",
+      "title": "Reopen Tickets",
       "position": {
-        "row": 3,
-        "col": 6,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 0
       }
     },
     {
       "id": "widget-5",
+      "external_id": 359,
       "type": "pie",
-      "title": "Tickets per Impact Level",
+      "title": "Tickets per Status per Week",
       "position": {
-        "row": 9,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 6,
-        "height": 6
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "external_id": 358,
+      "type": "bar",
+      "title": "Tickets per Type",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-7",
+      "external_id": 357,
+      "type": "pie",
+      "title": "Tickets on Hold",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 3
       }
     },
     {
       "id": "widget-8",
-      "type": "bar",
-      "title": "Tickets per Assignee",
+      "external_id": 356,
+      "type": "pie",
+      "title": "Closed Tickets",
       "position": {
-        "row": 9,
-        "col": 6,
-        "width": 6,
-        "height": 6
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 3
       }
     }
   ]

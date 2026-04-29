@@ -8,8 +8,8 @@ from agents.preview_generator.bundle_template_loader import (
     _PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
-from agents.preview_generator.dashboard.static_output_registry import (
-    StaticDashboardOutputRegistry,
+from agents.preview_generator.dashboard.templates import (
+    DashboardTemplateRegistry,
 )
 from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD
 from core.logging import get_logger, get_session_logger
@@ -39,7 +39,7 @@ class PreviewFlow:
         preview_generator_service: Any,
         bundle_display_names: dict[str, str],
         bundle_template_loader: BundleTemplateLoader | None = None,
-        static_dashboard_outputs: StaticDashboardOutputRegistry | None = None,
+        static_dashboard_outputs: DashboardTemplateRegistry | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
@@ -232,100 +232,90 @@ class PreviewFlow:
         """Populate ``stores.dashboard_widgets`` from static pre-generated output."""
         resolved_variant_key = variant_key or _extract_variant_key(user_context)
         stores: dict = dummy_data_json.setdefault("stores", {})
-        if self._static_dashboard_outputs is None:
-            stores["dashboard_widgets"] = []
-            stores["dashboard_generation_output"] = _build_dashboard_generation_output(
-                []
-            )
-            logger.warning(
-                "session=%s: StaticDashboardOutputRegistry not initialized", session_id
-            )
-            return {
-                "code": "dashboard_registry_unavailable",
-                "message": "Static dashboard output registry is not initialized.",
-            }
 
-        widgets = self._static_dashboard_outputs.get_widgets(
-            bundle_key, resolved_variant_key
+        widgets = self._resolve_static_widgets(
+            session_id, bundle_key, resolved_variant_key
         )
         if widgets is None:
-            stores["dashboard_widgets"] = []
-            stores["dashboard_generation_output"] = _build_dashboard_generation_output(
-                []
+            return
+
+        stores["dashboard_widgets"] = widgets
+        self._patch_generation_output(stores, bundle_key, widgets)
+
+        logger.info(
+            "session=%s: static dashboard output injected bundle=%s variant=%s widgets=%d",
+            session_id,
+            bundle_key,
+            resolved_variant_key,
+            len(widgets),
+        )
+
+    def _resolve_static_widgets(
+        self,
+        session_id: str,
+        bundle_key: str,
+        resolved_variant_key: str | None,
+    ) -> list | None:
+        """Return the widget list from the static template, or None on any failure."""
+        if self._static_dashboard_outputs is None:
+            logger.warning(
+                "session=%s: DashboardTemplateRegistry not initialized", session_id
             )
+            return None
+
+        payload = self._static_dashboard_outputs.get(bundle_key, resolved_variant_key)
+        if payload is None:
             logger.warning(
                 "session=%s: no static dashboard output for bundle=%s variant=%s",
                 session_id,
                 bundle_key,
                 resolved_variant_key,
             )
-            return {
-                "code": "dashboard_static_output_missing",
-                "message": "No static dashboard output found for bundle/variant.",
-            }
+            return None
 
-        stores["dashboard_widgets"] = widgets
-        stores["dashboard_generation_output"] = _build_dashboard_generation_output(
-            widgets
-        )
-        # Enrich with the canonical dashboard name and external_id for this bundle
+        widgets = payload.get("widgets") or []
+        if not widgets:
+            logger.warning(
+                "session=%s: empty widgets in static dashboard output for bundle=%s variant=%s",
+                session_id,
+                bundle_key,
+                resolved_variant_key,
+            )
+            return None
+
+        return widgets
+
+    @staticmethod
+    def _patch_generation_output(
+        stores: dict,
+        bundle_key: str,
+        widgets: list,
+    ) -> None:
+        """Sync ``dashboard_generation_output`` counts with the injected widgets."""
+        gen_output = stores.get("dashboard_generation_output")
+        if not isinstance(gen_output, dict):
+            return
+
         dash_name = BUNDLE_TO_DASHBOARD.get(bundle_key, "Tickets Dashboard")
         dash_id = DASHBOARD_IDS.get(dash_name, 57)
-        stores["dashboard_generation_output"]["dashboard"]["name"] = dash_name
-        stores["dashboard_generation_output"]["dashboard"]["external_id"] = dash_id
 
-        logger.info(
-            (
-                "session=%s: static dashboard output injected "
-                "bundle=%s variant=%s widgets=%d"
-            ),
-            session_id,
-            bundle_key,
-            resolved_variant_key,
-            len(widgets),
-        )
-        return None
+        dashboard = gen_output.setdefault("dashboard", {})
+        dashboard["name"] = dash_name
+        dashboard["external_id"] = dash_id
 
+        type_counts: dict[str, int] = {
+            "text": 0, "number": 0, "bar": 0, "hbar": 0, "pie": 0,
+            "line": 0, "scatter": 0, "list": 0, "combo": 0, "embed": 0,
+        }
+        for widget in widgets:
+            wtype = widget.get("type")
+            if isinstance(wtype, str) and wtype in type_counts:
+                type_counts[wtype] += 1
+        gen_output["widgets"] = {**type_counts, "total": len(widgets)}
 
-def _build_dashboard_generation_output(
-    widgets: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Build OpenAPI-aligned dashboard output from injected static widgets."""
-    type_counts: dict[str, int] = {
-        "text": 0,
-        "number": 0,
-        "bar": 0,
-        "hbar": 0,
-        "pie": 0,
-        "line": 0,
-        "scatter": 0,
-        "list": 0,
-        "combo": 0,
-        "embed": 0,
-    }
-    for widget in widgets:
-        widget_type = widget.get("type") if isinstance(widget, dict) else None
-        if isinstance(widget_type, str) and widget_type in type_counts:
-            type_counts[widget_type] += 1
-    widget_count = {**type_counts, "total": len(widgets)}
-
-    return {
-        "success": True,
-        "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
-        "widgets": widget_count,
-        "execution_time": "0m 1s",
-        "errors": [],
-        "debug_payload": {
-            "widgets": widgets,
-            "total_widgets": len(widgets),
-            "widget_breakdown": widget_count,
-        },
-        "generation_metadata": {
-            "widgets_extracted": len(widgets),
-            "widgets_explicit": len(widgets),
-            "processing_steps": ["static_dashboard_injection"],
-        },
-    }
+        meta = gen_output.setdefault("generation_metadata", {})
+        meta["widgets_extracted"] = len(widgets)
+        meta["widgets_explicit"] = len(widgets)
 
 
 def _extract_variant_key(user_context: Any) -> str | None:

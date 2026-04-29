@@ -1,6 +1,6 @@
 {
   "source_template": "education_edtech",
-  "generated_at": "2026-04-27",
+  "generated_at": "2026-04-29",
   "widgets": [
     {
       "id": "widget-1",
@@ -16,9 +16,9 @@
     },
     {
       "id": "widget-2",
-      "external_id": 327,
-      "type": "number",
-      "title": "Resolved Tasks",
+      "external_id": 328,
+      "type": "pie",
+      "title": "Projects per Priority",
       "position": {
         "width": 3,
         "height": 3,
@@ -28,9 +28,9 @@
     },
     {
       "id": "widget-3",
-      "external_id": 324,
+      "external_id": 327,
       "type": "number",
-      "title": "Closed Tasks",
+      "title": "Resolved Tasks",
       "position": {
         "width": 3,
         "height": 3,
@@ -40,9 +40,9 @@
     },
     {
       "id": "widget-4",
-      "external_id": 322,
-      "type": "number",
-      "title": "Pending Projects",
+      "external_id": 326,
+      "type": "pie",
+      "title": "Tasks per Priority",
       "position": {
         "width": 3,
         "height": 3,
@@ -52,51 +52,53 @@
     },
     {
       "id": "widget-5",
-      "external_id": 328,
-      "type": "bar",
-      "title": "Projects per Priority",
+      "external_id": 325,
+      "type": "pie",
+      "title": "Projects per Status",
       "position": {
-        "width": 6,
-        "height": 6,
+        "width": 3,
+        "height": 3,
         "col": 0,
         "row": 3
       }
     },
     {
       "id": "widget-6",
-      "external_id": 326,
+      "external_id": 324,
       "type": "bar",
-      "title": "Tasks per Priority",
+      "title": "Closed Tasks",
       "position": {
-        "width": 6,
-        "height": 6,
-        "col": 6,
+        "width": 3,
+        "height": 3,
+        "col": 3,
         "row": 3
       }
     },
     {
       "id": "widget-7",
-      "external_id": 325,
-      "type": "pie",
-      "title": "Projects per Status",
-      "position": {
-        "width": 6,
-        "height": 6,
-        "col": 0,
-        "row": 9
-      }
-    },
-    {
-      "id": "widget-8",
       "external_id": 323,
       "type": "pie",
       "title": "Tasks per Status",
       "position": {
-        "width": 6,
-        "height": 6,
+        "width": 3,
+        "height": 3,
         "col": 6,
-        "row": 9
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-8",
+      "external_id": 322,
+      "type": "pie",
+      "title": "Pending Projects",
+      "position": {
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 3
       }
     }
-  ]
+  ],
+  "murad_template_id": 54,
+  "murad_template_name": "Projects Dashboard"
 }

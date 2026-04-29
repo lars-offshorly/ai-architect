@@ -11,8 +11,8 @@ from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
-from agents.preview_generator.dashboard.static_output_registry import (
-    StaticDashboardOutputRegistry,
+from agents.preview_generator.dashboard.templates import (
+    DashboardTemplateRegistry,
 )
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
@@ -127,9 +127,9 @@ def get_bundle_template_loader() -> BundleTemplateLoader:
 
 
 @lru_cache(maxsize=1)
-def get_static_dashboard_output_registry() -> StaticDashboardOutputRegistry:
-    """Return a cached registry of pre-generated Group B dashboard widget outputs."""
-    return StaticDashboardOutputRegistry(catalog=get_bundle_catalog())
+def get_dashboard_template_registry() -> DashboardTemplateRegistry:
+    """Return a cached registry of pre-generated dashboard widget outputs."""
+    return DashboardTemplateRegistry(catalog=get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
@@ -141,7 +141,7 @@ def get_preview_flow() -> PreviewFlow:
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
         bundle_template_loader=get_bundle_template_loader(),
-        static_dashboard_outputs=get_static_dashboard_output_registry(),
+        static_dashboard_outputs=get_dashboard_template_registry(),
     )
 
 
