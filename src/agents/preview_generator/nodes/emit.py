@@ -8,6 +8,7 @@ from core.logging import get_logger
 
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
+from ..dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD, WIDGET_TEMPLATES
 
 logger = get_logger(__name__)
 
@@ -234,7 +235,12 @@ def _build_dashboard_widgets(
     primary_store = schema.get("primary") or "items"
     secondary_store = schema.get("secondary") or "projects"
     kpi_title = state.kpi_metrics[0].label if state.kpi_metrics else "KPI Snapshot"
-    return [
+    
+    dash_name = BUNDLE_TO_DASHBOARD.get(state.bundle_key, "Tickets Dashboard")
+    dash_id = DASHBOARD_IDS.get(dash_name, 57)
+    templates = WIDGET_TEMPLATES.get(dash_id, [])
+    
+    widgets = [
         {
             "id": "widget-kpi-overview",
             "type": "number",
@@ -254,6 +260,13 @@ def _build_dashboard_widgets(
             "position": {"row": 1, "col": 0, "width": 4, "height": 1},
         },
     ]
+    
+    # Best-effort external_id injection for the 3 preview widgets
+    if templates:
+        for i, widget in enumerate(widgets[:len(templates)]):
+            widget["external_id"] = templates[i]["external_id"]
+            
+    return widgets
 
 
 def _build_dashboard_generation_output(
@@ -267,45 +280,54 @@ def _build_dashboard_generation_output(
         len(str(message.get("content", ""))) for message in state.conversation_history
     )
 
+    dash_name = BUNDLE_TO_DASHBOARD.get(state.bundle_key, f"{state.bundle_key.replace('_', ' ').title()} Dashboard")
+    dash_id = DASHBOARD_IDS.get(dash_name, 57)
+    templates = WIDGET_TEMPLATES.get(dash_id, [])
+
     debug_widgets: list[dict[str, object]] = []
     if state.kpi_metrics:
         metric = state.kpi_metrics[0]
-        debug_widgets.append(
-            {
-                "type": "number",
-                "name": metric.label,
-                "value": str(metric.sample_value),
-                "calculation": {
-                    "datasets": [
-                        {
-                            "module": state.bundle_key.replace("_", " ").title(),
-                            "data_source": "kpis",
-                        }
-                    ]
-                },
-            }
-        )
-    debug_widgets.append(
-        {
-            "type": "bar",
-            "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
-            "data_config": {
-                "module": state.bundle_key.replace("_", " ").title(),
-                "data_source": primary_store,
-                "group_by": ["status"],
-                "aggregation": "count",
+        w = {
+            "type": "number",
+            "name": metric.label,
+            "value": str(metric.sample_value),
+            "calculation": {
+                "datasets": [
+                    {
+                        "module": state.bundle_key.replace("_", " ").title(),
+                        "data_source": "kpis",
+                    }
+                ]
             },
         }
-    )
-    debug_widgets.append(
-        {
-            "type": "list",
-            "name": "KPI Detail List",
-            "data_config": {"module": "KPI", "data_source": "kpis"},
-            "column_count": 4,
-            "column_width": 250,
-        }
-    )
+        if templates:
+            w["external_id"] = templates[0]["external_id"]
+        debug_widgets.append(w)
+
+    w_bar = {
+        "type": "bar",
+        "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
+        "data_config": {
+            "module": state.bundle_key.replace("_", " ").title(),
+            "data_source": primary_store,
+            "group_by": ["status"],
+            "aggregation": "count",
+        },
+    }
+    if len(templates) > 1:
+        w_bar["external_id"] = templates[1]["external_id"]
+    debug_widgets.append(w_bar)
+
+    w_list = {
+        "type": "list",
+        "name": "KPI Detail List",
+        "data_config": {"module": "KPI", "data_source": "kpis"},
+        "column_count": 4,
+        "column_width": 250,
+    }
+    if len(templates) > 2:
+        w_list["external_id"] = templates[2]["external_id"]
+    debug_widgets.append(w_list)
 
     type_counts = {
         "text": 0,
@@ -339,7 +361,8 @@ def _build_dashboard_generation_output(
         "success": True,
         "dashboard": {
             "id": f"dash-{state.session_id[:8]}",
-            "name": f"{state.bundle_key.replace('_', ' ').title()} Dashboard",
+            "external_id": dash_id,
+            "name": dash_name,
             "url": None,
         },
         "widgets": widget_count,

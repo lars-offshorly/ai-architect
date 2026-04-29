@@ -1,192 +1,101 @@
 {
   "source_template": "education_k12",
-  "generated_at": "2026-04-20",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "text",
-      "title": "Dashboard Summary",
+      "external_id": 329,
+      "type": "number",
+      "title": "New Tasks",
       "position": {
-        "row": 0,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 12,
-        "height": 3
+        "row": 0
       }
     },
     {
       "id": "widget-2",
-      "type": "text",
-      "title": "Key Insights",
+      "external_id": 327,
+      "type": "number",
+      "title": "Resolved Tasks",
       "position": {
-        "row": 3,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 0
       }
     },
     {
       "id": "widget-3",
-      "type": "text",
-      "title": "Recommendations",
+      "external_id": 324,
+      "type": "number",
+      "title": "Closed Tasks",
       "position": {
-        "row": 6,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
-      "type": "text",
-      "title": "Data Context",
+      "external_id": 322,
+      "type": "number",
+      "title": "Pending Projects",
       "position": {
-        "row": 9,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 0
       }
     },
     {
       "id": "widget-5",
-      "type": "number",
-      "title": "Total Enrollment",
+      "external_id": 328,
+      "type": "bar",
+      "title": "Projects per Priority",
       "position": {
-        "row": 12,
+        "width": 6,
+        "height": 6,
         "col": 0,
-        "width": 3,
-        "height": 3
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "external_id": 326,
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "position": {
+        "width": 6,
+        "height": 6,
+        "col": 6,
+        "row": 3
       }
     },
     {
       "id": "widget-7",
-      "type": "number",
-      "title": "Attendance Rate",
-      "position": {
-        "row": 12,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-9",
-      "type": "number",
-      "title": "Graduation Rate",
-      "position": {
-        "row": 12,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-12",
-      "type": "number",
-      "title": "Teacher Retention Rate",
-      "position": {
-        "row": 12,
-        "col": 9,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-15",
-      "type": "number",
-      "title": "Open Incidents",
-      "position": {
-        "row": 15,
-        "col": 0,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-18",
-      "type": "bar",
-      "title": "Enrollment by Grade Level",
-      "position": {
-        "row": 18,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-21",
-      "type": "text",
-      "title": "About: Enrollment by Grade Level",
-      "position": {
-        "row": 18,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-22",
-      "type": "line",
-      "title": "Attendance Trend",
-      "position": {
-        "row": 24,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-25",
-      "type": "text",
-      "title": "About: Attendance Trend",
-      "position": {
-        "row": 24,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-26",
+      "external_id": 325,
       "type": "pie",
-      "title": "Incident Type Distribution",
+      "title": "Projects per Status",
       "position": {
-        "row": 30,
+        "width": 6,
+        "height": 6,
         "col": 0,
-        "width": 6,
-        "height": 6
+        "row": 9
       }
     },
     {
-      "id": "widget-29",
-      "type": "text",
-      "title": "About: Incident Type Distribution",
+      "id": "widget-8",
+      "external_id": 323,
+      "type": "pie",
+      "title": "Tasks per Status",
       "position": {
-        "row": 30,
+        "width": 6,
+        "height": 6,
         "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-30",
-      "type": "list",
-      "title": "Open District Work Items",
-      "position": {
-        "row": 36,
-        "col": 0,
-        "width": 6,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-32",
-      "type": "text",
-      "title": "About: Open District Work Items",
-      "position": {
-        "row": 36,
-        "col": 6,
-        "width": 6,
-        "height": 3
+        "row": 9
       }
     }
   ]

@@ -11,6 +11,7 @@ from agents.preview_generator.bundle_template_loader import (
 from agents.preview_generator.dashboard.static_output_registry import (
     StaticDashboardOutputRegistry,
 )
+from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -267,6 +268,12 @@ class PreviewFlow:
         stores["dashboard_generation_output"] = _build_dashboard_generation_output(
             widgets
         )
+        # Enrich with the canonical dashboard name and external_id for this bundle
+        dash_name = BUNDLE_TO_DASHBOARD.get(bundle_key, "Tickets Dashboard")
+        dash_id = DASHBOARD_IDS.get(dash_name, 57)
+        stores["dashboard_generation_output"]["dashboard"]["name"] = dash_name
+        stores["dashboard_generation_output"]["dashboard"]["external_id"] = dash_id
+
         logger.info(
             (
                 "session=%s: static dashboard output injected "

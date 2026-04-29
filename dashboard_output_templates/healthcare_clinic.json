@@ -1,181 +1,101 @@
 {
   "source_template": "healthcare_clinic",
-  "generated_at": "2026-04-20",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "text",
-      "title": "Dashboard Summary",
+      "external_id": 361,
+      "type": "number",
+      "title": "New Tickets",
       "position": {
-        "row": 0,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 12,
-        "height": 3
+        "row": 0
       }
     },
     {
       "id": "widget-2",
-      "type": "text",
-      "title": "Key Findings",
+      "external_id": 356,
+      "type": "number",
+      "title": "Closed Tickets",
       "position": {
-        "row": 3,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 0
       }
     },
     {
       "id": "widget-3",
-      "type": "text",
-      "title": "Key Insights",
+      "external_id": 360,
+      "type": "number",
+      "title": "Reopen Tickets",
       "position": {
-        "row": 6,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
-      "type": "text",
-      "title": "Recommendations",
+      "external_id": 357,
+      "type": "number",
+      "title": "Tickets on Hold",
       "position": {
-        "row": 9,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 9,
+        "row": 0
       }
     },
     {
       "id": "widget-5",
-      "type": "text",
-      "title": "Data Context",
+      "external_id": 363,
+      "type": "bar",
+      "title": "Tickets per Queue",
       "position": {
-        "row": 12,
+        "width": 6,
+        "height": 6,
         "col": 0,
-        "width": 12,
-        "height": 3
+        "row": 3
       }
     },
     {
       "id": "widget-6",
-      "type": "number",
-      "title": "Daily Appointment Volume",
+      "external_id": 362,
+      "type": "bar",
+      "title": "Tickets per Assignee",
       "position": {
-        "row": 15,
+        "width": 6,
+        "height": 6,
+        "col": 6,
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-7",
+      "external_id": 359,
+      "type": "line",
+      "title": "Tickets per Status per Week",
+      "position": {
+        "width": 6,
+        "height": 6,
         "col": 0,
-        "width": 3,
-        "height": 3
+        "row": 9
       }
     },
     {
       "id": "widget-8",
-      "type": "number",
-      "title": "No-Show Rate",
-      "position": {
-        "row": 15,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "number",
-      "title": "Telehealth Appointment Percentage",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-13",
-      "type": "number",
-      "title": "Patient Satisfaction Score",
-      "position": {
-        "row": 15,
-        "col": 9,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-16",
-      "type": "bar",
-      "title": "Appointment Volume by Provider",
-      "position": {
-        "row": 18,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-19",
-      "type": "text",
-      "title": "About: Appointment Volume by Provider",
-      "position": {
-        "row": 18,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-20",
+      "external_id": 358,
       "type": "pie",
-      "title": "Appointment Type Distribution",
+      "title": "Tickets per Type",
       "position": {
-        "row": 24,
-        "col": 0,
         "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-23",
-      "type": "text",
-      "title": "About: Appointment Type Distribution",
-      "position": {
-        "row": 24,
+        "height": 6,
         "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-24",
-      "type": "line",
-      "title": "Monthly Visit Volume Trend",
-      "position": {
-        "row": 30,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-27",
-      "type": "text",
-      "title": "About: Monthly Visit Volume Trend",
-      "position": {
-        "row": 30,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-28",
-      "type": "list",
-      "title": "Upcoming Appointments",
-      "position": {
-        "row": 36,
-        "col": 0,
-        "width": 6,
-        "height": 3
+        "row": 9
       }
     }
   ]

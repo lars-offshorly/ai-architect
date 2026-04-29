@@ -1,170 +1,101 @@
 {
   "source_template": "generic_nonprofit",
-  "generated_at": "2026-04-20",
+  "generated_at": "2026-04-27",
   "widgets": [
     {
       "id": "widget-1",
-      "type": "text",
-      "title": "Dashboard Summary",
+      "external_id": 361,
+      "type": "number",
+      "title": "New Tickets",
       "position": {
-        "row": 0,
+        "width": 3,
+        "height": 3,
         "col": 0,
-        "width": 12,
-        "height": 3
+        "row": 0
       }
     },
     {
       "id": "widget-2",
-      "type": "text",
-      "title": "Key Insights",
+      "external_id": 356,
+      "type": "number",
+      "title": "Closed Tickets",
       "position": {
-        "row": 3,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 3,
+        "row": 0
       }
     },
     {
       "id": "widget-3",
-      "type": "text",
-      "title": "Recommendations",
+      "external_id": 360,
+      "type": "number",
+      "title": "Reopen Tickets",
       "position": {
-        "row": 6,
-        "col": 0,
-        "width": 12,
-        "height": 3
+        "width": 3,
+        "height": 3,
+        "col": 6,
+        "row": 0
       }
     },
     {
       "id": "widget-4",
+      "external_id": 357,
       "type": "number",
-      "title": "Active Programs",
+      "title": "Tickets on Hold",
       "position": {
-        "row": 9,
-        "col": 0,
         "width": 3,
-        "height": 3
+        "height": 3,
+        "col": 9,
+        "row": 0
+      }
+    },
+    {
+      "id": "widget-5",
+      "external_id": 363,
+      "type": "bar",
+      "title": "Tickets per Queue",
+      "position": {
+        "width": 6,
+        "height": 6,
+        "col": 0,
+        "row": 3
       }
     },
     {
       "id": "widget-6",
-      "type": "number",
-      "title": "Donor Retention Rate",
+      "external_id": 362,
+      "type": "bar",
+      "title": "Tickets per Assignee",
       "position": {
-        "row": 9,
-        "col": 3,
-        "width": 3,
-        "height": 3
+        "width": 6,
+        "height": 6,
+        "col": 6,
+        "row": 3
+      }
+    },
+    {
+      "id": "widget-7",
+      "external_id": 359,
+      "type": "line",
+      "title": "Tickets per Status per Week",
+      "position": {
+        "width": 6,
+        "height": 6,
+        "col": 0,
+        "row": 9
       }
     },
     {
       "id": "widget-8",
-      "type": "number",
-      "title": "Projected Year-End Fundraising Achievement",
-      "position": {
-        "row": 9,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-11",
-      "type": "number",
-      "title": "Year-Over-Year Volunteer Growth",
-      "position": {
-        "row": 9,
-        "col": 9,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-14",
-      "type": "bar",
-      "title": "Fundraising Progress by Program",
-      "position": {
-        "row": 12,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-17",
-      "type": "text",
-      "title": "About: Fundraising Progress by Program",
-      "position": {
-        "row": 12,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-18",
-      "type": "line",
-      "title": "Monthly Donor Activity Trend",
-      "position": {
-        "row": 18,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-21",
-      "type": "text",
-      "title": "About: Monthly Donor Activity Trend",
-      "position": {
-        "row": 18,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-22",
+      "external_id": 358,
       "type": "pie",
-      "title": "Volunteer Distribution by Program",
+      "title": "Tickets per Type",
       "position": {
-        "row": 24,
-        "col": 0,
         "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-25",
-      "type": "text",
-      "title": "About: Volunteer Distribution by Program",
-      "position": {
-        "row": 24,
+        "height": 6,
         "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-26",
-      "type": "list",
-      "title": "Program & Operations Work Tracker",
-      "position": {
-        "row": 30,
-        "col": 0,
-        "width": 6,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-32",
-      "type": "text",
-      "title": "About: Program & Operations Work Tracker",
-      "position": {
-        "row": 30,
-        "col": 6,
-        "width": 6,
-        "height": 3
+        "row": 9
       }
     }
   ]
