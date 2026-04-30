@@ -96,6 +96,22 @@
         "type": "count",
         "sample_value": 11200,
         "source_service": "education"
+      },
+      {
+        "id": 4,
+        "key": "engagement_ratio",
+        "label": "Engagement Ratio",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "education"
+      },
+      {
+        "id": 5,
+        "key": "average_session_duration",
+        "label": "Average Session Duration",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "education"
       }
     ],
     "dashboard_widgets": [

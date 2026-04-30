@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "construction",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Active Projects",
         "type": "count",
         "sample_value": 12,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "On-Schedule Rate",
         "type": "percentage",
         "sample_value": 83.3,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 3,
@@ -95,7 +95,23 @@
         "label": "RFI Open Count",
         "type": "count",
         "sample_value": 27,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
+      },
+      {
+        "id": 4,
+        "key": "safety_incident_rate_target",
+        "label": "Safety Incident Rate Target",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "construction"
+      },
+      {
+        "id": 5,
+        "key": "rfi_risk_threshold",
+        "label": "RFI Risk Threshold",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "construction"
       }
     ],
     "dashboard_widgets": [

@@ -109,6 +109,14 @@
         "type": "percentage",
         "sample_value": 7.1,
         "source_service": "all_microservices"
+      },
+      {
+        "id": 4,
+        "key": "daily_active_shoppers",
+        "label": "Daily Active Shoppers",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "all_microservices"
       }
     ],
     "dashboard_widgets": [

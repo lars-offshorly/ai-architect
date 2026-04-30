@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "construction",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Active Contracts",
         "type": "count",
         "sample_value": 8,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "Schedule Performance Index",
         "type": "ratio",
         "sample_value": 0.92,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 3,
@@ -95,7 +95,23 @@
         "label": "Safety Compliance Rate",
         "type": "percentage",
         "sample_value": 97.8,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
+      },
+      {
+        "id": 4,
+        "key": "total_open_inspections",
+        "label": "Total Open Inspections",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "construction"
+      },
+      {
+        "id": 5,
+        "key": "contract_utilization_rate",
+        "label": "Contract Utilization Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "construction"
       }
     ],
     "dashboard_widgets": [

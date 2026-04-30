@@ -68,6 +68,30 @@
         "type": "count",
         "sample_value": 147,
         "source_service": "generic"
+      },
+      {
+        "id": 4,
+        "key": "projected_year_end_fundraising_achievement",
+        "label": "Projected Year-End Fundraising Achievement",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "generic"
+      },
+      {
+        "id": 5,
+        "key": "yoy_volunteer_growth",
+        "label": "YoY Volunteer Growth",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "generic"
+      },
+      {
+        "id": 6,
+        "key": "year_over_year_volunteer_growth",
+        "label": "Year-Over-Year Volunteer Growth",
+        "type": "percentage",
+        "sample_value": 84.3,
+        "source_service": "generic"
       }
     ],
     "dashboard_widgets": [

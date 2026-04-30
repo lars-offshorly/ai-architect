@@ -105,6 +105,40 @@
         "requester": "Priya Nair",
         "created_at": "2026-04-10T14:00:00Z"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "active_productions",
+        "label": "Active Productions",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 2,
+        "key": "assets_in_review",
+        "label": "Assets in Review",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 3,
+        "key": "approved_this_week",
+        "label": "Approved This Week",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 4,
+        "key": "launches_next_30_days",
+        "label": "Launches Next 30 Days",
+        "type": "days",
+        "sample_value": 5.2,
+        "source_service": "project_mgmt"
+      }
     ]
   }
 }

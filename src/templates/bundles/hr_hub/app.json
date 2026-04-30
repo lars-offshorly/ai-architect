@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
+  "bundle_key": "hr_management",
   "config": {
-    "permission_services": ["hr_hub", "chat", "video_call", "weaves"],
+    "permission_services": ["hr_hub", "kpi", "notifications"],
     "landing_pages": [
       {"service": "hr_hub", "path": "/hr-hub"},
       {"service": "dashboard", "path": "/dashboard"}

@@ -78,6 +78,40 @@
         "due_date": "2026-04-30",
         "status": "To Do"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "open_requests",
+        "label": "Open Requests",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 2,
+        "key": "completed_today",
+        "label": "Completed Today",
+        "type": "days",
+        "sample_value": 5.2,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 3,
+        "key": "on_hold",
+        "label": "On Hold",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 4,
+        "key": "average_resolution_time",
+        "label": "Average Resolution Time",
+        "type": "days",
+        "sample_value": 3.8,
+        "source_service": "ticketing"
+      }
     ]
   }
 }

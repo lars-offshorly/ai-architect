@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "real_estate",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Portfolio Occupancy",
         "type": "percentage",
         "sample_value": 91.7,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "Lease Expirations Next 12mo",
         "type": "count",
         "sample_value": 8,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 3,
@@ -95,7 +95,31 @@
         "label": "NOI Variance Pct",
         "type": "percentage",
         "sample_value": 2.3,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
+      },
+      {
+        "id": 4,
+        "key": "at_risk_revenue_from_lease_expirations",
+        "label": "At-Risk Revenue from Lease Expirations",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 5,
+        "key": "development_pipeline_count",
+        "label": "Development Pipeline Count",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 6,
+        "key": "portfolio_properties",
+        "label": "Portfolio Properties",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
       }
     ],
     "dashboard_widgets": [

@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "bundle_key": "all_microservices",
   "config": {
-    "permission_services": ["hr_hub", "tickets", "projects", "weaves", "chat", "video_call", "kpi", "dashboard", "announcements", "calendar", "smart_vault", "rewards_store"],
+    "permission_services": ["hr_hub", "projects", "tickets", "kpi", "notifications"],
     "landing_pages": [
       {"service": "hr_hub", "path": "/hr-hub"},
       {"service": "dashboard", "path": "/dashboard"}

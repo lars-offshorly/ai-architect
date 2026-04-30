@@ -114,6 +114,48 @@
         "requester": "David Park",
         "created_at": "2026-04-12T09:00:00Z"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "active_projects",
+        "label": "Active Projects",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 2,
+        "key": "pending_projects",
+        "label": "Pending Projects",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 3,
+        "key": "new_tasks",
+        "label": "New Tasks",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 4,
+        "key": "in_progress",
+        "label": "In Progress",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      },
+      {
+        "id": 5,
+        "key": "resolved_tasks",
+        "label": "Resolved Tasks",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "project_mgmt"
+      }
     ]
   }
 }

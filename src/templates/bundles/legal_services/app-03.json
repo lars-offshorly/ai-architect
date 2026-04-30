@@ -68,6 +68,22 @@
         "type": "percentage",
         "sample_value": 91.0,
         "source_service": "legal_services"
+      },
+      {
+        "id": 4,
+        "key": "high_risk_open_items",
+        "label": "High-Risk Open Items",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 5,
+        "key": "outstanding_policy_attestations",
+        "label": "Outstanding Policy Attestations",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "legal_services"
       }
     ],
     "dashboard_widgets": [

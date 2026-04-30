@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "bundle_key": "project_mgmt",
   "config": {
-    "permission_services": ["project_mgmt", "chat", "video_call", "announcements"],
+    "permission_services": ["projects", "kpi", "notifications"],
     "landing_pages": [
       {"service": "project_mgmt", "path": "/projects"},
       {"service": "dashboard", "path": "/dashboard"}

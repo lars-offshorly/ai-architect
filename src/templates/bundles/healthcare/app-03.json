@@ -68,6 +68,14 @@
         "type": "percentage",
         "sample_value": 3.8,
         "source_service": "healthcare"
+      },
+      {
+        "id": 4,
+        "key": "regulatory_submissions_pending",
+        "label": "Regulatory Submissions Pending",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "healthcare"
       }
     ],
     "dashboard_widgets": [

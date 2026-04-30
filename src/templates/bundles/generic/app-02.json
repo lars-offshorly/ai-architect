@@ -68,6 +68,22 @@
         "type": "percentage",
         "sample_value": 86.0,
         "source_service": "generic"
+      },
+      {
+        "id": 4,
+        "key": "proposals_in_pipeline",
+        "label": "Proposals in Pipeline",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "generic"
+      },
+      {
+        "id": 5,
+        "key": "client_satisfaction_scores",
+        "label": "Client Satisfaction Scores",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "generic"
       }
     ],
     "dashboard_widgets": [

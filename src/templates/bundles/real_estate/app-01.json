@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "real_estate",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Occupancy Rate",
         "type": "percentage",
         "sample_value": 94.2,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "Maintenance Requests Open",
         "type": "count",
         "sample_value": 37,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 3,
@@ -95,7 +95,47 @@
         "label": "Rent Collection Rate",
         "type": "percentage",
         "sample_value": 98.1,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
+      },
+      {
+        "id": 4,
+        "key": "total_units",
+        "label": "Total Units",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 5,
+        "key": "open_eviction_notices",
+        "label": "Open Eviction Notices",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 6,
+        "key": "vacant_units",
+        "label": "Vacant Units",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 7,
+        "key": "average_days_to_fill_vacancy",
+        "label": "Average Days to Fill Vacancy",
+        "type": "days",
+        "sample_value": 4.6,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 8,
+        "key": "total_maintenance_requests",
+        "label": "Total Maintenance Requests",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "real_estate"
       }
     ],
     "dashboard_widgets": [

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "ticketing",
+  "bundle_key": "legal_services",
   "config": {
-    "permission_services": ["ticketing", "weaves", "chat", "video_call", "dashboard"],
+    "permission_services": ["tickets", "kpi", "notifications"],
     "landing_pages": [
       {"service": "ticketing", "path": "/tickets"},
       {"service": "dashboard", "path": "/dashboard"}

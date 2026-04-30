@@ -96,6 +96,22 @@
         "type": "percentage",
         "sample_value": 88.7,
         "source_service": "education"
+      },
+      {
+        "id": 4,
+        "key": "faculty_student_ratio",
+        "label": "Faculty-Student Ratio",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "education"
+      },
+      {
+        "id": 5,
+        "key": "alumni_giving_rate",
+        "label": "Alumni Giving Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "education"
       }
     ],
     "dashboard_widgets": [

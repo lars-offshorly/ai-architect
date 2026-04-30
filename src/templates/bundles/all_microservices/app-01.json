@@ -109,6 +109,38 @@
         "type": "percentage",
         "sample_value": 99.7,
         "source_service": "all_microservices"
+      },
+      {
+        "id": 4,
+        "key": "active_headcount",
+        "label": "Active Headcount",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "all_microservices"
+      },
+      {
+        "id": 5,
+        "key": "on_time_project_delivery_rate",
+        "label": "On-Time Project Delivery Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "all_microservices"
+      },
+      {
+        "id": 6,
+        "key": "sla_compliance_rate",
+        "label": "SLA Compliance Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "all_microservices"
+      },
+      {
+        "id": 7,
+        "key": "open_support_tickets",
+        "label": "Open Support Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "all_microservices"
       }
     ],
     "dashboard_widgets": [

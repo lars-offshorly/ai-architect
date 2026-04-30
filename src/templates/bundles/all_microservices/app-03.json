@@ -109,6 +109,30 @@
         "type": "count",
         "sample_value": 11,
         "source_service": "all_microservices"
+      },
+      {
+        "id": 4,
+        "key": "high_priority_kyc_exceptions",
+        "label": "High-Priority KYC Exceptions",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "all_microservices"
+      },
+      {
+        "id": 5,
+        "key": "monthly_active_accounts_growth_rate",
+        "label": "Monthly Active Accounts Growth Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "all_microservices"
+      },
+      {
+        "id": 6,
+        "key": "average_api_latency",
+        "label": "Average API Latency",
+        "type": "days",
+        "sample_value": 4.6,
+        "source_service": "all_microservices"
       }
     ],
     "dashboard_widgets": [

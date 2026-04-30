@@ -68,6 +68,38 @@
         "type": "count",
         "sample_value": 3,
         "source_service": "legal_services"
+      },
+      {
+        "id": 4,
+        "key": "ip_filings_ytd",
+        "label": "IP Filings YTD",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 5,
+        "key": "annual_target_for_ip_filings",
+        "label": "Annual Target for IP Filings",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 6,
+        "key": "legal_spend_variance",
+        "label": "Legal Spend Variance",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 7,
+        "key": "percentage_under_budget",
+        "label": "Percentage Under Budget",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "legal_services"
       }
     ],
     "dashboard_widgets": [

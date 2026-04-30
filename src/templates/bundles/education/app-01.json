@@ -96,6 +96,22 @@
         "type": "percentage",
         "sample_value": 89.3,
         "source_service": "education"
+      },
+      {
+        "id": 4,
+        "key": "teacher_retention_rate",
+        "label": "Teacher Retention Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "education"
+      },
+      {
+        "id": 5,
+        "key": "open_incidents",
+        "label": "Open Incidents",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "education"
       }
     ],
     "dashboard_widgets": [

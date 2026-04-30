@@ -68,6 +68,22 @@
         "type": "score",
         "sample_value": 4.1,
         "source_service": "healthcare"
+      },
+      {
+        "id": 4,
+        "key": "telehealth_appointment_percentage",
+        "label": "Telehealth Appointment Percentage",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "healthcare"
+      },
+      {
+        "id": 5,
+        "key": "daily_appointment_volume",
+        "label": "Daily Appointment Volume",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "healthcare"
       }
     ],
     "dashboard_widgets": [

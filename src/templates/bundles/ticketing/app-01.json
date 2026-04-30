@@ -102,6 +102,40 @@
         "due_date": "2026-04-25",
         "status": "To Do"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "new_tickets",
+        "label": "New Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 2,
+        "key": "closed_tickets",
+        "label": "Closed Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 3,
+        "key": "reopened_tickets",
+        "label": "Reopened Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 4,
+        "key": "average_resolution_time",
+        "label": "Average Resolution Time",
+        "type": "days",
+        "sample_value": 3.8,
+        "source_service": "ticketing"
+      }
     ]
   }
 }

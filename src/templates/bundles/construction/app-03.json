@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "construction",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Homes Under Construction",
         "type": "count",
         "sample_value": 34,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "Homes Closed YTD",
         "type": "count",
         "sample_value": 18,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
       },
       {
         "id": 3,
@@ -95,7 +95,23 @@
         "label": "Warranty Claims Open",
         "type": "count",
         "sample_value": 9,
-        "source_service": "construction_real_estate"
+        "source_service": "construction"
+      },
+      {
+        "id": 4,
+        "key": "average_construction_days",
+        "label": "Average Construction Days",
+        "type": "days",
+        "sample_value": 4.6,
+        "source_service": "construction"
+      },
+      {
+        "id": 5,
+        "key": "ytd_closings",
+        "label": "YTD Closings",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "construction"
       }
     ],
     "dashboard_widgets": [

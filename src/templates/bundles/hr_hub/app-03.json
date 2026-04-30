@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
+  "bundle_key": "hr_management",
   "stores": {
     "employees": [
       {
@@ -135,6 +135,40 @@
         "assigned_to": "Priya Nair",
         "due_date": "2026-04-28",
         "status": "To Do"
+      }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "new_hires_this_month",
+        "label": "New Hires This Month",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 2,
+        "key": "onboarding_in_progress",
+        "label": "Onboarding In Progress",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 3,
+        "key": "exits_this_month",
+        "label": "Exits This Month",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 4,
+        "key": "probation_reviews_due",
+        "label": "Probation Reviews Due",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
       }
     ]
   }

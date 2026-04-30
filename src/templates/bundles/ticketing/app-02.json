@@ -78,6 +78,40 @@
         "due_date": "2026-04-22",
         "status": "In Progress"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "new_tickets",
+        "label": "New Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 2,
+        "key": "resolved_today",
+        "label": "Resolved Today",
+        "type": "days",
+        "sample_value": 5.2,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 3,
+        "key": "reopened_tickets",
+        "label": "Reopened Tickets",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "ticketing"
+      },
+      {
+        "id": 4,
+        "key": "average_first_response",
+        "label": "Average First Response",
+        "type": "days",
+        "sample_value": 3.8,
+        "source_service": "ticketing"
+      }
     ]
   }
 }

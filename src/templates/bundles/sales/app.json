@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "bundle_key": "sales",
   "config": {
-    "permission_services": ["project_mgmt", "weaves", "chat", "video_call", "kpi", "dashboard"],
+    "permission_services": ["projects", "kpi", "notifications"],
     "landing_pages": [
       {"service": "project_mgmt", "path": "/projects"},
       {"service": "dashboard", "path": "/dashboard"}

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
+  "bundle_key": "hr_management",
   "stores": {
     "employees": [
       {
@@ -134,6 +134,40 @@
         "assigned_to": "Sofia Lim",
         "due_date": "2026-04-20",
         "status": "To Do"
+      }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "open_roles",
+        "label": "Open Roles",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 2,
+        "key": "candidates_in_pipeline",
+        "label": "Candidates in Pipeline",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 3,
+        "key": "interviews_this_week",
+        "label": "Interviews This Week",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 4,
+        "key": "offers_extended",
+        "label": "Offers Extended",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
       }
     ]
   }

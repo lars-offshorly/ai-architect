@@ -68,6 +68,46 @@
         "type": "count",
         "sample_value": 5,
         "source_service": "generic"
+      },
+      {
+        "id": 4,
+        "key": "capacity_utilization",
+        "label": "Capacity Utilization",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "generic"
+      },
+      {
+        "id": 5,
+        "key": "rolling_30_day_avg_tasks_completed",
+        "label": "Rolling 30-Day Avg Tasks Completed",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "generic"
+      },
+      {
+        "id": 6,
+        "key": "team_size",
+        "label": "Team Size",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "generic"
+      },
+      {
+        "id": 7,
+        "key": "tasks_completed_month_to_date",
+        "label": "Tasks Completed Month-to-Date",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "generic"
+      },
+      {
+        "id": 8,
+        "key": "rolling_30_day_average_tasks_completed",
+        "label": "Rolling 30-Day Average Tasks Completed",
+        "type": "days",
+        "sample_value": 3.8,
+        "source_service": "generic"
       }
     ],
     "dashboard_widgets": [

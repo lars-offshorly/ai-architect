@@ -138,6 +138,48 @@
         "requester": "Property Manager",
         "created_at": "2026-04-10T09:00:00Z"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "total_monthly_revenue",
+        "label": "Total Monthly Revenue",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 2,
+        "key": "operating_expenses",
+        "label": "Operating Expenses",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 3,
+        "key": "net_operating_income",
+        "label": "Net Operating Income",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 4,
+        "key": "portfolio_cap_rate",
+        "label": "Portfolio Cap Rate",
+        "type": "percentage",
+        "sample_value": 84.3,
+        "source_service": "finance"
+      },
+      {
+        "id": 5,
+        "key": "outstanding_receivables",
+        "label": "Outstanding Receivables",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      }
     ]
   }
 }

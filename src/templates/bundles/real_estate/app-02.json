@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "construction_real_estate",
+  "bundle_key": "real_estate",
   "stores": {
     "projects": [
       {
@@ -79,7 +79,7 @@
         "label": "Active Listings",
         "type": "count",
         "sample_value": 63,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 2,
@@ -87,7 +87,7 @@
         "label": "Avg Days on Market",
         "type": "days",
         "sample_value": 22,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
       },
       {
         "id": 3,
@@ -95,7 +95,31 @@
         "label": "Listings Closed MTD",
         "type": "count",
         "sample_value": 11,
-        "source_service": "construction_real_estate"
+        "source_service": "real_estate"
+      },
+      {
+        "id": 4,
+        "key": "pending_listings",
+        "label": "Pending Listings",
+        "type": "count",
+        "sample_value": 24,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 5,
+        "key": "top_10_agents_contribution",
+        "label": "Top 10 Agents Contribution",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "real_estate"
+      },
+      {
+        "id": 6,
+        "key": "monthly_closed_deals",
+        "label": "Monthly Closed Deals",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "real_estate"
       }
     ],
     "dashboard_widgets": [

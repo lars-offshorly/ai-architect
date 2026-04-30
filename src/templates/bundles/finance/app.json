@@ -2,9 +2,9 @@
   "schema_version": "1.0",
   "bundle_key": "finance",
   "config": {
-    "permission_services": ["project_mgmt", "weaves", "dashboard", "notifications"],
+    "permission_services": ["weaves", "dashboard", "notifications"],
     "landing_pages": [
-      {"service": "project_mgmt", "path": "/projects"},
+      {"service": "weaves", "path": "/weaves"},
       {"service": "dashboard", "path": "/dashboard"}
     ],
     "task_statuses": ["backlog", "in_progress", "review", "done", "blocked"],

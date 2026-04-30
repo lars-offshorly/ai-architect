@@ -68,6 +68,22 @@
         "type": "percentage",
         "sample_value": 71.4,
         "source_service": "legal_services"
+      },
+      {
+        "id": 4,
+        "key": "settlement_rate",
+        "label": "Settlement Rate",
+        "type": "percentage",
+        "sample_value": 78.4,
+        "source_service": "legal_services"
+      },
+      {
+        "id": 5,
+        "key": "average_time_to_resolution_reduction",
+        "label": "Average Time to Resolution Reduction",
+        "type": "days",
+        "sample_value": 4.6,
+        "source_service": "legal_services"
       }
     ],
     "dashboard_widgets": [

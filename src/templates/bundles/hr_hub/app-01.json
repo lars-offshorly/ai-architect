@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "bundle_key": "hr_hub",
+  "bundle_key": "hr_management",
   "stores": {
     "employees": [
       {
@@ -140,6 +140,40 @@
         "assigned_to": "John Reyes",
         "due_date": "2026-03-16",
         "status": "To Do"
+      }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "total_employees",
+        "label": "Total Employees",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 2,
+        "key": "present_today",
+        "label": "Present Today",
+        "type": "days",
+        "sample_value": 5.2,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 3,
+        "key": "attendance_rate",
+        "label": "Attendance Rate",
+        "type": "percentage",
+        "sample_value": 84.3,
+        "source_service": "hr_management"
+      },
+      {
+        "id": 4,
+        "key": "open_employee_requests",
+        "label": "Open Employee Requests",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "hr_management"
       }
     ]
   }

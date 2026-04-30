@@ -177,6 +177,56 @@
         "requester": "Client 3",
         "created_at": "2026-04-09T11:00:00Z"
       }
+    ],
+    "kpis": [
+      {
+        "id": 1,
+        "key": "total_revenue",
+        "label": "Total Revenue",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 2,
+        "key": "total_expenses",
+        "label": "Total Expenses",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 3,
+        "key": "net_profit",
+        "label": "Net Profit",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 4,
+        "key": "roi",
+        "label": "ROI",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 5,
+        "key": "outstanding_invoices",
+        "label": "Outstanding Invoices",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      },
+      {
+        "id": 6,
+        "key": "cash_flow",
+        "label": "Cash Flow",
+        "type": "count",
+        "sample_value": 42,
+        "source_service": "finance"
+      }
     ]
   }
 }
