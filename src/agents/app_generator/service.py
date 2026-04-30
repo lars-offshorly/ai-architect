@@ -11,7 +11,7 @@ from repositories.template_repository import TemplateRepository
 from .config_assembly import map_relationships
 from .contract import AppPayloadContract
 from .formatter import AppPayloadFormatter
-from .schemas import DummyDataJsonSchema, GenerationJsonSchema
+from .schemas import COMPATIBLE_BUNDLE_KEYS, DummyDataJsonSchema, GenerationJsonSchema
 from .validators import validate_dummy_data_json, validate_generation_json
 
 logger = get_logger(__name__)
@@ -31,6 +31,7 @@ class AppGeneratorService:
         bundle_key: str,
         display_name: str,
         dummy_data: dict[str, object],
+        generation_data: dict[str, object] | None = None,
     ) -> AppPayload:
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Assembling app payload for bundle=%s", bundle_key)
@@ -54,11 +55,15 @@ class AppGeneratorService:
                 metadata.entity_relationships if metadata is not None else []
             )
 
-        # Load from the correct directory resolved from the catalog
-        generation_json = self._repo.load_app_json(template_dir)
+        # Load from template unless caller provides generation_json from preview.
+        generation_json = (
+            dict(generation_data)
+            if generation_data is not None
+            else self._repo.load_app_json(template_dir)
+        )
         generation_json["session_id"] = session_id
-        # Ensure the payload uses the render key per AD-2
-        generation_json["bundle_key"] = render_key
+        # Canonical bundle key is the API-facing identity.
+        generation_json["bundle_key"] = bundle_key
         # AD-2 registry owns canonical modules; older app templates may omit them.
         if (
             not isinstance(generation_json.get("modules"), list)
@@ -67,9 +72,11 @@ class AppGeneratorService:
             generation_json["modules"] = list(bundle.default_modules)
         normalized_dummy_data = self._normalize_dummy_data(dummy_data)
 
+        compatible_keys = set(COMPATIBLE_BUNDLE_KEYS.get(bundle_key, set()))
+
         # 1. Legacy structural validation
-        validate_generation_json(generation_json, render_key)
-        validate_dummy_data_json(normalized_dummy_data, render_key)
+        validate_generation_json(generation_json, bundle_key, compatible_keys)
+        validate_dummy_data_json(normalized_dummy_data, bundle_key, compatible_keys)
 
         # 1a. Inject relationship map into config
         if entity_relationships:
@@ -92,7 +99,7 @@ class AppGeneratorService:
         dummy_schema_input.setdefault(
             "schema_version", generation_json.get("schema_version", "1.0")
         )
-        dummy_schema_input.setdefault("bundle_key", render_key)
+        dummy_schema_input.setdefault("bundle_key", bundle_key)
         dummy_schema_input.setdefault("session_id", session_id)
         dummy_schema_input.setdefault("stores", {})
         DummyDataJsonSchema.model_validate(dummy_schema_input)
@@ -101,7 +108,7 @@ class AppGeneratorService:
         contract = AppPayloadContract(
             schema_version=str(generation_json.get("schema_version", "1.0")),
             session_id=session_id,
-            bundle_key=render_key,
+            bundle_key=bundle_key,
             display_name=display_name,
             modules=list(cast(list[object], generation_json.get("modules", []))),
             generation_json=generation_json,
@@ -114,7 +121,7 @@ class AppGeneratorService:
 
         payload = self._formatter.format(
             session_id=session_id,
-            bundle_key=render_key,
+            bundle_key=bundle_key,
             display_name=display_name,
             generation_json=generation_json,
             dummy_data_json=normalized_dummy_data,

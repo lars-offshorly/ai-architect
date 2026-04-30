@@ -56,3 +56,11 @@ class GenerateAppRequest(BaseModel):
             "Must include 'bundle_key' and 'stores'."
         ),
     )
+    generation_json: dict[str, object] | None = Field(
+        default=None,
+        description=(
+            "Optional. Preview generation_json payload from the client. "
+            "When provided, /sessions/{id}/app validates and packages this "
+            "payload instead of loading static app.json."
+        ),
+    )

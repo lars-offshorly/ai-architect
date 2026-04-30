@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from api.schemas.request import ReplyRequest, StartSessionRequest
+from api.schemas.request import GenerateAppRequest, ReplyRequest, StartSessionRequest
 
 
 class TestStartSessionRequestBackwardCompatibility:
@@ -84,3 +84,21 @@ class TestReplyRequestNewFields:
         req = ReplyRequest(message="preview now", force_preview=True)
         data = req.model_dump()
         assert data["force_preview"] is True
+
+
+class TestGenerateAppRequestFields:
+    def test_generation_json_is_optional(self) -> None:
+        req = GenerateAppRequest(dummy_data_json={"bundle_key": "hr_management", "stores": {}})
+        assert req.generation_json is None
+
+    def test_generation_json_accepts_preview_payload(self) -> None:
+        req = GenerateAppRequest(
+            dummy_data_json={"bundle_key": "hr_management", "stores": {}},
+            generation_json={
+                "schema_version": "1.0",
+                "bundle_key": "hr_management",
+                "modules": ["HR Management"],
+                "config": {"ticket_categories": ["leave"]},
+            },
+        )
+        assert req.generation_json is not None

@@ -390,9 +390,8 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         else None
     )
 
-    # Use render_key only for canonical tier-1 bundles (hr_management, project_mgmt,
-    # ticketing). Other bundles that share a render_key (e.g. sales -> project_mgmt)
-    # must not inherit the tier-1 store/config schema — they use the fallback.
+    # Use a render-compat key only for internal schema derivation.
+    # Public/API bundle identity remains the canonical catalog bundle_key.
     registry_key = state.bundle_key
     if state.bundle_key in _TIER1_CANONICAL_KEYS and state.catalog is not None:
         bundle = state.catalog.get(state.bundle_key)
@@ -401,7 +400,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
 
     generation_json = GenerationJson(
         schema_version="1.0",
-        bundle_key=registry_key,
+        bundle_key=state.bundle_key,
         feature_flags=flag_list,
         modules=modules,
         config=_build_config(registry_key, state),
@@ -410,7 +409,7 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     stores = _build_stores(registry_key, state)
 
     dummy_data_json = DummyDataJson(
-        bundle_key=registry_key,
+        bundle_key=state.bundle_key,
         session_id=state.session_id,
         company_name=company_name,
         stores=stores,

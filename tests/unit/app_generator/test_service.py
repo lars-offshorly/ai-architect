@@ -75,7 +75,7 @@ def test_assemble_injects_modules_when_template_omits_them() -> None:
     assert payload.generation_json["modules"] == ["tickets", "dashboard", "kpi"]
 
 
-def test_assemble_validates_generation_json_with_render_key() -> None:
+def test_assemble_uses_canonical_bundle_key_in_payload() -> None:
     svc = AppGeneratorService(
         template_repo=_FakeTemplateRepo(
             {
@@ -113,11 +113,11 @@ def test_assemble_validates_generation_json_with_render_key() -> None:
         session_id="test-session",
         bundle_key="hr_management",
         display_name="HR Management",
-        dummy_data={"bundle_key": "hr_hub", "stores": {}, "session_id": "test-session"},
+        dummy_data={"bundle_key": "hr_management", "stores": {}, "session_id": "test-session"},
     )
 
-    assert payload.bundle_key == "hr_hub"
-    assert payload.generation_json["bundle_key"] == "hr_hub"
+    assert payload.bundle_key == "hr_management"
+    assert payload.generation_json["bundle_key"] == "hr_management"
 
 
 def test_assemble_adds_missing_kpi_ids_to_dummy_data() -> None:

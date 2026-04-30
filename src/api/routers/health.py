@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 
-router = APIRouter(prefix="/health", tags=["health"])
+from core import Database, pinecone_client
 
-
-class HealthResponse(BaseModel):
-    status: str
-    version: str
+router = APIRouter(tags=["health"])
 
 
-@router.get("", response_model=HealthResponse)
-async def health_check() -> HealthResponse:
-    return HealthResponse(status="ok", version="0.1.0")
+@router.get("/health")
+async def health_check() -> dict[str, object]:
+    return {
+        "status": "ok",
+        "checks": {
+            "database": await Database.health_check(),
+            "pinecone": await pinecone_client.health_check(),
+        },
+    }
