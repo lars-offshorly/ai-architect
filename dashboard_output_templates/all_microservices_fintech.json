@@ -1,0 +1,215 @@
+{
+  "source_template": "all_microservices_fintech",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "text",
+      "title": "Dashboard Summary",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "text",
+      "title": "Key Findings",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "text",
+      "title": "Key Insights",
+      "position": {
+        "row": 6,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "text",
+      "title": "Recommendations",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "text",
+      "title": "Data Context",
+      "position": {
+        "row": 12,
+        "col": 0,
+        "width": 12,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "number",
+      "title": "Daily Transactions",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-8",
+      "type": "number",
+      "title": "Transaction Success Rate",
+      "position": {
+        "row": 15,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-10",
+      "type": "number",
+      "title": "Open Compliance Flags",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-13",
+      "type": "number",
+      "title": "High-Priority KYC Exceptions",
+      "position": {
+        "row": 15,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-16",
+      "type": "number",
+      "title": "Monthly Active Accounts Growth Rate",
+      "position": {
+        "row": 18,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-19",
+      "type": "number",
+      "title": "Average API Latency",
+      "position": {
+        "row": 18,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-22",
+      "type": "pie",
+      "title": "Transaction Type Breakdown",
+      "position": {
+        "row": 21,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-25",
+      "type": "text",
+      "title": "About: Transaction Type Breakdown",
+      "position": {
+        "row": 21,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-26",
+      "type": "line",
+      "title": "API Latency Trend",
+      "position": {
+        "row": 27,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-29",
+      "type": "text",
+      "title": "About: API Latency Trend",
+      "position": {
+        "row": 27,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-30",
+      "type": "bar",
+      "title": "Compliance Flags by Category",
+      "position": {
+        "row": 33,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-33",
+      "type": "text",
+      "title": "About: Compliance Flags by Category",
+      "position": {
+        "row": 33,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-34",
+      "type": "list",
+      "title": "Open Compliance & Risk Items",
+      "position": {
+        "row": 39,
+        "col": 0,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-40",
+      "type": "text",
+      "title": "About: Open Compliance & Risk Items",
+      "position": {
+        "row": 39,
+        "col": 6,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}

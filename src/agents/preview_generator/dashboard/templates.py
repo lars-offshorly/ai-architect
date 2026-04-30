@@ -1,7 +1,11 @@
 """Dashboard template registry.
 
-Loads dashboard templates from the ``dashboard_templates/`` directory and
-resolves the correct template for a (bundle_key, variant_key) pair.
+Compatibility registry over static dashboard outputs.
+
+The runtime preview path now reads pre-generated dashboard widget outputs from
+``dashboard_output_templates/``. This module keeps the legacy
+``DashboardTemplateRegistry`` API available for tooling/tests that still import
+it, but it now resolves static output payload files.
 
 Resolution
 ----------
@@ -13,9 +17,8 @@ Resolution
    legacy fallback — this keeps single-template industry bundles working
    until they are migrated to variants.
 
-Templates are loaded once at construction time and cached for the process
-lifetime. Deep copies are returned so callers (the personalizer) can mutate
-them without affecting the cached originals.
+Payloads are loaded once at construction time and cached for the process
+lifetime. Deep copies are returned so callers can mutate safely.
 """
 
 from __future__ import annotations
@@ -30,9 +33,7 @@ from core.logging import get_logger
 logger = get_logger(__name__)
 
 # Legacy fallback mapping for bundles that do not yet declare ``variants`` in
-# the registry YAML. Keep this in sync with registry aliases; multi-variant
-# bundles should drive selection through ``BundleCatalog.get_variant`` / the
-# variant's ``dashboard_template`` field and do NOT need an entry here.
+# the registry YAML.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "hr_management": "hr_management",
     "hr_hub": "hr_management",
@@ -49,14 +50,14 @@ _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "generic": "generic_small_business",
 }
 
-_DEFAULT_TEMPLATES_DIR = Path(__file__).parents[4] / "dashboard_templates"
+_DEFAULT_TEMPLATES_DIR = Path(__file__).parents[4] / "dashboard_output_templates"
 
 
 class DashboardTemplateRegistry:
-    """Resolves and returns deep-copied dashboard template dicts.
+    """Resolves and returns deep-copied static dashboard output dicts.
 
     The registry preloads every ``.json`` file under
-    ``dashboard_templates/``. Selection is driven by
+    ``dashboard_output_templates/``. Selection is driven by
     ``BundleCatalog.get_variant(bundle_key, variant_key)`` when a catalog is
     provided, and falls back to ``_BUNDLE_TO_TEMPLATE`` for bundles that
     declare no variants.
@@ -81,7 +82,7 @@ class DashboardTemplateRegistry:
         bundle_key: str,
         variant_key: str | None = None,
     ) -> dict | None:
-        """Return a deep copy of the template for ``(bundle_key, variant_key)``.
+        """Return a deep copy of the payload for ``(bundle_key, variant_key)``.
 
         Falls back to the bundle's default variant when ``variant_key`` is
         omitted or does not match. Returns ``None`` when the bundle has no
@@ -90,8 +91,8 @@ class DashboardTemplateRegistry:
         filename = self._resolve_filename(bundle_key, variant_key)
         if filename is None:
             return None
-        template = self._cache.get(filename)
-        if template is None:
+        payload = self._cache.get(filename)
+        if payload is None:
             return None
         logger.info(
             "dashboard_template_registry: bundle=%s variant=%s → %s",
@@ -99,7 +100,7 @@ class DashboardTemplateRegistry:
             variant_key,
             filename,
         )
-        return copy.deepcopy(template)
+        return copy.deepcopy(payload)
 
     def supported_bundles(self) -> list[str]:
         """Return bundle keys that can resolve a template."""
@@ -129,7 +130,7 @@ class DashboardTemplateRegistry:
         return _BUNDLE_TO_TEMPLATE.get(bundle_key)
 
     def _load_all(self) -> None:
-        """Load every ``.json`` template found in the templates directory."""
+        """Load every ``.json`` payload found in the templates directory."""
         if not self._dir.is_dir():
             logger.warning(
                 "DashboardTemplateRegistry: templates_dir not found: %s",
@@ -142,7 +143,7 @@ class DashboardTemplateRegistry:
                     self._cache[path.stem] = json.load(f)
             except (json.JSONDecodeError, OSError) as exc:
                 logger.warning(
-                    "Failed to load dashboard template %s: %s", path.name, exc
+                    "Failed to load dashboard output payload %s: %s", path.name, exc
                 )
                 continue
-            logger.info("Loaded dashboard template: %s", path.name)
+            logger.info("Loaded dashboard output payload: %s", path.name)

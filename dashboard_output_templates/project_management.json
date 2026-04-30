@@ -1,0 +1,127 @@
+{
+  "source_template": "project_management",
+  "generated_at": "2026-04-20",
+  "widgets": [
+    {
+      "id": "widget-1",
+      "type": "number",
+      "title": "Active Projects",
+      "position": {
+        "row": 0,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-2",
+      "type": "number",
+      "title": "Pending Projects",
+      "position": {
+        "row": 0,
+        "col": 3,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-3",
+      "type": "number",
+      "title": "New Tasks",
+      "position": {
+        "row": 0,
+        "col": 6,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-4",
+      "type": "number",
+      "title": "In Progress",
+      "position": {
+        "row": 0,
+        "col": 9,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-5",
+      "type": "number",
+      "title": "Resolved Tasks",
+      "position": {
+        "row": 3,
+        "col": 0,
+        "width": 3,
+        "height": 3
+      }
+    },
+    {
+      "id": "widget-6",
+      "type": "bar",
+      "title": "Tasks per Status",
+      "position": {
+        "row": 3,
+        "col": 3,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-7",
+      "type": "bar",
+      "title": "Tasks per Priority",
+      "position": {
+        "row": 9,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-8",
+      "type": "pie",
+      "title": "Project per Priority",
+      "position": {
+        "row": 9,
+        "col": 6,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-9",
+      "type": "line",
+      "title": "Milestone Trend",
+      "position": {
+        "row": 15,
+        "col": 0,
+        "width": 6,
+        "height": 6
+      }
+    },
+    {
+      "id": "widget-10",
+      "type": "list",
+      "title": "Project per Status",
+      "position": {
+        "row": 15,
+        "col": 6,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": "widget-11",
+      "type": "list",
+      "title": "Upcoming Milestones",
+      "position": {
+        "row": 21,
+        "col": 0,
+        "width": 6,
+        "height": 4
+      }
+    }
+  ]
+}

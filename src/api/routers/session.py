@@ -16,6 +16,7 @@ from api.deps import (
     get_conversation_repository,
     get_dashboard_template_registry,
     get_session_repository,
+    get_static_dashboard_output_registry,
 )
 from api.schemas.debug import (
     BundleCandidateInfo,

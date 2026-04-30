@@ -8,9 +8,9 @@ from agents.preview_generator.bundle_template_loader import (
     _PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
-from agents.preview_generator.dashboard.client import DashboardClient
-from agents.preview_generator.dashboard.personalizer import personalize_template
-from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
+from agents.preview_generator.dashboard.static_output_registry import (
+    StaticDashboardOutputRegistry,
+)
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -26,11 +26,8 @@ class PreviewFlow:
     template and ignores any preview_data passed to it, so it cannot carry
     our pipeline output. AppPayload is built directly from the pipeline result.
 
-    Dashboard enrichment is performed after the core pipeline completes:
-    1. Look up a template for the bundle key.
-    2. Personalize it from the pipeline's extracted UserContext.
-    3. POST to the dashboard generation service.
-    4. Inject the returned widgets into dummy_data_json.stores.dashboard_widgets.
+    Dashboard enrichment is performed after the core pipeline completes by
+    resolving and injecting pre-generated static widget layouts.
 
     If any step of the enrichment fails the preview is returned without
     dashboard widgets — the failure is logged but never re-raised.
@@ -40,15 +37,13 @@ class PreviewFlow:
         self,
         preview_generator_service: Any,
         bundle_display_names: dict[str, str],
-        dashboard_client: DashboardClient | None = None,
-        dashboard_template_registry: DashboardTemplateRegistry | None = None,
         bundle_template_loader: BundleTemplateLoader | None = None,
+        static_dashboard_outputs: StaticDashboardOutputRegistry | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
-        self._dashboard_client = dashboard_client
-        self._dashboard_templates = dashboard_template_registry
         self._bundle_template_loader = bundle_template_loader
+        self._static_dashboard_outputs = static_dashboard_outputs
 
     def run(
         self,
@@ -112,7 +107,6 @@ class PreviewFlow:
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
-            conversation_history=conversation_history,
             variant_key=resolved_variant_key,
         )
 
@@ -207,145 +201,42 @@ class PreviewFlow:
         bundle_key: str,
         dummy_data_json: dict,
         user_context: Any,
-        conversation_history: list[dict] | None = None,
         variant_key: str | None = None,
     ) -> None:
-        """Attempt to populate dashboard_widgets in stores via the external service.
-
-        Mutates ``dummy_data_json`` in place. All failures are swallowed so the
-        caller always gets a valid (if widget-less) payload.
-        """
-        if self._dashboard_client is None or self._dashboard_templates is None:
+        """Populate ``stores.dashboard_widgets`` from static pre-generated output."""
+        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        stores: dict = dummy_data_json.setdefault("stores", {})
+        if self._static_dashboard_outputs is None:
+            stores["dashboard_widgets"] = []
+            logger.warning(
+                "session=%s: StaticDashboardOutputRegistry not initialized", session_id
+            )
             return
 
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
-        template = self._dashboard_templates.get(bundle_key, resolved_variant_key)
-        if template is None:
-            logger.info(
-                "session=%s — no dashboard template for bundle=%s, skipping enrichment",
+        widgets = self._static_dashboard_outputs.get_widgets(
+            bundle_key, resolved_variant_key
+        )
+        if widgets is None:
+            stores["dashboard_widgets"] = []
+            logger.warning(
+                "session=%s: no static dashboard output for bundle=%s variant=%s",
                 session_id,
                 bundle_key,
+                resolved_variant_key,
             )
             return
 
-        try:
-            personalized = personalize_template(
-                template,
-                user_context,
-                bundle_key,
-                conversation_history=conversation_history or [],
-            )
-            response = self._dashboard_client.generate(personalized)
-        except (AttributeError, KeyError, RuntimeError, TypeError, ValueError) as exc:
-            logger.warning(
-                "session=%s — dashboard enrichment error: %s", session_id, exc
-            )
-            return
-
-        if response is None:
-            return
-
-        raw_widgets = response.get("debug_payload", {}).get("widgets", [])
-        widgets = self._to_internal_widgets(raw_widgets)
-
-        stores: dict = dummy_data_json.setdefault("stores", {})
-        stores["dashboard_generation_output"] = response
         stores["dashboard_widgets"] = widgets
-
         logger.info(
-            "session=%s — dashboard enrichment complete: %d widgets injected",
+            (
+                "session=%s: static dashboard output injected "
+                "bundle=%s variant=%s widgets=%d"
+            ),
             session_id,
+            bundle_key,
+            resolved_variant_key,
             len(widgets),
         )
-
-    @staticmethod
-    def _to_internal_widgets(  # pylint: disable=too-many-branches
-        raw_widgets: Any,
-    ) -> list[dict[str, object]]:
-        """Map external dashboard debug widgets to internal widget layout shape.
-
-        Handles CJ's dashboard generation output format:
-        - Maps typeId (int) to type (string)
-        - Extracts positioning from settings.xAxis/yAxis/width/height
-        - Handles chartType for chart widgets
-        """
-        if not isinstance(raw_widgets, list):
-            return []
-
-        # CJ's typeId → internal type string mapping
-        type_id_map = {
-            1: "number",
-            2: "text",
-            3: "bar",  # Chart widget - refined by chartType
-            4: "list",
-        }
-
-        widgets: list[dict[str, object]] = []
-        for idx, raw in enumerate(raw_widgets, start=1):
-            if not isinstance(raw, dict):
-                continue
-
-            # Extract type from typeId
-            type_id = raw.get("typeId")
-            widget_type = (
-                type_id_map.get(type_id) if isinstance(type_id, int) else None
-            ) or "number"
-
-            # For chart widgets (typeId=3), refine type from settings.chartType
-            if type_id == 3:
-                settings = raw.get("settings", {})
-                if isinstance(settings, dict):
-                    chart_type = settings.get("chartType", "bar")
-                    if chart_type == "barHorizontal":
-                        widget_type = "hbar"
-                    elif chart_type in ("pie", "line", "scatter"):
-                        widget_type = chart_type
-                    # else: keep "bar" as default
-
-            # Extract title from name or title field
-            title = raw.get("name") or raw.get("title")
-            if not isinstance(title, str) or not title.strip():
-                title = f"Widget {idx}"
-
-            # Extract positioning from settings
-            settings = raw.get("settings", {})
-            if isinstance(settings, dict) and "yAxis" in settings:
-                # Use CJ's positioning from settings
-                row = settings.get("yAxis", 0)
-                col = settings.get("xAxis", 0)
-                width = settings.get("width", 2)
-                height = settings.get("height", 1)
-            else:
-                # Fallback to 2-column grid layout
-                row = (idx - 1) // 2
-                col = ((idx - 1) % 2) * 2
-                width = 2
-                height = 1
-
-            # Extract widget ID from settings or raw.id
-            widget_id = None
-            if isinstance(settings, dict):
-                widget_id = settings.get("id")
-            if widget_id is None:
-                widget_id = raw.get("id")
-            if widget_id is None:
-                widget_id = idx
-
-            widgets.append(
-                {
-                    "id": f"widget-{widget_id}",
-                    "type": widget_type,
-                    "title": title,
-                    "position": {
-                        "row": row,
-                        "col": col,
-                        "width": width,
-                        "height": height,
-                    },
-                }
-            )
-
-        return widgets
 
 
 def _extract_variant_key(user_context: Any) -> str | None:

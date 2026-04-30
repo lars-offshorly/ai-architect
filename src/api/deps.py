@@ -11,9 +11,9 @@ from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
-from agents.preview_generator.dashboard.auth import KnitAuthService
-from agents.preview_generator.dashboard.client import DashboardClient
-from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
+from agents.preview_generator.dashboard.static_output_registry import (
+    StaticDashboardOutputRegistry,
+)
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from catalog.bundle_catalog import BundleCatalog
@@ -121,45 +121,15 @@ def get_conversation_flow() -> ConversationFlow:
 
 
 @lru_cache(maxsize=1)
-def get_knit_auth_service() -> KnitAuthService | None:
-    """Return a cached KnitAuthService, or None if credentials are not configured."""
-    settings = get_settings()
-    if not settings.KNIT_EMAIL or not settings.KNIT_PASSWORD:
-        return None
-    return KnitAuthService(
-        auth_url=settings.KNIT_AUTH_URL,
-        email=settings.KNIT_EMAIL,
-        password=settings.KNIT_PASSWORD,
-        ttl_seconds=settings.DASHBOARD_AUTH_TOKEN_TTL_SECONDS,
-    )
-
-
-@lru_cache(maxsize=1)
-def get_dashboard_client() -> DashboardClient | None:
-    """Return a cached DashboardClient, or None if auth is not configured."""
-    settings = get_settings()
-    if settings.DISABLE_DASHBOARD_CALLS:
-        return None
-
-    auth = get_knit_auth_service()
-    if auth is None:
-        return None
-    return DashboardClient(
-        base_url=settings.DASHBOARD_SERVICE_URL,
-        auth_service=auth,
-    )
-
-
-@lru_cache(maxsize=1)
-def get_dashboard_template_registry() -> DashboardTemplateRegistry:
-    """Return a cached DashboardTemplateRegistry wired to the catalog."""
-    return DashboardTemplateRegistry(catalog=get_bundle_catalog())
-
-
-@lru_cache(maxsize=1)
 def get_bundle_template_loader() -> BundleTemplateLoader:
     """Return a cached BundleTemplateLoader for static app-0*.json variants."""
     return BundleTemplateLoader()
+
+
+@lru_cache(maxsize=1)
+def get_static_dashboard_output_registry() -> StaticDashboardOutputRegistry:
+    """Return a cached registry of pre-generated Group B dashboard widget outputs."""
+    return StaticDashboardOutputRegistry(catalog=get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
@@ -170,9 +140,8 @@ def get_preview_flow() -> PreviewFlow:
     return PreviewFlow(
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
-        dashboard_client=get_dashboard_client(),
-        dashboard_template_registry=get_dashboard_template_registry(),
         bundle_template_loader=get_bundle_template_loader(),
+        static_dashboard_outputs=get_static_dashboard_output_registry(),
     )
 
 
