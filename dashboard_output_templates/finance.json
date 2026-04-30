@@ -1,102 +1,43 @@
 {
   "source_template": "finance",
-  "generated_at": "2026-04-29",
   "widgets": [
     {
-      "id": "widget-1",
-      "external_id": 329,
-      "type": "number",
-      "title": "New Tasks",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-2",
-      "external_id": 328,
-      "type": "pie",
-      "title": "Projects per Priority",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-3",
-      "external_id": 327,
-      "type": "number",
-      "title": "Resolved Tasks",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-4",
-      "external_id": 326,
-      "type": "pie",
-      "title": "Tasks per Priority",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-5",
-      "external_id": 325,
-      "type": "pie",
-      "title": "Projects per Status",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-6",
-      "external_id": 324,
-      "type": "bar",
-      "title": "Closed Tasks",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-7",
-      "external_id": 323,
-      "type": "pie",
-      "title": "Tasks per Status",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-8",
-      "external_id": 322,
-      "type": "pie",
-      "title": "Pending Projects",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 3
-      }
+      "dashboard_external_id": 54,
+      "name": "Projects Dashboard",
+      "widget_templates": [
+        {
+          "widget_template_external_id": 329,
+          "name": "New Tasks"
+        },
+        {
+          "widget_template_external_id": 328,
+          "name": "Projects per Priority"
+        },
+        {
+          "widget_template_external_id": 327,
+          "name": "Resolved Tasks"
+        },
+        {
+          "widget_template_external_id": 326,
+          "name": "Tasks per Priority"
+        },
+        {
+          "widget_template_external_id": 325,
+          "name": "Projects per Status"
+        },
+        {
+          "widget_template_external_id": 324,
+          "name": "Closed Tasks"
+        },
+        {
+          "widget_template_external_id": 323,
+          "name": "Tasks per Status"
+        },
+        {
+          "widget_template_external_id": 322,
+          "name": "Pending Projects"
+        }
+      ]
     }
   ]
 }

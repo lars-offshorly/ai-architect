@@ -1,102 +1,43 @@
 {
   "source_template": "ticketing_facilities",
-  "generated_at": "2026-04-29",
   "widgets": [
     {
-      "id": "widget-1",
-      "external_id": 363,
-      "type": "bar",
-      "title": "Tickets per Queue",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-2",
-      "external_id": 362,
-      "type": "bar",
-      "title": "Tickets per Assignee",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-3",
-      "external_id": 361,
-      "type": "number",
-      "title": "New Tickets",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-4",
-      "external_id": 360,
-      "type": "number",
-      "title": "Reopen Tickets",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-5",
-      "external_id": 359,
-      "type": "pie",
-      "title": "Tickets per Status per Week",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-6",
-      "external_id": 358,
-      "type": "bar",
-      "title": "Tickets per Type",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-7",
-      "external_id": 357,
-      "type": "pie",
-      "title": "Tickets on Hold",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-8",
-      "external_id": 356,
-      "type": "pie",
-      "title": "Closed Tickets",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 3
-      }
+      "dashboard_external_id": 57,
+      "name": "Tickets Dashboard",
+      "widget_templates": [
+        {
+          "widget_template_external_id": 363,
+          "name": "Tickets per Queue"
+        },
+        {
+          "widget_template_external_id": 362,
+          "name": "Tickets per Assignee"
+        },
+        {
+          "widget_template_external_id": 361,
+          "name": "New Tickets"
+        },
+        {
+          "widget_template_external_id": 360,
+          "name": "Reopen Tickets"
+        },
+        {
+          "widget_template_external_id": 359,
+          "name": "Tickets per Status per Week"
+        },
+        {
+          "widget_template_external_id": 358,
+          "name": "Tickets per Type"
+        },
+        {
+          "widget_template_external_id": 357,
+          "name": "Tickets on Hold"
+        },
+        {
+          "widget_template_external_id": 356,
+          "name": "Closed Tickets"
+        }
+      ]
     }
   ]
 }

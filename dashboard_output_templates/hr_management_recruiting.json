@@ -1,186 +1,71 @@
 {
   "source_template": "hr_management_recruiting",
-  "generated_at": "2026-04-29",
   "widgets": [
     {
-      "id": "widget-1",
-      "external_id": 460,
-      "type": "bar",
-      "title": "Employee per Age Bracket",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-2",
-      "external_id": 459,
-      "type": "number",
-      "title": "New Hires",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-3",
-      "external_id": 458,
-      "type": "bar",
-      "title": "New Hire per Department",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-4",
-      "external_id": 457,
-      "type": "number",
-      "title": "Headcount",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 0
-      }
-    },
-    {
-      "id": "widget-5",
-      "external_id": 456,
-      "type": "bar",
-      "title": "Attrition Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-6",
-      "external_id": 455,
-      "type": "bar",
-      "title": "Employee Growth Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-7",
-      "external_id": 454,
-      "type": "pie",
-      "title": "Salary Change Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-8",
-      "external_id": 453,
-      "type": "pie",
-      "title": "Separated Employees",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 3
-      }
-    },
-    {
-      "id": "widget-9",
-      "external_id": 452,
-      "type": "pie",
-      "title": "Employee per Employment Status",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 6
-      }
-    },
-    {
-      "id": "widget-10",
-      "external_id": 451,
-      "type": "bar",
-      "title": "Employee per Employment Group",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 6
-      }
-    },
-    {
-      "id": "widget-11",
-      "external_id": 450,
-      "type": "bar",
-      "title": "Employees per Gender",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 6
-      }
-    },
-    {
-      "id": "widget-12",
-      "external_id": 449,
-      "type": "pie",
-      "title": "Absenteeism Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 9,
-        "row": 6
-      }
-    },
-    {
-      "id": "widget-13",
-      "external_id": 448,
-      "type": "pie",
-      "title": "Accession Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 0,
-        "row": 9
-      }
-    },
-    {
-      "id": "widget-14",
-      "external_id": 447,
-      "type": "pie",
-      "title": "Average Salary",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 3,
-        "row": 9
-      }
-    },
-    {
-      "id": "widget-15",
-      "external_id": 446,
-      "type": "pie",
-      "title": "90 Day Quit Rate",
-      "position": {
-        "width": 3,
-        "height": 3,
-        "col": 6,
-        "row": 9
-      }
+      "dashboard_external_id": 64,
+      "name": "HR Admin Dashboard",
+      "widget_templates": [
+        {
+          "widget_template_external_id": 460,
+          "name": "Employee per Age Bracket"
+        },
+        {
+          "widget_template_external_id": 459,
+          "name": "New Hires"
+        },
+        {
+          "widget_template_external_id": 458,
+          "name": "New Hire per Department"
+        },
+        {
+          "widget_template_external_id": 457,
+          "name": "Headcount"
+        },
+        {
+          "widget_template_external_id": 456,
+          "name": "Attrition Rate"
+        },
+        {
+          "widget_template_external_id": 455,
+          "name": "Employee Growth Rate"
+        },
+        {
+          "widget_template_external_id": 454,
+          "name": "Salary Change Rate"
+        },
+        {
+          "widget_template_external_id": 453,
+          "name": "Separated Employees"
+        },
+        {
+          "widget_template_external_id": 452,
+          "name": "Employee per Employment Status"
+        },
+        {
+          "widget_template_external_id": 451,
+          "name": "Employee per Employment Group"
+        },
+        {
+          "widget_template_external_id": 450,
+          "name": "Employees per Gender"
+        },
+        {
+          "widget_template_external_id": 449,
+          "name": "Absenteeism Rate"
+        },
+        {
+          "widget_template_external_id": 448,
+          "name": "Accession Rate"
+        },
+        {
+          "widget_template_external_id": 447,
+          "name": "Average Salary"
+        },
+        {
+          "widget_template_external_id": 446,
+          "name": "90 Day Quit Rate"
+        }
+      ]
     }
   ]
 }
