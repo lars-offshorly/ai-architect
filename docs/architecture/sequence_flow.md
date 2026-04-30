@@ -29,19 +29,28 @@ FE                    API Router           ConversationFlow       Interpreter   
 ## Preview Flow
 
 ```
-FE                    API Router           PreviewFlow       PreviewGenerator      AppGenerator
- |                        |                    |                    |                   |
- |-- POST /preview -----→ |                    |                    |                   |
- |                        |-- flow.run() ----→ |                    |                   |
- |                        |                    |-- generate() ----→ |                   |
- |                        |                    |                    |-- fetch template   |
- |                        |                    |                    |-- inject extracted |
- |                        |                    |                    |-- validate         |
- |                        |                    |←-- preview, dummy  |                   |
- |                        |                    |-- assemble() ----------------------------→|
- |                        |                    |                    |                   |-- load app.json
- |                        |                    |                    |                   |-- validate
- |                        |                    |                    |                   |-- format payload
- |                        |                    |←-- AppPayload --------------------------------|
- |←-- AppPayloadResponse  |                    |                    |                   |
+FE                    API Router           PreviewFlow       PreviewGenerator   BundleTemplateLoader  StaticDashboardOutputRegistry
+ |                        |                    |                    |                   |                          |
+ |-- POST /preview -----→ |                    |                    |                   |                          |
+ |                        |-- flow.run() ----→ |                    |                   |                          |
+ |                        |                    |-- generate() ----→ |                   |                          |
+ |                        |                    |                    |-- extract context  |                          |
+ |                        |                    |                    |-- resolve flags    |                          |
+ |                        |                    |                    |-- sample data      |                          |
+ |                        |                    |                    |-- build KPIs       |                          |
+ |                        |                    |                    |-- emit_preview     |                          |
+ |                        |                    |←-- generation_json, dummy_data_json     |                          |
+ |                        |                    |                    |                   |                          |
+ |                        |                    |-- _apply_bundle_template() ----------→ |                          |
+ |                        |                    |                    |                   |-- load app-0*.json        |
+ |                        |                    |                    |                   |-- overlay stores          |
+ |                        |                    |←-- stores overlaid |                   |                          |
+ |                        |                    |                    |                   |                          |
+ |                        |                    |-- _enrich_dashboard_widgets() --------------------------------→   |
+ |                        |                    |                    |                   |                          |-- resolve variant
+ |                        |                    |                    |                   |                          |-- load dashboard_output_templates/*.json
+ |                        |                    |←-- dashboard_widgets injected --------------------------------    |
+ |                        |                    |                    |                   |                          |
+ |                        |                    |-- build AppPayload |                   |                          |
+ |←-- AppPayload -------- |                    |                    |                   |                          |
 ```
