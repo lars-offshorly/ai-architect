@@ -65,7 +65,6 @@ def _validate_modules_against_bundle(
             raise ValidationError([f"Unknown module_key: {key}"])
 
 
-
 def validate_generation_json(
     generation: GenerationJSON,
     catalog: BundleCatalog,

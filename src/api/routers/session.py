@@ -50,7 +50,7 @@ logger = get_logger(__name__)
 
 
 async def _warm_template_caches() -> None:
-    """Warm BundleTemplateLoader and StaticDashboardOutputRegistry caches in a thread.
+    """Warm BundleTemplateLoader and DashboardTemplateRegistry caches in a thread.
 
     Called as a FastAPI BackgroundTask after session start so templates are
     ready before the first preview request arrives.
