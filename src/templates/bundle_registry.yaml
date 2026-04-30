@@ -843,6 +843,10 @@ bundles:
       - calendar
     required_slots:
       - primary_use_case
+    permission_services:
+      - weaves
+      - dashboard
+      - notifications
 
     synonyms:
       - accounting
@@ -1056,6 +1060,10 @@ bundles:
     required_slots:
       - primary_use_case
       - team_size
+    permission_services:
+      - projects
+      - kpi
+      - notifications
 
     synonyms:
       - marketing campaigns
@@ -1509,6 +1517,10 @@ bundles:
       - video_call
     required_slots:
       - primary_use_case
+    permission_services:
+      - tickets
+      - kpi
+      - notifications
 
     synonyms:
       - medical records
@@ -1985,6 +1997,10 @@ bundles:
       - video_call
     required_slots:
       - primary_use_case
+    permission_services:
+      - projects
+      - kpi
+      - notifications
 
     synonyms:
       - construction management
@@ -2201,6 +2217,10 @@ bundles:
       - video_call
     required_slots:
       - primary_use_case
+    permission_services:
+      - projects
+      - kpi
+      - notifications
 
     synonyms:
       - real estate management
@@ -2937,6 +2957,9 @@ bundles:
       - ticketing
     required_slots:
       - primary_use_case
+    permission_services:
+      - tickets
+      - dashboard
 
     synonyms:
       - custom
