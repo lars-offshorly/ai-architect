@@ -14,7 +14,6 @@ from api.deps import (
     get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
-    get_dashboard_template_registry,
     get_session_repository,
     get_static_dashboard_output_registry,
 )
@@ -58,7 +57,7 @@ async def _warm_template_caches() -> None:
     """
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, get_bundle_template_loader)
-    await loop.run_in_executor(None, get_dashboard_template_registry)
+    await loop.run_in_executor(None, get_static_dashboard_output_registry)
 
 
 def _persist_result_bundle_key(session: Session, result: dict[str, object]) -> None:
