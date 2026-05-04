@@ -469,7 +469,7 @@ def test_tier1_bundles_have_kpis(
         ("hr_management", "tickets"),
         ("project_mgmt", "tasks"),
         ("ticketing", "tickets"),
-        ("finance", "items"),
+        ("finance", "tasks"),
     ],
 )
 def test_primary_store_name_per_bundle(

@@ -86,11 +86,11 @@ _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
     "ticketing": {"primary": "tickets", "secondary": "queues", "weaves": None},
     "weaves": {"primary": None, "secondary": None, "weaves": "weaves"},
     # Tier 3 — industry bundles (project-centric)
-    "construction_real_estate": {
-        "primary": "tasks",
-        "secondary": "projects",
-        "weaves": None,
-    },
+    "construction": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    "real_estate": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    "finance": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    "marketing": {"primary": "tasks", "secondary": "projects", "weaves": None},
+    "sales": {"primary": "tasks", "secondary": "projects", "weaves": None},
     "education": {"primary": "tasks", "secondary": "projects", "weaves": None},
     # Tier 3 — industry bundles (ticket-centric)
     "healthcare": {"primary": "tickets", "secondary": None, "weaves": None},
