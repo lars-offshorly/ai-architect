@@ -19,6 +19,7 @@ const state = {
   recommendation: null,
   classification: null,
   previewPayload: null,
+  previewType: null, // 'confirmed' | 'early' | null
   isProcessing: false,
   statusInterval: null,
 };
@@ -159,10 +160,14 @@ async function handleGeneratePreview() {
     const payload = await generatePreview(state.sessionId);
     stopThinking();
     state.previewPayload = payload;
+    state.previewType = payload.preview_type || null;
     state.lastStatus = 'preview_ready';
-    
+
     refreshUI();
     appendSystemMessage("Preview generated! Check out the dashboard on the right.");
+    if (payload.warning) {
+      appendSystemMessage(`⚠️ ${payload.warning}`);
+    }
   } catch (error) {
     stopThinking();
     appendErrorMessage(error.message);
@@ -205,6 +210,10 @@ function applyTurnResponse(response) {
     appendAssistantMessage(response.message || response.question);
   }
 
+  if (response.warning) {
+    appendSystemMessage(`⚠️ ${response.warning}`);
+  }
+
   if (state.lastStatus === 'pending_confirmation') {
     appendCustomHTML(renderBundleCard(state.recommendation));
   } else if (state.lastStatus === 'ready_for_preview') {
@@ -216,7 +225,7 @@ function applyTurnResponse(response) {
 
 function refreshUI() {
   els.pipelineContainer.innerHTML = renderPipelineStatus(state);
-  els.previewPanel.innerHTML = renderDashboard(state.previewPayload);
+  els.previewPanel.innerHTML = renderDashboard(state.previewPayload, state.previewType);
   
   if (state.lastStatus === 'complete') {
     const deployBtn = document.getElementById('deployBtn');

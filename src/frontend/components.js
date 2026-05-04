@@ -15,7 +15,7 @@ export function renderMessage(role, content) {
   `;
 }
 
-export function renderBundleCard(recommendation, onConfirm) {
+export function renderBundleCard(recommendation) {
   const bundleKey = recommendation?.primary_bundle_key || 'Unknown';
   const reasoning = recommendation?.reasoning || 'Based on your needs, we suggest this bundle.';
   const modules = (recommendation?.inferred_modules || []).join(', ');
@@ -32,59 +32,607 @@ export function renderBundleCard(recommendation, onConfirm) {
   `;
 }
 
-export function renderDashboard(payload) {
-  if (!payload || !payload.dummy_data_json) {
-    return `<div class="dashboard-empty">Generate a preview to see your dashboard data.</div>`;
+// ─── Dashboard: internal constants ───────────────────────────────────────────
+
+const INTERNAL_STORE_KEYS = new Set([
+  'kpis', 'dashboard_generation_output', 'dashboard_widgets',
+]);
+
+const PRIORITY_ORDER = ['urgent', 'critical', 'high', 'medium', 'normal', 'low'];
+
+const STATUS_COLORS = {
+  open: '#ef4444', pending: '#ef4444',
+  in_progress: '#f59e0b', review: '#f59e0b', active: '#f59e0b',
+  resolved: '#10b981', closed: '#6b7280', completed: '#10b981',
+  approved: '#10b981', paid: '#10b981',
+  scheduled: '#3b82f6', new: '#3b82f6',
+};
+
+const CHART_PALETTE = [
+  '#0f172a', '#334155', '#64748b', '#94a3b8', '#cbd5e1',
+  '#1e40af', '#2563eb', '#3b82f6', '#93c5fd',
+];
+
+// ─── Dashboard: utility helpers ───────────────────────────────────────────────
+
+function titleCase(value = '') {
+  return String(value).replace(/[_-]/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+}
+
+function formatKpiValue(kpi) {
+  const v = kpi.sample_value ?? kpi.value ?? kpi.metric_value;
+  if (v === null || v === undefined) return '—';
+  const type = (kpi.type || kpi.unit || 'count').toLowerCase();
+  if (type === 'percentage') return `${v}%`;
+  if (type === 'days' || type === 'duration') return `${v} days`;
+  if (type === 'hours') return `${v} hrs`;
+  if (type === 'currency') return `$${Number(v).toLocaleString()}`;
+  if (typeof v === 'number' && v >= 1000) return Number(v).toLocaleString();
+  return String(v);
+}
+
+function statusColor(status = '') {
+  return STATUS_COLORS[status.toLowerCase().replace(/\s+/g, '_')] || '#94a3b8';
+}
+
+function ageInDays(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+}
+
+function safeRows(arr) {
+  return Array.isArray(arr) ? arr : [];
+}
+
+// ─── Dashboard: normalization layer ──────────────────────────────────────────
+
+function getStores(payload) {
+  return (
+    payload?.dummy_data_json?.stores ||
+    payload?.stores ||
+    payload?.generation_json?.stores ||
+    {}
+  );
+}
+
+function normalizeKpis(kpis) {
+  return safeRows(kpis).slice(0, 8).map(k => ({
+    label: k.label || titleCase(k.key || 'Metric'),
+    value: formatKpiValue(k),
+    source: k.source_service ? titleCase(k.source_service) : '',
+    type: (k.type || 'count').toLowerCase(),
+  }));
+}
+
+function normalizeTickets(rows) {
+  return safeRows(rows).map((r, i) => ({
+    id: r.id || r.ticket_id || `ticket-${i + 1}`,
+    title: r.title || r.subject || r.name || r.id || 'Untitled',
+    status: r.status || 'unknown',
+    priority: r.priority || 'normal',
+    assignee: r.assignee || r.owner || r.assigned_to || 'Unassigned',
+    queue: r.queue || r.department || r.group || r.category || '—',
+    createdAt: r.created_at || r.createdAt || r.date_created || null,
+  }));
+}
+
+function normalizeProjects(rows) {
+  return safeRows(rows).map((r, i) => ({
+    id: r.id || `proj-${i + 1}`,
+    title: r.title || r.name || r.id || 'Untitled',
+    status: r.status || 'unknown',
+    priority: r.priority || 'normal',
+    lead: r.lead || r.owner || r.manager || '—',
+    completion: typeof r.completion_pct === 'number' ? r.completion_pct : null,
+    dueDate: r.due_date || r.end_date || null,
+  }));
+}
+
+function normalizeTasks(rows) {
+  return safeRows(rows).map((r, i) => ({
+    id: r.id || `task-${i + 1}`,
+    title: r.title || r.name || 'Untitled',
+    status: r.status || 'unknown',
+    priority: r.priority || 'normal',
+    assignee: r.assignee || r.assigned_to || r.owner || 'Unassigned',
+    dueDate: r.due_date || null,
+  }));
+}
+
+function normalizeEmployees(rows) {
+  return safeRows(rows).map((r, i) => ({
+    id: r.id || `emp-${i + 1}`,
+    name: r.name || r.employee || 'Unknown',
+    department: r.department || r.team || '—',
+    role: r.job_title || r.role || r.position || '—',
+    status: r.status || 'Active',
+  }));
+}
+
+function buildFrequencyMap(rows, fieldFn) {
+  const map = new Map();
+  safeRows(rows).forEach(r => {
+    const key = titleCase(fieldFn(r) || 'Unknown');
+    map.set(key, (map.get(key) || 0) + 1);
+  });
+  return [...map.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
+function buildSumMap(rows, groupFn, valueFn) {
+  const map = new Map();
+  safeRows(rows).forEach(r => {
+    const key = titleCase(groupFn(r) || 'Unknown');
+    map.set(key, (map.get(key) || 0) + (Number(valueFn(r)) || 0));
+  });
+  return [...map.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
+function buildQueueData(queues, tickets) {
+  if (safeRows(queues).length) {
+    return safeRows(queues)
+      .map(q => ({
+        name: q.name || q.queue || q.label || 'Unknown',
+        value: Number(q.ticket_count ?? q.count ?? q.value ?? 0),
+      }))
+      .filter(q => isFinite(q.value))
+      .sort((a, b) => b.value - a.value);
   }
+  return buildFrequencyMap(tickets, r => r.queue || r.category || r.department);
+}
 
-  const { dummy_data_json, generation_json, display_name } = payload;
-  const stores = dummy_data_json.stores || {};
-  const kpis = stores.kpis || [];
+// ─── Dashboard: SVG chart renderers ──────────────────────────────────────────
 
-  // 1. Render KPIs
-  const kpiGrid = kpis.map(kpi => `
-    <div class="kpi-card">
-      <div class="kpi-label">${escapeHtml(kpi.label)}</div>
-      <div class="kpi-value">${escapeHtml(String(kpi.sample_value))} ${kpi.type === 'percentage' ? '%' : ''}</div>
-      <div class="kpi-source">${escapeHtml(kpi.source_service)}</div>
-    </div>
-  `).join('');
+function renderBarChart(data, { width = 400, height = 200, maxItems = 8 } = {}) {
+  if (!data.length) return '<p class="chart-empty">No data</p>';
+  const items = data.slice(0, maxItems);
+  const maxVal = Math.max(...items.map(d => d.value), 1);
+  const barH = Math.floor((height - 24) / items.length) - 4;
+  const labelW = 110;
+  const barAreaW = width - labelW - 48;
 
-  // 2. Render Tables (Generic for any store that is an array)
-  const tables = Object.entries(stores)
-    .filter(([key, val]) => key !== 'kpis' && Array.isArray(val) && val.length > 0)
-    .map(([key, rows]) => {
-      const headers = Object.keys(rows[0]).filter(h => h !== 'id');
-      return `
-        <div class="dashboard-table-container">
-          <h3>${escapeHtml(key.charAt(0).toUpperCase() + key.slice(1))}</h3>
-          <table class="dashboard-table">
-            <thead>
-              <tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              ${rows.map(row => `
-                <tr>${headers.map(h => `<td>${escapeHtml(String(row[h] ?? ''))}</td>`).join('')}</tr>
-              `).join('')}
-            </tbody>
-          </table>
+  const bars = items.map((d, i) => {
+    const barW = Math.max(4, Math.round((d.value / maxVal) * barAreaW));
+    const y = i * (barH + 4);
+    const color = CHART_PALETTE[i % CHART_PALETTE.length];
+    return `
+      <g transform="translate(0,${y})">
+        <text x="${labelW - 6}" y="${barH / 2 + 4}" text-anchor="end"
+              font-size="11" fill="#475569"
+              style="font-family:inherit">${escapeHtml(String(d.name).slice(0, 14))}</text>
+        <rect x="${labelW}" y="0" width="${barW}" height="${barH}"
+              rx="4" fill="${color}"></rect>
+        <text x="${labelW + barW + 5}" y="${barH / 2 + 4}"
+              font-size="11" fill="#0f172a" font-weight="600"
+              style="font-family:inherit">${d.value}</text>
+      </g>`;
+  }).join('');
+
+  const svgH = items.length * (barH + 4) + 4;
+  return `<svg viewBox="0 0 ${width} ${svgH}" width="100%" style="overflow:visible">${bars}</svg>`;
+}
+
+function renderDonutChart(data, { size = 160, maxSlices = 6 } = {}) {
+  if (!data.length) return '<p class="chart-empty">No data</p>';
+  const items = data.slice(0, maxSlices);
+  const total = items.reduce((s, d) => s + d.value, 0) || 1;
+  const cx = size / 2, cy = size / 2, r = size * 0.38, inner = size * 0.22;
+
+  let angle = -Math.PI / 2;
+  const slices = items.map((d, i) => {
+    const sweep = (d.value / total) * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(angle), y1 = cy + r * Math.sin(angle);
+    angle += sweep;
+    const x2 = cx + r * Math.cos(angle), y2 = cy + r * Math.sin(angle);
+    const xi1 = cx + inner * Math.cos(angle - sweep);
+    const yi1 = cy + inner * Math.sin(angle - sweep);
+    const xi2 = cx + inner * Math.cos(angle);
+    const yi2 = cy + inner * Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    const color = CHART_PALETTE[i % CHART_PALETTE.length];
+    return `<path d="M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2}
+                     L${xi2} ${yi2} A${inner} ${inner} 0 ${large} 0 ${xi1} ${yi1}Z"
+                  fill="${color}" stroke="white" stroke-width="1.5">
+              <title>${escapeHtml(d.name)}: ${d.value}</title>
+            </path>`;
+  }).join('');
+
+  const legend = items.map((d, i) => `
+    <div class="chart-legend-row">
+      <span class="chart-legend-dot" style="background:${CHART_PALETTE[i % CHART_PALETTE.length]}"></span>
+      <span class="chart-legend-label">${escapeHtml(d.name)}</span>
+      <span class="chart-legend-val">${d.value}</span>
+    </div>`).join('');
+
+  return `
+    <div class="chart-donut-wrap">
+      <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${slices}</svg>
+      <div class="chart-legend">${legend}</div>
+    </div>`;
+}
+
+function renderProgressBars(data, { maxItems = 6 } = {}) {
+  if (!data.length) return '<p class="chart-empty">No data</p>';
+  const items = data.slice(0, maxItems);
+  const maxVal = Math.max(...items.map(d => d.value), 1);
+  return items.map(d => {
+    const pct = Math.round((d.value / maxVal) * 100);
+    return `
+      <div class="prog-row">
+        <div class="prog-label-row">
+          <span class="prog-name">${escapeHtml(d.name)}</span>
+          <span class="prog-val">${d.value}</span>
         </div>
-      `;
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Dashboard: section renderers ────────────────────────────────────────────
+
+function renderStatCards(kpis) {
+  if (!kpis.length) return '';
+  return `
+    <div class="exec-kpi-grid">
+      ${kpis.map(k => `
+        <div class="exec-kpi-card">
+          <div class="exec-kpi-label">${escapeHtml(k.label)}</div>
+          <div class="exec-kpi-value">${escapeHtml(k.value)}</div>
+          ${k.source ? `<div class="exec-kpi-source">${escapeHtml(k.source)}</div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderSummaryBar(summary) {
+  return `
+    <div class="exec-summary-bar">
+      ${summary.map(s => `
+        <div class="exec-summary-item">
+          <div class="exec-summary-label">${escapeHtml(s.label)}</div>
+          <div class="exec-summary-value">${escapeHtml(String(s.value))}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderTicketsSection(tickets) {
+  if (!tickets.length) return '';
+  const statusDist = buildFrequencyMap(tickets, r => r.status);
+  const priorityDist = buildFrequencyMap(tickets, r => r.priority);
+  const sorted = [...tickets]
+    .sort((a, b) => {
+      const ai = PRIORITY_ORDER.indexOf(a.priority.toLowerCase());
+      const bi = PRIORITY_ORDER.indexOf(b.priority.toLowerCase());
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    })
+    .slice(0, 8)
+    .map(t => {
+      const age = ageInDays(t.createdAt);
+      const sColor = statusColor(t.status);
+      return `
+        <tr>
+          <td><div class="tbl-title">${escapeHtml(t.title)}</div>
+              <div class="tbl-sub">${escapeHtml(t.id)}</div></td>
+          <td>${escapeHtml(t.queue)}</td>
+          <td><span class="status-pill" style="background:${sColor}1a;color:${sColor};border-color:${sColor}33">
+                ${escapeHtml(titleCase(t.status))}</span></td>
+          <td><span class="priority-chip priority-${t.priority.toLowerCase()}">
+                ${escapeHtml(titleCase(t.priority))}</span></td>
+          <td>${escapeHtml(t.assignee)}</td>
+          <td>${age !== null ? `${age}d` : '—'}</td>
+        </tr>`;
     }).join('');
 
   return `
-    <div class="dashboard">
-      <header class="dashboard-header">
-        <h2>${escapeHtml(display_name)} Dashboard</h2>
-        <span class="badge">Preview Mode</span>
-      </header>
-      <div class="kpi-grid">${kpiGrid}</div>
-      <div class="tables-grid">${tables}</div>
-      <div class="dashboard-actions">
-        <button id="deployBtn" class="success-btn">Finalize & Deploy App</button>
+    <div class="exec-section-grid exec-grid-2col">
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Status Distribution</span></div>
+        ${renderDonutChart(statusDist, { size: 150, maxSlices: 6 })}
+      </div>
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Priority Profile</span></div>
+        ${renderProgressBars(priorityDist)}
       </div>
     </div>
-  `;
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>Tickets — by Priority</span>
+        <span class="exec-card-sub">${tickets.length} total</span></div>
+      <div class="tbl-scroll">
+        <table class="exec-table">
+          <thead><tr>
+            <th>Title</th><th>Queue</th><th>Status</th>
+            <th>Priority</th><th>Assignee</th><th>Age</th>
+          </tr></thead>
+          <tbody>${sorted}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderQueuesSection(queues) {
+  if (!queues.length) return '';
+  return `
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>Queue Backlog</span>
+        <span class="exec-card-sub">${queues.length} queues</span></div>
+      ${renderBarChart(queues, { height: Math.max(120, queues.length * 32) })}
+    </div>`;
+}
+
+function renderProjectsSection(projects) {
+  if (!projects.length) return '';
+  const statusDist = buildFrequencyMap(projects, r => r.status);
+  const rows = projects.slice(0, 6).map(p => {
+    const sColor = statusColor(p.status);
+    const bar = p.completion !== null
+      ? `<div class="proj-prog-track"><div class="proj-prog-fill" style="width:${p.completion}%"></div></div>
+         <span class="proj-pct">${p.completion}%</span>`
+      : '—';
+    return `
+      <tr>
+        <td><div class="tbl-title">${escapeHtml(p.title)}</div>
+            <div class="tbl-sub">${escapeHtml(p.id)}</div></td>
+        <td><span class="status-pill" style="background:${sColor}1a;color:${sColor};border-color:${sColor}33">
+              ${escapeHtml(titleCase(p.status))}</span></td>
+        <td><span class="priority-chip priority-${p.priority.toLowerCase()}">
+              ${escapeHtml(titleCase(p.priority))}</span></td>
+        <td>${escapeHtml(p.lead)}</td>
+        <td><div class="proj-prog-wrap">${bar}</div></td>
+        <td>${p.dueDate ? escapeHtml(p.dueDate) : '—'}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="exec-section-grid exec-grid-2col">
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Project Status Mix</span></div>
+        ${renderDonutChart(statusDist, { size: 150 })}
+      </div>
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Status Breakdown</span></div>
+        ${renderProgressBars(statusDist)}
+      </div>
+    </div>
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>Projects</span>
+        <span class="exec-card-sub">${projects.length} total</span></div>
+      <div class="tbl-scroll">
+        <table class="exec-table">
+          <thead><tr>
+            <th>Title</th><th>Status</th><th>Priority</th>
+            <th>Lead</th><th>Progress</th><th>Due</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderTasksSection(tasks) {
+  if (!tasks.length) return '';
+  const statusDist = buildFrequencyMap(tasks, r => r.status);
+  const assigneeDist = buildFrequencyMap(tasks, r => r.assignee).slice(0, 6);
+  const rows = tasks.slice(0, 8).map(t => {
+    const sColor = statusColor(t.status);
+    return `
+      <tr>
+        <td>${escapeHtml(t.title)}</td>
+        <td><span class="status-pill" style="background:${sColor}1a;color:${sColor};border-color:${sColor}33">
+              ${escapeHtml(titleCase(t.status))}</span></td>
+        <td><span class="priority-chip priority-${t.priority.toLowerCase()}">
+              ${escapeHtml(titleCase(t.priority))}</span></td>
+        <td>${escapeHtml(t.assignee)}</td>
+        <td>${t.dueDate ? escapeHtml(t.dueDate) : '—'}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="exec-section-grid exec-grid-2col">
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Task Status Mix</span></div>
+        ${renderProgressBars(statusDist)}
+      </div>
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Top Assignees by Load</span></div>
+        ${renderProgressBars(assigneeDist)}
+      </div>
+    </div>
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>Tasks</span>
+        <span class="exec-card-sub">${tasks.length} total</span></div>
+      <div class="tbl-scroll">
+        <table class="exec-table">
+          <thead><tr>
+            <th>Title</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Due</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderEmployeesSection(employees) {
+  if (!employees.length) return '';
+  const deptDist = buildFrequencyMap(employees, r => r.department);
+  const statusDist = buildFrequencyMap(employees, r => r.status);
+  const rows = employees.slice(0, 8).map(e => {
+    const sColor = statusColor(e.status);
+    return `
+      <tr>
+        <td>${escapeHtml(e.name)}</td>
+        <td>${escapeHtml(e.department)}</td>
+        <td>${escapeHtml(e.role)}</td>
+        <td><span class="status-pill" style="background:${sColor}1a;color:${sColor};border-color:${sColor}33">
+              ${escapeHtml(e.status)}</span></td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="exec-section-grid exec-grid-2col">
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Headcount by Department</span></div>
+        ${renderBarChart(deptDist, { height: Math.max(100, deptDist.length * 28) })}
+      </div>
+      <div class="exec-card">
+        <div class="exec-card-head"><span>Workforce Status</span></div>
+        ${renderDonutChart(statusDist, { size: 140 })}
+      </div>
+    </div>
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>Employees</span>
+        <span class="exec-card-sub">${employees.length} total</span></div>
+      <div class="tbl-scroll">
+        <table class="exec-table">
+          <thead><tr><th>Name</th><th>Department</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderGenericListSection(storeKey, rows) {
+  if (!rows.length) return '';
+  const first = rows[0];
+  const headers = Object.keys(first).filter(h => h !== 'id').slice(0, 7);
+  const title = titleCase(storeKey);
+
+  const statusKey = headers.find(h => h === 'status');
+  const numericKeys = headers.filter(h => typeof first[h] === 'number');
+  let chartHtml = '';
+
+  if (statusKey) {
+    const dist = buildFrequencyMap(rows, r => r[statusKey]);
+    if (dist.length > 1) {
+      chartHtml = `
+        <div class="exec-section-grid exec-grid-2col" style="margin-bottom:16px">
+          <div class="exec-card">
+            <div class="exec-card-head"><span>${title} by Status</span></div>
+            ${renderDonutChart(dist, { size: 140 })}
+          </div>
+          ${numericKeys.length ? `
+          <div class="exec-card">
+            <div class="exec-card-head"><span>${titleCase(numericKeys[0])} Summary</span></div>
+            ${renderProgressBars(buildSumMap(rows, r => r[statusKey] || 'Unknown', r => r[numericKeys[0]]))}
+          </div>` : '<div></div>'}
+        </div>`;
+    }
+  }
+
+  const tableRows = rows.slice(0, 10).map(row => `
+    <tr>${headers.map(h => {
+      const val = row[h];
+      if (h === 'status') {
+        const sColor = statusColor(String(val || ''));
+        return `<td><span class="status-pill" style="background:${sColor}1a;color:${sColor};border-color:${sColor}33">
+                  ${escapeHtml(titleCase(String(val ?? '')))}
+                </span></td>`;
+      }
+      if (typeof val === 'number' && String(h).includes('amount') || String(h).includes('value') || String(h).includes('revenue')) {
+        return `<td class="tbl-num">$${Number(val).toLocaleString()}</td>`;
+      }
+      return `<td>${escapeHtml(String(val ?? ''))}</td>`;
+    }).join('')}</tr>`).join('');
+
+  return `
+    ${chartHtml}
+    <div class="exec-card exec-card-full">
+      <div class="exec-card-head"><span>${title}</span>
+        <span class="exec-card-sub">${rows.length} records</span></div>
+      <div class="tbl-scroll">
+        <table class="exec-table">
+          <thead><tr>${headers.map(h => `<th>${escapeHtml(titleCase(h))}</th>`).join('')}</tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ─── Dashboard: root export ───────────────────────────────────────────────────
+
+export function renderDashboard(payload, previewType) {
+  if (!payload || !payload.dummy_data_json) {
+    return `
+      <div class="dashboard-empty">
+        <span>📊</span>
+        <p>Generate a preview to see your dashboard data.</p>
+      </div>`;
+  }
+
+  const stores = getStores(payload);
+  const displayName = payload.display_name || titleCase(payload.bundle_key || 'Operations');
+  const bundleName = titleCase(payload.bundle_key || 'dashboard');
+  const badgeLabel = previewType === 'early' ? 'Early Preview' : 'Preview Mode';
+
+  const kpis = normalizeKpis(stores.kpis);
+  const tickets = normalizeTickets(stores.tickets);
+  const projects = normalizeProjects(stores.projects);
+  const tasks = normalizeTasks(stores.tasks);
+  const employees = normalizeEmployees(stores.employees);
+  const queues = buildQueueData(stores.queues, tickets);
+
+  const processedKeys = new Set(['kpis', 'tickets', 'projects', 'tasks', 'employees', 'queues',
+    'dashboard_generation_output', 'dashboard_widgets']);
+
+  const extraSections = Object.entries(stores)
+    .filter(([k, v]) => !processedKeys.has(k) && !INTERNAL_STORE_KEYS.has(k) && Array.isArray(v) && v.length > 0)
+    .map(([k, v]) => renderGenericListSection(k, v))
+    .join('');
+
+  const summary = buildSummaryData({ tickets, projects, tasks, employees, queues });
+
+  return `
+    <div class="exec-dashboard">
+      <div class="exec-header">
+        <div class="exec-header-left">
+          <div class="exec-badges">
+            <span class="exec-badge exec-badge-dark">${escapeHtml(badgeLabel)}</span>
+            <span class="exec-badge exec-badge-outline">${escapeHtml(bundleName)}</span>
+          </div>
+          <h1 class="exec-title">${escapeHtml(displayName)} Dashboard</h1>
+        </div>
+        ${summary.length ? renderSummaryBar(summary) : ''}
+      </div>
+
+      ${renderStatCards(kpis)}
+      ${queues.length ? renderQueuesSection(queues) : ''}
+      ${tickets.length ? renderTicketsSection(tickets) : ''}
+      ${projects.length ? renderProjectsSection(projects) : ''}
+      ${tasks.length ? renderTasksSection(tasks) : ''}
+      ${employees.length ? renderEmployeesSection(employees) : ''}
+      ${extraSections}
+
+      <div class="exec-deploy-row">
+        <button id="deployBtn" class="success-btn">Finalize &amp; Deploy App</button>
+      </div>
+    </div>`;
+}
+
+function buildSummaryData({ tickets, projects, tasks, employees, queues }) {
+  const items = [];
+  if (queues.length) {
+    const total = queues.reduce((s, q) => s + q.value, 0);
+    items.push({ label: 'Queue Volume', value: total || tickets.length });
+    items.push({ label: 'Top Queue', value: queues[0]?.name || '—' });
+  } else if (tickets.length) {
+    const open = tickets.filter(t => !['resolved', 'closed'].includes(t.status.toLowerCase())).length;
+    items.push({ label: 'Open Tickets', value: open });
+  }
+  if (projects.length) {
+    const active = projects.filter(p => p.status.toLowerCase() === 'active').length;
+    items.push({ label: 'Active Projects', value: active });
+  }
+  if (employees.length) {
+    items.push({ label: 'Employees', value: employees.length });
+  }
+  if (tasks.length) {
+    const open = tasks.filter(t => !['resolved', 'closed', 'completed'].includes(t.status.toLowerCase())).length;
+    items.push({ label: 'Open Tasks', value: open });
+  }
+  return items.slice(0, 4);
 }
 
 export function renderPipelineStatus(state) {
