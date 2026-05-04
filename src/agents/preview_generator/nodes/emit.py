@@ -106,11 +106,6 @@ _STORE_SCHEMA: dict[str, dict[str, str | None]] = {
         "secondary": "projects",
         "weaves": None,
     },
-    # Tier 3 — project-centric industry bundles
-    "real_estate": {"primary": "tasks", "secondary": "projects", "weaves": None},
-    "marketing": {"primary": "tasks", "secondary": "projects", "weaves": None},
-    "sales": {"primary": "tasks", "secondary": "projects", "weaves": None},
-    "finance": {"primary": "tasks", "secondary": "projects", "weaves": None},
 }
 
 # Only these canonical tier-1 bundle keys should have their render_key applied
