@@ -15,7 +15,11 @@ from api.deps import (
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.request import GenerateAppRequest
 from catalog.bundle_catalog import BundleCatalog
-from core.exceptions import SessionNotFoundError
+from core.exceptions import (
+    InvalidPayloadError,
+    PreviewGenerationError,
+    SessionNotFoundError,
+)
 from core.logging import get_logger
 from repositories.session_repository import SessionRepository
 
@@ -49,16 +53,34 @@ async def generate_app_payload(
             detail="Session bundle must be confirmed before generating final app.",
         )
 
+    if not catalog.has_bundle(session.selected_bundle_key):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bundle not found: {session.selected_bundle_key}",
+        )
+
     bundle = catalog.get(session.selected_bundle_key)
     display_name = bundle.display_name if bundle else session.selected_bundle_key
 
     # Use the session-stored bundle info + the client-provided dummy data
-    payload = app_generator.assemble(
-        session_id=session_id,
-        bundle_key=session.selected_bundle_key,
-        display_name=display_name,
-        dummy_data=body.dummy_data_json,
-    )
+    try:
+        payload = app_generator.assemble(
+            session_id=session_id,
+            bundle_key=session.selected_bundle_key,
+            display_name=display_name,
+            dummy_data=body.dummy_data_json,
+            generation_data=body.generation_json,
+        )
+    except InvalidPayloadError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+    except PreviewGenerationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
 
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,

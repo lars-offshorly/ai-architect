@@ -192,7 +192,7 @@ def _assert_dummy_data_json(dummy_data_json: dict, bundle_key: str) -> None:
 
 
 # ===========================================================================
-# 1. HR Management — Tier 1, catalog key "hr_management" → registry "hr_hub"
+# 1. HR Management — Tier 1, canonical catalog key "hr_management"
 # ===========================================================================
 
 
@@ -204,7 +204,7 @@ class TestHRHub:
 
     def test_generation_json_structure(self, svc: PreviewGeneratorService) -> None:
         gen, *_ = svc.generate("sess-hr-2", "hr_management", _HISTORY_HR_HUB)
-        _assert_generation_json(gen, "hr_hub")
+        _assert_generation_json(gen, "hr_management")
 
     def test_hrhub_flags_enabled(self, svc: PreviewGeneratorService) -> None:
         gen, *_ = svc.generate("sess-hr-3", "hr_management", _HISTORY_HR_HUB)
@@ -469,7 +469,7 @@ def test_tier1_bundles_have_kpis(
         ("hr_management", "tickets"),
         ("project_mgmt", "tasks"),
         ("ticketing", "tickets"),
-        ("finance", "items"),
+        ("finance", "tasks"),
     ],
 )
 def test_primary_store_name_per_bundle(

@@ -29,6 +29,9 @@ def test_enriches_dashboard_widgets_from_static_output_when_available(caplog) ->
         flow._enrich_dashboard_widgets("s1", "hr_management", dummy, None, "app-01")
 
     assert dummy["stores"]["dashboard_widgets"] == widgets
+    dashboard_output = dummy["stores"].get("dashboard_generation_output")
+    assert isinstance(dashboard_output, dict)
+    assert dashboard_output["widgets"]["total"] == len(widgets)
     registry.get_widgets.assert_called_once_with("hr_management", "app-01")
     assert "static dashboard output injected" in caplog.text
 

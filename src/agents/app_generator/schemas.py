@@ -162,9 +162,32 @@ class FeatureFlagItem(BaseModel):
 
 _BUNDLE_CONFIG_MODELS: dict[str, type[BaseModel]] = {
     "hr_hub": HrHubConfig,
+    "hr_management": HrHubConfig,
     "project_mgmt": ProjectMgmtConfig,
+    "finance": ProjectMgmtConfig,
+    "marketing": ProjectMgmtConfig,
+    "sales": ProjectMgmtConfig,
+    "construction": ProjectMgmtConfig,
+    "real_estate": ProjectMgmtConfig,
+    "education": ProjectMgmtConfig,
     "ticketing": TicketingConfig,
+    "healthcare": TicketingConfig,
+    "legal_services": TicketingConfig,
+    "all_microservices": GenericConfig,
     "generic": GenericConfig,
+}
+
+COMPATIBLE_BUNDLE_KEYS: dict[str, set[str]] = {
+    "hr_management": {"hr_hub"},
+    "hr_hub": {"hr_management"},
+    "finance": {"project_mgmt"},
+    "marketing": {"project_mgmt"},
+    "sales": {"project_mgmt"},
+    "construction": {"project_mgmt"},
+    "real_estate": {"project_mgmt"},
+    "education": {"project_mgmt"},
+    "healthcare": {"ticketing"},
+    "legal_services": {"ticketing"},
 }
 
 # Public alias so callers can check membership without importing the internal map.
@@ -957,8 +980,18 @@ class GenericStores(BaseModel):
 
 _BUNDLE_STORES_MODELS: dict[str, type[BaseModel]] = {
     "hr_hub": HrHubStores,
+    "hr_management": HrHubStores,
     "project_mgmt": ProjectMgmtStores,
+    "finance": ProjectMgmtStores,
+    "marketing": ProjectMgmtStores,
+    "sales": ProjectMgmtStores,
+    "construction": ProjectMgmtStores,
+    "real_estate": ProjectMgmtStores,
+    "education": ProjectMgmtStores,
     "ticketing": TicketingStores,
+    "healthcare": TicketingStores,
+    "legal_services": TicketingStores,
+    "all_microservices": GenericStores,
     "generic": GenericStores,
 }
 

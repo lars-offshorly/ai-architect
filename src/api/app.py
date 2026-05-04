@@ -15,9 +15,9 @@ from core import Database, get_logger, get_settings, pinecone_client
 from .middleware import AuthMiddleware, RateLimitMiddleware
 from .routers.app import router as app_router
 from .routers.bundles import router as bundles_router
+from .routers.health import router as health_router
 from .routers.preview import router as preview_router
 from .routers.session import router as session_router
-from .routes import health_router
 
 _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
 

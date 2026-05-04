@@ -18,10 +18,17 @@ from api.deps import (
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.preview import EditPreviewRequestSchema
 from catalog.bundle_catalog import BundleCatalog
-from core.exceptions import BundleNotFoundError, SessionNotFoundError
+from core.exceptions import (
+    BundleNotFoundError,
+    InvalidPayloadError,
+    PreviewGenerationError,
+    SessionNotFoundError,
+)
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
-from domain.models.session import Session
+from domain.services.early_preview_policy import (
+    resolve_early_bundle_key,
+)
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
@@ -32,8 +39,6 @@ logger = get_logger(__name__)
 _EARLY_PREVIEW_WARNING = (
     "Preview generated with incomplete information. Some data may be generic."
 )
-_FALLBACK_BUNDLE_KEY = "all_microservices"
-_PREVIEW_FALLBACK_BUNDLE_KEY = "generic"
 
 
 def _execute_preview_pipeline(
@@ -41,11 +46,18 @@ def _execute_preview_pipeline(
     bundle_key: str,
     conv_repo: ConversationRepository,
     flow: PreviewFlow,
+    catalog: BundleCatalog,
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
 ) -> AppPayloadResponseSchema:
     """Execute the preview pipeline and assemble the response schema."""
+    if not catalog.has_bundle(bundle_key):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bundle not found: {bundle_key}",
+        )
+
     messages = conv_repo.get_messages(session_id)
     if not messages:
         raise HTTPException(
@@ -70,6 +82,32 @@ def _execute_preview_pipeline(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
+    except InvalidPayloadError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+    except PreviewGenerationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+
+    preview_warnings = payload.generation_json.get("preview_warnings")
+    if isinstance(preview_warnings, list) and preview_warnings:
+        codes = [
+            str(item.get("code"))
+            for item in preview_warnings
+            if isinstance(item, dict) and item.get("code")
+        ]
+        degraded_warning = (
+            f"Preview generated with degraded enrichment: {', '.join(codes)}"
+            if codes
+            else "Preview generated with degraded enrichment."
+        )
+        warning = (
+            f"{warning} {degraded_warning}".strip() if warning else degraded_warning
+        )
 
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,
@@ -83,46 +121,13 @@ def _execute_preview_pipeline(
     )
 
 
-_CONFIDENCE_THRESHOLD = 0.6
-
-
-def _resolve_early_bundle_key(session: Session) -> str:
-    """Return the best available bundle key for an early (unconfirmed) preview.
-
-    Priority order:
-      1. selected_bundle_key  — confirmed after conversation
-      2. preselected_bundle_key — user chose before chatting (Lars scenario #1)
-      3. latest_recommendation.primary_bundle — best recommendation mid-conversation
-      4. latest_classification.selected_bundle — only if confidence >= threshold
-      5. _FALLBACK_BUNDLE_KEY — helper-level fallback.
-    """
-    if session.selected_bundle_key:
-        return session.selected_bundle_key
-    if session.preselected_bundle_key:
-        return session.preselected_bundle_key
-    if (
-        session.latest_recommendation is not None
-        and session.latest_recommendation.primary_bundle is not None
-    ):
-        return session.latest_recommendation.primary_bundle.bundle_key
-    if session.latest_classification:
-        top_confidence = session.latest_classification.top_confidence
-        top_key = (
-            session.latest_classification.selected_bundle.bundle_key
-            if session.latest_classification.selected_bundle is not None
-            else None
-        )
-        if top_key and top_confidence >= _CONFIDENCE_THRESHOLD:
-            return top_key
-    return _FALLBACK_BUNDLE_KEY
-
-
 @router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
 async def generate_preview(
     session_id: str,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -143,6 +148,7 @@ async def generate_preview(
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
         flow=flow,
+        catalog=catalog,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
@@ -154,6 +160,7 @@ async def generate_early_preview(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -169,38 +176,21 @@ async def generate_early_preview(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
 
-    resolved_key = _resolve_early_bundle_key(session)
-    pipeline_key = (
-        _PREVIEW_FALLBACK_BUNDLE_KEY
-        if resolved_key == _FALLBACK_BUNDLE_KEY
-        else resolved_key
-    )
+    resolved_key = resolve_early_bundle_key(session)
     logger.info(
-        "Early preview for session=%s using bundle=%s", session_id, pipeline_key
+        "Early preview for session=%s using bundle=%s", session_id, resolved_key
     )
 
-    result = _execute_preview_pipeline(
+    return _execute_preview_pipeline(
         session_id=session_id,
-        bundle_key=pipeline_key,
+        bundle_key=resolved_key,
         conv_repo=conv_repo,
         flow=flow,
+        catalog=catalog,
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
-
-    if resolved_key == _FALLBACK_BUNDLE_KEY:
-        result = AppPayloadResponseSchema(
-            schema_version=result.schema_version,
-            session_id=result.session_id,
-            bundle_key=_FALLBACK_BUNDLE_KEY,
-            display_name=result.display_name,
-            modules=result.modules,
-            generation_json=result.generation_json,
-            dummy_data_json=result.dummy_data_json,
-            warning=result.warning,
-        )
-    return result
 
 
 @router.post("/{session_id}/preview/edit", response_model=AppPayloadResponseSchema)

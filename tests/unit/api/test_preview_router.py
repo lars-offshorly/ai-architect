@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from domain.models.session import Session
-from api.routers.preview import _resolve_early_bundle_key
+from domain.services.early_preview_policy import resolve_early_bundle_key
 
 
 def _make_session(**kwargs: object) -> Session:
@@ -25,7 +25,7 @@ def test_selected_bundle_key_wins() -> None:
             "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
         },
     )
-    assert _resolve_early_bundle_key(session) == "project_mgmt"
+    assert resolve_early_bundle_key(session) == "project_mgmt"
 
 
 def test_preselected_bundle_key_used_when_no_selected(
@@ -39,7 +39,7 @@ def test_preselected_bundle_key_used_when_no_selected(
             "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
         },
     )
-    assert _resolve_early_bundle_key(session) == "ticketing"
+    assert resolve_early_bundle_key(session) == "ticketing"
 
 
 def test_latest_classification_used_when_no_preselected() -> None:
@@ -52,7 +52,7 @@ def test_latest_classification_used_when_no_preselected() -> None:
             "suggestions": [{"bundle_key": "hr_management", "confidence": 0.9}],
         },
     )
-    assert _resolve_early_bundle_key(session) == "hr_management"
+    assert resolve_early_bundle_key(session) == "hr_management"
 
 
 def test_latest_classification_ignored_when_confidence_low() -> None:
@@ -66,7 +66,7 @@ def test_latest_classification_ignored_when_confidence_low() -> None:
         },
     )
     # Threshold is 0.6, so 0.3 should fall through to all_microservices
-    assert _resolve_early_bundle_key(session) == "all_microservices"
+    assert resolve_early_bundle_key(session) == "all_microservices"
 
 
 def test_fallback_bundle_key_when_nothing_set() -> None:
@@ -76,7 +76,7 @@ def test_fallback_bundle_key_when_nothing_set() -> None:
         preselected_bundle_key=None,
         latest_classification=None,
     )
-    assert _resolve_early_bundle_key(session) == "all_microservices"
+    assert resolve_early_bundle_key(session) == "all_microservices"
 
 
 def test_latest_classification_missing_top_key_falls_to_default() -> None:
@@ -86,4 +86,4 @@ def test_latest_classification_missing_top_key_falls_to_default() -> None:
         preselected_bundle_key=None,
         latest_classification={"confidence": 0.4},  # no top_bundle_key
     )
-    assert _resolve_early_bundle_key(session) == "all_microservices"
+    assert resolve_early_bundle_key(session) == "all_microservices"
