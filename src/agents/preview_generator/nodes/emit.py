@@ -8,8 +8,11 @@ from core.logging import get_logger
 
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
+from ..dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD, WIDGET_TEMPLATES
 
 logger = get_logger(__name__)
+
+_DEFAULT_DASHBOARD_NAME = "Tickets Dashboard"
 
 # Map from flag name → display module name (for the modules[] list)
 # Only core module-level flags are mapped; nav and notification flags are skipped.
@@ -206,7 +209,7 @@ def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, 
 def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
     """Build the stores dict with frontend-correct key names for this bundle."""
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
-    dashboard_widgets = _build_dashboard_widgets(state, schema)
+    dashboard_widgets = _build_dashboard_widgets(state)
     dashboard_generation_output = _build_dashboard_generation_output(
         state, dashboard_widgets, schema
     )
@@ -228,32 +231,18 @@ def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
 
 def _build_dashboard_widgets(
     state: PreviewGeneratorState,
-    schema: dict[str, str | None],
 ) -> list[dict[str, object]]:
-    """Create lightweight dashboard layout widgets for preview and app payloads."""
-    primary_store = schema.get("primary") or "items"
-    secondary_store = schema.get("secondary") or "projects"
-    kpi_title = state.kpi_metrics[0].label if state.kpi_metrics else "KPI Snapshot"
-    return [
-        {
-            "id": "widget-kpi-overview",
-            "type": "number",
-            "title": kpi_title,
-            "position": {"row": 0, "col": 0, "width": 2, "height": 1},
-        },
-        {
-            "id": "widget-primary-breakdown",
-            "type": "bar",
-            "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
-            "position": {"row": 0, "col": 2, "width": 2, "height": 1},
-        },
-        {
-            "id": "widget-secondary-list",
-            "type": "list",
-            "title": f"{str(secondary_store).replace('_', ' ').title()} Snapshot",
-            "position": {"row": 1, "col": 0, "width": 4, "height": 1},
-        },
-    ]
+    """Return WIDGET_TEMPLATES entries for this bundle's dashboard as the pipeline fallback.
+
+    Format matches the canonical static enrichment format:
+    {"widget_template_external_id": int, "name": str}
+
+    PreviewFlow._enrich_dashboard_widgets() replaces this with real static data on
+    the success path, or clears it to [] on the failure path.
+    """
+    dash_name = BUNDLE_TO_DASHBOARD.get(state.bundle_key, _DEFAULT_DASHBOARD_NAME)
+    dash_id = DASHBOARD_IDS.get(dash_name, DASHBOARD_IDS[_DEFAULT_DASHBOARD_NAME])
+    return list(WIDGET_TEMPLATES.get(dash_id, []))
 
 
 def _build_dashboard_generation_output(
@@ -267,45 +256,54 @@ def _build_dashboard_generation_output(
         len(str(message.get("content", ""))) for message in state.conversation_history
     )
 
+    dash_name = BUNDLE_TO_DASHBOARD.get(state.bundle_key, f"{state.bundle_key.replace('_', ' ').title()} Dashboard")
+    dash_id = DASHBOARD_IDS.get(dash_name, DASHBOARD_IDS[_DEFAULT_DASHBOARD_NAME])
+    templates = WIDGET_TEMPLATES.get(dash_id, [])
+
     debug_widgets: list[dict[str, object]] = []
     if state.kpi_metrics:
         metric = state.kpi_metrics[0]
-        debug_widgets.append(
-            {
-                "type": "number",
-                "name": metric.label,
-                "value": str(metric.sample_value),
-                "calculation": {
-                    "datasets": [
-                        {
-                            "module": state.bundle_key.replace("_", " ").title(),
-                            "data_source": "kpis",
-                        }
-                    ]
-                },
-            }
-        )
-    debug_widgets.append(
-        {
-            "type": "bar",
-            "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
-            "data_config": {
-                "module": state.bundle_key.replace("_", " ").title(),
-                "data_source": primary_store,
-                "group_by": ["status"],
-                "aggregation": "count",
+        w = {
+            "type": "number",
+            "name": metric.label,
+            "value": str(metric.sample_value),
+            "calculation": {
+                "datasets": [
+                    {
+                        "module": state.bundle_key.replace("_", " ").title(),
+                        "data_source": "kpis",
+                    }
+                ]
             },
         }
-    )
-    debug_widgets.append(
-        {
-            "type": "list",
-            "name": "KPI Detail List",
-            "data_config": {"module": "KPI", "data_source": "kpis"},
-            "column_count": 4,
-            "column_width": 250,
-        }
-    )
+        if templates:
+            w["widget_template_external_id"] = templates[0]["widget_template_external_id"]
+        debug_widgets.append(w)
+
+    w_bar = {
+        "type": "bar",
+        "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
+        "data_config": {
+            "module": state.bundle_key.replace("_", " ").title(),
+            "data_source": primary_store,
+            "group_by": ["status"],
+            "aggregation": "count",
+        },
+    }
+    if len(templates) > 1:
+        w_bar["widget_template_external_id"] = templates[1]["widget_template_external_id"]
+    debug_widgets.append(w_bar)
+
+    w_list = {
+        "type": "list",
+        "name": "KPI Detail List",
+        "data_config": {"module": "KPI", "data_source": "kpis"},
+        "column_count": 4,
+        "column_width": 250,
+    }
+    if len(templates) > 2:
+        w_list["widget_template_external_id"] = templates[2]["widget_template_external_id"]
+    debug_widgets.append(w_list)
 
     type_counts = {
         "text": 0,
@@ -339,7 +337,8 @@ def _build_dashboard_generation_output(
         "success": True,
         "dashboard": {
             "id": f"dash-{state.session_id[:8]}",
-            "name": f"{state.bundle_key.replace('_', ' ').title()} Dashboard",
+            "external_id": dash_id,
+            "name": dash_name,
             "url": None,
         },
         "widgets": widget_count,
