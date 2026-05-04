@@ -73,10 +73,25 @@ class MockPayloadBuilder:
         self._known_render_keys: frozenset[str] = frozenset(
             b.render_key for b in catalog.list_all() if b.render_key
         )
+        self._known_bundle_keys: frozenset[str] = frozenset(
+            b.bundle_key for b in catalog.list_all() if b.bundle_key
+        )
+        render_alias_map: dict[str, list[str]] = {}
+        for bundle in catalog.list_all():
+            render_alias_map.setdefault(bundle.render_key, []).append(bundle.bundle_key)
+        self._render_alias_map = {k: sorted(v) for k, v in render_alias_map.items()}
 
     @property
     def known_render_keys(self) -> frozenset[str]:
         return self._known_render_keys
+
+    @property
+    def known_bundle_keys(self) -> frozenset[str]:
+        return self._known_bundle_keys
+
+    @property
+    def render_alias_map(self) -> dict[str, list[str]]:
+        return {k: list(v) for k, v in self._render_alias_map.items()}
 
     # ------------------------------------------------------------------
     # Public API
@@ -104,14 +119,12 @@ class MockPayloadBuilder:
             session_id:           Used as the pipeline session identifier.
                                   A UUID is generated when omitted.
         """
-        self._validate_render_key(bundle_key)
+        self._validate_bundle_key(bundle_key)
         resolved_session_id = session_id or str(uuid.uuid4())
-
-        catalog_key = self._resolve_catalog_key(bundle_key)
         generation_json, pipeline_dummy_data, _user_context = (
             self._preview_service.generate(
                 session_id=resolved_session_id,
-                bundle_key=catalog_key,
+                bundle_key=bundle_key,
                 conversation_history=[],
             )
         )
@@ -157,11 +170,10 @@ class MockPayloadBuilder:
 
     def build_stores(self, bundle_key: str) -> dict[str, Any]:
         """Return dummy_data_json (store seed data) for a bundle via the pipeline."""
-        self._validate_render_key(bundle_key)
-        catalog_key = self._resolve_catalog_key(bundle_key)
+        self._validate_bundle_key(bundle_key)
         _, dummy_data_json, _user_context = self._preview_service.generate(
             session_id=str(uuid.uuid4()),
-            bundle_key=catalog_key,
+            bundle_key=bundle_key,
             conversation_history=[],
         )
         logger.info("MockPayload stores built: bundle_key=%s", bundle_key)
@@ -170,12 +182,11 @@ class MockPayloadBuilder:
     def build_flags(
         self, bundle_key: str
     ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
-        """Return (feature_flags, permission_services, landing_pages) for render key."""
-        self._validate_render_key(bundle_key)
-        catalog_key = self._resolve_catalog_key(bundle_key)
+        """Return (feature_flags, permission_services, landing_pages) for bundle."""
+        self._validate_bundle_key(bundle_key)
         generation_json, _, _user_context = self._preview_service.generate(
             session_id=str(uuid.uuid4()),
-            bundle_key=catalog_key,
+            bundle_key=bundle_key,
             conversation_history=[],
         )
         flags: list[dict[str, Any]] = generation_json.get("feature_flags", [])
@@ -193,16 +204,9 @@ class MockPayloadBuilder:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _validate_render_key(self, bundle_key: str) -> None:
-        if bundle_key not in self._known_render_keys:
-            raise ValueError(f"Unknown render key: {bundle_key!r}")
-
-    def _resolve_catalog_key(self, render_key: str) -> str:
-        """Return the catalog bundle key that maps to the given render key."""
-        for bundle in self._catalog.list_all():
-            if bundle.render_key == render_key:
-                return bundle.bundle_key
-        return render_key
+    def _validate_bundle_key(self, bundle_key: str) -> None:
+        if bundle_key not in self._known_bundle_keys:
+            raise ValueError(f"Unknown bundle key: {bundle_key!r}")
 
 
 # ---------------------------------------------------------------------------

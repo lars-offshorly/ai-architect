@@ -69,15 +69,15 @@ class PreviewFlow:
                                 is used for template + dashboard resolution.
         """
         session_logger = get_session_logger(__name__, session_id)
-        resolved_variant_key = variant_key or (
-            extraction_result.bundle_variant_key
-            if extraction_result is not None
-            else None
-        )
         session_logger.info(
             "Running preview flow for bundle=%s variant=%s",
             bundle_key,
-            resolved_variant_key,
+            variant_key
+            or (
+                extraction_result.bundle_variant_key
+                if extraction_result is not None
+                else None
+            ),
         )
 
         generation_json, dummy_data_json, user_context = self._preview_gen.generate(
@@ -87,37 +87,52 @@ class PreviewFlow:
             extraction_result=extraction_result,
             preselected_intent=preselected_intent,
         )
+        preview_warnings: list[dict[str, str]] = []
 
         # --- Static bundle template overlay (best-effort) ---
         # Replaces dynamically generated operational stores (tickets, projects,
         # tasks …) with realistic, domain-specific fixtures from app-0*.json.
         # KPIs and dashboard_widgets are intentionally left to the pipeline and
         # the dashboard enrichment step respectively.
-        self._apply_bundle_template(
+        template_warning = self._apply_bundle_template(
             session_id=session_id,
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
-            variant_key=resolved_variant_key,
+            variant_key=variant_key
+            or (
+                extraction_result.bundle_variant_key
+                if extraction_result is not None
+                else None
+            ),
         )
+        if template_warning is not None:
+            preview_warnings.append(template_warning)
 
         # --- Dashboard enrichment (best-effort, never blocks preview) ---
-        self._enrich_dashboard_widgets(
+        dashboard_warning = self._enrich_dashboard_widgets(
             session_id=session_id,
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
-            variant_key=resolved_variant_key,
+            variant_key=variant_key
+            or (
+                extraction_result.bundle_variant_key
+                if extraction_result is not None
+                else None
+            ),
         )
+        if dashboard_warning is not None:
+            preview_warnings.append(dashboard_warning)
 
-        display_name = self._display_names.get(bundle_key, bundle_key)
-        modules: list[str] = generation_json.get("modules", [])
+        if preview_warnings:
+            generation_json["preview_warnings"] = preview_warnings
 
         payload = AppPayload(
             session_id=session_id,
             bundle_key=bundle_key,
-            display_name=display_name,
-            modules=modules,
+            display_name=self._display_names.get(bundle_key, bundle_key),
+            modules=generation_json.get("modules", []),
             generation_json=generation_json,
             dummy_data_json=dummy_data_json,
         )
@@ -125,7 +140,7 @@ class PreviewFlow:
         session_logger.info(
             "Preview flow complete for session=%s modules=%s dashboard_widgets=%d",
             session_id,
-            modules,
+            payload.modules,
             len(dummy_data_json.get("stores", {}).get("dashboard_widgets", [])),
         )
         return payload
@@ -141,7 +156,7 @@ class PreviewFlow:
         dummy_data_json: dict,
         user_context: Any,
         variant_key: str | None = None,
-    ) -> None:
+    ) -> dict[str, str] | None:
         """Overlay operational stores from a static app-0*.json variant.
 
         Resolves the variant by ``variant_key`` (emitted upstream by the
@@ -154,7 +169,10 @@ class PreviewFlow:
         generated data if anything goes wrong.
         """
         if self._bundle_template_loader is None:
-            return
+            return {
+                "code": "bundle_template_loader_unavailable",
+                "message": "Static bundle template loader is not initialized.",
+            }
 
         resolved_variant_key = variant_key or _extract_variant_key(user_context)
         try:
@@ -165,7 +183,10 @@ class PreviewFlow:
             logger.warning(
                 "session=%s — bundle template load error: %s", session_id, exc
             )
-            return
+            return {
+                "code": "bundle_template_overlay_failed",
+                "message": str(exc),
+            }
 
         if template is None:
             logger.info(
@@ -173,11 +194,14 @@ class PreviewFlow:
                 session_id,
                 bundle_key,
             )
-            return
+            return {
+                "code": "bundle_template_missing",
+                "message": "No static bundle template found for bundle/variant.",
+            }
 
         template_stores: dict = template.get("stores", {})
         if not template_stores:
-            return
+            return None
 
         stores: dict = dummy_data_json.setdefault("stores", {})
         overlaid_keys: list[str] = []
@@ -194,6 +218,7 @@ class PreviewFlow:
             source_file,
             overlaid_keys,
         )
+        return None
 
     def _enrich_dashboard_widgets(
         self,
@@ -202,31 +227,46 @@ class PreviewFlow:
         dummy_data_json: dict,
         user_context: Any,
         variant_key: str | None = None,
-    ) -> None:
+    ) -> dict[str, str] | None:
         """Populate ``stores.dashboard_widgets`` from static pre-generated output."""
         resolved_variant_key = variant_key or _extract_variant_key(user_context)
         stores: dict = dummy_data_json.setdefault("stores", {})
         if self._static_dashboard_outputs is None:
             stores["dashboard_widgets"] = []
+            stores["dashboard_generation_output"] = _build_dashboard_generation_output(
+                []
+            )
             logger.warning(
                 "session=%s: StaticDashboardOutputRegistry not initialized", session_id
             )
-            return
+            return {
+                "code": "dashboard_registry_unavailable",
+                "message": "Static dashboard output registry is not initialized.",
+            }
 
         widgets = self._static_dashboard_outputs.get_widgets(
             bundle_key, resolved_variant_key
         )
         if widgets is None:
             stores["dashboard_widgets"] = []
+            stores["dashboard_generation_output"] = _build_dashboard_generation_output(
+                []
+            )
             logger.warning(
                 "session=%s: no static dashboard output for bundle=%s variant=%s",
                 session_id,
                 bundle_key,
                 resolved_variant_key,
             )
-            return
+            return {
+                "code": "dashboard_static_output_missing",
+                "message": "No static dashboard output found for bundle/variant.",
+            }
 
         stores["dashboard_widgets"] = widgets
+        stores["dashboard_generation_output"] = _build_dashboard_generation_output(
+            widgets
+        )
         logger.info(
             (
                 "session=%s: static dashboard output injected "
@@ -237,6 +277,48 @@ class PreviewFlow:
             resolved_variant_key,
             len(widgets),
         )
+        return None
+
+
+def _build_dashboard_generation_output(
+    widgets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build OpenAPI-aligned dashboard output from injected static widgets."""
+    type_counts: dict[str, int] = {
+        "text": 0,
+        "number": 0,
+        "bar": 0,
+        "hbar": 0,
+        "pie": 0,
+        "line": 0,
+        "scatter": 0,
+        "list": 0,
+        "combo": 0,
+        "embed": 0,
+    }
+    for widget in widgets:
+        widget_type = widget.get("type") if isinstance(widget, dict) else None
+        if isinstance(widget_type, str) and widget_type in type_counts:
+            type_counts[widget_type] += 1
+    widget_count = {**type_counts, "total": len(widgets)}
+
+    return {
+        "success": True,
+        "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
+        "widgets": widget_count,
+        "execution_time": "0m 1s",
+        "errors": [],
+        "debug_payload": {
+            "widgets": widgets,
+            "total_widgets": len(widgets),
+            "widget_breakdown": widget_count,
+        },
+        "generation_metadata": {
+            "widgets_extracted": len(widgets),
+            "widgets_explicit": len(widgets),
+            "processing_steps": ["static_dashboard_injection"],
+        },
+    }
 
 
 def _extract_variant_key(user_context: Any) -> str | None:

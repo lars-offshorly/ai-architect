@@ -33,7 +33,7 @@ _DEFAULT_BUNDLES_DIR = Path(__file__).parents[2] / "templates" / "bundles"
 # owned by the pipeline (kpis) or the dashboard enrichment service
 # (dashboard_widgets / dashboard_generation_output).
 _PIPELINE_OWNED_STORE_KEYS: frozenset[str] = frozenset(
-    {"dashboard_widgets", "dashboard_generation_output"}
+    {"kpis", "dashboard_widgets", "dashboard_generation_output"}
 )
 
 
