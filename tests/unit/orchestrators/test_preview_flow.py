@@ -19,9 +19,25 @@ def _flow_with_registry(registry: object | None) -> PreviewFlow:
     )
 
 
+def _make_payload(widget_templates: list) -> dict:
+    """Build a payload in the current dashboard-centric schema."""
+    return {
+        "widgets": [
+            {
+                "dashboard_external_id": 54,
+                "name": "Projects Dashboard",
+                "widget_templates": widget_templates,
+            }
+        ]
+    }
+
+
 def test_enriches_dashboard_widgets_from_static_output_when_available(caplog) -> None:
-    widgets = [{"id": "widget-1", "type": "number", "title": "A", "position": {}}]
-    payload = {"widgets": widgets, "murad_template_id": 54, "murad_template_name": "P"}
+    widget_templates = [
+        {"widget_template_external_id": 329, "name": "New Tasks"},
+        {"widget_template_external_id": 328, "name": "Projects per Priority"},
+    ]
+    payload = _make_payload(widget_templates)
     registry = SimpleNamespace(get=MagicMock(return_value=payload))
     flow = _flow_with_registry(registry)
     dummy = {"stores": {}}
@@ -29,7 +45,7 @@ def test_enriches_dashboard_widgets_from_static_output_when_available(caplog) ->
     with caplog.at_level(logging.INFO):
         flow._enrich_dashboard_widgets("s1", "hr_management", dummy, None, "app-01")
 
-    assert dummy["stores"]["dashboard_widgets"] == widgets
+    assert dummy["stores"]["dashboard_widgets"] == widget_templates
     registry.get.assert_called_once_with("hr_management", "app-01")
     assert "static dashboard output injected" in caplog.text
 
@@ -60,8 +76,8 @@ def test_logs_warning_and_returns_when_registry_not_initialized(caplog) -> None:
 
 
 def test_does_not_call_any_http_client_during_dashboard_enrichment() -> None:
-    widgets = [{"id": "widget-1", "type": "number", "title": "A", "position": {}}]
-    payload = {"widgets": widgets}
+    widget_templates = [{"widget_template_external_id": 329, "name": "New Tasks"}]
+    payload = _make_payload(widget_templates)
     registry = SimpleNamespace(get=MagicMock(return_value=payload))
     flow = _flow_with_registry(registry)
     dummy = {"stores": {}}

@@ -32,9 +32,12 @@ _DEFAULT_BUNDLES_DIR = Path(__file__).parents[2] / "templates" / "bundles"
 # Store keys that must NOT be overlaid from the static template — these are
 # owned by the pipeline (kpis) or the dashboard enrichment service
 # (dashboard_widgets / dashboard_generation_output).
-_PIPELINE_OWNED_STORE_KEYS: frozenset[str] = frozenset(
+PIPELINE_OWNED_STORE_KEYS: frozenset[str] = frozenset(
     {"kpis", "dashboard_widgets", "dashboard_generation_output"}
 )
+
+# Back-compat alias — remove once all callers use the public name
+_PIPELINE_OWNED_STORE_KEYS = PIPELINE_OWNED_STORE_KEYS
 
 
 class BundleTemplateLoader:

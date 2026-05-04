@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from agents.preview_generator.bundle_template_loader import (
-    _PIPELINE_OWNED_STORE_KEYS,
+    PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
 from agents.preview_generator.dashboard.templates import (
@@ -207,7 +207,7 @@ class PreviewFlow:
         stores: dict = dummy_data_json.setdefault("stores", {})
         overlaid_keys: list[str] = []
         for key, value in template_stores.items():
-            if key in _PIPELINE_OWNED_STORE_KEYS:
+            if key in PIPELINE_OWNED_STORE_KEYS:
                 continue
             stores[key] = value
             overlaid_keys.append(key)
@@ -237,11 +237,13 @@ class PreviewFlow:
             session_id, bundle_key, resolved_variant_key
         )
         if payload is None:
+            stores["dashboard_widgets"] = []
             return
 
-        widgets = payload["widgets"]
+        dashboard_obj = payload["widgets"][0]
+        widgets = dashboard_obj["widget_templates"]
         stores["dashboard_widgets"] = widgets
-        self._patch_generation_output(stores, payload, widgets)
+        self._patch_generation_output(stores, dashboard_obj, widgets)
 
         logger.info(
             "session=%s: static dashboard output injected bundle=%s variant=%s widgets=%d",
@@ -274,9 +276,12 @@ class PreviewFlow:
             )
             return None
 
-        if not payload.get("widgets"):
+        # New template schema: widgets is a list containing one dashboard object,
+        # which carries dashboard_external_id, name, and widget_templates[].
+        dashboard_entries = payload.get("widgets") or []
+        if not dashboard_entries or not dashboard_entries[0].get("widget_templates"):
             logger.warning(
-                "session=%s: empty widgets in static dashboard output for bundle=%s variant=%s",
+                "session=%s: empty widget_templates in static dashboard output for bundle=%s variant=%s",
                 session_id,
                 bundle_key,
                 resolved_variant_key,
@@ -288,21 +293,22 @@ class PreviewFlow:
     @staticmethod
     def _patch_generation_output(
         stores: dict,
-        payload: dict,
+        dashboard_obj: dict,
         widgets: list,
     ) -> None:
         """Sync ``dashboard_generation_output`` with the injected static payload.
 
-        Uses murad_template_id / murad_template_name from the payload as the
-        authoritative dashboard identity, falling back to BUNDLE_TO_DASHBOARD
-        + DASHBOARD_IDS if either field is absent.
+        Reads dashboard_external_id / name from the dashboard object (widgets[0])
+        in the new template schema. Falls back to DASHBOARD_IDS lookup when absent.
         """
         gen_output = stores.get("dashboard_generation_output")
         if not isinstance(gen_output, dict):
             return
 
-        dash_name = payload.get("murad_template_name") or "Tickets Dashboard"
-        dash_id = payload.get("murad_template_id") or DASHBOARD_IDS.get(dash_name, 57)
+        dash_name = dashboard_obj.get("name") or "Tickets Dashboard"
+        dash_id = dashboard_obj.get("dashboard_external_id") or DASHBOARD_IDS.get(
+            dash_name, DASHBOARD_IDS["Tickets Dashboard"]
+        )
 
         dashboard = gen_output.setdefault("dashboard", {})
         dashboard["name"] = dash_name
