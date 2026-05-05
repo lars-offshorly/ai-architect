@@ -1,0 +1,1196 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Architect API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Start Session",
+        "description": "Create a new session and process the opening user message.",
+        "operationId": "start_session_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStartedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/reply": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Reply To Session",
+        "description": "Append a user reply and run the next conversation turn.",
+        "operationId": "reply_to_session_sessions__session_id__reply_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationTurnResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/confirm": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Confirm Bundle",
+        "description": "Confirm or reject the proposed bundle, updating session state accordingly.",
+        "operationId": "confirm_bundle_sessions__session_id__confirm_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBundleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationTurnResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/preview": {
+      "post": {
+        "tags": [
+          "preview"
+        ],
+        "summary": "Generate Preview",
+        "description": "Run the preview pipeline for a confirmed session and return the AppPayload.",
+        "operationId": "generate_preview_sessions__session_id__preview_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppPayloadResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/preview/early": {
+      "post": {
+        "tags": [
+          "preview"
+        ],
+        "summary": "Generate Early Preview",
+        "description": "Generate a preview without requiring bundle confirmation.\n\nUses the best available bundle key in priority order:\n  selected > preselected > latest classification > all_microservices fallback.\nAlways returns a warning indicating the preview may be incomplete.\nSupports Lars scenario #3: \"preview system now\" from the very first prompt.",
+        "operationId": "generate_early_preview_sessions__session_id__preview_early_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppPayloadResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/preview/edit": {
+      "post": {
+        "tags": [
+          "preview"
+        ],
+        "summary": "Edit Preview",
+        "description": "Apply a natural-language edit to an existing preview payload.\n\nAccepts the full current preview + an instruction string.\nParses the instruction into an EditAction, applies it to the payload,\nand returns the updated AppPayloadResponseSchema.\n\nNo pipeline re-run — purely client-side JSON mutation.",
+        "operationId": "edit_preview_sessions__session_id__preview_edit_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPreviewRequestSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppPayloadResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bundles/{bundle_key}/metadata": {
+      "get": {
+        "tags": [
+          "bundles"
+        ],
+        "summary": "Get Bundle Metadata",
+        "operationId": "get_bundle_metadata_bundles__bundle_key__metadata_get",
+        "parameters": [
+          {
+            "name": "bundle_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bundle Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleMetadata"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/app": {
+      "post": {
+        "tags": [
+          "app"
+        ],
+        "summary": "Generate App Payload",
+        "description": "Assembles the final app payload for a confirmed session.\n\nLoads the static app.json from templates, validates it against the\nprovided dummy_data, and packages the result into the AppPayload contract.",
+        "operationId": "generate_app_payload_sessions__session_id__app_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateAppRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppPayloadResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Serve Index",
+        "operationId": "serve_index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AppPayloadResponseSchema": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "bundle_key": {
+            "type": "string",
+            "title": "Bundle Key"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Modules"
+          },
+          "generation_json": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Generation Json"
+          },
+          "dummy_data_json": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Dummy Data Json"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning",
+            "description": "Present when the preview was generated without full bundle confirmation. Indicates the output may contain generic or incomplete data."
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_version",
+          "session_id",
+          "bundle_key",
+          "display_name"
+        ],
+        "title": "AppPayloadResponseSchema"
+      },
+      "BundleCandidateInfo": {
+        "properties": {
+          "bundle_key": {
+            "type": "string",
+            "title": "Bundle Key"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning",
+            "default": ""
+          },
+          "matched_signals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matched Signals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bundle_key",
+          "display_name",
+          "confidence"
+        ],
+        "title": "BundleCandidateInfo"
+      },
+      "BundleMetadata": {
+        "properties": {
+          "bundle_key": {
+            "type": "string",
+            "title": "Bundle Key"
+          },
+          "kpis": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Kpis"
+          },
+          "workflows": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Workflows"
+          },
+          "entity_definitions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EntityDefinition"
+            },
+            "type": "object",
+            "title": "Entity Definitions"
+          },
+          "entity_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/EntityRelationshipDefinition"
+            },
+            "type": "array",
+            "title": "Entity Relationships"
+          },
+          "onboarding_config_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Onboarding Config Requirements"
+          },
+          "coverage": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Coverage"
+          },
+          "settings_configurations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Settings Configurations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bundle_key"
+        ],
+        "title": "BundleMetadata"
+      },
+      "ClassificationInfo": {
+        "properties": {
+          "confidence_status": {
+            "type": "string",
+            "title": "Confidence Status"
+          },
+          "top_bundle_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Bundle Key"
+          },
+          "top_confidence": {
+            "type": "number",
+            "title": "Top Confidence",
+            "default": 0.0
+          },
+          "score_gap": {
+            "type": "number",
+            "title": "Score Gap",
+            "default": 0.0
+          },
+          "missing_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Context"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning",
+            "default": ""
+          },
+          "ranked_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/BundleCandidateInfo"
+            },
+            "type": "array",
+            "title": "Ranked Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confidence_status"
+        ],
+        "title": "ClassificationInfo"
+      },
+      "ConfirmBundleRequest": {
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirmed"
+        ],
+        "title": "ConfirmBundleRequest"
+      },
+      "ConversationTurnResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_input",
+              "in_progress",
+              "pending_confirmation",
+              "ready_for_preview",
+              "complete"
+            ],
+            "title": "Status"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "bundle_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bundle Key"
+          },
+          "slots": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Slots"
+          },
+          "debug": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DebugInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClassificationInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecommendationInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning",
+            "description": "Present when the response was generated with incomplete information, such as an early preview before all required fields are filled."
+          },
+          "preview_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "early"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Type",
+            "description": "Discriminator for preview readiness. 'confirmed' = fully confirmed by the user. 'early' = force-previewed with potentially incomplete data. None = not yet in a preview-ready state."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "session_id"
+        ],
+        "title": "ConversationTurnResponse"
+      },
+      "DebugInfo": {
+        "properties": {
+          "extracted_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extracted Keywords"
+          },
+          "extracted_entities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extracted Entities"
+          },
+          "extracted_intents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extracted Intents"
+          },
+          "extracted_workflow_hints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extracted Workflow Hints"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "personalization": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Personalization"
+          }
+        },
+        "type": "object",
+        "title": "DebugInfo"
+      },
+      "EditPreviewRequestSchema": {
+        "properties": {
+          "current_preview": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Current Preview",
+            "description": "The full AppPayloadResponseSchema output from a prior /preview or /preview/early call."
+          },
+          "instruction": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Instruction",
+            "description": "Natural-language edit instruction (e.g. 'remove the chat module')."
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_preview",
+          "instruction"
+        ],
+        "title": "EditPreviewRequestSchema",
+        "description": "Request body for POST /sessions/{id}/preview/edit."
+      },
+      "EntityDefinition": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "plural": {
+            "type": "string",
+            "title": "Plural"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "plural"
+        ],
+        "title": "EntityDefinition"
+      },
+      "EntityRelationshipDefinition": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Source entity key, e.g. 'employee'."
+          },
+          "target": {
+            "type": "string",
+            "title": "Target",
+            "description": "Target entity key, e.g. 'leave_request'."
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Relationship type: 'has_many', 'belongs_to', or 'references'."
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "Optional human-readable override label."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "type"
+        ],
+        "title": "EntityRelationshipDefinition",
+        "description": "A single relationship entry as declared in ``bundle_registry.yaml``."
+      },
+      "GenerateAppRequest": {
+        "properties": {
+          "dummy_data_json": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Dummy Data Json",
+            "description": "The personalized sample data generated by the preview generator. Must include 'bundle_key' and 'stores'."
+          }
+        },
+        "type": "object",
+        "required": [
+          "dummy_data_json"
+        ],
+        "title": "GenerateAppRequest",
+        "description": "Request schema for finalizing and packaging the app payload.\n\nExpects the personalized dummy_data_json generated during the preview step."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "RecommendationInfo": {
+        "properties": {
+          "recommendation_status": {
+            "type": "string",
+            "title": "Recommendation Status"
+          },
+          "primary_bundle_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Bundle Key"
+          },
+          "fallback_bundle_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fallback Bundle Keys"
+          },
+          "inferred_modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Inferred Modules"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "recommendation_status"
+        ],
+        "title": "RecommendationInfo"
+      },
+      "ReplyRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "force_preview": {
+            "type": "boolean",
+            "title": "Force Preview",
+            "description": "Optional. If true, immediately returns a preview with the best available bundle without requiring missing-field completion or bundle confirmation. The response will include a warning and preview_type='early'.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ReplyRequest"
+      },
+      "SessionStartedResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_input",
+              "in_progress",
+              "pending_confirmation",
+              "ready_for_preview"
+            ],
+            "title": "Status"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "bundle_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bundle Key"
+          },
+          "slots": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Slots"
+          },
+          "debug": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DebugInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClassificationInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecommendationInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning",
+            "description": "Present when the response was generated with incomplete information, such as an early preview before all required fields are filled."
+          },
+          "preview_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "early"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Type",
+            "description": "Discriminator for preview readiness. 'confirmed' = fully confirmed by the user. 'early' = force-previewed with potentially incomplete data. None = not yet in a preview-ready state."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "session_id"
+        ],
+        "title": "SessionStartedResponse"
+      },
+      "StartSessionRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "preselected_bundle_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preselected Bundle Key",
+            "description": "Optional. Skip AI classification and use this bundle key directly. Must match a key in the bundle registry. Returns HTTP 400 for unknown keys."
+          },
+          "preselected_intent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preselected Intent",
+            "description": "Optional. A known intent string from the bundle registry (e.g. 'manage employees') to guide classification and boost matching bundles. Returns HTTP 400 for unrecognised intents. Persisted across all turns of the session."
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "StartSessionRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
