@@ -13,6 +13,9 @@ __pycache__/
 .claude/
 .agent/
 .codex 
+.agents/
+.codex* 
+
 
 # Coverage and Testing
 test-results/
