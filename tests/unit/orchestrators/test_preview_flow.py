@@ -45,7 +45,19 @@ def test_enriches_dashboard_widgets_from_static_output_when_available(caplog) ->
     with caplog.at_level(logging.INFO):
         flow._enrich_dashboard_widgets("s1", "hr_management", dummy, None, "app-01")
 
-    assert dummy["stores"]["dashboard_widgets"] == widget_templates
+    # Widgets are coerced into app-generator canonical schema (id/type/title/position)
+    widgets = dummy["stores"]["dashboard_widgets"]
+    assert isinstance(widgets, list)
+    assert len(widgets) == len(widget_templates)
+    # Preserve order and names from the static payload
+    assert [w["title"] for w in widgets] == [w["name"] for w in widget_templates]
+    # Ensure required fields exist for app generator validation
+    for w in widgets:
+        assert "id" in w and w["id"]
+        assert "type" in w and isinstance(w["type"], str)
+        assert "position" in w and all(
+            k in w["position"] for k in ("row", "col", "width", "height")
+        )
     registry.get.assert_called_once_with("hr_management", "app-01")
     assert "static dashboard output injected" in caplog.text
 

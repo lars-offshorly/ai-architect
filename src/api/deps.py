@@ -128,7 +128,7 @@ def get_bundle_template_loader() -> BundleTemplateLoader:
 
 @lru_cache(maxsize=1)
 def get_dashboard_template_registry() -> DashboardTemplateRegistry:
-    """Return a cached DashboardTemplateRegistry backed by dashboard_output_templates/."""
+    """Return a cached DashboardTemplateRegistry for dashboard outputs."""
     return DashboardTemplateRegistry(catalog=get_bundle_catalog())
 
 
@@ -163,7 +163,7 @@ def get_mock_payload_builder() -> MockPayloadBuilder:
         with mocks_path.open(encoding="utf-8") as f:
             service_mocks = json.load(f)
     return MockPayloadBuilder(
-        preview_service=get_preview_generator_service(),
+        preview_flow=get_preview_flow(),
         catalog=get_bundle_catalog(),
         service_mocks=service_mocks,
     )

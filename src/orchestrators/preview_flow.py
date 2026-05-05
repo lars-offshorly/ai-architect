@@ -8,10 +8,8 @@ from agents.preview_generator.bundle_template_loader import (
     PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
-from agents.preview_generator.dashboard.templates import (
-    DashboardTemplateRegistry,
-)
 from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS
+from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -239,12 +237,14 @@ class PreviewFlow:
             return
 
         dashboard_obj = payload["widgets"][0]
-        widgets = dashboard_obj["widget_templates"]
+        raw_widgets = dashboard_obj["widget_templates"]
+        widgets = self._coerce_dashboard_widgets(raw_widgets)
         stores["dashboard_widgets"] = widgets
         self._patch_generation_output(stores, dashboard_obj, widgets)
 
         logger.info(
-            "session=%s: static dashboard output injected bundle=%s variant=%s widgets=%d",
+            "session=%s: static dashboard output injected "
+            "bundle=%s variant=%s widgets=%d",
             session_id,
             bundle_key,
             resolved_variant_key,
@@ -277,7 +277,8 @@ class PreviewFlow:
         dashboard_entries = payload.get("widgets") or []
         if not dashboard_entries or not dashboard_entries[0].get("widget_templates"):
             logger.warning(
-                "session=%s: empty widget_templates in static dashboard output for bundle=%s variant=%s",
+                "session=%s: empty widget_templates in static dashboard output "
+                "for bundle=%s variant=%s",
                 session_id,
                 bundle_key,
                 resolved_variant_key,
@@ -307,8 +308,16 @@ class PreviewFlow:
         dashboard["external_id"] = dash_id
 
         type_counts: dict[str, int] = {
-            "text": 0, "number": 0, "bar": 0, "hbar": 0, "pie": 0,
-            "line": 0, "scatter": 0, "list": 0, "combo": 0, "embed": 0,
+            "text": 0,
+            "number": 0,
+            "bar": 0,
+            "hbar": 0,
+            "pie": 0,
+            "line": 0,
+            "scatter": 0,
+            "list": 0,
+            "combo": 0,
+            "embed": 0,
         }
         for widget in widgets:
             wtype = widget.get("type")
@@ -319,6 +328,68 @@ class PreviewFlow:
         meta = gen_output.setdefault("generation_metadata", {})
         meta["widgets_extracted"] = len(widgets)
         meta["widgets_explicit"] = len(widgets)
+
+    @staticmethod
+    def _coerce_dashboard_widgets(raw_widgets: Any) -> list[dict[str, Any]]:
+        """Coerce static dashboard widget lists into app-generator-safe schema.
+
+        App finalization validates dummy_data_json via DummyDataJsonSchema, which
+        expects dashboard widgets to include: id, type, title, position.
+
+        Static dashboard output files may be in either shape:
+        - canonical widgets: {id, type, title, position:{row,col,width,height}, ...}
+        - external-only widgets: {widget_template_external_id, name}
+        """
+        if not isinstance(raw_widgets, list):
+            return []
+
+        # Already canonical.
+        if raw_widgets and isinstance(raw_widgets[0], dict):
+            first = raw_widgets[0]
+            if all(k in first for k in ("id", "type", "title", "position")):
+                return [w for w in raw_widgets if isinstance(w, dict)]
+
+        canonical: list[dict[str, Any]] = []
+        for idx, w in enumerate(raw_widgets):
+            if not isinstance(w, dict):
+                continue
+
+            title = w.get("title") or w.get("name") or f"Widget {idx + 1}"
+            external_id = w.get("widget_template_external_id")
+            wid = w.get("id")
+            if not isinstance(wid, str) or not wid:
+                wid = (
+                    f"widget-{external_id}"
+                    if external_id is not None
+                    else f"widget-{idx + 1}"
+                )
+
+            # Default to a numeric widget type; frontend can still render generically.
+            wtype = w.get("type")
+            if not isinstance(wtype, str) or not wtype:
+                wtype = "number"
+
+            position = w.get("position")
+            if not isinstance(position, dict) or not all(
+                k in position for k in ("row", "col", "width", "height")
+            ):
+                position = {
+                    "row": idx // 2,
+                    "col": idx % 2,
+                    "width": 1,
+                    "height": 1,
+                }
+
+            canonical.append(
+                {
+                    "id": wid,
+                    "type": wtype,
+                    "title": str(title),
+                    "position": position,
+                }
+            )
+
+        return canonical
 
 
 def _extract_variant_key(user_context: Any) -> str | None:

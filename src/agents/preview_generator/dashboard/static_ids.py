@@ -35,7 +35,7 @@ BUNDLE_TO_DASHBOARD = {
 
 # Detailed widget templates from the JSON
 WIDGET_TEMPLATES = {
-    57: [ # Tickets Dashboard
+    57: [  # Tickets Dashboard
         {"widget_template_external_id": 363, "name": "Tickets per Queue"},
         {"widget_template_external_id": 362, "name": "Tickets per Assignee"},
         {"widget_template_external_id": 361, "name": "New Tickets"},
@@ -45,7 +45,7 @@ WIDGET_TEMPLATES = {
         {"widget_template_external_id": 357, "name": "Tickets on Hold"},
         {"widget_template_external_id": 356, "name": "Closed Tickets"},
     ],
-    56: [ # Queue Dashboard
+    56: [  # Queue Dashboard
         {"widget_template_external_id": 355, "name": "Reopen Tickets"},
         {"widget_template_external_id": 354, "name": "Tickets on Hold"},
         {"widget_template_external_id": 353, "name": "Tickets per Priority"},
@@ -55,7 +55,7 @@ WIDGET_TEMPLATES = {
         {"widget_template_external_id": 349, "name": "New Tickets"},
         {"widget_template_external_id": 348, "name": "Tickets per Assignee"},
     ],
-    54: [ # Projects Dashboard
+    54: [  # Projects Dashboard
         {"widget_template_external_id": 329, "name": "New Tasks"},
         {"widget_template_external_id": 328, "name": "Projects per Priority"},
         {"widget_template_external_id": 327, "name": "Resolved Tasks"},
@@ -65,24 +65,54 @@ WIDGET_TEMPLATES = {
         {"widget_template_external_id": 323, "name": "Tasks per Status"},
         {"widget_template_external_id": 322, "name": "Pending Projects"},
     ],
-    53: [ # Personal Dashboard
-        {"widget_template_external_id": 313, "name": "Leaves Taken for the Current Month"},
+    53: [  # Personal Dashboard
+        {
+            "widget_template_external_id": 313,
+            "name": "Leaves Taken for the Current Month",
+        },
         {"widget_template_external_id": 312, "name": "Lates for the Current Month"},
         {"widget_template_external_id": 311, "name": "Absences for the Current Month"},
-        {"widget_template_external_id": 310, "name": "Available Vacation Leave Credits"},
+        {
+            "widget_template_external_id": 310,
+            "name": "Available Vacation Leave Credits",
+        },
         {"widget_template_external_id": 309, "name": "Attendance Widget"},
     ],
-    51: [ # Attendance Dashboard
-        {"widget_template_external_id": 300, "name": "Weekly Late for the Current Month"},
-        {"widget_template_external_id": 299, "name": "Weekly Absences for the Current Month"},
-        {"widget_template_external_id": 298, "name": "Total Breaks for the Current Month"},
-        {"widget_template_external_id": 297, "name": "Weekly Overbreak for the Current Month"},
-        {"widget_template_external_id": 296, "name": "Weekly Undertime for the Current Month"},
-        {"widget_template_external_id": 295, "name": "Total Undertime for the Current Month"},
-        {"widget_template_external_id": 294, "name": "Total Late for the Current Month"},
-        {"widget_template_external_id": 293, "name": "Total Absences for the Current Month"},
+    51: [  # Attendance Dashboard
+        {
+            "widget_template_external_id": 300,
+            "name": "Weekly Late for the Current Month",
+        },
+        {
+            "widget_template_external_id": 299,
+            "name": "Weekly Absences for the Current Month",
+        },
+        {
+            "widget_template_external_id": 298,
+            "name": "Total Breaks for the Current Month",
+        },
+        {
+            "widget_template_external_id": 297,
+            "name": "Weekly Overbreak for the Current Month",
+        },
+        {
+            "widget_template_external_id": 296,
+            "name": "Weekly Undertime for the Current Month",
+        },
+        {
+            "widget_template_external_id": 295,
+            "name": "Total Undertime for the Current Month",
+        },
+        {
+            "widget_template_external_id": 294,
+            "name": "Total Late for the Current Month",
+        },
+        {
+            "widget_template_external_id": 293,
+            "name": "Total Absences for the Current Month",
+        },
     ],
-    52: [ # Leaves Dashboard
+    52: [  # Leaves Dashboard
         {"widget_template_external_id": 306, "name": "Available Leave Credits"},
         {"widget_template_external_id": 305, "name": "Leave Credits by Type"},
         {"widget_template_external_id": 304, "name": "Leaves Taken"},
@@ -90,14 +120,14 @@ WIDGET_TEMPLATES = {
         {"widget_template_external_id": 302, "name": "Leaves Taken by Type"},
         {"widget_template_external_id": 301, "name": "Available Vacation Leaves"},
     ],
-    62: [ # Home Dashboard
+    62: [  # Home Dashboard
         {"widget_template_external_id": 438, "name": "Tasks per Priority"},
         {"widget_template_external_id": 437, "name": "My Tickets per Priority"},
         {"widget_template_external_id": 436, "name": "My Tasks"},
         {"widget_template_external_id": 435, "name": "My Tickets"},
         {"widget_template_external_id": 434, "name": "Attendance Widget"},
     ],
-    64: [ # HR Admin Dashboard
+    64: [  # HR Admin Dashboard
         {"widget_template_external_id": 460, "name": "Employee per Age Bracket"},
         {"widget_template_external_id": 459, "name": "New Hires"},
         {"widget_template_external_id": 458, "name": "New Hire per Department"},
@@ -114,7 +144,7 @@ WIDGET_TEMPLATES = {
         {"widget_template_external_id": 447, "name": "Average Salary"},
         {"widget_template_external_id": 446, "name": "90 Day Quit Rate"},
     ],
-    48: [ # KNIT Tickets Dashboard
+    48: [  # KNIT Tickets Dashboard
         {"widget_template_external_id": 423, "name": "Ticket Level (Knit Details)"},
         {"widget_template_external_id": 424, "name": "Aging Duration"},
         {"widget_template_external_id": 425, "name": "Closure Hours"},

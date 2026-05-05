@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 
 from core.logging import get_logger
 
+from ..dashboard.static_ids import BUNDLE_TO_DASHBOARD, DASHBOARD_IDS, WIDGET_TEMPLATES
 from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
 from ..state import PreviewGeneratorState
-from ..dashboard.static_ids import DASHBOARD_IDS, BUNDLE_TO_DASHBOARD, WIDGET_TEMPLATES
 
 logger = get_logger(__name__)
 
@@ -232,7 +232,7 @@ def _build_stores(registry_key: str, state: PreviewGeneratorState) -> dict:
 def _build_dashboard_widgets(
     state: PreviewGeneratorState,
 ) -> list[dict[str, object]]:
-    """Return WIDGET_TEMPLATES entries for this bundle's dashboard as the pipeline fallback.
+    """Return WIDGET_TEMPLATES entries for this bundle dashboard as fallback.
 
     Format matches the canonical static enrichment format:
     {"widget_template_external_id": int, "name": str}
@@ -245,25 +245,16 @@ def _build_dashboard_widgets(
     return list(WIDGET_TEMPLATES.get(dash_id, []))
 
 
-def _build_dashboard_generation_output(
+def _build_debug_widgets(
     state: PreviewGeneratorState,
-    dashboard_widgets: list[dict[str, object]],
-    schema: dict[str, str | None],
-) -> dict[str, object]:
-    """Build OpenAPI-aligned dashboard generation response structure."""
-    primary_store = schema.get("primary") or "items"
-    report_length = sum(
-        len(str(message.get("content", ""))) for message in state.conversation_history
-    )
-
-    dash_name = BUNDLE_TO_DASHBOARD.get(state.bundle_key, f"{state.bundle_key.replace('_', ' ').title()} Dashboard")
-    dash_id = DASHBOARD_IDS.get(dash_name, DASHBOARD_IDS[_DEFAULT_DASHBOARD_NAME])
-    templates = WIDGET_TEMPLATES.get(dash_id, [])
-
+    templates: list[dict[str, object]],
+    primary_store: str,
+) -> list[dict[str, object]]:
+    """Build the debug widgets for the dashboard payload."""
     debug_widgets: list[dict[str, object]] = []
     if state.kpi_metrics:
         metric = state.kpi_metrics[0]
-        w = {
+        w: dict[str, object] = {
             "type": "number",
             "name": metric.label,
             "value": str(metric.sample_value),
@@ -277,12 +268,14 @@ def _build_dashboard_generation_output(
             },
         }
         if templates:
-            w["widget_template_external_id"] = templates[0]["widget_template_external_id"]
+            w["widget_template_external_id"] = templates[0][
+                "widget_template_external_id"
+            ]
         debug_widgets.append(w)
 
-    w_bar = {
+    w_bar: dict[str, object] = {
         "type": "bar",
-        "title": f"{str(primary_store).replace('_', ' ').title()} by Status",
+        "title": f"{primary_store.replace('_', ' ').title()} by Status",
         "data_config": {
             "module": state.bundle_key.replace("_", " ").title(),
             "data_source": primary_store,
@@ -291,10 +284,12 @@ def _build_dashboard_generation_output(
         },
     }
     if len(templates) > 1:
-        w_bar["widget_template_external_id"] = templates[1]["widget_template_external_id"]
+        w_bar["widget_template_external_id"] = templates[1][
+            "widget_template_external_id"
+        ]
     debug_widgets.append(w_bar)
 
-    w_list = {
+    w_list: dict[str, object] = {
         "type": "list",
         "name": "KPI Detail List",
         "data_config": {"module": "KPI", "data_source": "kpis"},
@@ -302,10 +297,17 @@ def _build_dashboard_generation_output(
         "column_width": 250,
     }
     if len(templates) > 2:
-        w_list["widget_template_external_id"] = templates[2]["widget_template_external_id"]
+        w_list["widget_template_external_id"] = templates[2][
+            "widget_template_external_id"
+        ]
     debug_widgets.append(w_list)
 
-    type_counts = {
+    return debug_widgets
+
+
+def _count_widget_types(widgets: list[dict[str, object]]) -> dict[str, int]:
+    """Count the occurrences of each widget type."""
+    type_counts: dict[str, int] = {
         "text": 0,
         "number": 0,
         "bar": 0,
@@ -317,21 +319,47 @@ def _build_dashboard_generation_output(
         "combo": 0,
         "embed": 0,
     }
-    for widget in debug_widgets:
+    for widget in widgets:
         widget_type = widget.get("type")
         if isinstance(widget_type, str) and widget_type in type_counts:
             type_counts[widget_type] += 1
-    widget_count = {**type_counts, "total": len(debug_widgets)}
+    type_counts["total"] = len(widgets)
+    return type_counts
 
-    data_sources = sorted(
-        {
-            str(m.source_service)
-            for m in state.kpi_metrics
-            if isinstance(m.source_service, str) and m.source_service
-        }
-    )
+
+def _get_data_sources(state: PreviewGeneratorState, primary_store: str) -> list[str]:
+    """Retrieve data sources used for the dashboard generation."""
+    data_sources_set = {
+        str(m.source_service)
+        for m in state.kpi_metrics
+        if isinstance(m.source_service, str) and m.source_service
+    }
+    data_sources = sorted(data_sources_set)
     if not data_sources:
-        data_sources = ["kpis", str(primary_store)]
+        data_sources = ["kpis", primary_store]
+    return data_sources
+
+
+def _build_dashboard_generation_output(
+    state: PreviewGeneratorState,
+    dashboard_widgets: list[dict[str, object]],
+    schema: dict[str, str | None],
+) -> dict[str, object]:
+    """Build OpenAPI-aligned dashboard generation response structure."""
+    primary_store = str(schema.get("primary") or "items")
+    report_length = sum(
+        len(str(message.get("content", ""))) for message in state.conversation_history
+    )
+
+    dash_name = BUNDLE_TO_DASHBOARD.get(
+        state.bundle_key, f"{state.bundle_key.replace('_', ' ').title()} Dashboard"
+    )
+    dash_id = DASHBOARD_IDS.get(dash_name, DASHBOARD_IDS[_DEFAULT_DASHBOARD_NAME])
+    templates: list[dict[str, object]] = list(WIDGET_TEMPLATES.get(dash_id, []))
+
+    debug_widgets = _build_debug_widgets(state, templates, primary_store)
+    widget_count = _count_widget_types(debug_widgets)
+    data_sources = _get_data_sources(state, primary_store)
 
     return {
         "success": True,

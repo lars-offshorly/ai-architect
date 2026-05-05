@@ -20,6 +20,7 @@ pipeline-generated KPIs and letting dashboard enrichment fill
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -64,12 +65,13 @@ class BundleTemplateLoader:
         bundle_key: str,
         variant_key: str | None = None,
     ) -> dict | None:
-        """Return the variant dict for ``(bundle_key, variant_key)`` or None.
+        """Return a deep-copied variant dict for ``(bundle_key, variant_key)``.
 
         When ``variant_key`` is ``None`` or not found for this bundle, the
-        first variant in filename order (``app-01``) is returned.  The caller
-        gets a direct reference to the cached object — callers that need to
-        mutate it should ``copy.deepcopy`` first.
+        first variant in filename order (``app-01``) is returned.
+
+        A deep copy is returned to prevent accidental mutation of the in-memory
+        cache across requests.
         """
         candidates = self._variants.get(bundle_key)
         if not candidates:
@@ -84,7 +86,7 @@ class BundleTemplateLoader:
                     variant_key,
                     chosen.get("_source_file", "?"),
                 )
-                return chosen
+                return copy.deepcopy(chosen)
             logger.info(
                 "bundle_template_loader: bundle=%s variant=%s not found; "
                 "falling back to default",
@@ -98,7 +100,7 @@ class BundleTemplateLoader:
             bundle_key,
             chosen.get("_source_file", "?"),
         )
-        return chosen
+        return copy.deepcopy(chosen)
 
     def supported_bundles(self) -> list[str]:
         """Return bundle keys that have at least one variant loaded."""
