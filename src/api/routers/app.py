@@ -90,4 +90,5 @@ async def generate_app_payload(
         modules=payload.modules,
         generation_json=payload.generation_json,
         dummy_data_json=payload.dummy_data_json,
+        preview_type="confirmed",
     )
