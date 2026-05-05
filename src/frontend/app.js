@@ -3,6 +3,7 @@ import {
   replySession,
   confirmSession,
   generatePreview,
+  generateEarlyPreview,
   generateApp,
 } from './api.js';
 import {
@@ -11,6 +12,7 @@ import {
   renderDashboard,
   renderPipelineStatus,
   renderThinkingIndicator,
+  escapeHtml,
 } from './components.js';
 
 const state = {
@@ -22,6 +24,7 @@ const state = {
   previewType: null, // 'confirmed' | 'early' | null
   isProcessing: false,
   statusInterval: null,
+  hasShownEarlyPreviewAction: false,
 };
 
 const STATUS_MESSAGES = [
@@ -63,6 +66,8 @@ function bindEvents() {
       await handleConfirmBundle(true);
     } else if (e.target.id === 'generatePreviewBtn') {
       await handleGeneratePreview();
+    } else if (e.target.id === 'generateEarlyPreviewBtn') {
+      await handleGenerateEarlyPreview();
     } else if (e.target.id === 'deployBtn') {
       await handleDeployApp();
     } else if (e.target.classList.contains('suggestion-chip')) {
@@ -161,7 +166,7 @@ async function handleGeneratePreview() {
     stopThinking();
     state.previewPayload = payload;
     state.previewType = payload.preview_type || null;
-    state.lastStatus = 'preview_ready';
+    state.lastStatus = 'ready_for_preview';
 
     refreshUI();
     appendSystemMessage("Preview generated! Check out the dashboard on the right.");
@@ -176,14 +181,46 @@ async function handleGeneratePreview() {
   }
 }
 
+async function handleGenerateEarlyPreview() {
+  if (!state.sessionId || state.isProcessing) return;
+  setProcessing(true);
+  startThinking();
+
+  try {
+    const payload = await generateEarlyPreview(state.sessionId);
+    stopThinking();
+    state.previewPayload = payload;
+    state.previewType = payload.preview_type || 'early';
+    state.lastStatus = 'ready_for_preview';
+    refreshUI();
+    appendSystemMessage("Early preview generated. Data may be generic until you confirm a bundle.");
+    if (payload.warning) {
+      appendSystemMessage(`⚠️ ${payload.warning}`);
+    }
+  } catch (error) {
+    stopThinking();
+    appendErrorMessage(error.message);
+  } finally {
+    setProcessing(false);
+  }
+}
+
 async function handleDeployApp() {
   if (!state.sessionId || !state.previewPayload || state.isProcessing) return;
+  if (state.previewType === 'early') {
+    appendSystemMessage('Finalize is disabled for early previews. Confirm a bundle and generate a confirmed preview first.');
+    return;
+  }
   setProcessing(true);
   startThinking();
 
   try {
     // Step 5: Final Delivery
-    const finalPayload = await generateApp(state.sessionId, state.previewPayload.dummy_data_json);
+    const finalPayload = await generateApp(
+      state.sessionId,
+      state.previewPayload.dummy_data_json,
+      state.previewPayload.generation_json,
+    );
     stopThinking();
     state.lastStatus = 'complete';
     
@@ -218,6 +255,14 @@ function applyTurnResponse(response) {
     appendCustomHTML(renderBundleCard(state.recommendation));
   } else if (state.lastStatus === 'ready_for_preview') {
     addActionButton('Generate Preview', 'generatePreviewBtn');
+  } else if (
+    state.lastStatus === 'awaiting_input' &&
+    state.sessionId &&
+    !state.previewPayload &&
+    !state.hasShownEarlyPreviewAction
+  ) {
+    state.hasShownEarlyPreviewAction = true;
+    addActionButton('Early Preview', 'generateEarlyPreviewBtn');
   }
 
   refreshUI();
@@ -267,7 +312,7 @@ function appendErrorMessage(content) {
   els.chatLog.insertAdjacentHTML('beforeend', `
     <div class="msg-bubble msg-error">
       <div class="msg-role">Error</div>
-      <div class="msg-content">${content}</div>
+      <div class="msg-content">${escapeHtml(content)}</div>
     </div>
   `);
   scrollToBottom();

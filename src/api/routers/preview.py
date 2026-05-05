@@ -47,6 +47,7 @@ def _execute_preview_pipeline(
     conv_repo: ConversationRepository,
     flow: PreviewFlow,
     catalog: BundleCatalog,
+    preview_type: str | None = None,
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
@@ -117,6 +118,7 @@ def _execute_preview_pipeline(
         modules=payload.modules,
         generation_json=payload.generation_json,
         dummy_data_json=payload.dummy_data_json,
+        preview_type=preview_type,
         warning=warning,
     )
 
@@ -149,6 +151,7 @@ async def generate_preview(
         conv_repo=conv_repo,
         flow=flow,
         catalog=catalog,
+        preview_type="confirmed",
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
@@ -187,6 +190,7 @@ async def generate_early_preview(
         conv_repo=conv_repo,
         flow=flow,
         catalog=catalog,
+        preview_type="early",
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
@@ -234,5 +238,6 @@ async def edit_preview(
         modules=updated.get("modules", []),
         generation_json=updated.get("generation_json", {}),
         dummy_data_json=updated.get("dummy_data_json", {}),
+        preview_type=updated.get("preview_type"),
         warning=warning,
     )

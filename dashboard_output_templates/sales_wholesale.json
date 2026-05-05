@@ -1,127 +1,42 @@
 {
-  "source_template": "sales_wholesale",
-  "generated_at": "2026-04-20",
   "widgets": [
     {
-      "id": "widget-1",
-      "type": "number",
-      "title": "Active Distributors",
-      "position": {
-        "row": 0,
-        "col": 0,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-2",
-      "type": "number",
-      "title": "Open Orders",
-      "position": {
-        "row": 0,
-        "col": 3,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-3",
-      "type": "number",
-      "title": "Orders Shipped Today",
-      "position": {
-        "row": 0,
-        "col": 6,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-4",
-      "type": "number",
-      "title": "Active Opportunities",
-      "position": {
-        "row": 0,
-        "col": 9,
-        "width": 3,
-        "height": 3
-      }
-    },
-    {
-      "id": "widget-5",
-      "type": "bar",
-      "title": "Sales Pipeline",
-      "position": {
-        "row": 3,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-6",
-      "type": "line",
-      "title": "Order Volume Trend",
-      "position": {
-        "row": 3,
-        "col": 6,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-7",
-      "type": "pie",
-      "title": "Orders by Territory",
-      "position": {
-        "row": 9,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
-    },
-    {
-      "id": "widget-8",
-      "type": "list",
-      "title": "Open Orders",
-      "position": {
-        "row": 9,
-        "col": 6,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-9",
-      "type": "list",
-      "title": "Active Distributors",
-      "position": {
-        "row": 15,
-        "col": 0,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-10",
-      "type": "list",
-      "title": "Active Opportunities",
-      "position": {
-        "row": 15,
-        "col": 6,
-        "width": 6,
-        "height": 4
-      }
-    },
-    {
-      "id": "widget-11",
-      "type": "hbar",
-      "title": "Rep Performance",
-      "position": {
-        "row": 19,
-        "col": 0,
-        "width": 6,
-        "height": 6
-      }
+      "dashboard_external_id": 54,
+      "name": "Projects Dashboard",
+      "widget_templates": [
+        {
+          "widget_template_external_id": 329,
+          "name": "New Tasks"
+        },
+        {
+          "widget_template_external_id": 328,
+          "name": "Projects per Priority"
+        },
+        {
+          "widget_template_external_id": 327,
+          "name": "Resolved Tasks"
+        },
+        {
+          "widget_template_external_id": 326,
+          "name": "Tasks per Priority"
+        },
+        {
+          "widget_template_external_id": 325,
+          "name": "Projects per Status"
+        },
+        {
+          "widget_template_external_id": 324,
+          "name": "Closed Tasks"
+        },
+        {
+          "widget_template_external_id": 323,
+          "name": "Tasks per Status"
+        },
+        {
+          "widget_template_external_id": 322,
+          "name": "Pending Projects"
+        }
+      ]
     }
   ]
 }

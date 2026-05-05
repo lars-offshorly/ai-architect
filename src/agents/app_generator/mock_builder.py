@@ -1,13 +1,14 @@
-"""MockPayloadBuilder: assembles mock payloads via the preview generator pipeline.
+"""MockPayloadBuilder: assembles mock payloads for frontend integration.
 
-All data is produced by PreviewGeneratorService (the full LangGraph pipeline).
-No static template files are loaded directly. The public interface (MockPayload,
-MockPayloadBuilder.build / build_stores / build_flags, KNOWN_RENDER_KEYS) is
-unchanged so the router and deps.py do not need to change.
+Mock payloads must be shaped like real preview payloads.
 
-Render keys:
-  KNOWN_RENDER_KEYS is derived from the BundleCatalog at construction time, so
-  it stays in sync with bundle_registry.yaml automatically.
+Implementation:
+- Uses the production `PreviewFlow` to ensure the response includes:
+  - static bundle template overlay (`app-0*.json` operational stores)
+  - static dashboard output injection (`dashboard_output_templates/*`)
+
+The public interface (MockPayload, MockPayloadBuilder.build / build_stores /
+build_flags, KNOWN_RENDER_KEYS) remains stable for the router + deps wiring.
 """
 
 from __future__ import annotations
@@ -17,11 +18,15 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agents.app_generator.validators import validate_dummy_data_json
-from agents.preview_generator.service import PreviewGeneratorService
 from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
+from orchestrators.preview_flow import PreviewFlow
 
 logger = get_logger(__name__)
+
+_DEFAULT_MOCK_HISTORY: list[dict[str, str]] = [
+    {"role": "user", "content": "Generate a mock preview."}
+]
 
 # ---------------------------------------------------------------------------
 # Output model
@@ -47,12 +52,12 @@ class MockPayload:
 
 
 class MockPayloadBuilder:
-    """Assembles MockPayload objects by running the preview generator pipeline.
+    """Assembles MockPayload objects by running the production PreviewFlow.
 
     Usage::
 
         builder = MockPayloadBuilder(
-            preview_service=PreviewGeneratorService(catalog),
+            preview_flow=PreviewFlow(...),
             catalog=catalog,
             service_mocks=api_mocks_dict,
         )
@@ -63,11 +68,11 @@ class MockPayloadBuilder:
 
     def __init__(
         self,
-        preview_service: PreviewGeneratorService,
+        preview_flow: PreviewFlow,
         catalog: BundleCatalog,
         service_mocks: dict[str, Any] | None = None,
     ) -> None:
-        self._preview_service = preview_service
+        self._preview_flow = preview_flow
         self._catalog = catalog
         self._service_mocks: dict[str, Any] = service_mocks or {}
         self._known_render_keys: frozenset[str] = frozenset(
@@ -121,17 +126,17 @@ class MockPayloadBuilder:
         """
         self._validate_bundle_key(bundle_key)
         resolved_session_id = session_id or str(uuid.uuid4())
-        generation_json, pipeline_dummy_data, _user_context = (
-            self._preview_service.generate(
-                session_id=resolved_session_id,
-                bundle_key=bundle_key,
-                conversation_history=[],
-            )
+        payload = self._preview_flow.run(
+            session_id=resolved_session_id,
+            bundle_key=bundle_key,
+            conversation_history=_DEFAULT_MOCK_HISTORY,
         )
 
         if dummy_data_override is not None:
             validate_dummy_data_json(dummy_data_override, bundle_key)
-            dummy_data_json: dict[str, Any] = dummy_data_override
+            dummy_data_json: dict[str, Any] = _normalize_dummy_data_json(
+                dict(dummy_data_override)
+            )
             if not dummy_data_json.get("session_id"):
                 dummy_data_json = {**dummy_data_json, "session_id": resolved_session_id}
             logger.info(
@@ -140,13 +145,14 @@ class MockPayloadBuilder:
                 resolved_session_id,
             )
         else:
-            dummy_data_json = pipeline_dummy_data
+            dummy_data_json = payload.dummy_data_json
             logger.info(
                 "MockPayload built: bundle_key=%s source=pipeline session=%s",
                 bundle_key,
                 resolved_session_id,
             )
 
+        generation_json: dict[str, Any] = payload.generation_json
         flags = generation_json.get("feature_flags", [])
         config = generation_json.get("config", {})
         permission_services: list[str] = config.get("permission_services", [])
@@ -171,24 +177,25 @@ class MockPayloadBuilder:
     def build_stores(self, bundle_key: str) -> dict[str, Any]:
         """Return dummy_data_json (store seed data) for a bundle via the pipeline."""
         self._validate_bundle_key(bundle_key)
-        _, dummy_data_json, _user_context = self._preview_service.generate(
+        payload = self._preview_flow.run(
             session_id=str(uuid.uuid4()),
             bundle_key=bundle_key,
-            conversation_history=[],
+            conversation_history=_DEFAULT_MOCK_HISTORY,
         )
         logger.info("MockPayload stores built: bundle_key=%s", bundle_key)
-        return dummy_data_json
+        return payload.dummy_data_json
 
     def build_flags(
         self, bundle_key: str
     ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]]]:
         """Return (feature_flags, permission_services, landing_pages) for bundle."""
         self._validate_bundle_key(bundle_key)
-        generation_json, _, _user_context = self._preview_service.generate(
+        payload = self._preview_flow.run(
             session_id=str(uuid.uuid4()),
             bundle_key=bundle_key,
-            conversation_history=[],
+            conversation_history=_DEFAULT_MOCK_HISTORY,
         )
+        generation_json = payload.generation_json
         flags: list[dict[str, Any]] = generation_json.get("feature_flags", [])
         config = generation_json.get("config", {})
         permission_services: list[str] = config.get("permission_services", [])
@@ -207,6 +214,44 @@ class MockPayloadBuilder:
     def _validate_bundle_key(self, bundle_key: str) -> None:
         if bundle_key not in self._known_bundle_keys:
             raise ValueError(f"Unknown bundle key: {bundle_key!r}")
+
+
+def _normalize_dummy_data_json(dummy_data_json: dict[str, Any]) -> dict[str, Any]:
+    """Normalize dummy_data_json overrides to keep downstream contracts stable."""
+    stores = dummy_data_json.get("stores")
+    if not isinstance(stores, dict):
+        return dummy_data_json
+
+    normalized_stores = dict(stores)
+    if "dashboard_generation_output" not in normalized_stores:
+        widgets_raw = normalized_stores.get("dashboard_widgets")
+        widget_count = len(widgets_raw) if isinstance(widgets_raw, list) else 0
+        normalized_stores["dashboard_generation_output"] = {
+            "success": True,
+            "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
+            "widgets": {"total": widget_count},
+            "execution_time": "0m 1s",
+            "errors": [],
+            "debug_payload": {"total_widgets": widget_count},
+            "generation_metadata": {"widgets_extracted": widget_count},
+        }
+
+    # KPI IDs are expected downstream; best-effort backfill when missing.
+    kpis = normalized_stores.get("kpis")
+    if isinstance(kpis, list):
+        patched_kpis: list[object] = []
+        for idx, item in enumerate(kpis, start=1):
+            if not isinstance(item, dict):
+                patched_kpis.append(item)
+                continue
+            patched = dict(item)
+            if not patched.get("id"):
+                key = patched.get("key")
+                patched["id"] = key if isinstance(key, str) and key else idx
+            patched_kpis.append(patched)
+        normalized_stores["kpis"] = patched_kpis
+
+    return {**dummy_data_json, "stores": normalized_stores}
 
 
 # ---------------------------------------------------------------------------

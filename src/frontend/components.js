@@ -584,6 +584,8 @@ export function renderDashboard(payload, previewType) {
 
   const summary = buildSummaryData({ tickets, projects, tasks, employees, queues });
 
+  const disableDeploy = previewType === 'early';
+
   return `
     <div class="exec-dashboard">
       <div class="exec-header">
@@ -606,7 +608,9 @@ export function renderDashboard(payload, previewType) {
       ${extraSections}
 
       <div class="exec-deploy-row">
-        <button id="deployBtn" class="success-btn">Finalize &amp; Deploy App</button>
+        <button id="deployBtn" class="success-btn" ${disableDeploy ? 'disabled' : ''}>
+          ${disableDeploy ? 'Confirm Bundle to Deploy' : 'Finalize &amp; Deploy App'}
+        </button>
       </div>
     </div>`;
 }

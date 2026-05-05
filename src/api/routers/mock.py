@@ -1,8 +1,12 @@
-"""Router: static mock endpoints for frontend integration.
+"""Router: mock endpoints for frontend integration.
 
-Serves deterministic, pre-baked responses without running the AI pipeline,
-LangGraph, or hitting the database. Business logic lives in MockPayloadBuilder;
-this router is a thin HTTP adapter.
+These endpoints are intended for developer/demo workflows where running a full
+conversation is undesirable.
+
+Important: mock payloads are generated via the production preview path
+(`PreviewFlow`) so the response shape matches real previews, including:
+- static bundle template overlay (`app-0*.json` operational stores)
+- static dashboard output injection (`dashboard_output_templates/*`)
 
 Guarded by the ENABLE_MOCK_ENDPOINTS setting — disabled in production.
 """
