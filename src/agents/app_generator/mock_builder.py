@@ -195,9 +195,9 @@ class MockPayloadBuilder:
             bundle_key=bundle_key,
             conversation_history=_DEFAULT_MOCK_HISTORY,
         )
-        generation_json = payload.generation_json
+        generation_json: dict[str, Any] = payload.generation_json
         flags: list[dict[str, Any]] = generation_json.get("feature_flags", [])
-        config = generation_json.get("config", {})
+        config: dict[str, Any] = generation_json.get("config", {})
         permission_services: list[str] = config.get("permission_services", [])
         landing_pages: list[dict[str, Any]] = config.get("landing_pages", [])
         logger.info(
@@ -228,7 +228,11 @@ def _normalize_dummy_data_json(dummy_data_json: dict[str, Any]) -> dict[str, Any
         widget_count = len(widgets_raw) if isinstance(widgets_raw, list) else 0
         normalized_stores["dashboard_generation_output"] = {
             "success": True,
-            "dashboard": {"id": "dash-preview", "name": "Preview Dashboard", "url": None},
+            "dashboard": {
+                "id": "dash-preview",
+                "name": "Preview Dashboard",
+                "url": None,
+            },
             "widgets": {"total": widget_count},
             "execution_time": "0m 1s",
             "errors": [],

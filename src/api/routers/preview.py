@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # pylint: disable=duplicate-code
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -39,6 +39,28 @@ logger = get_logger(__name__)
 _EARLY_PREVIEW_WARNING = (
     "Preview generated with incomplete information. Some data may be generic."
 )
+
+
+def _format_preview_warnings(
+    preview_warnings: Any, existing_warning: str | None
+) -> str | None:
+    if not isinstance(preview_warnings, list) or not preview_warnings:
+        return existing_warning
+    codes = [
+        str(item.get("code"))
+        for item in preview_warnings
+        if isinstance(item, dict) and item.get("code")
+    ]
+    degraded_warning = (
+        f"Preview generated with degraded enrichment: {', '.join(codes)}"
+        if codes
+        else "Preview generated with degraded enrichment."
+    )
+    return (
+        f"{existing_warning} {degraded_warning}".strip()
+        if existing_warning
+        else degraded_warning
+    )
 
 
 def _execute_preview_pipeline(
@@ -95,20 +117,7 @@ def _execute_preview_pipeline(
         ) from exc
 
     preview_warnings = payload.generation_json.get("preview_warnings")
-    if isinstance(preview_warnings, list) and preview_warnings:
-        codes = [
-            str(item.get("code"))
-            for item in preview_warnings
-            if isinstance(item, dict) and item.get("code")
-        ]
-        degraded_warning = (
-            f"Preview generated with degraded enrichment: {', '.join(codes)}"
-            if codes
-            else "Preview generated with degraded enrichment."
-        )
-        warning = (
-            f"{warning} {degraded_warning}".strip() if warning else degraded_warning
-        )
+    warning = _format_preview_warnings(preview_warnings, warning)
 
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,
