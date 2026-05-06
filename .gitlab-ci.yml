@@ -21,13 +21,6 @@ variables:
     AWS_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
     AWS_DEFAULT_REGION: "$AWS_DEFAULT_REGION"
 
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-    - if: '$CI_COMMIT_BRANCH == "dev"'
-    - when: never
-
 .base_python:
   image: python:3.10
   cache:
