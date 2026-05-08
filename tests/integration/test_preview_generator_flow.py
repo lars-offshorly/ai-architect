@@ -25,6 +25,7 @@ from pathlib import Path
 
 import pytest
 
+from agents.preview_generator.schemas import PreviewGeneratorResult
 from agents.preview_generator.service import PreviewGeneratorService
 from catalog.bundle_catalog import BundleCatalog
 
@@ -197,10 +198,11 @@ def _assert_dummy_data_json(dummy_data_json: dict, bundle_key: str) -> None:
 
 
 class TestHRHub:
-    def test_returns_tuple(self, svc: PreviewGeneratorService) -> None:
+    def test_returns_result(self, svc: PreviewGeneratorService) -> None:
         result = svc.generate("sess-hr-1", "hr_management", _HISTORY_HR_HUB)
-        assert isinstance(result, tuple)
-        assert len(result) == 3
+        assert isinstance(result, PreviewGeneratorResult)
+        assert isinstance(result.generation_json, dict)
+        assert isinstance(result.dummy_data_json, dict)
 
     def test_generation_json_structure(self, svc: PreviewGeneratorService) -> None:
         gen, *_ = svc.generate("sess-hr-2", "hr_management", _HISTORY_HR_HUB)
