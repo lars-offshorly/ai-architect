@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import ExtractionResult
 
-from .schemas import KpiMetric, PreviewOutput, UserContext
+from .schemas import KpiMetric, PreviewOutput, PreviewOutputV2, UserContext
 
 
 class PreviewGeneratorState(BaseModel):
@@ -89,5 +89,6 @@ class PreviewGeneratorState(BaseModel):
 
     # --- emit_preview ---
     output: PreviewOutput | None = None
+    output_v2: PreviewOutputV2 | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

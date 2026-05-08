@@ -53,6 +53,69 @@ class PreviewOutput(BaseModel):
     dummy_data_json: DummyDataJson
 
 
+# ---------------------------------------------------------------------------
+# Target contract schemas (ADR-003)
+# ---------------------------------------------------------------------------
+
+
+class GenerationSchema(BaseModel):
+    """Defines the generation schema for creating a new workspace.
+
+    This schema is used as the request body for the workspace generation endpoint.
+    It specifies which modules (e.g., dashboards, projects) to include in the
+    generated workspace.
+    """
+
+    dashboards: dict[str, object] | None = None
+    projects: dict[str, object] | None = None
+    tickets: dict[str, object] | None = None
+    hrHub: dict[str, object] | None = None
+    kpi: dict[str, object] | None = None
+
+
+class SampleDataServices(BaseModel):
+    """Defines the structure for service-oriented sample data records.
+
+    Each field corresponds to a backend service and holds the sample data
+    required for seeding or importing into that service.
+    """
+
+    tickets: dict[str, object] = Field(default_factory=lambda: {"queues": []})
+    projects: dict[str, object] = Field(default_factory=lambda: {"projects": []})
+    hrHub: dict[str, object] = Field(
+        default_factory=lambda: {"teams": [], "employees": []}
+    )
+    weaves: dict[str, object] = Field(
+        default_factory=lambda: {"folders": [], "worksheets": []}
+    )
+    calendar: dict[str, object] = Field(default_factory=lambda: {"calendars": []})
+    kpi: dict[str, object] = Field(default_factory=lambda: {"kpis": []})
+
+
+class SampleData(BaseModel):
+    """Represents the complete payload for seeding a workspace with sample data.
+
+    This model is structured around backend services rather than frontend state,
+    containing all necessary information for data import flows.
+    """
+
+    bundle_key: str
+    session_id: str
+    company_name: str | None = None
+    services: SampleDataServices = Field(default_factory=SampleDataServices)
+
+
+class PreviewOutputV2(BaseModel):
+    """Represents the combined output of the preview generation process.
+
+    This model bundles the workspace generation schema with the corresponding
+    sample data payload.
+    """
+
+    generation_schema: GenerationSchema
+    sample_data: SampleData
+
+
 class PersonDetail(BaseModel):
     """A person mentioned in the conversation — employee, team member, or the user
     themselves."""

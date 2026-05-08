@@ -7,7 +7,15 @@ from datetime import datetime, timezone
 from core.logging import get_logger
 
 from ..dashboard.static_ids import BUNDLE_TO_DASHBOARD, DASHBOARD_IDS, WIDGET_TEMPLATES
-from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
+from ..schemas import (
+    DummyDataJson,
+    GenerationJson,
+    GenerationSchema,
+    PreviewOutput,
+    PreviewOutputV2,
+    SampleData,
+    SampleDataServices,
+)
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -394,6 +402,85 @@ def _build_dashboard_generation_output(
     }
 
 
+def _build_sample_data_services(
+    registry_key: str,
+    state: PreviewGeneratorState,
+) -> SampleDataServices:
+    """Convert pipeline state into service-oriented SampleDataServices.
+
+    Tickets are nested inside queues; projects group their tasks.
+    hrHub, weaves, calendar, and kpi sections are built from state where
+    available or left as empty-list defaults pending Phase 6 / Phase 9.
+    """
+    schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
+    primary = schema.get("primary")
+
+    # --- tickets.queues ---
+    if primary == "tickets":
+        queues = [
+            {
+                "client_ref": f"queue_{i}",
+                "name": t.get("queue", f"Queue {i + 1}"),
+                "tickets": [t],
+            }
+            for i, t in enumerate(state.sample_tickets)
+        ]
+        tickets_service: dict[str, object] = {"queues": queues}
+    else:
+        tickets_service = {"queues": []}
+
+    # --- projects.projects ---
+    if primary == "tasks":
+        projects_list = [
+            {
+                "client_ref": f"project_{i}",
+                **p,
+                "tasks": [
+                    t
+                    for t in state.sample_tickets
+                    if t.get("project") == p.get("name")
+                ],
+            }
+            for i, p in enumerate(state.sample_projects)
+        ]
+        projects_service: dict[str, object] = {"projects": projects_list}
+    else:
+        projects_service = {"projects": [p for p in state.sample_projects]}
+
+    # --- hrHub ---
+    teams = [
+        {"client_ref": f"team_{i}", "name": e.get("department", f"Team {i + 1}")}
+        for i, e in enumerate(
+            {e.get("department"): e for e in state.sample_employees}.values()
+        )
+        if e.get("department")
+    ]
+    employees = [
+        {"client_ref": f"employee_{i}", **e}
+        for i, e in enumerate(state.sample_employees)
+    ]
+    hrHub_service: dict[str, object] = {"teams": teams, "employees": employees}
+
+    # --- kpi (minimal; pending Murad/BE confirmation — Phase 9) ---
+    kpi_service: dict[str, object] = {
+        "kpis": [
+            {
+                "client_ref": f"kpi_{m.key}",
+                "name": m.label,
+                "type": m.type,
+            }
+            for m in state.kpi_metrics
+        ]
+    }
+
+    return SampleDataServices(
+        tickets=tickets_service,
+        projects=projects_service,
+        hrHub=hrHub_service,
+        kpi=kpi_service,
+    )
+
+
 def emit_preview(state: PreviewGeneratorState) -> dict:
     """Assemble the two output payloads consumed by AppPayload.
 
@@ -442,6 +529,18 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
         stores=stores,
     )
 
+    services = _build_sample_data_services(registry_key, state)
+
+    output_v2 = PreviewOutputV2(
+        generation_schema=GenerationSchema(),
+        sample_data=SampleData(
+            bundle_key=state.bundle_key,
+            session_id=state.session_id,
+            company_name=company_name,
+            services=services,
+        ),
+    )
+
     logger.info(
         "session=%s — emitted preview: modules=%s flags_enabled=%d stores=%s",
         state.session_id,
@@ -453,5 +552,6 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
     return {
         "output": PreviewOutput(
             generation_json=generation_json, dummy_data_json=dummy_data_json
-        ).model_dump()
+        ).model_dump(),
+        "output_v2": output_v2.model_dump(),
     }
