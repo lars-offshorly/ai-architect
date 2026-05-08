@@ -10,6 +10,11 @@ from agents.preview_generator.bundle_template_loader import (
 )
 from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
+from agents.preview_generator.schemas import (
+    DashboardModuleGenerateSchema,
+    DashboardTemplateGenerateSchema,
+    WidgetTemplateGenerateSchema,
+)
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -127,7 +132,7 @@ class PreviewFlow:
             ),
         )
         if knit_builder_payload is not None:
-            generation_schema["dashboards"] = knit_builder_payload.get("dashboards")
+            generation_schema["dashboards"] = knit_builder_payload.model_dump()
         generation_json["knit_builder_payload"] = generation_schema
 
         if preview_warnings:
@@ -184,7 +189,7 @@ class PreviewFlow:
                 "message": "Static bundle template loader is not initialized.",
             }
 
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        resolved_variant_key = variant_key
         try:
             template = self._bundle_template_loader.load(
                 bundle_key, resolved_variant_key
@@ -237,13 +242,13 @@ class PreviewFlow:
         dummy_data_json: dict,
         user_context: Any,
         variant_key: str | None = None,
-    ) -> dict | None:
+    ) -> DashboardModuleGenerateSchema | None:
         """Populate ``stores.dashboard_widgets`` from static pre-generated output.
 
-        Returns a ``GenerationSchema``-compatible ``knit_builder_payload`` dict
-        when enrichment succeeds, or ``None`` when no static payload is available.
+        Returns a typed ``DashboardModuleGenerateSchema`` when enrichment
+        succeeds, or ``None`` when no static payload is available.
         """
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        resolved_variant_key = variant_key
         stores: dict = dummy_data_json.setdefault("stores", {})
 
         payload = self._resolve_static_payload(
@@ -351,37 +356,33 @@ class PreviewFlow:
     def _build_knit_builder_payload(
         dashboard_obj: dict,
         raw_widgets: list,
-    ) -> dict:
-        """Build a ``GenerationSchema``-compatible payload for the knit-builder API.
+    ) -> DashboardModuleGenerateSchema | None:
+        """Build a typed ``DashboardModuleGenerateSchema`` for the knit-builder API.
 
         Maps the enriched dashboard template and its widget templates into the
         structure expected by ``POST /organizations/me/generate/``.
-        Modules other than ``dashboards`` are ``null`` until the backend defines
-        their schemas.
+        Returns ``None`` when the dashboard ID or widget templates are absent.
         """
         dashboard_id = dashboard_obj.get("dashboard_external_id")
+        if not isinstance(dashboard_id, int):
+            return None
         widget_templates = [
-            {"id": w["widget_template_external_id"], "name": None}
+            WidgetTemplateGenerateSchema(id=w["widget_template_external_id"], name=None)
             for w in raw_widgets
             if isinstance(w, dict)
             and isinstance(w.get("widget_template_external_id"), int)
         ]
-        dashboard_templates = (
-            [{"id": dashboard_id, "name": None, "widgetTemplates": widget_templates}]
-            if isinstance(dashboard_id, int)
-            else []
+        if not widget_templates:
+            return None
+        return DashboardModuleGenerateSchema(
+            dashboardTemplates=[
+                DashboardTemplateGenerateSchema(
+                    id=dashboard_id,
+                    name=None,
+                    widgetTemplates=widget_templates,
+                )
+            ]
         )
-        return {
-            "dashboards": (
-                {"dashboardTemplates": dashboard_templates}
-                if dashboard_templates
-                else None
-            ),
-            "projects": None,
-            "tickets": None,
-            "hrHub": None,
-            "kpi": None,
-        }
 
     @staticmethod
     def _coerce_dashboard_widgets(raw_widgets: Any) -> list[dict[str, Any]]:
@@ -444,22 +445,3 @@ class PreviewFlow:
             )
 
         return canonical
-
-
-def _extract_variant_key(user_context: Any) -> str | None:
-    """Pull ``bundle_variant_key`` off a ``UserContext`` / ExtractedInfo-like object.
-
-    Uses attribute access first (pydantic models, dataclasses), then falls
-    back to ``.slots['bundle_variant_key']`` when present.
-    """
-    if user_context is None:
-        return None
-    value = getattr(user_context, "bundle_variant_key", None)
-    if isinstance(value, str) and value:
-        return value
-    slots = getattr(user_context, "slots", None)
-    if isinstance(slots, dict):
-        slot_value = slots.get("bundle_variant_key")
-        if isinstance(slot_value, str) and slot_value:
-            return slot_value
-    return None

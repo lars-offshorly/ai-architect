@@ -415,15 +415,19 @@ def _build_sample_data_services(
     schema = _STORE_SCHEMA.get(registry_key, _STORE_SCHEMA_FALLBACK)
     primary = schema.get("primary")
 
-    # --- tickets.queues ---
+    # --- tickets.queues: group tickets sharing the same queue field ---
     if primary == "tickets":
+        queue_map: dict[str, list[dict]] = {}
+        for ticket in state.sample_tickets:
+            queue_name = ticket.get("queue") or "General"
+            queue_map.setdefault(queue_name, []).append(ticket)
         queues = [
             {
                 "client_ref": f"queue_{i}",
-                "name": t.get("queue", f"Queue {i + 1}"),
-                "tickets": [t],
+                "name": queue_name,
+                "tickets": tickets_in_queue,
             }
-            for i, t in enumerate(state.sample_tickets)
+            for i, (queue_name, tickets_in_queue) in enumerate(queue_map.items())
         ]
         tickets_service: dict[str, object] = {"queues": queues}
     else:
@@ -445,16 +449,21 @@ def _build_sample_data_services(
         ]
         projects_service: dict[str, object] = {"projects": projects_list}
     else:
-        projects_service = {"projects": [p for p in state.sample_projects]}
+        projects_service = {
+            "projects": [
+                {"client_ref": f"project_{i}", **p}
+                for i, p in enumerate(state.sample_projects)
+            ]
+        }
 
-    # --- hrHub ---
-    teams = [
-        {"client_ref": f"team_{i}", "name": e.get("department", f"Team {i + 1}")}
-        for i, e in enumerate(
-            {e.get("department"): e for e in state.sample_employees}.values()
-        )
-        if e.get("department")
-    ]
+    # --- hrHub: deduplicate teams via explicit seen set ---
+    seen_depts: set[str] = set()
+    teams: list[dict[str, object]] = []
+    for employee in state.sample_employees:
+        dept = employee.get("department")
+        if dept and dept not in seen_depts:
+            seen_depts.add(dept)
+            teams.append({"client_ref": f"team_{len(teams)}", "name": dept})
     employees = [
         {"client_ref": f"employee_{i}", **e}
         for i, e in enumerate(state.sample_employees)
