@@ -142,6 +142,21 @@ class TestHRManagementGenerateAndEdit:
         assert isinstance(data["modules"], list)
         assert len(data["modules"]) > 0
 
+        # Phase 7 — new contract: generation_schema and sample_data present
+        assert "generation_schema" in data
+        assert "sample_data" in data
+
+        # Phase 7 — generation_schema must not contain legacy-only fields
+        gen_schema = data["generation_schema"]
+        assert "feature_flags" not in gen_schema
+        assert "config" not in gen_schema
+
+        # Phase 7 — generation_schema IS the Murad endpoint body (no extra wrapper)
+        expected_module_keys = {"dashboards", "projects", "tickets", "hrHub", "kpi"}
+        assert expected_module_keys.issubset(set(gen_schema.keys())), (
+            f"generation_schema missing keys: {expected_module_keys - set(gen_schema.keys())}"
+        )
+
     @pytest.mark.asyncio
     async def test_generate_hrhub_flag_enabled(self, client: AsyncClient) -> None:
         sid = _seed("hr_management", _HR_HISTORY)
@@ -217,6 +232,12 @@ class TestHRManagementGenerateAndEdit:
         kpi_keys_after = {k["key"] for k in data["dummy_data_json"]["stores"]["kpis"]}
         assert "active_headcount" not in kpi_keys_after
 
+        # Phase 8 — also removed from sample_data.services.kpi.kpis
+        assert "generation_schema" in data
+        assert "sample_data" in data
+        sd_kpi_refs = {k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]}
+        assert "kpi_active_headcount" not in sd_kpi_refs
+
     @pytest.mark.asyncio
     async def test_edit_add_kpi(self, client: AsyncClient) -> None:
         sid = _seed("hr_management", _HR_HISTORY)
@@ -235,6 +256,10 @@ class TestHRManagementGenerateAndEdit:
         kpi_keys = {k["key"] for k in data["dummy_data_json"]["stores"]["kpis"]}
         assert "sla_compliance" in kpi_keys
 
+        # Phase 8 — also added to sample_data.services.kpi.kpis
+        sd_kpi_refs = {k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]}
+        assert "kpi_sla_compliance" in sd_kpi_refs
+
     @pytest.mark.asyncio
     async def test_edit_schema_fields_preserved(self, client: AsyncClient) -> None:
         sid = _seed("hr_management", _HR_HISTORY)
@@ -249,6 +274,12 @@ class TestHRManagementGenerateAndEdit:
         assert data["schema_version"] == "1.0"
         assert data["session_id"] == sid
         assert data["bundle_key"] == "hr_management"
+
+        # Phase 8 — edit response must include new contract fields
+        assert "generation_schema" in data
+        assert "sample_data" in data
+        assert "feature_flags" not in data["generation_schema"]
+        assert "config" not in data["generation_schema"]
 
     @pytest.mark.asyncio
     async def test_edit_unknown_session_returns_404(self, client: AsyncClient) -> None:
@@ -318,6 +349,12 @@ class TestProjectMgmtGenerateAndEdit:
         # Dashboard widgets cascade removed
         assert "dashboard_widgets" not in data["dummy_data_json"]["stores"]
         assert "dashboard_generation_output" not in data["dummy_data_json"]["stores"]
+
+        # Phase 8 — generation_schema.dashboards must be null after removing dashboard
+        assert data["generation_schema"]["dashboards"] is None
+        # Phase 8 — generation_schema and sample_data survive the edit
+        assert "feature_flags" not in data["generation_schema"]
+        assert "config" not in data["generation_schema"]
 
     @pytest.mark.asyncio
     async def test_edit_add_dashboard_back(self, client: AsyncClient) -> None:
@@ -411,12 +448,34 @@ class TestTicketingGenerateAndEdit:
         assert "tickets" in stores
         assert "queues" in stores
 
+        # Phase 7 — sample_data.services must be present with all service keys
+        services = data["sample_data"]["services"]
+        for key in ("tickets", "projects", "hrHub", "weaves", "calendar", "kpi"):
+            assert key in services, f"sample_data.services missing key: {key}"
+
+        # Phase 7 — tickets must be nested inside queues (not flat)
+        queues = services["tickets"]["queues"]
+        assert isinstance(queues, list)
+        for queue in queues:
+            assert "tickets" in queue, "Each queue must have a 'tickets' key"
+
+        # Phase 7 — kpi service must have a kpis list with client_ref and name
+        kpi_service = services["kpi"]
+        assert isinstance(kpi_service["kpis"], list)
+        for kpi in kpi_service["kpis"]:
+            assert "client_ref" in kpi
+            assert "name" in kpi
+
     @pytest.mark.asyncio
     async def test_generate_sla_kpi_present(self, client: AsyncClient) -> None:
         sid = _seed("ticketing", _TICKETING_HISTORY)
         data = (await client.post(f"/sessions/{sid}/preview")).json()
         kpi_keys = {k["key"] for k in data["dummy_data_json"]["stores"]["kpis"]}
         assert "sla_compliance" in kpi_keys
+
+        # Phase 7 — KPI must also appear in sample_data.services.kpi.kpis
+        sd_kpi_refs = {k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]}
+        assert "kpi_sla_compliance" in sd_kpi_refs
 
     @pytest.mark.asyncio
     async def test_edit_remove_sla_kpi(self, client: AsyncClient) -> None:
@@ -432,6 +491,10 @@ class TestTicketingGenerateAndEdit:
 
         kpi_keys = {k["key"] for k in data["dummy_data_json"]["stores"]["kpis"]}
         assert "sla_compliance" not in kpi_keys
+
+        # Phase 8 — also removed from sample_data.services.kpi.kpis
+        sd_kpi_refs = {k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]}
+        assert "kpi_sla_compliance" not in sd_kpi_refs
 
     @pytest.mark.asyncio
     async def test_edit_add_capacity_kpi(self, client: AsyncClient) -> None:
@@ -529,9 +592,17 @@ class TestGenerateEditContract:
         sid = _seed(bundle_key, history)
         data = (await client.post(f"/sessions/{sid}/preview")).json()
 
-        for field in ("schema_version", "session_id", "bundle_key", "display_name",
-                      "modules", "generation_json", "dummy_data_json"):
+        for field in (
+            "schema_version", "session_id", "bundle_key", "display_name",
+            "modules", "generation_json", "dummy_data_json",
+            "generation_schema", "sample_data",  # Phase 7 new contract fields
+        ):
             assert field in data, f"Missing field: {field}"
+
+        # Phase 7 — generation_schema must never leak legacy-only fields
+        gen_schema = data["generation_schema"]
+        assert "feature_flags" not in gen_schema
+        assert "config" not in gen_schema
 
     @pytest.mark.parametrize(
         "bundle_key,history",

@@ -30,6 +30,19 @@ _FLAG_TO_MODULE: dict[str, str] = {
     "rewards-module": "Rewards",
 }
 
+# Module flag → sample_data.services key + empty default for that service
+_MODULE_TO_SERVICE_KEY: dict[str, str] = {
+    "tickets-module": "tickets",
+    "projects-module": "projects",
+    "hrhub-module": "hrHub",
+}
+
+_EMPTY_SERVICE_DATA: dict[str, dict] = {
+    "tickets": {"queues": []},
+    "projects": {"projects": []},
+    "hrHub": {"teams": [], "employees": []},
+}
+
 # Module flag → source_service and store keys that should be removed on cascade
 _MODULE_CASCADE: dict[str, dict] = {
     "tickets-module": {
@@ -138,6 +151,14 @@ def _remove_module(payload: dict, flag_name: str) -> None:
         for key in store_keys:
             dummy["stores"].pop(key, None)
 
+    # 4. Clear sample_data.services for this module (if populated by phases 4-5)
+    service_key = _MODULE_TO_SERVICE_KEY.get(flag_name)
+    if service_key:
+        sample_data = payload.get("sample_data", {})
+        services = sample_data.get("services", {})
+        if services:
+            services[service_key] = _EMPTY_SERVICE_DATA.get(service_key, {})
+
     logger.info("Removed module %s (display=%s)", flag_name, display_name)
 
 
@@ -177,6 +198,16 @@ def _remove_kpi(payload: dict, kpi_key: str) -> None:
             item
             for item in config["kpi_definitions"]
             if _kpi_definition_key(item) != kpi_key
+        ]
+
+    # Also remove from sample_data.services.kpi.kpis (if populated by phases 4-5)
+    sample_data = payload.get("sample_data", {})
+    services = sample_data.get("services", {})
+    kpi_service = services.get("kpi", {})
+    if isinstance(kpi_service.get("kpis"), list):
+        client_ref = f"kpi_{kpi_key}"
+        kpi_service["kpis"] = [
+            k for k in kpi_service["kpis"] if k.get("client_ref") != client_ref
         ]
 
     logger.info("Removed KPI %s", kpi_key)
@@ -232,6 +263,24 @@ def _add_kpi(payload: dict, kpi_key: str, catalog: BundleCatalog) -> str | None:
         )
     gen["config"] = config
 
+    # Also add to sample_data.services.kpi.kpis (if populated by phases 4-5)
+    sample_data = payload.get("sample_data", {})
+    services = sample_data.get("services", {})
+    if services:
+        kpi_service = services.setdefault("kpi", {"kpis": []})
+        if not isinstance(kpi_service.get("kpis"), list):
+            kpi_service["kpis"] = []
+        client_ref = f"kpi_{kpi_key}"
+        existing_refs = {k.get("client_ref") for k in kpi_service["kpis"]}
+        if client_ref not in existing_refs:
+            kpi_service["kpis"].append(
+                {
+                    "client_ref": client_ref,
+                    "name": catalog_entry["label"],
+                    "type": catalog_entry["type"],
+                }
+            )
+
     logger.info("Added KPI %s", kpi_key)
     return None
 
@@ -248,6 +297,11 @@ def _remove_dashboard(payload: dict) -> None:
     if "stores" in dummy:
         dummy["stores"].pop("dashboard_widgets", None)
         dummy["stores"].pop("dashboard_generation_output", None)
+
+    # Also null generation_schema.dashboards (if populated by phases 4-5)
+    gen_schema = payload.get("generation_schema", {})
+    if gen_schema:
+        gen_schema["dashboards"] = None
 
     logger.info("Removed dashboard")
 

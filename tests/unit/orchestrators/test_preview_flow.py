@@ -11,7 +11,7 @@ from orchestrators.preview_flow import PreviewFlow
 
 def _flow_with_registry(registry: object | None) -> PreviewFlow:
     preview_service = MagicMock()
-    preview_service.generate.return_value = ({}, {"stores": {}}, None)
+    preview_service.generate.return_value = ({}, {"stores": {}}, None, None)
     return PreviewFlow(
         preview_generator_service=preview_service,
         bundle_display_names={},

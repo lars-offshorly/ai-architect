@@ -100,6 +100,34 @@ def _make_preview_payload(session_id: str = "sess-1") -> dict:
                 },
             },
         },
+        "generation_schema": {
+            "dashboards": {"dashboardTemplates": []},
+            "projects": None,
+            "tickets": None,
+            "hrHub": None,
+            "kpi": None,
+        },
+        "sample_data": {
+            "bundle_key": "project_mgmt",
+            "session_id": session_id,
+            "company_name": "TestCo",
+            "services": {
+                "tickets": {"queues": []},
+                "projects": {"projects": []},
+                "hrHub": {"teams": [], "employees": []},
+                "weaves": {"folders": [], "worksheets": []},
+                "calendar": {"calendars": []},
+                "kpi": {
+                    "kpis": [
+                        {
+                            "client_ref": "kpi_capacity_utilization",
+                            "name": "Capacity Utilization",
+                            "type": "percentage",
+                        }
+                    ]
+                },
+            },
+        },
         "warning": None,
     }
 
@@ -220,3 +248,76 @@ class TestEditEndpoint:
         assert "generation_json" in data
         assert "dummy_data_json" in data
         assert "modules" in data
+
+    def test_edit_response_includes_generation_schema_and_sample_data(self) -> None:
+        """Phase 8: edit response must pass through generation_schema and sample_data."""
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "remove projects",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "generation_schema" in data
+        assert "sample_data" in data
+
+    def test_generation_schema_has_no_feature_flags_or_config(self) -> None:
+        """Phase 8 contract: generation_schema must not contain feature_flags or config."""
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "remove chat",
+            },
+        )
+        assert resp.status_code == 200
+        gen_schema = resp.json()["generation_schema"]
+        assert "feature_flags" not in gen_schema
+        assert "config" not in gen_schema
+
+    def test_edit_remove_dashboard_nulls_generation_schema_dashboards(self) -> None:
+        """Phase 8: removing dashboard sets generation_schema.dashboards to null."""
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "remove dashboard",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["generation_schema"]["dashboards"] is None
+
+    def test_edit_add_kpi_updates_sample_data_services_kpi(self) -> None:
+        """Phase 8: adding a KPI also adds it to sample_data.services.kpi.kpis."""
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "add SLA compliance KPI",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        kpi_refs = [
+            k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]
+        ]
+        assert "kpi_sla_compliance" in kpi_refs
+
+    def test_edit_remove_kpi_removes_from_sample_data_services_kpi(self) -> None:
+        """Phase 8: removing a KPI also removes it from sample_data.services.kpi.kpis."""
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "remove capacity_utilization kpi",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        kpi_refs = [
+            k["client_ref"] for k in data["sample_data"]["services"]["kpi"]["kpis"]
+        ]
+        assert "kpi_capacity_utilization" not in kpi_refs

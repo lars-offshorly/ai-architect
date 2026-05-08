@@ -26,6 +26,52 @@ def fixture_catalog(shared_catalog: BundleCatalog) -> BundleCatalog:
 # ---------------------------------------------------------------------------
 
 
+def _make_generation_schema(
+    *,
+    dashboards: dict | None = None,
+) -> dict:
+    """Build a minimal generation_schema dict (what gets sent to Murad's endpoint)."""
+    return {
+        "dashboards": dashboards if dashboards is not None else {"dashboardTemplates": []},
+        "projects": None,
+        "tickets": None,
+        "hrHub": None,
+        "kpi": None,
+    }
+
+
+def _make_sample_data(
+    *,
+    kpi_keys: list[str] | None = None,
+    tickets_queues: list | None = None,
+    projects_list: list | None = None,
+) -> dict:
+    """Build a minimal sample_data dict with service-oriented structure."""
+    resolved_kpi_keys = kpi_keys or ["capacity_utilization", "active_work_items"]
+    return {
+        "bundle_key": "project_mgmt",
+        "session_id": "test-session",
+        "company_name": "TestCo",
+        "services": {
+            "tickets": {"queues": tickets_queues if tickets_queues is not None else []},
+            "projects": {"projects": projects_list if projects_list is not None else []},
+            "hrHub": {"teams": [], "employees": []},
+            "weaves": {"folders": [], "worksheets": []},
+            "calendar": {"calendars": []},
+            "kpi": {
+                "kpis": [
+                    {
+                        "client_ref": f"kpi_{k}",
+                        "name": k.replace("_", " ").title(),
+                        "type": "percentage",
+                    }
+                    for k in resolved_kpi_keys
+                ]
+            },
+        },
+    }
+
+
 def _make_payload(
     *,
     modules: list[str] | None = None,
@@ -33,6 +79,8 @@ def _make_payload(
     kpi_keys: list[str] | None = None,
     stores: dict | None = None,
     config: dict | None = None,
+    generation_schema: dict | None = None,
+    sample_data: dict | None = None,
 ) -> dict:
     """Build a minimal payload dict matching AppPayloadResponseSchema shape."""
     flags: list[dict[str, Any]] = [
@@ -141,6 +189,7 @@ def _make_payload(
         ],
     }
 
+    resolved_kpi_keys = kpi_keys or ["capacity_utilization", "active_work_items"]
     return {
         "schema_version": "1.0",
         "session_id": "test-session",
@@ -160,6 +209,10 @@ def _make_payload(
             "company_name": "TestCo",
             "stores": default_stores,
         },
+        "generation_schema": generation_schema if generation_schema is not None
+            else _make_generation_schema(),
+        "sample_data": sample_data if sample_data is not None
+            else _make_sample_data(kpi_keys=resolved_kpi_keys),
         "warning": None,
     }
 
@@ -428,3 +481,148 @@ class TestUnsupported:
         # Payload structure preserved
         assert result["session_id"] == "test-session"
         assert result["bundle_key"] == "project_mgmt"
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — generation_schema and sample_data updated by edit operations
+# ---------------------------------------------------------------------------
+
+
+class TestRemoveModuleNewContract:
+    def test_remove_tickets_clears_sample_data_tickets_service(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(
+            sample_data=_make_sample_data(
+                tickets_queues=[{"client_ref": "q1", "tickets": [{"id": 1}]}]
+            )
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module"), catalog
+        )
+        tickets_service = result["sample_data"]["services"]["tickets"]
+        assert tickets_service == {"queues": []}
+
+    def test_remove_projects_clears_sample_data_projects_service(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(
+            sample_data=_make_sample_data(
+                projects_list=[{"client_ref": "p1", "name": "Project Alpha"}]
+            )
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_MODULE, "projects-module"), catalog
+        )
+        projects_service = result["sample_data"]["services"]["projects"]
+        assert projects_service == {"projects": []}
+
+    def test_remove_module_no_op_when_sample_data_empty(
+        self, catalog: BundleCatalog
+    ) -> None:
+        """When sample_data is {} (not yet populated), remove module is a no-op on it."""
+        payload = _make_payload(sample_data={})
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_MODULE, "tickets-module"), catalog
+        )
+        assert result["sample_data"] == {}
+
+    def test_remove_module_does_not_mutate_input(self, catalog: BundleCatalog) -> None:
+        import copy as _copy
+
+        payload = _make_payload()
+        original = _copy.deepcopy(payload)
+        apply_edit(payload, _action(EditActionType.REMOVE_MODULE, "tickets-module"), catalog)
+        assert payload["sample_data"] == original["sample_data"]
+
+
+class TestRemoveKpiNewContract:
+    def test_remove_kpi_removes_from_sample_data_services_kpi(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(
+            kpi_keys=["capacity_utilization", "active_work_items"],
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
+        )
+        kpi_refs = [k["client_ref"] for k in result["sample_data"]["services"]["kpi"]["kpis"]]
+        assert "kpi_capacity_utilization" not in kpi_refs
+        assert "kpi_active_work_items" in kpi_refs
+
+    def test_remove_kpi_no_op_when_sample_data_empty(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(sample_data={})
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_KPI, "capacity_utilization"), catalog
+        )
+        assert result["sample_data"] == {}
+
+
+class TestAddKpiNewContract:
+    def test_add_kpi_adds_to_sample_data_services_kpi(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(
+            kpi_keys=["capacity_utilization"],
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
+        )
+        kpi_refs = [k["client_ref"] for k in result["sample_data"]["services"]["kpi"]["kpis"]]
+        assert "kpi_sla_compliance" in kpi_refs
+
+    def test_add_kpi_idempotent_in_sample_data(self, catalog: BundleCatalog) -> None:
+        payload = _make_payload(kpi_keys=["sla_compliance"])
+        result, _ = apply_edit(
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
+        )
+        kpi_refs = [k["client_ref"] for k in result["sample_data"]["services"]["kpi"]["kpis"]]
+        assert kpi_refs.count("kpi_sla_compliance") == 1
+
+    def test_add_kpi_no_op_on_sample_data_when_services_empty(
+        self, catalog: BundleCatalog
+    ) -> None:
+        """When sample_data has no services, add_kpi leaves sample_data unchanged."""
+        payload = _make_payload(sample_data={})
+        result, _ = apply_edit(
+            payload, _action(EditActionType.ADD_KPI, "sla_compliance"), catalog
+        )
+        assert result["sample_data"] == {}
+
+
+class TestDashboardNewContract:
+    def test_remove_dashboard_nulls_generation_schema_dashboards(
+        self, catalog: BundleCatalog
+    ) -> None:
+        payload = _make_payload(
+            generation_schema=_make_generation_schema(
+                dashboards={"dashboardTemplates": [{"id": 54, "name": None, "widgetTemplates": []}]}
+            )
+        )
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_DASHBOARD), catalog
+        )
+        assert result["generation_schema"]["dashboards"] is None
+
+    def test_remove_dashboard_no_op_on_empty_generation_schema(
+        self, catalog: BundleCatalog
+    ) -> None:
+        """When generation_schema is {} (not yet populated), remove dashboard is a no-op on it."""
+        payload = _make_payload(generation_schema={})
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_DASHBOARD), catalog
+        )
+        assert result["generation_schema"] == {}
+
+    def test_generation_schema_preserved_on_unrelated_edit(
+        self, catalog: BundleCatalog
+    ) -> None:
+        """generation_schema must not be touched by edits that don't target it."""
+        schema = _make_generation_schema()
+        payload = _make_payload(generation_schema=schema)
+        result, _ = apply_edit(
+            payload, _action(EditActionType.REMOVE_MODULE, "chat-module"), catalog
+        )
+        assert result["generation_schema"] == schema

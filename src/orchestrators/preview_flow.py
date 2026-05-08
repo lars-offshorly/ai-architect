@@ -79,7 +79,7 @@ class PreviewFlow:
             ),
         )
 
-        generation_json, dummy_data_json, user_context = self._preview_gen.generate(
+        generation_json, dummy_data_json, output_v2, user_context = self._preview_gen.generate(
             session_id=session_id,
             bundle_key=bundle_key,
             conversation_history=conversation_history,
@@ -121,16 +121,21 @@ class PreviewFlow:
                 else None
             ),
         )
-        generation_json["knit_builder_payload"] = knit_builder_payload or {
+        generation_schema_val: dict = knit_builder_payload or {
             "dashboards": None,
             "projects": None,
             "tickets": None,
             "hrHub": None,
             "kpi": None,
         }
+        generation_json["knit_builder_payload"] = generation_schema_val
 
         if preview_warnings:
             generation_json["preview_warnings"] = preview_warnings
+
+        sample_data_val: dict = (
+            output_v2.sample_data.model_dump() if output_v2 is not None else {}
+        )
 
         payload = AppPayload(
             session_id=session_id,
@@ -139,13 +144,18 @@ class PreviewFlow:
             modules=generation_json.get("modules", []),
             generation_json=generation_json,
             dummy_data_json=dummy_data_json,
+            generation_schema=generation_schema_val,
+            sample_data=sample_data_val,
         )
 
         session_logger.info(
-            "Preview flow complete for session=%s modules=%s dashboard_widgets=%d",
+            "Preview flow complete for session=%s modules=%s dashboard_widgets=%d "
+            "generation_schema_keys=%s sample_data_services=%s",
             session_id,
             payload.modules,
             len(dummy_data_json.get("stores", {}).get("dashboard_widgets", [])),
+            list(payload.generation_schema.keys()),
+            list(payload.sample_data.get("services", {}).keys()) if payload.sample_data else [],
         )
         return payload
 

@@ -127,6 +127,8 @@ def _execute_preview_pipeline(
         modules=payload.modules,
         generation_json=payload.generation_json,
         dummy_data_json=payload.dummy_data_json,
+        generation_schema=payload.generation_schema,
+        sample_data=payload.sample_data,
         preview_type=preview_type,
         warning=warning,
     )
@@ -247,6 +249,8 @@ async def edit_preview(
         modules=updated.get("modules", []),
         generation_json=updated.get("generation_json", {}),
         dummy_data_json=updated.get("dummy_data_json", {}),
+        generation_schema=updated.get("generation_schema", {}),
+        sample_data=updated.get("sample_data", {}),
         preview_type=updated.get("preview_type"),
         warning=warning,
     )
