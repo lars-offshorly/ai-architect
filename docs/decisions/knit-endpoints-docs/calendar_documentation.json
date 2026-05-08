@@ -1,0 +1,3689 @@
+{
+  "swagger": "2.0",
+  "host": "localhost",
+  "basePath": "/",
+  "schemes": [],
+  "paths": {
+    "/api/v1/calendars/{calendar}": {
+      "delete": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 204": {
+            "description": "No Content",
+            "examples": {
+              "example": "null"
+            }
+          }
+        },
+        "security": [],
+        "description": ""
+      },
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 403": {
+            "description": "Forbidden",
+            "schema": {
+              "example": {
+                "message": "This action is unauthorized."
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "OK",
+            "schema": {
+              "example": {
+                "id": 28,
+                "owner": 10,
+                "name": "Dr. Georgette Mayer I",
+                "type": "organisation",
+                "icon": null,
+                "color": null,
+                "timezone": "Europe/Podgorica",
+                "settings": {
+                  "defaultView": "month",
+                  "notificationModes": {
+                    "system": false,
+                    "email": true
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "OK",
+            "schema": {
+              "example": {
+                "id": 39,
+                "owner": 2,
+                "name": "Elissa McLaughlin",
+                "type": "organisation",
+                "icon": null,
+                "color": null,
+                "timezone": "Europe/Volgograd",
+                "settings": {
+                  "defaultView": "month",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": ""
+      },
+      "put": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1calendars{calendar}Object"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 404": {
+            "description": "This entity not found",
+            "schema": {
+              "example": {
+                "message": "Not found."
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 44,
+                "owner": 2,
+                "name": "updated calendar",
+                "type": "team",
+                "icon": null,
+                "color": null,
+                "timezone": "Asia/Jayapura",
+                "settings": {
+                  "defaultView": "year",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 45,
+                "owner": 2,
+                "name": "Paul Lockman",
+                "type": "team",
+                "icon": "test",
+                "color": null,
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "month",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": [
+                  123
+                ]
+              }
+            }
+          },
+          "x-4 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 46,
+                "owner": 2,
+                "name": "Nick Murazik",
+                "type": "organisation",
+                "icon": null,
+                "color": null,
+                "timezone": "Africa/Malabo",
+                "settings": {
+                  "defaultView": "week",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "update calendar"
+      },
+      "patch": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 47,
+                "owner": 2,
+                "name": "updated calendar",
+                "type": "reservation",
+                "icon": null,
+                "color": null,
+                "timezone": "America/Curacao",
+                "settings": {
+                  "defaultView": "year",
+                  "notificationModes": {
+                    "system": false,
+                    "email": true
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 48,
+                "owner": 2,
+                "name": "Remington Hand",
+                "type": "team",
+                "icon": "test",
+                "color": null,
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "year",
+                  "notificationModes": {
+                    "system": false,
+                    "email": true
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": [
+                  123
+                ]
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 49,
+                "owner": 2,
+                "name": "Mariane Homenick",
+                "type": "reservation",
+                "icon": null,
+                "color": null,
+                "timezone": "Asia/Novosibirsk",
+                "settings": {
+                  "defaultView": "week",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": false,
+                "participants": []
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "update calendar"
+      }
+    },
+    "/api/v1/calendars": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "perPage",
+            "description": "max:50",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "description": "array, max:2",
+            "type": "object"
+          },
+          {
+            "in": "query",
+            "name": "calendarIdIn",
+            "description": "array, max:50",
+            "type": "object"
+          },
+          {
+            "in": "query",
+            "name": "submittedByMe",
+            "description": "boolean",
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "search.field",
+            "description": "required_with:search, string, in:name",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "search.value",
+            "description": "required_with:search, string, max:255",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 2,
+                    "owner": 2,
+                    "name": "Prof. Keshawn Mohr",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Puerto_Rico",
+                    "settings": {
+                      "defaultView": "month",
+                      "notificationModes": {
+                        "system": false,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 3,
+                    "owner": 2,
+                    "name": "Jaron Heidenreich",
+                    "type": "individual",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Europe/Vienna",
+                    "settings": {
+                      "defaultView": "year",
+                      "notificationModes": {
+                        "system": false,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 4,
+                    "owner": 2,
+                    "name": "Miss Jaclyn Hilpert",
+                    "type": "reservation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Ciudad_Juarez",
+                    "settings": {
+                      "defaultView": "month",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 5,
+                    "owner": 2,
+                    "name": "Wilford Strosin II",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Rio_Branco",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": false,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 6,
+                    "owner": 2,
+                    "name": "Meredith Rutherford",
+                    "type": "individual",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Inuvik",
+                    "settings": {
+                      "defaultView": "week",
+                      "notificationModes": {
+                        "system": true,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 7,
+                    "owner": 2,
+                    "name": "Broderick Gerlach",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Pacific/Apia",
+                    "settings": {
+                      "defaultView": "week",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 8,
+                    "owner": 2,
+                    "name": "Prof. Merlin Kunde Sr.",
+                    "type": "reservation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Bahia_Banderas",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": true,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 9,
+                    "owner": 2,
+                    "name": "Darrick Roob",
+                    "type": "reservation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Managua",
+                    "settings": {
+                      "defaultView": "year",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 10,
+                    "owner": 2,
+                    "name": "Toni Ortiz",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Africa/Bissau",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": true,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 11,
+                    "owner": 2,
+                    "name": "Sheldon Gaylord",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Atlantic/Azores",
+                    "settings": {
+                      "defaultView": "year",
+                      "notificationModes": {
+                        "system": true,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 12,
+                    "owner": 2,
+                    "name": "Mr. Erik Metz PhD",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Africa/Freetown",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 11
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 13,
+                    "owner": 2,
+                    "name": "Jesus Gerlach",
+                    "type": "individual",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Asia/Beirut",
+                    "settings": {
+                      "defaultView": "year",
+                      "notificationModes": {
+                        "system": false,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 14,
+                    "owner": 2,
+                    "name": "Shanon Streich",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Europe/Malta",
+                    "settings": {
+                      "defaultView": "month",
+                      "notificationModes": {
+                        "system": true,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 15,
+                    "owner": 2,
+                    "name": "Meredith Mueller",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Indian/Antananarivo",
+                    "settings": {
+                      "defaultView": "year",
+                      "notificationModes": {
+                        "system": true,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 3
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 19,
+                    "owner": 2,
+                    "name": "Ms. Glenna Kunde",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Goose_Bay",
+                    "settings": {
+                      "defaultView": "week",
+                      "notificationModes": {
+                        "system": false,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 20,
+                    "owner": 2,
+                    "name": "Colten Runolfsson",
+                    "type": "team",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Africa/Accra",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 2
+              }
+            }
+          },
+          "x-4 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 21,
+                    "owner": 62,
+                    "name": "Eleonore Hand",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Bahia",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": true,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 1
+              }
+            }
+          },
+          "x-5 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 23,
+                    "owner": 2,
+                    "name": "Malinda Johns",
+                    "type": "individual",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Australia/Hobart",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": true,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 1
+              }
+            }
+          },
+          "x-6 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 25,
+                    "owner": 2,
+                    "name": "Ms. Alena Frami",
+                    "type": "individual",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "America/Indiana/Winamac",
+                    "settings": {
+                      "defaultView": "month",
+                      "notificationModes": {
+                        "system": true,
+                        "email": true
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  },
+                  {
+                    "id": 26,
+                    "owner": 10,
+                    "name": "Dr. Jorge Stracke",
+                    "type": "organisation",
+                    "icon": null,
+                    "color": null,
+                    "timezone": "Asia/Irkutsk",
+                    "settings": {
+                      "defaultView": "day",
+                      "notificationModes": {
+                        "system": false,
+                        "email": false
+                      }
+                    },
+                    "description": null,
+                    "global": false,
+                    "participants": []
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 2
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "calendar index"
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1calendarsObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 403": {
+            "description": "Forbidden",
+            "schema": {
+              "example": {
+                "message": "This action is unauthorized."
+              }
+            }
+          },
+          "x-2 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 40,
+                "owner": 2,
+                "name": "test calendar",
+                "type": "individual",
+                "icon": "test",
+                "color": "white",
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "day",
+                  "notificationModes": {
+                    "system": true,
+                    "email": true
+                  }
+                },
+                "description": "test calendar",
+                "global": true,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ]
+              }
+            }
+          },
+          "x-3 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 41,
+                "owner": 2,
+                "name": "test calendar 1",
+                "type": "team",
+                "icon": null,
+                "color": null,
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "month",
+                  "notificationModes": {
+                    "system": false,
+                    "email": true
+                  }
+                },
+                "description": null,
+                "global": null,
+                "participants": []
+              }
+            }
+          },
+          "x-4 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 42,
+                "owner": 2,
+                "name": "test calendar 2",
+                "type": "organisation",
+                "icon": null,
+                "color": null,
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "year",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": null,
+                "global": null,
+                "participants": []
+              }
+            }
+          },
+          "x-5 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 43,
+                "owner": 2,
+                "name": "test calendar 2",
+                "type": "reservation",
+                "icon": "test_icon.png",
+                "color": "white",
+                "timezone": "Asia/Manila",
+                "settings": {
+                  "defaultView": "week",
+                  "notificationModes": {
+                    "system": false,
+                    "email": false
+                  }
+                },
+                "description": "test calendar description",
+                "global": true,
+                "participants": [
+                  1,
+                  2,
+                  3,
+                  4
+                ]
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store calendar"
+      }
+    },
+    "/api/v1/calendars/reorder": {
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1calendarsreorderObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": []
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": []
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": []
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store order"
+      }
+    },
+    "/api/v1/events/{event}/attendances": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "response",
+            "description": "max:150",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "attendanceStatus",
+            "description": "nullable, bool",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "notifyChat",
+            "description": "boolean",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 1,
+                    "eventId": null,
+                    "userId": null,
+                    "response": null,
+                    "attendanceStatus": null,
+                    "notifyChat": null
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 50
+                },
+                "count": 1
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "attendances index"
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1events{event}attendancesObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 3,
+                "eventId": null,
+                "userId": null,
+                "response": "test response",
+                "attendanceStatus": null,
+                "notifyChat": null
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 4,
+                "eventId": null,
+                "userId": null,
+                "response": "test response",
+                "attendanceStatus": null,
+                "notifyChat": null
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 5,
+                "eventId": null,
+                "userId": null,
+                "response": "test response",
+                "attendanceStatus": null,
+                "notifyChat": null
+              }
+            }
+          },
+          "x-4 - 403": {
+            "description": "Forbidden",
+            "schema": {
+              "example": {
+                "message": "This action is unauthorized."
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store attendance status"
+      }
+    },
+    "/api/v1/events/{event}/attendances/{attendance}": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "attendance",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 2,
+                "eventId": null,
+                "userId": null,
+                "response": null,
+                "attendanceStatus": null,
+                "notifyChat": null
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "show attendance"
+      }
+    },
+    "/api/v1/events/{event}": {
+      "delete": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "occurrence",
+            "description": "in:all,currentEvent,allAfterCurrent",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "occurs_at",
+            "description": "date_format:Y-m-d\\TH:i:sP",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "force",
+            "description": "boolean",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "x-1 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-2 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-3 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-4 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-5 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-6 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          },
+          "x-7 - 204": {
+            "description": "Operation successfully done",
+            "examples": {
+              "example": "null"
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "delete event"
+      },
+      "put": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1events{event}Object"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 403": {
+            "description": "Forbidden",
+            "schema": {
+              "example": {
+                "message": "This action is unauthorized."
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 64,
+                "name": "test event 123",
+                "type": "meeting",
+                "ownerId": 85,
+                "description": "Occaecati accusantium occaecati atque quasi minus odit. Omnis mollitia est recusandae sed et ut.",
+                "participants": [],
+                "calendarId": 132,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T12:40:28Z",
+                "endsAt": "2025-05-22T13:40:28Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 79,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": "Qui quos laudantium quis et corrupti. In dolores blanditiis beatae inventore.",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 147,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-4 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 80,
+                "name": "test event 1",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "Ea voluptas natus distinctio temporibus aliquam repellendus. Sit optio et ut suscipit blanditiis. Quae ut est sint perferendis animi voluptas.",
+                "participants": [
+                  3,
+                  5
+                ],
+                "calendarId": 148,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-5 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 81,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": "Totam sunt illo quam. Totam consequatur aut nulla vero mollitia quia maiores. Incidunt dolorem aliquam molestias fuga.",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 149,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily"
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-6 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 82,
+                "name": "test event 1",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "Quo dolores ducimus quidem et. Qui possimus ducimus nisi harum ut. Necessitatibus incidunt ex dolores nobis sed reiciendis.",
+                "participants": [
+                  3,
+                  5
+                ],
+                "calendarId": 150,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily"
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-7 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 84,
+                "name": "test event 1",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "Neque et et fugit aut commodi nihil odit. Minus officia est totam. Error itaque earum deleniti alias sint voluptate.",
+                "participants": [
+                  3,
+                  5
+                ],
+                "calendarId": 151,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily"
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "update event"
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": "string, min:1, max:60",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "calendarId",
+            "description": "required_without:calendarIdIn",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "calendarIdIn",
+            "description": "required_without:calendarId, array, max:50",
+            "type": "object"
+          },
+          {
+            "in": "query",
+            "name": "calendarIdIn.*",
+            "description": "int",
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "startsAt",
+            "description": "required, date_format:Y-m-d\\TH:i:sP",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "endsAt",
+            "description": "required, date_format:Y-m-d\\TH:i:sP",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "viewMode",
+            "description": "in:day,week,month,year",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "eventIdIn",
+            "description": "array, max:50",
+            "type": "object"
+          },
+          {
+            "in": "query",
+            "name": "eventIdIn.*",
+            "description": "int, exists:events,id",
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "timezone",
+            "description": "string, timezone:all",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 15,
+                      "name": "Jamar Koch",
+                      "type": "meeting",
+                      "ownerId": 29,
+                      "description": "Est qui odio facere molestias voluptas excepturi. Dolores dolorem fugiat earum earum a et. Incidunt qui harum sit quo ut.",
+                      "participants": [],
+                      "calendarId": 69,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-01T08:00:00Z",
+                      "endsAt": "2025-05-01T09:00:00Z",
+                      "actualStart": "2025-05-01T08:00:00Z",
+                      "actualEnd": "2025-05-01T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-02": [
+                    {
+                      "id": 16,
+                      "name": "Miss Rahsaan Koss",
+                      "type": "meeting",
+                      "ownerId": 6,
+                      "description": "Soluta qui deserunt id nobis. Et inventore qui nulla qui qui. Vero voluptatem similique ab quis laudantium qui consequatur.",
+                      "participants": [],
+                      "calendarId": 69,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-02T08:00:00Z",
+                      "endsAt": "2025-05-02T09:00:00Z",
+                      "actualStart": "2025-05-02T08:00:00Z",
+                      "actualEnd": "2025-05-02T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 17,
+                      "name": "Demetris Schultz",
+                      "type": "meeting",
+                      "ownerId": 34,
+                      "description": "Aut ut molestiae rem voluptates omnis in voluptatem. Cupiditate ipsam corrupti temporibus earum minima rerum molestiae.",
+                      "participants": [],
+                      "calendarId": 69,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-03T08:00:00Z",
+                      "endsAt": "2025-05-03T09:00:00Z",
+                      "actualStart": "2025-05-03T08:00:00Z",
+                      "actualEnd": "2025-05-03T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-04": [
+                    {
+                      "id": 18,
+                      "name": "Kendrick Kihn",
+                      "type": "meeting",
+                      "ownerId": 57,
+                      "description": "Eius consequatur reprehenderit ipsam doloremque est. Voluptatem sint perspiciatis similique. Maxime impedit est provident accusantium autem.",
+                      "participants": [],
+                      "calendarId": 69,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-04T08:00:00Z",
+                      "endsAt": "2025-05-04T09:00:00Z",
+                      "actualStart": "2025-05-04T08:00:00Z",
+                      "actualEnd": "2025-05-04T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-2 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-02": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-03": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-04": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-05": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-06": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-07": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-08": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-09": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-10": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-11": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-12": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-13": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-14": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-15": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-16": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-17": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-18": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-19": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-20": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-21": {
+                    "total": 1,
+                    "meeting": 1,
+                    "reservation": 0
+                  },
+                  "2025-05-22": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-23": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-24": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-25": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-26": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-27": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-28": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-29": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-30": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  },
+                  "2025-05-31": {
+                    "total": 2,
+                    "meeting": 2,
+                    "reservation": 0
+                  }
+                }
+              }
+            }
+          },
+          "x-3 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 51,
+                      "name": "Reba Gerhold",
+                      "type": "meeting",
+                      "ownerId": 30,
+                      "description": "Rem sint et nisi voluptatem qui. Neque quis qui molestiae unde repellendus est totam. Et est fugit iure maiores optio eligendi.",
+                      "participants": [],
+                      "calendarId": 107,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-04-26T00:00:00Z",
+                      "endsAt": "2025-05-03T00:00:00Z",
+                      "actualStart": "2025-05-01T00:00:00Z",
+                      "actualEnd": "2025-05-01T23:59:59Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-02": [
+                    {
+                      "id": 51,
+                      "name": "Reba Gerhold",
+                      "type": "meeting",
+                      "ownerId": 30,
+                      "description": "Rem sint et nisi voluptatem qui. Neque quis qui molestiae unde repellendus est totam. Et est fugit iure maiores optio eligendi.",
+                      "participants": [],
+                      "calendarId": 107,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-04-26T00:00:00Z",
+                      "endsAt": "2025-05-03T00:00:00Z",
+                      "actualStart": "2025-05-02T00:00:00Z",
+                      "actualEnd": "2025-05-02T23:59:59Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 51,
+                      "name": "Reba Gerhold",
+                      "type": "meeting",
+                      "ownerId": 30,
+                      "description": "Rem sint et nisi voluptatem qui. Neque quis qui molestiae unde repellendus est totam. Et est fugit iure maiores optio eligendi.",
+                      "participants": [],
+                      "calendarId": 107,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-04-26T00:00:00Z",
+                      "endsAt": "2025-05-03T00:00:00Z",
+                      "actualStart": "2025-05-03T00:00:00Z",
+                      "actualEnd": "2025-05-03T00:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-4 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 52,
+                      "name": "Mr. Ismael Wintheiser",
+                      "type": "meeting",
+                      "ownerId": 80,
+                      "description": "Non reiciendis ut blanditiis libero sit. Reprehenderit aut tempore non rerum. Unde laboriosam similique sunt neque.",
+                      "participants": [],
+                      "calendarId": 109,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-01T08:00:00Z",
+                      "endsAt": "2025-05-01T09:00:00Z",
+                      "actualStart": "2025-05-01T08:00:00Z",
+                      "actualEnd": "2025-05-01T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-02": [
+                    {
+                      "id": 52,
+                      "name": "Mr. Ismael Wintheiser",
+                      "type": "meeting",
+                      "ownerId": 80,
+                      "description": "Non reiciendis ut blanditiis libero sit. Reprehenderit aut tempore non rerum. Unde laboriosam similique sunt neque.",
+                      "participants": [],
+                      "calendarId": 109,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-02T08:00:00Z",
+                      "endsAt": "2025-05-02T09:00:00Z",
+                      "actualStart": "2025-05-02T08:00:00Z",
+                      "actualEnd": "2025-05-02T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 52,
+                      "name": "Mr. Ismael Wintheiser",
+                      "type": "meeting",
+                      "ownerId": 80,
+                      "description": "Non reiciendis ut blanditiis libero sit. Reprehenderit aut tempore non rerum. Unde laboriosam similique sunt neque.",
+                      "participants": [],
+                      "calendarId": 109,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-03T08:00:00Z",
+                      "endsAt": "2025-05-03T09:00:00Z",
+                      "actualStart": "2025-05-03T08:00:00Z",
+                      "actualEnd": "2025-05-03T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-04": [
+                    {
+                      "id": 52,
+                      "name": "Mr. Ismael Wintheiser",
+                      "type": "meeting",
+                      "ownerId": 80,
+                      "description": "Non reiciendis ut blanditiis libero sit. Reprehenderit aut tempore non rerum. Unde laboriosam similique sunt neque.",
+                      "participants": [],
+                      "calendarId": 109,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-04T08:00:00Z",
+                      "endsAt": "2025-05-04T09:00:00Z",
+                      "actualStart": "2025-05-04T08:00:00Z",
+                      "actualEnd": "2025-05-04T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-5 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 53,
+                      "name": "Pearlie Ebert",
+                      "type": "meeting",
+                      "ownerId": 84,
+                      "description": "Quisquam aperiam suscipit vitae sed ducimus. Iusto nam distinctio tempora facilis. Iusto quo voluptas aut.",
+                      "participants": [],
+                      "calendarId": 111,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-01T08:00:00Z",
+                      "endsAt": "2025-05-01T09:00:00Z",
+                      "actualStart": "2025-05-01T08:00:00Z",
+                      "actualEnd": "2025-05-01T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 53,
+                      "name": "Pearlie Ebert",
+                      "type": "meeting",
+                      "ownerId": 84,
+                      "description": "Quisquam aperiam suscipit vitae sed ducimus. Iusto nam distinctio tempora facilis. Iusto quo voluptas aut.",
+                      "participants": [],
+                      "calendarId": 111,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-03T08:00:00Z",
+                      "endsAt": "2025-05-03T09:00:00Z",
+                      "actualStart": "2025-05-03T08:00:00Z",
+                      "actualEnd": "2025-05-03T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-04": [
+                    {
+                      "id": 53,
+                      "name": "Pearlie Ebert",
+                      "type": "meeting",
+                      "ownerId": 84,
+                      "description": "Quisquam aperiam suscipit vitae sed ducimus. Iusto nam distinctio tempora facilis. Iusto quo voluptas aut.",
+                      "participants": [],
+                      "calendarId": 111,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-04T08:00:00Z",
+                      "endsAt": "2025-05-04T09:00:00Z",
+                      "actualStart": "2025-05-04T08:00:00Z",
+                      "actualEnd": "2025-05-04T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-6 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 54,
+                      "name": "Prof. Wiley Turner IV",
+                      "type": "meeting",
+                      "ownerId": 22,
+                      "description": "Omnis sunt alias dolor repellat est consequuntur. Quos perferendis quos porro voluptas totam esse. Nostrum possimus fugit qui eum aut temporibus.",
+                      "participants": [],
+                      "calendarId": 113,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily",
+                        "endsAt": "2025-05-02T00:00:00Z"
+                      },
+                      "startsAt": "2025-05-01T08:00:00Z",
+                      "endsAt": "2025-05-01T09:00:00Z",
+                      "actualStart": "2025-05-01T08:00:00Z",
+                      "actualEnd": "2025-05-01T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-7 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-01": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-01T08:00:00Z",
+                      "endsAt": "2025-05-01T09:00:00Z",
+                      "actualStart": "2025-05-01T08:00:00Z",
+                      "actualEnd": "2025-05-01T09:00:00Z",
+                      "cancelledAt": null
+                    },
+                    {
+                      "id": 56,
+                      "name": "Mrs. Nelda Bailey",
+                      "type": "meeting",
+                      "ownerId": 32,
+                      "description": "Quo et ratione iusto ipsam et sit fugit. Sit quia voluptas consequatur dolor. Rem corrupti veritatis eius. Voluptatum nam deleniti optio ab.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-01T10:00:00Z",
+                      "endsAt": "2025-05-01T11:00:00Z",
+                      "actualStart": "2025-05-01T10:00:00Z",
+                      "actualEnd": "2025-05-01T11:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-02": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-02T08:00:00Z",
+                      "endsAt": "2025-05-02T09:00:00Z",
+                      "actualStart": "2025-05-02T08:00:00Z",
+                      "actualEnd": "2025-05-02T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-03T08:00:00Z",
+                      "endsAt": "2025-05-03T09:00:00Z",
+                      "actualStart": "2025-05-03T08:00:00Z",
+                      "actualEnd": "2025-05-03T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-04": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-04T08:00:00Z",
+                      "endsAt": "2025-05-04T09:00:00Z",
+                      "actualStart": "2025-05-04T08:00:00Z",
+                      "actualEnd": "2025-05-04T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-05": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-05T08:00:00Z",
+                      "endsAt": "2025-05-05T09:00:00Z",
+                      "actualStart": "2025-05-05T08:00:00Z",
+                      "actualEnd": "2025-05-05T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-06": [
+                    {
+                      "id": 55,
+                      "name": "Karson White",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolores corrupti a omnis maxime qui nihil ut ratione. Suscipit qui sequi doloribus soluta modi. Ut provident ut consequuntur.",
+                      "participants": [],
+                      "calendarId": 115,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-06T08:00:00Z",
+                      "endsAt": "2025-05-06T09:00:00Z",
+                      "actualStart": "2025-05-06T08:00:00Z",
+                      "actualEnd": "2025-05-06T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-8 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-22": [
+                    {
+                      "id": 57,
+                      "name": "Demetris Hermiston Sr.",
+                      "type": "meeting",
+                      "ownerId": 22,
+                      "description": "Et praesentium esse sunt voluptatem excepturi. Ab unde impedit qui quasi commodi. Quis vitae provident rem veniam est.",
+                      "participants": [],
+                      "calendarId": 118,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-22T12:40:23Z",
+                      "endsAt": "2025-05-22T12:50:23Z",
+                      "actualStart": "2025-05-22T12:40:23Z",
+                      "actualEnd": "2025-05-22T12:50:23Z",
+                      "cancelledAt": null
+                    },
+                    {
+                      "id": 58,
+                      "name": "Mr. Russel Weimann",
+                      "type": "meeting",
+                      "ownerId": 73,
+                      "description": "Ea suscipit vero incidunt id id eius eum. Placeat porro perferendis eos omnis ut saepe dolor. Neque tenetur ratione molestiae aut ut exercitationem.",
+                      "participants": [],
+                      "calendarId": 119,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-22T12:40:23Z",
+                      "endsAt": "2025-05-22T12:50:23Z",
+                      "actualStart": "2025-05-22T12:40:23Z",
+                      "actualEnd": "2025-05-22T12:50:23Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-9 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-22": [
+                    {
+                      "id": 60,
+                      "name": "search test event",
+                      "type": "meeting",
+                      "ownerId": 62,
+                      "description": "Dolorem sapiente nihil quaerat dolore. Soluta ut atque molestiae aperiam in autem.",
+                      "participants": [],
+                      "calendarId": 124,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-22T12:40:23Z",
+                      "endsAt": "2025-05-22T13:40:23Z",
+                      "actualStart": "2025-05-22T12:40:23Z",
+                      "actualEnd": "2025-05-22T13:40:23Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-10 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-02": [
+                    {
+                      "id": 61,
+                      "name": "Ian Langworth",
+                      "type": "meeting",
+                      "ownerId": 85,
+                      "description": "Labore veritatis illum iste omnis et sint. Quae cumque ab dicta sed. Explicabo blanditiis facere beatae accusamus.",
+                      "participants": [],
+                      "calendarId": 126,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-02T09:00:00Z",
+                      "endsAt": "2025-05-02T09:00:00Z",
+                      "actualStart": "2025-05-02T09:00:00Z",
+                      "actualEnd": "2025-05-02T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-03": [
+                    {
+                      "id": 61,
+                      "name": "Ian Langworth",
+                      "type": "meeting",
+                      "ownerId": 85,
+                      "description": "Labore veritatis illum iste omnis et sint. Quae cumque ab dicta sed. Explicabo blanditiis facere beatae accusamus.",
+                      "participants": [],
+                      "calendarId": 126,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-03T09:00:00Z",
+                      "endsAt": "2025-05-03T09:00:00Z",
+                      "actualStart": "2025-05-03T09:00:00Z",
+                      "actualEnd": "2025-05-03T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ],
+                  "2025-05-04": [
+                    {
+                      "id": 61,
+                      "name": "Ian Langworth",
+                      "type": "meeting",
+                      "ownerId": 85,
+                      "description": "Labore veritatis illum iste omnis et sint. Quae cumque ab dicta sed. Explicabo blanditiis facere beatae accusamus.",
+                      "participants": [],
+                      "calendarId": 126,
+                      "parentId": null,
+                      "recurrent": true,
+                      "recurrence": {
+                        "frequency": "daily"
+                      },
+                      "startsAt": "2025-05-04T09:00:00Z",
+                      "endsAt": "2025-05-04T09:00:00Z",
+                      "actualStart": "2025-05-04T09:00:00Z",
+                      "actualEnd": "2025-05-04T09:00:00Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "x-11 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": {
+                  "2025-05-22": [
+                    {
+                      "id": 66,
+                      "name": "Skye Legros",
+                      "type": "meeting",
+                      "ownerId": 21,
+                      "description": "Architecto aspernatur vitae totam qui totam explicabo doloremque nostrum. Officia ut ut et ut. Vel et eum magnam suscipit.",
+                      "participants": [
+                        2,
+                        5
+                      ],
+                      "calendarId": 134,
+                      "parentId": null,
+                      "recurrent": false,
+                      "startsAt": "2025-05-22T14:40:28Z",
+                      "endsAt": "2025-05-22T15:40:28Z",
+                      "actualStart": "2025-05-22T14:40:28Z",
+                      "actualEnd": "2025-05-22T15:40:28Z",
+                      "cancelledAt": null
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "event index"
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1eventsObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 403": {
+            "description": "Forbidden",
+            "schema": {
+              "example": {
+                "message": "This action is unauthorized."
+              }
+            }
+          },
+          "x-2 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 62,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 129,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T12:40:23Z",
+                "endsAt": "2025-05-22T13:40:23Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-3 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 67,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 137,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily",
+                  "endsAt": "2025-06-22T12:40:19Z",
+                  "byDay": [
+                    "0mo",
+                    "0tu",
+                    "0we",
+                    "0th",
+                    "0fr",
+                    "0sa",
+                    "0su"
+                  ],
+                  "byMonth": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                  ]
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-4 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 68,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 138,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily",
+                  "count": 10,
+                  "interval": 2
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-5 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 69,
+                "name": "test event 2",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "test description",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 139,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily"
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-6 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 70,
+                "name": "test event 2",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 140,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-7 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 71,
+                "name": "test event 2",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "test description",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 141,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily",
+                  "byMonthDay": [
+                    22
+                  ]
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-8 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 72,
+                "name": "test event 2",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "test description",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 142,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "weekly"
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-9 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 73,
+                "name": "test event 2",
+                "type": "reservation",
+                "ownerId": 2,
+                "description": "test description",
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 143,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "yearly",
+                  "byMonthDay": [
+                    22
+                  ]
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-10 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 74,
+                "name": "test event",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1,
+                  2,
+                  3
+                ],
+                "calendarId": 144,
+                "parentId": null,
+                "recurrent": true,
+                "recurrence": {
+                  "frequency": "daily",
+                  "byDay": [
+                    "0th"
+                  ],
+                  "byMonth": [
+                    5
+                  ]
+                },
+                "startsAt": "2025-05-22T12:40:19Z",
+                "endsAt": "2025-05-22T13:40:19Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-11 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 76,
+                "name": "test",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1
+                ],
+                "calendarId": 145,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T08:00:00Z",
+                "endsAt": "2025-05-22T09:00:00Z",
+                "cancelledAt": null
+              }
+            }
+          },
+          "x-12 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 78,
+                "name": "test",
+                "type": "meeting",
+                "ownerId": 2,
+                "description": null,
+                "participants": [
+                  1
+                ],
+                "calendarId": 146,
+                "parentId": null,
+                "recurrent": false,
+                "startsAt": "2025-05-22T08:00:00Z",
+                "endsAt": "2025-05-22T09:00:00Z",
+                "cancelledAt": null
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store event"
+      }
+    },
+    "/api/v1/holiday-types": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "perPage",
+            "description": "int, min:1",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 137,
+                    "name": "regular"
+                  },
+                  {
+                    "id": 138,
+                    "name": "special"
+                  },
+                  {
+                    "id": 139,
+                    "name": "test"
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 3
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "holiday type index"
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1holidayTypesObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 142,
+                "name": "test"
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store holiday type"
+      }
+    },
+    "/api/v1/holiday-types/{holiday_type}": {
+      "put": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "holiday_type",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1holidayTypes{holidayType}Object"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 145,
+                "name": "test"
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "update holiday type"
+      }
+    },
+    "/api/v1/calendars/{calendar}/holidays/{holiday}": {
+      "delete": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "holiday",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 204": {
+            "description": "No Content",
+            "examples": {
+              "example": "null"
+            }
+          }
+        },
+        "security": [],
+        "description": ""
+      },
+      "put": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "holiday",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1calendars{calendar}holidays{holiday}Object"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "id": 5,
+                "name": "test1",
+                "description": "test2",
+                "startsAt": "2025-05-23T12:40:29Z",
+                "endsAt": "2025-05-24T12:40:29Z",
+                "calendarId": 156,
+                "country": {
+                  "code": "PH",
+                  "name": "Philippines"
+                },
+                "type": null
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "update holiday"
+      }
+    },
+    "/api/v1/calendars/{calendar}/holidays": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "country",
+            "description": "exists:countries,name",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "x-1 - 200": {
+            "description": "Operation successfully done",
+            "schema": {
+              "example": {
+                "results": [
+                  {
+                    "id": 2,
+                    "name": "Bertha Spinka",
+                    "description": "Tempore similique enim omnis velit ut incidunt ut. Ut qui asperiores cupiditate nihil a temporibus. Velit ullam facilis quam vero.",
+                    "startsAt": "2025-05-22T12:40:29Z",
+                    "endsAt": "2025-05-23T12:40:29Z",
+                    "calendarId": 153,
+                    "country": null,
+                    "type": null
+                  }
+                ],
+                "pages": {
+                  "next": null,
+                  "previous": null,
+                  "current": 1,
+                  "numPages": 1,
+                  "perPage": 20
+                },
+                "count": 1
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "holiday index"
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiv1calendars{calendar}holidaysObject"
+            }
+          }
+        ],
+        "responses": {
+          "x-1 - 201": {
+            "description": "Created",
+            "schema": {
+              "example": {
+                "id": 4,
+                "name": "test",
+                "description": "test description",
+                "startsAt": "2025-05-22T12:40:29Z",
+                "endsAt": "2025-05-23T12:40:29Z",
+                "calendarId": 155,
+                "country": {
+                  "code": "PH",
+                  "name": "Philippines"
+                },
+                "type": {
+                  "id": 150,
+                  "name": "regular"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "",
+        "summary": "store holiday"
+      }
+    }
+  },
+  "definitions": {
+    "apiv1calendarsObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": ""
+        },
+        "type": {
+          "type": "string",
+          "description": "in:individual,team,organisation,reservation"
+        },
+        "timezone": {
+          "type": "string",
+          "description": ""
+        },
+        "icon": {
+          "type": "string",
+          "description": "nullable, max:255"
+        },
+        "color": {
+          "type": "string",
+          "description": "nullable, max:255"
+        },
+        "global": {
+          "type": "boolean",
+          "description": "nullable"
+        },
+        "description": {
+          "type": "string",
+          "description": "nullable, max:500"
+        },
+        "settings": {
+          "type": "object",
+          "description": ""
+        },
+        "settings.defaultView": {
+          "type": "string",
+          "description": "in:day,week,month,year"
+        },
+        "settings.system": {
+          "type": "string",
+          "description": "bool"
+        },
+        "settings.email": {
+          "type": "string",
+          "description": "bool"
+        },
+        "participants": {
+          "type": "object",
+          "description": "nullable"
+        },
+        "participants.*": {
+          "type": "integer",
+          "description": "min:1"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "timezone",
+        "settings",
+        "settings.defaultView"
+      ],
+      "example": {
+        "name": "test calendar",
+        "type": "organisation",
+        "timezone": "Asia/Manila",
+        "settings": {
+          "defaultView": "daily",
+          "notificationModes": {
+            "system": true,
+            "email": true
+          }
+        }
+      }
+    },
+    "apiv1calendars{calendar}Object": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "sometimes"
+        },
+        "type": {
+          "type": "string",
+          "description": "sometimes, in:individual,team,organisation,reservation"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "sometimes"
+        },
+        "icon": {
+          "type": "string",
+          "description": "sometimes, nullable, max:255"
+        },
+        "color": {
+          "type": "string",
+          "description": "sometimes, nullable, max:255"
+        },
+        "global": {
+          "type": "boolean",
+          "description": "sometimes, nullable"
+        },
+        "description": {
+          "type": "string",
+          "description": "sometimes, nullable, max:500"
+        },
+        "settings": {
+          "type": "object",
+          "description": "sometimes"
+        },
+        "settings.defaultView": {
+          "type": "string",
+          "description": "sometimes, in:day,week,month,year"
+        },
+        "settings.system": {
+          "type": "string",
+          "description": "sometimes, bool"
+        },
+        "settings.email": {
+          "type": "string",
+          "description": "sometimes, bool"
+        },
+        "participants": {
+          "type": "object",
+          "description": "sometimes, nullable"
+        },
+        "participants.*": {
+          "type": "integer",
+          "description": "sometimes, min:1"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "timezone",
+        "settings",
+        "settings.defaultView"
+      ],
+      "example": {
+        "name": "rename calendar"
+      }
+    },
+    "apiv1calendarsreorderObject": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "integer",
+          "description": "min:0"
+        },
+        "calendarId": {
+          "type": "integer",
+          "description": "exists:calendars,id"
+        },
+        "direction": {
+          "type": "string",
+          "description": "in:above,below"
+        }
+      },
+      "example": {
+        "calendarId": 31,
+        "position": 1,
+        "direction": "above"
+      }
+    },
+    "apiv1events{event}attendancesObject": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "type": "string",
+          "description": "max:150"
+        },
+        "attendanceStatus": {
+          "type": "string",
+          "description": "nullable, bool"
+        },
+        "notifyChat": {
+          "type": "boolean",
+          "description": ""
+        }
+      },
+      "example": {
+        "response": "test response",
+        "attendanceStatus": true,
+        "notifyChat": true
+      }
+    },
+    "apiv1eventsObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "max:60"
+        },
+        "calendarId": {
+          "type": "integer",
+          "description": "min:1, exists:calendars,id"
+        },
+        "type": {
+          "type": "string",
+          "description": "in:meeting,reservation"
+        },
+        "description": {
+          "type": "string",
+          "description": "max:150"
+        },
+        "locationId": {
+          "type": "integer",
+          "description": "min:1, exists:locations,id"
+        },
+        "startsAt": {
+          "type": "string",
+          "description": "date_format:Y-m-d\\TH:i:sP"
+        },
+        "endsAt": {
+          "type": "string",
+          "description": "after:startsAt, date_format:Y-m-d\\TH:i:sP"
+        },
+        "recurrent": {
+          "type": "string",
+          "description": "bool"
+        },
+        "ignoreConflicts": {
+          "type": "string",
+          "description": "bool"
+        },
+        "viewMode": {
+          "type": "string",
+          "description": "in:day,week,month,year"
+        },
+        "participants": {
+          "type": "object",
+          "description": ""
+        },
+        "participants.*": {
+          "type": "integer",
+          "description": ""
+        },
+        "recurrence": {
+          "type": "object",
+          "description": "required_if:recurrent,true"
+        },
+        "recurrence.frequency": {
+          "type": "string",
+          "description": "required_if:recurrent,true, in:secondly,minutely,hourly,daily,weekly,monthly,yearly"
+        },
+        "recurrence.endsAt": {
+          "type": "string",
+          "description": "sometimes, date_format:Y-m-d\\TH:i:sP"
+        },
+        "recurrence.count": {
+          "type": "integer",
+          "description": "min:1"
+        },
+        "recurrence.interval": {
+          "type": "integer",
+          "description": "min:1"
+        },
+        "recurrence.byDay": {
+          "type": "object",
+          "description": "distinct:strict"
+        },
+        "recurrence.byDay.*": {
+          "type": "string",
+          "description": "regex:/^(-?[1-5])?(MO, TU, WE, TH, FR, SA, SU)$/"
+        },
+        "recurrence.byMonthDay": {
+          "type": "object",
+          "description": "distinct:strict"
+        },
+        "recurrence.byMonthDay.*": {
+          "type": "integer",
+          "description": "distinct:strict, min:1,max:31"
+        },
+        "recurrence.byYearDay": {
+          "type": "object",
+          "description": "distinct:strict"
+        },
+        "recurrence.byYearDay.*": {
+          "type": "integer",
+          "description": "distinct:strict, min:1,max:365"
+        },
+        "recurrence.byWeekNumber": {
+          "type": "object",
+          "description": "distinct:strict"
+        },
+        "recurrence.byWeekNumber.*": {
+          "type": "integer",
+          "description": "distinct:strict, min:1,max:52"
+        },
+        "recurrence.byMonth": {
+          "type": "object",
+          "description": "distinct:strict"
+        },
+        "recurrence.byMonth.*": {
+          "type": "integer",
+          "description": "distinct:strict, min:1,max:52"
+        }
+      },
+      "required": [
+        "name",
+        "calendarId",
+        "type",
+        "startsAt",
+        "endsAt",
+        "recurrence.byDay.*"
+      ],
+      "example": {
+        "name": "test event",
+        "type": "meeting",
+        "startsAt": "2025-05-22T12:40:23+00:00",
+        "endsAt": "2025-05-22T13:40:23+00:00",
+        "calendarId": 128,
+        "participants": [
+          1,
+          2,
+          3
+        ],
+        "recurrent": false
+      }
+    },
+    "apiv1events{event}Object": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "sometimes, max:60"
+        },
+        "type": {
+          "type": "string",
+          "description": "sometimes, in:meeting,reservation"
+        },
+        "description": {
+          "type": "string",
+          "description": "sometimes, nullable, max:150"
+        },
+        "locationId": {
+          "type": "integer",
+          "description": "sometimes, nullable, min:1, exists:locations,id"
+        },
+        "startsAt": {
+          "type": "string",
+          "description": "date_format:Y-m-d\\TH:i:sP"
+        },
+        "endsAt": {
+          "type": "string",
+          "description": "after:startsAt, date_format:Y-m-d\\TH:i:sP"
+        },
+        "occursAt": {
+          "type": "string",
+          "description": "date_format:Y-m-d\\TH:i:sP"
+        },
+        "occurrence": {
+          "type": "string",
+          "description": "required_unless:occursAt,null, in:all,currentEvent,allAfterCurrent"
+        },
+        "recurrent": {
+          "type": "string",
+          "description": "sometimes, bool"
+        },
+        "participants": {
+          "type": "object",
+          "description": "sometimes"
+        },
+        "participants.*": {
+          "type": "integer",
+          "description": "sometimes"
+        },
+        "recurrence": {
+          "type": "object",
+          "description": "sometimes, required_if:recurrent,true"
+        },
+        "recurrence.frequency": {
+          "type": "string",
+          "description": "sometimes, required_if:recurrent,true, in:secondly,minutely,hourly,daily,weekly,monthly,yearly"
+        },
+        "recurrence.endsAt": {
+          "type": "string",
+          "description": "sometimes, date_format:Y-m-d\\TH:i:sP"
+        },
+        "recurrence.count": {
+          "type": "integer",
+          "description": "sometimes, min:1"
+        },
+        "recurrence.interval": {
+          "type": "integer",
+          "description": "sometimes, min:1"
+        },
+        "recurrence.byDay": {
+          "type": "object",
+          "description": "sometimes, distinct:strict"
+        },
+        "recurrence.byDay.*": {
+          "type": "string",
+          "description": "sometimes, regex:/^(-?[1-5])?(MO, TU, WE, TH, FR, SA, SU)$/"
+        },
+        "recurrence.byMonthDay": {
+          "type": "object",
+          "description": "sometimes, distinct:strict"
+        },
+        "recurrence.byMonthDay.*": {
+          "type": "integer",
+          "description": "sometimes, distinct:strict, min:1,max:31"
+        },
+        "recurrence.byYearDay": {
+          "type": "object",
+          "description": "sometimes, distinct:strict"
+        },
+        "recurrence.byYearDay.*": {
+          "type": "integer",
+          "description": "sometimes, distinct:strict, min:1,max:365"
+        },
+        "recurrence.byWeekNumber": {
+          "type": "object",
+          "description": "sometimes, distinct:strict"
+        },
+        "recurrence.byWeekNumber.*": {
+          "type": "integer",
+          "description": "sometimes, distinct:strict, min:1,max:52"
+        },
+        "recurrence.byMonth": {
+          "type": "object",
+          "description": "sometimes, distinct:strict"
+        },
+        "recurrence.byMonth.*": {
+          "type": "integer",
+          "description": "sometimes, distinct:strict, min:1,max:52"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "startsAt",
+        "endsAt",
+        "recurrence.byDay.*"
+      ],
+      "example": {
+        "name": "test event 123"
+      }
+    },
+    "apiv1holidayTypesObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "max:60, unique:holiday_types,name,NULL,id"
+        }
+      },
+      "example": {
+        "name": "test"
+      }
+    },
+    "apiv1holidayTypes{holidayType}Object": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "max:60, unique:holiday_types,name,\"145\",id"
+        }
+      },
+      "example": {
+        "name": "test"
+      }
+    },
+    "apiv1calendars{calendar}holidaysObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": ""
+        },
+        "description": {
+          "type": "string",
+          "description": "max:150"
+        },
+        "country": {
+          "type": "string",
+          "description": "exists:countries,name"
+        },
+        "startsAt": {
+          "type": "string",
+          "description": "date_format:Y-m-d\\TH:i:s\\Z"
+        },
+        "endsAt": {
+          "type": "string",
+          "description": "after:startsAt, date_format:Y-m-d\\TH:i:s\\Z"
+        },
+        "typeId": {
+          "type": "integer",
+          "description": "min:1, exists:holiday_types,id"
+        }
+      },
+      "required": [
+        "name",
+        "country",
+        "startsAt",
+        "endsAt",
+        "typeId"
+      ],
+      "example": {
+        "name": "test",
+        "description": "test description",
+        "startsAt": "2025-05-22T12:40:29Z",
+        "endsAt": "2025-05-23T12:40:29Z",
+        "typeId": 150,
+        "country": "Philippines"
+      }
+    },
+    "apiv1calendars{calendar}holidays{holiday}Object": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "sometimes"
+        },
+        "description": {
+          "type": "string",
+          "description": "sometimes, max:150"
+        },
+        "country": {
+          "type": "string",
+          "description": "sometimes, exists:countries,name"
+        },
+        "startsAt": {
+          "type": "string",
+          "description": "sometimes, date_format:Y-m-d\\TH:i:s\\Z"
+        },
+        "endsAt": {
+          "type": "string",
+          "description": "sometimes, after:startsAt, date_format:Y-m-d\\TH:i:s\\Z"
+        },
+        "typeId": {
+          "type": "integer",
+          "description": "sometimes, min:1, exists:holiday_types,id"
+        }
+      },
+      "required": [
+        "name",
+        "country",
+        "startsAt",
+        "endsAt",
+        "typeId"
+      ],
+      "example": {
+        "name": "test1",
+        "description": "test2",
+        "startsAt": "2025-05-23T12:40:29Z",
+        "endsAt": "2025-05-24T12:40:29Z",
+        "country": "Philippines"
+      }
+    }
+  },
+  "info": {
+    "description": "This is automatically collected documentation",
+    "version": "0.0.0",
+    "title": "Laravel",
+    "termsOfService": "",
+    "contact": {
+      "email": "dmitry.magyarov@sourcefit.net"
+    }
+  }
+}
