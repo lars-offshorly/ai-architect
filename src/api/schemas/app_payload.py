@@ -13,6 +13,8 @@ class AppPayloadResponseSchema(BaseModel):
     modules: list[str] = Field(default_factory=list)
     generation_json: dict[str, object] = Field(default_factory=dict)
     dummy_data_json: dict[str, object] = Field(default_factory=dict)
+    generation_schema: dict[str, object] = Field(default_factory=dict)
+    sample_data: dict[str, object] = Field(default_factory=dict)
     preview_type: Literal["confirmed", "early"] | None = Field(
         default=None,
         description=(

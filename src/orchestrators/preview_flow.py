@@ -109,7 +109,7 @@ class PreviewFlow:
             preview_warnings.append(template_warning)
 
         # --- Dashboard enrichment (best-effort, never blocks preview) ---
-        self._enrich_dashboard_widgets(
+        knit_builder_payload = self._enrich_dashboard_widgets(
             session_id=session_id,
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
@@ -121,6 +121,13 @@ class PreviewFlow:
                 else None
             ),
         )
+        generation_json["knit_builder_payload"] = knit_builder_payload or {
+            "dashboards": None,
+            "projects": None,
+            "tickets": None,
+            "hrHub": None,
+            "kpi": None,
+        }
 
         if preview_warnings:
             generation_json["preview_warnings"] = preview_warnings
@@ -224,8 +231,12 @@ class PreviewFlow:
         dummy_data_json: dict,
         user_context: Any,
         variant_key: str | None = None,
-    ) -> None:
-        """Populate ``stores.dashboard_widgets`` from static pre-generated output."""
+    ) -> dict | None:
+        """Populate ``stores.dashboard_widgets`` from static pre-generated output.
+
+        Returns a ``GenerationSchema``-compatible ``knit_builder_payload`` dict
+        when enrichment succeeds, or ``None`` when no static payload is available.
+        """
         resolved_variant_key = variant_key or _extract_variant_key(user_context)
         stores: dict = dummy_data_json.setdefault("stores", {})
 
@@ -234,7 +245,7 @@ class PreviewFlow:
         )
         if payload is None:
             stores["dashboard_widgets"] = []
-            return
+            return None
 
         dashboard_obj = payload["widgets"][0]
         raw_widgets = dashboard_obj["widget_templates"]
@@ -250,6 +261,7 @@ class PreviewFlow:
             resolved_variant_key,
             len(widgets),
         )
+        return self._build_knit_builder_payload(dashboard_obj, raw_widgets)
 
     def _resolve_static_payload(
         self,
@@ -328,6 +340,42 @@ class PreviewFlow:
         meta = gen_output.setdefault("generation_metadata", {})
         meta["widgets_extracted"] = len(widgets)
         meta["widgets_explicit"] = len(widgets)
+
+    @staticmethod
+    def _build_knit_builder_payload(
+        dashboard_obj: dict,
+        raw_widgets: list,
+    ) -> dict:
+        """Build a ``GenerationSchema``-compatible payload for the knit-builder API.
+
+        Maps the enriched dashboard template and its widget templates into the
+        structure expected by ``POST /organizations/me/generate/``.
+        Modules other than ``dashboards`` are ``null`` until the backend defines
+        their schemas.
+        """
+        dashboard_id = dashboard_obj.get("dashboard_external_id")
+        widget_templates = [
+            {"id": w["widget_template_external_id"], "name": None}
+            for w in raw_widgets
+            if isinstance(w, dict)
+            and isinstance(w.get("widget_template_external_id"), int)
+        ]
+        dashboard_templates = (
+            [{"id": dashboard_id, "name": None, "widgetTemplates": widget_templates}]
+            if isinstance(dashboard_id, int)
+            else []
+        )
+        return {
+            "dashboards": (
+                {"dashboardTemplates": dashboard_templates}
+                if dashboard_templates
+                else None
+            ),
+            "projects": None,
+            "tickets": None,
+            "hrHub": None,
+            "kpi": None,
+        }
 
     @staticmethod
     def _coerce_dashboard_widgets(raw_widgets: Any) -> list[dict[str, Any]]:
