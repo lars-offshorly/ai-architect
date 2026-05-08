@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from enum import Enum
 from typing import Literal
 
@@ -55,22 +56,99 @@ class PreviewOutput(BaseModel):
 
 # ---------------------------------------------------------------------------
 # Target contract schemas (ADR-003)
+# Mirrors Murad's knit-builder OpenAPI spec for POST /organizations/me/generate/
+# Pattern: { module: { entityTemplates: [{id, name?}] } }
+# IDs are template IDs, matching the dashboards pattern (template IDs 57/54/64/62).
+# Non-dashboard template IDs are pending Murad confirmation (Phase 9) — those
+# modules remain null until IDs are known.
 # ---------------------------------------------------------------------------
 
 
-class GenerationSchema(BaseModel):
-    """Defines the generation schema for creating a new workspace.
+class WidgetTemplateGenerateSchema(BaseModel):
+    """Widget template reference for dashboard generation."""
 
-    This schema is used as the request body for the workspace generation endpoint.
-    It specifies which modules (e.g., dashboards, projects) to include in the
-    generated workspace.
+    id: int = Field(..., gt=0, description="Pre-created widget template ID.")
+    name: str | None = Field(None, description="Rename only — omit to keep existing.")
+
+
+class DashboardTemplateGenerateSchema(BaseModel):
+    """Dashboard template reference plus its widget template references."""
+
+    id: int = Field(..., gt=0, description="Pre-created dashboard template ID.")
+    name: str | None = Field(None, description="Rename only — omit to keep existing.")
+    widgetTemplates: list[WidgetTemplateGenerateSchema] = Field(default_factory=list)
+
+
+class DashboardModuleGenerateSchema(BaseModel):
+    """Dashboard module payload for the knit-builder generation endpoint."""
+
+    dashboardTemplates: list[DashboardTemplateGenerateSchema]
+
+
+class TicketTemplateGenerateSchema(BaseModel):
+    """Ticket template reference for future ticket module generation."""
+
+    id: int = Field(..., gt=0)
+    name: str | None = None
+
+
+class TicketModuleGenerateSchema(BaseModel):
+    """Ticket module payload for the knit-builder generation endpoint."""
+
+    ticketTemplates: list[TicketTemplateGenerateSchema]
+
+
+class ProjectTemplateGenerateSchema(BaseModel):
+    """Project template reference for future project module generation."""
+
+    id: int = Field(..., gt=0)
+    name: str | None = None
+
+
+class ProjectModuleGenerateSchema(BaseModel):
+    """Project module payload for the knit-builder generation endpoint."""
+
+    projectTemplates: list[ProjectTemplateGenerateSchema]
+
+
+class HrHubTemplateGenerateSchema(BaseModel):
+    """HR Hub template reference for future HR module generation."""
+
+    id: int = Field(..., gt=0)
+    name: str | None = None
+
+
+class HrHubModuleGenerateSchema(BaseModel):
+    """HR Hub module payload for the knit-builder generation endpoint."""
+
+    hrHubTemplates: list[HrHubTemplateGenerateSchema]
+
+
+class KpiTemplateGenerateSchema(BaseModel):
+    """KPI template reference for future KPI module generation."""
+
+    id: int = Field(..., gt=0)
+    name: str | None = None
+
+
+class KpiSchemaGenerateSchema(BaseModel):
+    """KPI module payload for the knit-builder generation endpoint."""
+
+    kpiTemplates: list[KpiTemplateGenerateSchema]
+
+
+class GenerationSchema(BaseModel):
+    """Request body schema for POST /organizations/me/generate/ (Murad's endpoint).
+
+    Only `dashboards` is populated today — other modules remain null until
+    template IDs are confirmed with Murad/BE (Phase 9).
     """
 
-    dashboards: dict[str, object] | None = None
-    projects: dict[str, object] | None = None
-    tickets: dict[str, object] | None = None
-    hrHub: dict[str, object] | None = None
-    kpi: dict[str, object] | None = None
+    dashboards: DashboardModuleGenerateSchema | None = None
+    projects: ProjectModuleGenerateSchema | None = None
+    tickets: TicketModuleGenerateSchema | None = None
+    hrHub: HrHubModuleGenerateSchema | None = None
+    kpi: KpiSchemaGenerateSchema | None = None
 
 
 class SampleDataServices(BaseModel):
@@ -114,6 +192,30 @@ class PreviewOutputV2(BaseModel):
 
     generation_schema: GenerationSchema
     sample_data: SampleData
+
+
+class PreviewGeneratorResult(BaseModel):
+    """Named result returned by PreviewGeneratorService.generate().
+
+    Carries both the legacy output (generation_json, dummy_data_json) and the
+    new ADR-003 output (generation_schema, sample_data) so that PreviewFlow can
+    populate AppPayload fields for both during the dual-write migration.
+
+    __iter__ yields (generation_json, dummy_data_json, user_context) so that
+    existing tests that unpack with `gen, *_` or `_, dummy, *_uc` continue to
+    work without modification.
+    """
+
+    generation_json: dict[str, object]
+    dummy_data_json: dict[str, object]
+    generation_schema: GenerationSchema
+    sample_data: SampleData
+    user_context: UserContext | None = None
+
+    def __iter__(self) -> Iterator[object | None]:  # type: ignore[override]
+        yield self.generation_json
+        yield self.dummy_data_json
+        yield self.user_context
 
 
 class PersonDetail(BaseModel):
@@ -177,6 +279,8 @@ class UserContext(BaseModel):
 
 
 class EditActionType(str, Enum):
+    """Supported edit action types for preview mutation."""
+
     ADD_MODULE = "add_module"
     REMOVE_MODULE = "remove_module"
     ADD_KPI = "add_kpi"
@@ -187,6 +291,8 @@ class EditActionType(str, Enum):
 
 
 class EditAction(BaseModel):
+    """Parsed edit instruction consumed by the edit apply step."""
+
     action_type: EditActionType
     target: str | None = None
     raw_instruction: str = ""

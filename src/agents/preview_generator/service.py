@@ -8,7 +8,14 @@ from core.logging import get_logger, get_session_logger
 from domain.models.extraction_result import ExtractionResult
 
 from .pipeline import compiled_graph
-from .schemas import PreviewOutput, PreviewOutputV2, UserContext
+from .schemas import (
+    GenerationSchema,
+    PreviewGeneratorResult,
+    PreviewOutput,
+    PreviewOutputV2,
+    SampleData,
+    UserContext,
+)
 from .state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -34,10 +41,8 @@ class PreviewGeneratorService:
         conversation_history: list[dict],
         extraction_result: ExtractionResult | None = None,
         preselected_intent: str | None = None,
-    ) -> tuple[dict, dict, PreviewOutputV2 | None, UserContext | None]:
-        """Run the preview pipeline.
-
-        Returns (generation_json, dummy_data_json, output_v2, user_context).
+    ) -> PreviewGeneratorResult:
+        """Run the preview pipeline and return a named result.
 
         Args:
             session_id:           Session identifier (passed through to state/logs).
@@ -52,10 +57,12 @@ class PreviewGeneratorService:
                                   classification_signals is empty.
 
         Returns:
-            generation_json  — Knit workspace config (feature_flags, modules, config).
-            dummy_data_json  — Sample data stores (employees, projects, tickets, …).
-            output_v2        — New-contract payload (GenerationSchema + SampleData); None if unavailable.
-            user_context     — Extracted business context; used by dashboard enrichment.
+            PreviewGeneratorResult with:
+              generation_json    — legacy Knit workspace config dict.
+              dummy_data_json    — legacy sample data stores dict.
+              generation_schema  — GenerationSchema from the pipeline.
+              sample_data        — SampleData with service-oriented records.
+              user_context       — Extracted business context for dashboard enrichment.
         """
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Starting preview generation for bundle=%s", bundle_key)
@@ -78,22 +85,33 @@ class PreviewGeneratorService:
             )
         output = PreviewOutput.model_validate(raw) if isinstance(raw, dict) else raw
 
-        # Extract user_context from the final graph state for downstream enrichment.
+        raw_v2 = result.get("output_v2")
+        if raw_v2 is None:
+            output_v2 = PreviewOutputV2(
+                generation_schema=GenerationSchema(),
+                sample_data=SampleData(
+                    bundle_key=bundle_key,
+                    session_id=session_id,
+                ),
+            )
+        elif isinstance(raw_v2, dict):
+            output_v2 = PreviewOutputV2.model_validate(raw_v2)
+        else:
+            output_v2 = raw_v2
+
         user_context: UserContext | None = result.get("user_context")
 
-        raw_v2 = result.get("output_v2")
-        output_v2: PreviewOutputV2 | None = (
-            PreviewOutputV2.model_validate(raw_v2) if isinstance(raw_v2, dict) else None
-        )
-
         session_logger.info(
-            "Preview generation complete for bundle=%s modules=%s",
+            "Preview generation complete for bundle=%s modules=%s "
+            "sample_data_services=%s",
             bundle_key,
             output.generation_json.modules,
+            list(output_v2.sample_data.services.model_dump().keys()),
         )
-        return (
-            output.generation_json.model_dump(),
-            output.dummy_data_json.model_dump(),
-            output_v2,
-            user_context,
+        return PreviewGeneratorResult(
+            generation_json=output.generation_json.model_dump(),
+            dummy_data_json=output.dummy_data_json.model_dump(),
+            generation_schema=output_v2.generation_schema,
+            sample_data=output_v2.sample_data,
+            user_context=user_context,
         )
