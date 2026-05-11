@@ -45,7 +45,13 @@ def create_app() -> FastAPI:
         lifespan=_lifespan,
     )
     # Allow local file:// origins and localhost for the test UI
-    cors_origins = ["*"] if settings.DEBUG else []
+    cors_origins = [
+        "https://ai-architect.idealforliving.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+    ]
+    if settings.DEBUG:
+        cors_origins.append("*")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
