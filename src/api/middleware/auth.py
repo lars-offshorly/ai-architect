@@ -145,6 +145,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.user_id = None
         request.state.role_permissions = {}
 
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         if settings.DEBUG or _is_public_path(request.url.path):
             if settings.DEBUG and not request.state.user_id:
                 request.state.user_id = "dev-user"

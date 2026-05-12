@@ -52,14 +52,14 @@ def create_app() -> FastAPI:
     ]
     if settings.DEBUG:
         cors_origins.append("*")
+    app.add_middleware(AuthMiddleware)
+    app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(AuthMiddleware)
-    app.add_middleware(RateLimitMiddleware)
     app.include_router(health_router)
     app.include_router(session_router)
     app.include_router(preview_router)
