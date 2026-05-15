@@ -7,7 +7,7 @@
 # classification/orchestration; template files take precedence for rendering.
 # =============================================================================
 
-bundles:
+bundles: #TODO: Review and match with new canonical contract?
 
   # ---------------------------------------------------------------------------
   # 1. HR Management

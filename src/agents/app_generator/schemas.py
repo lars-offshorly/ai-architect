@@ -45,7 +45,8 @@ class KpiDefinitionItem(BaseModel):
 # Bundle-specific config models
 # ---------------------------------------------------------------------------
 
-
+#TODO: Create a ConfigClass as a parent class
+#TODO: Do we still need separate config classes per bundle? parang hindi na
 class HrHubConfig(BaseModel):
     """Config sub-schema for the HR Hub bundle (``bundle_key='hr_hub'``)."""
 
@@ -135,7 +136,7 @@ class GenericConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class FeatureFlagItem(BaseModel):
+class FeatureFlagItem(BaseModel): #TODO: Not important anymore
     """A single feature flag entry controlling module visibility."""
 
     id: int = Field(
@@ -199,7 +200,7 @@ KNOWN_BUNDLE_KEYS: frozenset[str] = frozenset(_BUNDLE_CONFIG_MODELS)
 # ---------------------------------------------------------------------------
 
 
-class GenerationJsonSchema(BaseModel):
+class GenerationJsonSchema(BaseModel): #TODO: Modify this to align with new contract payload
     """Full typed schema for the ``generation_json`` provisioning payload."""
 
     schema_version: Literal["1.0"] = Field(
@@ -254,7 +255,7 @@ class GenerationJsonSchema(BaseModel):
         model_cls.model_validate(self.config)
         return self
 
-
+#TODO: Delete or update. Not relevant anymore
 # ===========================================================================
 # dummy_data_json store entity schemas
 # ===========================================================================
@@ -283,7 +284,7 @@ class GenerationJsonSchema(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class WidgetPosition(BaseModel):
+class WidgetPosition(BaseModel): #TODO: Remove, redundant 
     """Grid position and size of a dashboard widget."""
 
     row: int = Field(
@@ -296,7 +297,7 @@ class WidgetPosition(BaseModel):
     height: int = Field(ge=1, description="Vertical span in grid units.")
 
 
-class DashboardWidgetEntity(BaseModel):
+class DashboardWidgetEntity(BaseModel): #TODO: Remove, redundant 
     """A single widget placed on the bundle dashboard."""
 
     id: str = Field(description="Stable widget identifier within the dashboard.")
@@ -304,8 +305,8 @@ class DashboardWidgetEntity(BaseModel):
     title: str = Field(description="Human-readable widget heading.")
     position: WidgetPosition = Field(description="Grid placement and size.")
 
-
-class DashboardInfo(BaseModel):
+ 
+class DashboardInfo(BaseModel): #TODO: Remove, redundant 
     """Dashboard information in generation response."""
 
     id: str = Field(description="Generated dashboard ID.")
@@ -313,7 +314,7 @@ class DashboardInfo(BaseModel):
     url: str | None = Field(default=None, description="Generated dashboard URL.")
 
 
-class WidgetCount(BaseModel):
+class WidgetCount(BaseModel): #TODO: Remove, redundant 
     """Widget count breakdown by widget type."""
 
     text: int = Field(default=0)
@@ -329,7 +330,7 @@ class WidgetCount(BaseModel):
     total: int = Field(default=0)
 
 
-class DebugPayload(BaseModel):
+class DebugPayload(BaseModel): #TODO: Remove, redundant 
     """Debug payload with generated widget details."""
 
     widgets: list[dict[str, object]] = Field(default_factory=list)
@@ -338,7 +339,7 @@ class DebugPayload(BaseModel):
     widget_breakdown: WidgetCount
 
 
-class GenerationMetadata(BaseModel):
+class GenerationMetadata(BaseModel): #TODO: Remove, redundant 
     """Metadata describing the generation process."""
 
     report_length: int = Field(default=0)
@@ -348,7 +349,7 @@ class GenerationMetadata(BaseModel):
     processing_steps: list[str] = Field(default_factory=list)
 
 
-class DashboardGenerateOutput(BaseModel):
+class DashboardGenerateOutput(BaseModel): #TODO: Remove, redundant 
     """OpenAPI-aligned dashboard generate response embedded in stores."""
 
     success: bool = Field(default=True)
@@ -360,7 +361,7 @@ class DashboardGenerateOutput(BaseModel):
     generation_metadata: GenerationMetadata | None = None
 
 
-class KpiStoreItem(BaseModel):
+class KpiStoreItem(BaseModel): #TODO: Remove, redundant 
     """A KPI record inside ``stores.kpis``."""
 
     id: int | str = Field(
@@ -452,7 +453,7 @@ class KpiStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class TicketStatusObject(BaseModel):
+class TicketStatusObject(BaseModel): #TODO: Remove, redundant 
     """Nested status object on a ``TicketStoreItem``."""
 
     id: int = Field(description="Integer identifier for the status record.")
@@ -469,7 +470,7 @@ class TicketStatusObject(BaseModel):
     )
 
 
-class TicketAssigneeRef(BaseModel):
+class TicketAssigneeRef(BaseModel): #TODO: Remove, redundant 
     """A lightweight reference to an assignee on a ticket."""
 
     userId: int = Field(description="Integer user identifier in the HR/auth system.")
@@ -483,7 +484,7 @@ class TicketAuthorDetails(BaseModel):
     userId: int = Field(description="Integer user identifier in the HR/auth system.")
 
 
-class TicketStoreItem(BaseModel):
+class TicketStoreItem(BaseModel): #TODO: Remove, redundant 
     """A ticket record inside ``stores.tickets``."""
 
     id: int | str = Field(
@@ -587,14 +588,14 @@ class TicketStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class TaskParentRef(BaseModel):
+class TaskParentRef(BaseModel): #TODO: Remove, redundant 
     """A lightweight parent reference embedded in a ``TaskStoreItem``."""
 
     id: str | int | None = Field(default=None, description="Parent record identifier.")
     name: str | None = Field(default=None, description="Parent display name.")
 
 
-class ProjectStoreItem(BaseModel):
+class ProjectStoreItem(BaseModel): #TODO: Remove, redundant 
     """A project record inside ``stores.projects`` (Project Ops bundle)."""
 
     id: str | int = Field(description="Project identifier.")
@@ -620,7 +621,7 @@ class ProjectStoreItem(BaseModel):
     endDate: str | None = Field(default=None, description="ISO 8601 project end date.")
 
 
-class TaskStoreItem(BaseModel):
+class TaskStoreItem(BaseModel): #TODO: Remove, redundant 
     """A task record inside ``stores.tasks`` (Project Ops bundle)."""
 
     id: str | int = Field(description="Task identifier.")
@@ -722,7 +723,7 @@ class TaskStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class MilestoneStoreItem(BaseModel):
+class MilestoneStoreItem(BaseModel): #TODO: Remove, redundant 
     """A milestone record inside ``stores.milestones`` (Project Ops bundle)."""
 
     id: str | int = Field(description="Milestone identifier.")
@@ -744,7 +745,7 @@ class MilestoneStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EmployeeStoreItem(BaseModel):
+class EmployeeStoreItem(BaseModel): #TODO: Remove, redundant 
     """An employee record inside ``stores.employees`` (HR Hub bundle).
 
     Represents the primary entity of the ``hr_management`` catalog bundle
@@ -782,7 +783,7 @@ class EmployeeStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class QueueStoreItem(BaseModel):
+class QueueStoreItem(BaseModel): #TODO: Remove, redundant 
     """A queue record inside ``stores.queues``."""
 
     id: str | int = Field(description="Queue identifier.")
@@ -801,7 +802,7 @@ class QueueStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AgentStoreItem(BaseModel):
+class AgentStoreItem(BaseModel): 
     """An agent record inside ``stores.agents`` (Ticketing bundle).
 
     Represents a support agent who handles tickets within queues.
@@ -833,7 +834,7 @@ class AgentStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class WeaveAttributes(BaseModel):
+class WeaveAttributes(BaseModel): #TODO: Remove, redundant 
     """Visual and format attributes of a Weave (spreadsheet) entity."""
 
     format: str | None = Field(
@@ -847,9 +848,8 @@ class WeaveAttributes(BaseModel):
     )
 
 
-class WeaveStoreItem(BaseModel):
-    """A Weave (spreadsheet) record inside ``stores.weaves``.
-
+class WeaveStoreItem(BaseModel): 
+    """A Weave (spreadsheet) record inside ``stores.w#TODO: Remove, redundant 
     Shape matches the ``/weaves`` mock endpoint (``api-mocks.json``).
     """
 
@@ -895,7 +895,7 @@ class WeaveStoreItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class HrHubStores(BaseModel):
+class HrHubStores(BaseModel): #TODO: Remove, redundant 
     """Store container for the HR Hub bundle (``bundle_key='hr_hub'``).
 
     Primary entity per ``bundle_registry.yaml``: ``people``.
@@ -920,7 +920,7 @@ class HrHubStores(BaseModel):
     dashboard_generation_output: DashboardGenerateOutput | None = None
 
 
-class ProjectMgmtStores(BaseModel):
+class ProjectMgmtStores(BaseModel): #TODO: Remove, redundant 
     """Store container for the Project Management bundle
     (``bundle_key='project_mgmt'``).
     """
@@ -934,7 +934,7 @@ class ProjectMgmtStores(BaseModel):
     weaves: list[WeaveStoreItem] = Field(default_factory=list)
 
 
-class TicketingStores(BaseModel):
+class TicketingStores(BaseModel): #TODO: Remove, redundant 
     """Store container for the Ticketing bundle (``bundle_key='ticketing'``).
 
     Primary entity per ``bundle_registry.yaml``: ``ticket``.
@@ -963,7 +963,7 @@ class TicketingStores(BaseModel):
     dashboard_generation_output: DashboardGenerateOutput | None = None
 
 
-class GenericStores(BaseModel):
+class GenericStores(BaseModel): #TODO: Remove, redundant 
     """Store container for the Generic fallback bundle
     (``bundle_key='generic'``).
     """
@@ -1001,7 +1001,7 @@ _BUNDLE_STORES_MODELS: dict[str, type[BaseModel]] = {
 # ---------------------------------------------------------------------------
 
 
-class DummyDataJsonSchema(BaseModel):
+class DummyDataJsonSchema(BaseModel): #TODO: Remove, redundant 
     """Full typed schema for the ``dummy_data_json`` provisioning payload."""
 
     schema_version: Literal["1.0"] = Field(

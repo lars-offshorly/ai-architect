@@ -257,6 +257,18 @@ async def reply_to_session(
     conv_repo.append_message(session_id, user_msg)
     history = conv_repo.get_messages(session_id)
 
+    if flow.should_auto_confirm(body.message, session):
+        session.confirmed = True
+        session.turn_count += 1
+        session_repo.save(session)
+        logger.info("session_id=%s auto-confirmed via natural language intent", session_id)
+        return ConversationTurnResponse(
+            status="ready_for_preview",
+            session_id=session_id,
+            bundle_key=session.selected_bundle_key,
+            preview_type="confirmed",
+        )
+
     result = await flow.process_turn(
         ConversationTurnRequest(
             session_id=session_id,
@@ -314,6 +326,12 @@ async def confirm_bundle(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
+
+    if body.confirmed and session.selected_bundle_key is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot confirm session before a bundle has been selected.",
+        )
 
     session.confirmed = body.confirmed
     session_repo.save(session)

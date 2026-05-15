@@ -34,7 +34,7 @@ _DEFAULT_MOCK_HISTORY: list[dict[str, str]] = [
 
 
 @dataclass
-class MockPayload:
+class MockPayload: #TODO: use parent class config
     """Assembled mock payload returned by MockPayloadBuilder."""
 
     bundle_key: str
@@ -51,7 +51,7 @@ class MockPayload:
 # ---------------------------------------------------------------------------
 
 
-class MockPayloadBuilder:
+class MockPayloadBuilder: #TODO: not needed?
     """Assembles MockPayload objects by running the production PreviewFlow.
 
     Usage::

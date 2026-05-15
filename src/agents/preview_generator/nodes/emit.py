@@ -30,7 +30,7 @@ _FLAG_TO_MODULE: dict[str, str] = {
 }
 
 
-def _build_flag_list(
+def _build_flag_list( #TODO: Remove, redundant 
     feature_flags: dict[str, bool], state: PreviewGeneratorState
 ) -> list[dict]:
     """Reconstruct the full feature flags array in api-mocks format.
@@ -56,7 +56,7 @@ def _build_flag_list(
     return result
 
 
-def _derive_modules(
+def _derive_modules( #TODO: Remove, redundant 
     feature_flags: dict[str, bool], state: PreviewGeneratorState
 ) -> list[str]:
     """Derive active module display names from enabled flags."""
@@ -147,7 +147,7 @@ _BUNDLE_CONFIG_FALLBACK_FIELDS: list[str] = [
     "kpi_definitions",
 ]
 
-
+#TODO: Modify to match canonical contract
 def _build_config(registry_key: str, state: PreviewGeneratorState) -> dict[str, object]:
     """Build the per-bundle config dict for generation_json."""
     config: dict[str, object] = {
@@ -394,7 +394,7 @@ def _build_dashboard_generation_output(
     }
 
 
-def emit_preview(state: PreviewGeneratorState) -> dict:
+def emit_preview(state: PreviewGeneratorState) -> dict: #TODO: Remove, redundant, we will only transition to app endpoint for final endpoint
     """Assemble the two output payloads consumed by AppPayload.
 
     generation_json — Knit workspace configuration:

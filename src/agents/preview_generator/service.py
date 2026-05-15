@@ -27,7 +27,7 @@ class PreviewGeneratorService:
     def __init__(self, catalog: BundleCatalog) -> None:
         self._catalog = catalog
 
-    def generate(
+    def generate( #TODO: Modify to follow canonical contract
         self,
         session_id: str,
         bundle_key: str,

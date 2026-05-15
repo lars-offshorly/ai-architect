@@ -21,6 +21,8 @@ Payloads are loaded once at construction time and cached for the process
 lifetime. Deep copies are returned so callers can mutate safely.
 """
 
+#TODO: Review if this will be needed.
+
 from __future__ import annotations
 
 import copy

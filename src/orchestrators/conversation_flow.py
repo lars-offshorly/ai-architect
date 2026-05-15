@@ -37,11 +37,46 @@ _PREVIEW_KEYWORDS = [
     "build it now",
 ]
 
+_CONFIRMATION_KEYWORDS = [
+    "go ahead",
+    "proceed",
+    "preview it to me",
+    "looks good",
+    "confirm it",
+    "let's do it",
+    "let's go",
+    "yes please",
+    "sounds good",
+    "generate it",
+]
+
+# Words that negate a confirmation keyword when appearing in the 4 tokens before it.
+# Intentionally excludes "no" to allow constructions like "no, go ahead" or "no, looks good".
+_NEGATION_WORDS = frozenset({"don't", "dont", "do not", "not", "never", "stop", "cancel"})
+
 
 def _detect_preview_intent(user_message: str) -> bool:
     """Return True if the user message contains a recognised preview-request keyword."""
     lowered = user_message.lower()
     return any(kw in lowered for kw in _PREVIEW_KEYWORDS)
+
+
+def _is_keyword_negated(lowered: str, keyword: str) -> bool:
+    """Return True if a negation word appears in the 4 tokens immediately before keyword."""
+    pos = lowered.find(keyword)
+    if pos == -1:
+        return False
+    preceding_tokens = lowered[:pos].split()[-4:]
+    return any(neg in preceding_tokens for neg in _NEGATION_WORDS)
+
+
+def _detect_confirmation_intent(user_message: str) -> bool:
+    """Return True if the user message signals intent to confirm the proposed bundle."""
+    lowered = user_message.lower().strip()
+    return any(
+        kw in lowered and not _is_keyword_negated(lowered, kw)
+        for kw in _CONFIRMATION_KEYWORDS
+    )
 
 
 @dataclass(slots=True)
@@ -152,6 +187,12 @@ class ConversationFlow:
         self, user_message: str, force_preview: bool
     ) -> bool:
         return force_preview or _detect_preview_intent(user_message)
+
+    def should_auto_confirm(self, user_message: str, session: Session) -> bool:
+        """Return True when the message signals bundle confirmation and a bundle is pending."""
+        if session.confirmed or session.selected_bundle_key is None:
+            return False
+        return _detect_confirmation_intent(user_message)
 
     async def process_turn(
         self,

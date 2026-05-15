@@ -7,7 +7,7 @@ from domain.models.app_payload import AppPayload
 logger = get_logger(__name__)
 
 
-class AppPayloadFormatter:
+class AppPayloadFormatter: #TODO: still needed?? we already have config
     def format(
         self,
         session_id: str,
