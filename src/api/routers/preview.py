@@ -13,6 +13,7 @@ from api.deps import (
     get_bundle_catalog,
     get_conversation_repository,
     get_preview_flow,
+    get_registry_facade,
     get_session_repository,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
@@ -26,6 +27,7 @@ from core.exceptions import (
 )
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
+from domain.services.registry_facade import RegistryFacade
 from domain.services.early_preview_policy import (
     resolve_early_bundle_key,
 )
@@ -68,14 +70,14 @@ def _execute_preview_pipeline(
     bundle_key: str,
     conv_repo: ConversationRepository,
     flow: PreviewFlow,
-    catalog: BundleCatalog,
+    registry_facade: RegistryFacade,
     preview_type: str | None = None,
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
 ) -> AppPayloadResponseSchema:
     """Execute the preview pipeline and assemble the response schema."""
-    if not catalog.has_bundle(bundle_key):
+    if not registry_facade.has_bundle(bundle_key):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bundle not found: {bundle_key}",
@@ -138,7 +140,7 @@ async def generate_preview(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
-    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -159,7 +161,7 @@ async def generate_preview(
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
         flow=flow,
-        catalog=catalog,
+        registry_facade=registry_facade,
         preview_type="confirmed",
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
@@ -172,7 +174,7 @@ async def generate_early_preview(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
-    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -198,7 +200,7 @@ async def generate_early_preview(
         bundle_key=resolved_key,
         conv_repo=conv_repo,
         flow=flow,
-        catalog=catalog,
+        registry_facade=registry_facade,
         preview_type="early",
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,

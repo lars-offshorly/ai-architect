@@ -324,7 +324,7 @@ class TestRemoveKpi:
         kpi_keys = [k["key"] for k in result["dummy_data_json"]["stores"]["kpis"]]
         assert "capacity_utilization" in kpi_keys
 
-    def test_remove_kpi_from_legacy_string_config(self, catalog: BundleCatalog) -> None:
+    def test_remove_kpi_from_string_config(self, catalog: BundleCatalog) -> None:
         payload = _make_payload(
             config={
                 "permission_services": ["projects", "kpi"],

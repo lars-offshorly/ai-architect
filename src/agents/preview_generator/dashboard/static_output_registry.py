@@ -17,7 +17,7 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Legacy fallback mapping for bundles without catalog variants.
+# Static mapping for bundles without catalog variants.
 _BUNDLE_TO_OUTPUT: dict[str, str] = {
     "hr_management": "hr_management",
     "hr_hub": "hr_management",
@@ -43,7 +43,7 @@ class StaticDashboardOutputRegistry:
 
     Resolution order:
     1. BundleCatalog variant → ``dashboard_template`` field (same stem used for outputs)
-    2. ``_BUNDLE_TO_OUTPUT`` legacy fallback
+    2. ``_BUNDLE_TO_OUTPUT`` static mapping fallback
 
     Deep copies are returned so callers can mutate safely.
     """

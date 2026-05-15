@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from agents.replier.clarification import is_critical
-from catalog.bundle_catalog import BundleCatalog
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
 from domain.models.extraction_result import ExtractionResult
@@ -11,7 +10,6 @@ from domain.models.extraction_result import ExtractionResult
 class FallbackHandler:
     def __init__(
         self,
-        catalog: BundleCatalog,
         proceed_threshold: float = 0.75,
         suggest_threshold: float = 0.50,
         score_gap_minimum: float = 0.15,
@@ -19,7 +17,6 @@ class FallbackHandler:
         # These constructor params are intentionally explicit and configurable.
         # pylint: disable=too-many-arguments,too-many-positional-arguments
     ) -> None:
-        self._catalog = catalog
         self._proceed_threshold = proceed_threshold
         self._suggest_threshold = suggest_threshold
         self._score_gap_minimum = score_gap_minimum
@@ -113,10 +110,9 @@ class FallbackHandler:
         )
 
     def _fallback_suggestion(self) -> BundleSuggestion:
-        fallback_bundle = self._catalog.get_fallback()
         return BundleSuggestion(
-            bundle_key=fallback_bundle.bundle_key,
-            display_name=fallback_bundle.display_name,
+            bundle_key="generic",
+            display_name="Custom Workspace",
             confidence=0.0,
             reasoning="Generic fallback",
             matched_signals=[],

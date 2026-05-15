@@ -10,15 +10,15 @@ from langchain_openai import ChatOpenAI
 from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.service import InterpreterService
-from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
-from agents.preview_generator.dashboard.templates import (
-    DashboardTemplateRegistry,
-)
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
-from domain.services.bundle_metadata import BundleMetadataService
+from domain.services.canonical_bundle_resolver import CanonicalBundleResolver
+from domain.services.canonical_manifest_registry import CanonicalManifestRegistry
+from domain.services.canonical_metadata_service import CanonicalMetadataService
+from domain.services.canonical_payload_builder import CanonicalPayloadBuilder
+from domain.services.registry_facade import RegistryFacade
 from orchestrators.conversation_flow import ConversationFlow
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
@@ -84,6 +84,7 @@ def get_interpreter_service() -> InterpreterService:
     return InterpreterService(
         bundle_keys=catalog.list_keys(),
         catalog=catalog,
+        registry_facade=get_registry_facade(),
         model=model,
         summarizer_model=summarizer_model,
     )
@@ -92,7 +93,7 @@ def get_interpreter_service() -> InterpreterService:
 @lru_cache(maxsize=1)
 def get_replier_service() -> ReplierService:
     """Return a cached ReplierService wired to the bundle catalog."""
-    return ReplierService(catalog=get_bundle_catalog())
+    return ReplierService()
 
 
 @lru_cache(maxsize=1)
@@ -110,26 +111,13 @@ def get_app_generator_service() -> AppGeneratorService:
 @lru_cache(maxsize=1)
 def get_conversation_flow() -> ConversationFlow:
     """Return a cached ConversationFlow wired to interpreter and replier services."""
-    catalog = get_bundle_catalog()
-    required_slots = {b.bundle_key: b.required_slots for b in catalog.list_all()}
+    required_slots: dict[str, list[str]] = {}
     return ConversationFlow(
         interpreter_service=get_interpreter_service(),
         replier_service=get_replier_service(),
-        bundle_catalog=catalog,
         required_slots_by_bundle=required_slots,
+        registry_facade=get_registry_facade(),
     )
-
-
-@lru_cache(maxsize=1)
-def get_bundle_template_loader() -> BundleTemplateLoader:
-    """Return a cached BundleTemplateLoader for static app-0*.json variants."""
-    return BundleTemplateLoader()
-
-
-@lru_cache(maxsize=1)
-def get_dashboard_template_registry() -> DashboardTemplateRegistry:
-    """Return a cached DashboardTemplateRegistry for dashboard outputs."""
-    return DashboardTemplateRegistry(catalog=get_bundle_catalog())
 
 
 @lru_cache(maxsize=1)
@@ -140,15 +128,36 @@ def get_preview_flow() -> PreviewFlow:
     return PreviewFlow(
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
-        bundle_template_loader=get_bundle_template_loader(),
-        static_dashboard_outputs=get_dashboard_template_registry(),
+        registry_facade=get_registry_facade(),
+        bundle_template_loader=None,
+        static_dashboard_outputs=None,
     )
 
 
 @lru_cache(maxsize=1)
-def get_bundle_metadata_service() -> BundleMetadataService:
-    """Return metadata service backed by the cached bundle catalog."""
-    return BundleMetadataService(get_bundle_catalog())
+def get_bundle_metadata_service() -> CanonicalMetadataService:
+    """Return metadata service backed by canonical manifests."""
+    return get_registry_facade().metadata_service
+
+
+@lru_cache(maxsize=1)
+def get_registry_facade() -> RegistryFacade:
+    """Return canonical registry facade used by runtime entrypoints."""
+    settings = get_settings()
+    registry = CanonicalManifestRegistry(settings.CANONICAL_MANIFESTS_DIR)
+    resolver = CanonicalBundleResolver(
+        registry=registry,
+        strict_mapping=settings.CANONICAL_STRICT_INDUSTRY_MAPPING,
+    )
+    payload_builder = CanonicalPayloadBuilder(registry)
+    metadata_service = CanonicalMetadataService(registry)
+    return RegistryFacade(
+        resolver=resolver,
+        payload_builder=payload_builder,
+        metadata_service=metadata_service,
+        catalog_fallback=(get_bundle_catalog() if settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK else None),
+        allow_registry_module_fallback=settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK,
+    )
 
 
 @lru_cache(maxsize=1)

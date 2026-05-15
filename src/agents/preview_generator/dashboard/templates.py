@@ -1,11 +1,10 @@
 """Dashboard template registry.
 
-Compatibility registry over static dashboard outputs.
+Registry over static dashboard outputs.
 
 The runtime preview path now reads pre-generated dashboard widget outputs from
-``dashboard_output_templates/``. This module keeps the legacy
-``DashboardTemplateRegistry`` API available for tooling/tests that still import
-it, but it now resolves static output payload files.
+``dashboard_output_templates/``. This module resolves static output payload
+files.
 
 Resolution
 ----------
@@ -14,7 +13,7 @@ Resolution
    ``dashboard_template`` filename is used.
 2. Otherwise, the bundle's default variant (``is_default: true``) is used.
 3. If the bundle has no variants, ``_BUNDLE_TO_TEMPLATE`` is consulted as a
-   legacy fallback — this keeps single-template industry bundles working
+   fallback — this keeps single-template industry bundles working
    until they are migrated to variants.
 
 Payloads are loaded once at construction time and cached for the process
@@ -32,7 +31,7 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Legacy fallback mapping for bundles that do not yet declare ``variants`` in
+# Fallback mapping for bundles that do not yet declare ``variants`` in
 # the registry YAML.
 _BUNDLE_TO_TEMPLATE: dict[str, str] = {
     "hr_management": "hr_management",
@@ -87,7 +86,7 @@ class DashboardTemplateRegistry:
 
         Falls back to the bundle's default variant when ``variant_key`` is
         omitted or does not match. Returns ``None`` when the bundle has no
-        variants and no legacy ``_BUNDLE_TO_TEMPLATE`` entry.
+        variants and no ``_BUNDLE_TO_TEMPLATE`` entry.
         """
         filename = self._resolve_filename(bundle_key, variant_key)
         if filename is None:

@@ -13,8 +13,20 @@ from agents.preview_generator.dashboard.templates import DashboardTemplateRegist
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
+from domain.services.registry_facade import RegistryFacade
 
 logger = get_logger(__name__)
+
+_CANONICAL_AUTHORITATIVE_STORE_KEYS: frozenset[str] = frozenset(
+    {
+        "queues",
+        "projects",
+        "kpis",
+        "employees",
+        "request_types",
+        "canonical_dashboards",
+    }
+)
 
 
 class PreviewFlow:
@@ -36,11 +48,13 @@ class PreviewFlow:
         self,
         preview_generator_service: Any,
         bundle_display_names: dict[str, str],
+        registry_facade: RegistryFacade | None = None,
         bundle_template_loader: BundleTemplateLoader | None = None,
         static_dashboard_outputs: DashboardTemplateRegistry | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
+        self._registry_facade = registry_facade
         self._bundle_template_loader = bundle_template_loader
         self._static_dashboard_outputs = static_dashboard_outputs
 
@@ -87,6 +101,10 @@ class PreviewFlow:
             preselected_intent=preselected_intent,
         )
         preview_warnings: list[dict[str, str]] = []
+
+        # --- Canonical manifest payload overlay (best-effort) ---
+        if self._registry_facade is not None:
+            self._registry_facade.build_payload_stores(bundle_key, dummy_data_json)
 
         # --- Static bundle template overlay (best-effort) ---
         # Replaces dynamically generated operational stores (tickets, projects,
@@ -204,6 +222,8 @@ class PreviewFlow:
         overlaid_keys: list[str] = []
         for key, value in template_stores.items():
             if key in PIPELINE_OWNED_STORE_KEYS:
+                continue
+            if key in _CANONICAL_AUTHORITATIVE_STORE_KEYS:
                 continue
             stores[key] = value
             overlaid_keys.append(key)

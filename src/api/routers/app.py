@@ -9,18 +9,18 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from agents.app_generator.service import AppGeneratorService
 from api.deps import (
     get_app_generator_service,
-    get_bundle_catalog,
+    get_registry_facade,
     get_session_repository,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.request import GenerateAppRequest
-from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import (
     InvalidPayloadError,
     PreviewGenerationError,
     SessionNotFoundError,
 )
 from core.logging import get_logger
+from domain.services.registry_facade import RegistryFacade
 from repositories.session_repository import SessionRepository
 
 router = APIRouter(prefix="/sessions", tags=["app"])
@@ -33,7 +33,7 @@ async def generate_app_payload(
     body: GenerateAppRequest,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     app_generator: Annotated[AppGeneratorService, Depends(get_app_generator_service)],
-    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
 ) -> AppPayloadResponseSchema:
     """Assembles the final app payload for a confirmed session.
 
@@ -53,14 +53,13 @@ async def generate_app_payload(
             detail="Session bundle must be confirmed before generating final app.",
         )
 
-    if not catalog.has_bundle(session.selected_bundle_key):
+    if not registry_facade.has_bundle(session.selected_bundle_key):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bundle not found: {session.selected_bundle_key}",
         )
 
-    bundle = catalog.get(session.selected_bundle_key)
-    display_name = bundle.display_name if bundle else session.selected_bundle_key
+    display_name = session.selected_bundle_key
 
     # Use the session-stored bundle info + the client-provided dummy data
     try:

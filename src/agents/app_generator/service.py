@@ -74,7 +74,7 @@ class AppGeneratorService:
 
         compatible_keys = set(COMPATIBLE_BUNDLE_KEYS.get(bundle_key, set()))
 
-        # 1. Legacy structural validation
+        # 1. Structural validation
         validate_generation_json(generation_json, bundle_key, compatible_keys)
         validate_dummy_data_json(normalized_dummy_data, bundle_key, compatible_keys)
 

@@ -11,6 +11,7 @@ from domain.models.classification_result import ClassificationResult
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
+from domain.services.registry_facade import RegistryFacade
 
 from .classifier import Classifier
 from .extractor import Extractor
@@ -30,11 +31,13 @@ class InterpreterService:
         self,
         bundle_keys: list[str],
         catalog: BundleCatalog,
+        registry_facade: RegistryFacade | None = None,
         model: ChatOpenAI | None = None,
         summarizer_model: ChatOpenAI | None = None,
     ) -> None:
         self._bundle_keys = bundle_keys
         self._catalog = catalog
+        self._registry_facade = registry_facade
         self._extractor = Extractor(model, catalog) if model else None
         self._classifier = (
             Classifier(model, _build_catalog_context(bundle_keys), catalog)
@@ -80,34 +83,42 @@ class InterpreterService:
         session_logger = get_session_logger(__name__, request.session_id)
         session_logger.info("Running interpreter")
 
-        if not self._extractor or not self._classifier:
+        if not self._extractor:
             # Deterministic stub for testing/CI when LLMs are disabled
             extracted = request.accumulated_extraction or ExtractionResult(
                 session_id=request.session_id
             )
-            # Default to the first bundle in the catalog if available
-            default_bundle_key = (
-                self._bundle_keys[0] if self._bundle_keys else "generic"
-            )
-            bundle = self._catalog.get(default_bundle_key)
-            selected_bundle = (
-                BundleSuggestion(
-                    bundle_key=default_bundle_key,
-                    display_name=bundle.display_name if bundle else default_bundle_key,
-                    confidence=1.0,
-                    reasoning="Stubbed selection (LLM disabled)",
+            if self._registry_facade is not None:
+                suggested = self._registry_facade.resolve_bundle(
+                    session_id=request.session_id,
+                    user_message=request.user_message,
+                    extracted=extracted,
                 )
-                if bundle
-                else None
-            )
-            suggested = ClassificationResult(
-                session_id=request.session_id,
-                selected_bundle=selected_bundle,
-                ranked_candidates=[selected_bundle] if selected_bundle else [],
-                confidence_status="proceed",
-                top_confidence=1.0,
-                reasoning="Deterministic stub",
-            )
+            else:
+                default_bundle_key = (
+                    self._bundle_keys[0] if self._bundle_keys else "generic"
+                )
+                bundle = self._catalog.get(default_bundle_key)
+                selected_bundle = (
+                    BundleSuggestion(
+                        bundle_key=default_bundle_key,
+                        display_name=(
+                            bundle.display_name if bundle else default_bundle_key
+                        ),
+                        confidence=1.0,
+                        reasoning="Stubbed selection (LLM disabled)",
+                    )
+                    if bundle
+                    else None
+                )
+                suggested = ClassificationResult(
+                    session_id=request.session_id,
+                    selected_bundle=selected_bundle,
+                    ranked_candidates=[selected_bundle] if selected_bundle else [],
+                    confidence_status="proceed",
+                    top_confidence=1.0,
+                    reasoning="Deterministic stub",
+                )
             return extracted, suggested
 
         current = await self._extractor.extract(
@@ -119,13 +130,26 @@ class InterpreterService:
         extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
         self._inject_preselected_intent(extracted, request.preselected_intent)
 
-        suggested = await self._classifier.classify(
-            request.session_id,
-            request.user_message,
-            self._bundle_keys,
-            extracted=extracted,
-            preselected_intent=request.preselected_intent,
-        )
+        if self._registry_facade is not None:
+            suggested = self._registry_facade.resolve_bundle(
+                session_id=request.session_id,
+                user_message=request.user_message,
+                extracted=extracted,
+            )
+        elif self._classifier is not None:
+            suggested = await self._classifier.classify(
+                request.session_id,
+                request.user_message,
+                self._bundle_keys,
+                extracted=extracted,
+                preselected_intent=request.preselected_intent,
+            )
+        else:
+            suggested = ClassificationResult(
+                session_id=request.session_id,
+                confidence_status="fallback_generic",
+                reasoning="No classifier available",
+            )
 
         self._apply_variant_selection(
             request.session_id,

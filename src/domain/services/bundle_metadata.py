@@ -9,6 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 class BundleMetadataService:
+    """Deprecated runtime path (registry-yaml based metadata service).
+
+    Canonical runtime entrypoints now use CanonicalMetadataService via
+    RegistryFacade. This service remains for compatibility with legacy tests.
+    """
+
     def __init__(self, catalog: BundleCatalog) -> None:
         self._catalog = catalog
 

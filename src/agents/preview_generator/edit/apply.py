@@ -98,7 +98,7 @@ def _set_flag(flags: list[dict], flag_name: str, enabled: bool) -> None:
 
 
 def _kpi_definition_key(item: object) -> str | None:
-    """Return KPI key from a config.kpi_definitions item (dict or legacy str)."""
+    """Return KPI key from a config.kpi_definitions item (dict or str)."""
     if isinstance(item, str):
         return item
     if isinstance(item, dict):

@@ -30,6 +30,9 @@ class Settings(BaseSettings):
 
     TEMPLATES_DIR: str = "src/templates/bundles"
     BUNDLE_REGISTRY_PATH: str = "src/templates/bundle_registry.yaml"
+    CANONICAL_MANIFESTS_DIR: str = "new_json_samples"
+    CANONICAL_STRICT_INDUSTRY_MAPPING: bool = True
+    CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK: bool = False
 
     REDIS_URL: str = "redis://localhost:6379/0"
     DEV_BYPASS: bool = False

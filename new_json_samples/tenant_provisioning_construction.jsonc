@@ -1,0 +1,143 @@
+// Construction firm variant. Same envelope as the BPO sample.
+// AI's only mutable surface: tenant info, per-employee role assignment,
+// and the lists of IDs to show for queues / projects / dashboards / kpis /
+// hr request types. Everything else is frozen.
+
+{
+  "schema_version": "2.0",
+  "session_id": "3f5b2240-9aa6-49e1-b8c2-77d501a3e9c4",
+  "generated_at": "2026-05-12T10:00:00Z",
+
+  "tenant": {
+    "company_name": "Cornerstone Build Co.",
+    "industry": "construction_firm",
+    "size_band": "50-200",
+    "primary_region": "AMER",
+    "locale": "en-US",
+    "timezone": "America/Chicago"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config and
+  //     employee assignments come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 140, "name": "Site Safety Incidents" },             // name frozen
+      { "id": 141, "name": "Equipment & Materials Requests" },    // name frozen
+      { "id": 142, "name": "Subcontractor Issues" },              // name frozen
+      { "id": 143, "name": "Permit & Compliance" }                // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 560, "name": "Riverside Tower — Phase 2" },         // name frozen
+      { "id": 561, "name": "Westgate Mall Refit" }                // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout
+  //     and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 740, "name": "Project Progress" },                  // name frozen
+      { "id": 741, "name": "Site Safety" },                       // name frozen
+      { "id": 742, "name": "Equipment & Logistics" }              // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 50, "name": "Project Completion %" },               // name frozen
+      { "id": 51, "name": "Safety Incident Rate" },               // name frozen
+      { "id": 52, "name": "Budget Variance" },                    // name frozen
+      { "id": 53, "name": "Equipment Downtime" },                 // name frozen
+      { "id": 54, "name": "Days Since Last Incident" },           // name frozen
+      { "id": 55, "name": "Material Delivery On-Time Rate" }      // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "Director of Construction",
+        "team": "Engineering Office",
+        "department": "Construction",
+        "job_title": "Director of Construction",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 8,                                    // frozen: catalog ref
+        "position": "Head of Safety",
+        "team": "Safety Office",
+        "department": "Safety",
+        "job_title": "Head of Safety",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 2,                                    // frozen: catalog ref
+        "position": "Site Manager",
+        "team": "Site Crew A",
+        "department": "Construction",
+        "job_title": "Site Manager",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 6,                                    // frozen: catalog ref
+        "position": "Site Engineer",
+        "team": "Engineering Office",
+        "department": "Engineering",
+        "job_title": "Site Engineer",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 7,                                    // frozen: catalog ref
+        "position": "Site Engineer",
+        "team": "Engineering Office",
+        "department": "Engineering",
+        "job_title": "Site Engineer",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 10,                                   // frozen: catalog ref
+        "position": "Estimator",
+        "team": "Estimating Team",
+        "department": "Estimating",
+        "job_title": "Estimator",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 12,                                   // frozen: catalog ref
+        "position": "Office Admin",
+        "team": "Back Office",
+        "department": "Administration",
+        "job_title": "Office Administrator",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },                     // name frozen
+      { "id": 805, "name": "Equipment Request" },                 // name frozen
+      { "id": 807, "name": "PPE Request" },                       // name frozen
+      { "id": 808, "name": "Site Transfer Request" }              // name frozen
+    ]
+  }
+}

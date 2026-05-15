@@ -18,7 +18,7 @@ class ValidationResult:
     errors: list[str]
 
 
-_LEGACY_RENDER_KEY_REQUIRED_MODULES: dict[str, tuple[str, ...]] = {
+_RENDER_KEY_REQUIRED_MODULES: dict[str, tuple[str, ...]] = {
     "hr_hub": ("tickets", "queues", "kpis", "dashboard"),
 }
 
@@ -47,14 +47,14 @@ def _validate_modules_against_bundle(
     required_modules = list(bundle.default_modules)
     known_modules = set(bundle.default_modules) | set(bundle.optional_modules)
 
-    legacy_required = _LEGACY_RENDER_KEY_REQUIRED_MODULES.get(generation.bundle)
+    render_key_required = _RENDER_KEY_REQUIRED_MODULES.get(generation.bundle)
     if (
-        legacy_required is not None
+        render_key_required is not None
         and generation.bundle == bundle.render_key
         and generation.bundle != bundle.bundle_key
     ):
-        required_modules = list(legacy_required)
-        known_modules = set(legacy_required)
+        required_modules = list(render_key_required)
+        known_modules = set(render_key_required)
 
     for required in required_modules:
         if required not in module_keys:

@@ -10,11 +10,9 @@ from uuid import uuid4
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from api.deps import (
-    get_bundle_catalog,
-    get_bundle_template_loader,
     get_conversation_flow,
     get_conversation_repository,
-    get_dashboard_template_registry,
+    get_registry_facade,
     get_session_repository,
 )
 from api.schemas.debug import (
@@ -28,7 +26,6 @@ from api.schemas.response import (
     ConversationTurnResponse,
     SessionStartedResponse,
 )
-from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import SessionNotFoundError
 from core.logging import get_logger
 from core.sanitize import sanitize_text
@@ -37,6 +34,7 @@ from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
+from domain.services.registry_facade import RegistryFacade
 from orchestrators.conversation_flow import (
     ConversationFlow,
     ConversationTurnRequest,
@@ -49,15 +47,14 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 logger = get_logger(__name__)
 
 
-async def _warm_template_caches() -> None:
-    """Warm BundleTemplateLoader and DashboardTemplateRegistry caches in a thread.
+async def _warm_runtime_caches() -> None:
+    """Warm canonical runtime caches in a thread.
 
-    Called as a FastAPI BackgroundTask after session start so templates are
-    ready before the first preview request arrives.
+    Called as a FastAPI BackgroundTask after session start so canonical
+    registry/mapping data is ready before the first preview request arrives.
     """
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, get_bundle_template_loader)
-    await loop.run_in_executor(None, get_dashboard_template_registry)
+    await loop.run_in_executor(None, get_registry_facade)
 
 
 def _persist_result_bundle_key(session: Session, result: dict[str, object]) -> None:
@@ -168,15 +165,17 @@ async def start_session(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[ConversationFlow, Depends(get_conversation_flow)],
-    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    catalog: object | None = None,
 ) -> SessionStartedResponse:
     """Create a new session and process the opening user message."""
+    _ = catalog  # backward-compatible parameter for older tests/callers
+    facade = get_registry_facade()
     preselected_bundle_key: str | None = None
     if body.preselected_bundle_key is not None:
         preselected_bundle_key = sanitize_text(
             body.preselected_bundle_key, max_length=100
         )
-        if not catalog.has_bundle(preselected_bundle_key):
+        if not facade.has_bundle(preselected_bundle_key):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unknown bundle key: '{preselected_bundle_key}'.",
@@ -187,7 +186,7 @@ async def start_session(
         preselected_intent = sanitize_text(
             body.preselected_intent, max_length=100
         ).lower()
-        known_intents = catalog.get_all_typical_intents()
+        known_intents = facade.list_known_intents()
         if preselected_intent not in known_intents:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -205,7 +204,7 @@ async def start_session(
     if preselected_intent is not None:
         session.preselected_intent = preselected_intent
     session_repo.save(session)
-    background_tasks.add_task(_warm_template_caches)
+    background_tasks.add_task(_warm_runtime_caches)
 
     user_msg = ConversationMessage(role="user", content=body.message)
     conv_repo.append_message(session_id, user_msg)

@@ -78,7 +78,7 @@ def test_project_mgmt_returns_template(registry: DashboardTemplateRegistry):
     "bundle_key",
     ["finance", "marketing", "sales"],
 )
-def test_legacy_mapped_bundles_return_template(
+def test_mapped_bundles_return_template(
     bundle_key: str, registry: DashboardTemplateRegistry
 ):
     """Bundles listed in _BUNDLE_TO_TEMPLATE resolve without a catalog."""
@@ -165,7 +165,7 @@ def test_supported_bundles_contains_known_keys(registry: DashboardTemplateRegist
     assert "project_mgmt" in supported
 
 
-def test_supported_bundles_contains_legacy_mapped_keys(
+def test_supported_bundles_contains_mapped_keys(
     registry: DashboardTemplateRegistry,
 ):
     supported = registry.supported_bundles()
@@ -203,7 +203,7 @@ def _make_catalog(bundle_key: str, variants: list) -> MagicMock:
 
 @pytest.fixture
 def variant_templates_dir(tmp_path: Path) -> Path:
-    """Write templates referenced by legacy map + variant-specific templates."""
+    """Write templates referenced by fallback map + variant-specific templates."""
     for filename in set(_BUNDLE_TO_TEMPLATE.values()) | {
         "hr_management_recruiting",
         "hr_management_onboarding",
@@ -248,7 +248,7 @@ def test_missing_variant_key_falls_back_to_default(variant_templates_dir: Path):
     assert result["source_template"] == "hr_management"
 
 
-def test_bundle_without_variants_uses_legacy_map(variant_templates_dir: Path):
+def test_bundle_without_variants_uses_fallback_map(variant_templates_dir: Path):
     catalog = _make_catalog("ticketing", [])
     registry = DashboardTemplateRegistry(
         templates_dir=variant_templates_dir, catalog=catalog

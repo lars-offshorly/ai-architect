@@ -6,6 +6,10 @@ from domain.models.classification_result import ClassificationResult
 from domain.models.extraction_result import ExtractionResult
 from domain.models.recommendation_result import RecommendationResult
 
+# Deprecated runtime path: conversation/preview entrypoints now use
+# canonical-manifest services via RegistryFacade.
+# Kept for compatibility with existing tests and tooling references.
+
 
 # pylint: disable=too-few-public-methods
 class BundleRecommendationService:

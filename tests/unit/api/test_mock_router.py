@@ -19,10 +19,10 @@ class _FakePayload:
 
 class _FakeBuilder:
     known_bundle_keys = frozenset({"project_mgmt", "finance", "ticketing", "healthcare"})
-    known_render_keys = frozenset({"legacy_project", "legacy_ticketing"})
+    known_render_keys = frozenset({"alias_project", "alias_ticketing"})
     render_alias_map = {
-        "legacy_project": ["finance", "project_mgmt"],
-        "legacy_ticketing": ["healthcare", "ticketing"],
+        "alias_project": ["finance", "project_mgmt"],
+        "alias_ticketing": ["healthcare", "ticketing"],
     }
 
     def build(self, bundle_key: str, dummy_data_override=None, session_id=None):
@@ -51,8 +51,8 @@ def test_mock_accepts_canonical_bundle_key() -> None:
     assert res.json()["bundle_key"] == "finance"
 
 
-def test_mock_rejects_ambiguous_legacy_render_key() -> None:
+def test_mock_rejects_ambiguous_render_key() -> None:
     client = _client()
-    res = client.post("/mock/legacy_project", json={})
+    res = client.post("/mock/alias_project", json={})
     assert res.status_code == 400
-    assert "Ambiguous legacy render key" in res.json()["detail"]
+    assert "Ambiguous render key" in res.json()["detail"]

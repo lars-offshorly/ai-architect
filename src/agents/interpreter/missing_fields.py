@@ -3,7 +3,6 @@ from __future__ import annotations
 # pylint: disable=too-few-public-methods
 import re
 
-from catalog.bundle_catalog import BundleCatalog
 from domain.enums.missing_field_type import MissingFieldType
 from domain.models.extraction_result import ExtractionResult
 
@@ -46,10 +45,8 @@ def _tokenize(value: str) -> set[str]:
 class MissingFieldDetector:
     def __init__(
         self,
-        catalog: BundleCatalog,
         required_slots_by_bundle: dict[str, list[str]],
     ) -> None:
-        self._catalog = catalog
         self._required_slots_by_bundle = required_slots_by_bundle
 
     def compute(
@@ -75,16 +72,6 @@ class MissingFieldDetector:
                 continue
             if not self._has_slot_value(extracted, field):
                 missing.append(field)
-
-        bundle = self._catalog.get(bundle_key or "")
-        if (
-            bundle is not None
-            and bundle.required_signals
-            and not self._has_required_signal_overlap(
-                bundle.required_signals, extracted
-            )
-        ):
-            missing.append(MissingFieldType.WORKFLOW_TYPE)
 
         return sorted(set(missing), key=lambda field: _FIELD_ORDER[field])
 

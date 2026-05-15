@@ -54,7 +54,7 @@ class Session(BaseModel):
                 bundle_key=top_bundle_key,
                 display_name=top_bundle_key,
                 confidence=float(value.get("top_confidence") or 0.0),
-                reasoning="Coerced from legacy top_bundle_key payload",
+                reasoning="Coerced from top_bundle_key payload",
                 matched_signals=[],
             )
 

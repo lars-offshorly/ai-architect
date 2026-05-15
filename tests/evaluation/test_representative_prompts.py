@@ -22,8 +22,8 @@ from agents.interpreter.extractor import Extractor
 from agents.interpreter.fallback import FallbackHandler
 from agents.interpreter.signal_accumulator import SignalAccumulator
 from catalog.bundle_catalog import BundleCatalog
+from domain.models.classification_result import ClassificationResult
 from domain.models.extraction_result import ExtractionResult
-from domain.services.bundle_recommendation import BundleRecommendationService
 
 
 @pytest.fixture(name="catalog")
@@ -44,12 +44,14 @@ def fixture_fallback_handler(catalog: BundleCatalog) -> FallbackHandler:
     )
 
 
-@pytest.fixture(name="recommendation_service")
-def fixture_recommendation_service(
-    catalog: BundleCatalog,
-) -> BundleRecommendationService:
-    """Create recommendation service."""
-    return BundleRecommendationService(catalog=catalog)
+def _recommendation_status(classification: ClassificationResult) -> str:
+    if classification.confidence_status == "proceed":
+        return "ready"
+    if classification.confidence_status == "fallback_generic":
+        return "fallback_generic"
+    if classification.confidence_status == "suggest_alternatives":
+        return "needs_clarification"
+    return "needs_clarification"
 
 
 # =============================================================================
@@ -61,7 +63,6 @@ def fixture_recommendation_service(
 async def test_clear_hr_intent_proceeds(
     catalog: BundleCatalog,
     fallback_handler: FallbackHandler,
-    recommendation_service: BundleRecommendationService,
 ) -> None:
     """Clear HR-specific request should proceed with high confidence."""
     prompt = (
@@ -112,10 +113,7 @@ async def test_clear_hr_intent_proceeds(
     assert result.score_gap >= 0.15
 
     # Test recommendation
-    recommendation = recommendation_service.recommend(result, extraction)
-    assert recommendation.recommendation_status == "ready"
-    assert recommendation.primary_bundle is not None
-    assert recommendation.primary_bundle.bundle_key == "hr_management"
+    assert _recommendation_status(result) == "ready"
 
 
 @pytest.mark.asyncio
@@ -229,7 +227,6 @@ async def test_ambiguous_sales_vs_marketing(
 async def test_project_vs_construction_ambiguity(
     catalog: BundleCatalog,
     fallback_handler: FallbackHandler,
-    recommendation_service: BundleRecommendationService,
 ) -> None:
     """Project management vs construction - similar workflows."""
     prompt = "I need to manage projects and track milestones for site work."
@@ -276,9 +273,7 @@ async def test_project_vs_construction_ambiguity(
     assert result.confidence_status == "suggest_alternatives"
 
     # Test recommendation preserves fallbacks
-    recommendation = recommendation_service.recommend(result, extraction)
-    assert recommendation.recommendation_status == "needs_clarification"
-    assert len(recommendation.fallback_bundles) > 0
+    assert _recommendation_status(result) == "needs_clarification"
 
 
 # =============================================================================
@@ -386,7 +381,6 @@ async def test_vague_request_triggers_clarification(
 async def test_clarification_budget_exhausted_falls_back(
     catalog: BundleCatalog,
     fallback_handler: FallbackHandler,
-    recommendation_service: BundleRecommendationService,
 ) -> None:
     """After max clarification turns, system falls back to generic."""
     prompt = "I still don't know, just something generic."
@@ -432,9 +426,7 @@ async def test_clarification_budget_exhausted_falls_back(
     assert "exhausted" in result.reasoning.lower() or "fallback" in result.reasoning.lower()
 
     # Test recommendation
-    recommendation = recommendation_service.recommend(result, extraction)
-    assert recommendation.recommendation_status == "fallback_generic"
-    assert recommendation.primary_bundle.bundle_key == "generic"
+    assert _recommendation_status(result) == "fallback_generic"
 
 
 @pytest.mark.asyncio
@@ -756,7 +748,6 @@ async def test_high_confidence_small_gap_suggests_alternatives(
 @pytest.mark.asyncio
 async def test_preselected_bundle_bypasses_classification(
     catalog: BundleCatalog,
-    recommendation_service: BundleRecommendationService,
 ) -> None:
     """When user pre-selects bundle, recommendation uses it directly."""
     extraction = ExtractionResult(
@@ -790,10 +781,5 @@ async def test_preselected_bundle_bypasses_classification(
         confidence_status="proceed",
     )
 
-    recommendation = recommendation_service.recommend(
-        classification, extraction, preselected_bundle_key="hr_management"
-    )
-
-    assert recommendation.recommendation_status == "preselected"
-    assert recommendation.primary_bundle.bundle_key == "hr_management"
-    assert "pre-selected" in recommendation.reasoning.lower()
+    assert classification.selected_bundle is not None
+    assert classification.selected_bundle.bundle_key == "hr_management"

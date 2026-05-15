@@ -34,7 +34,7 @@ router = APIRouter(prefix="/mock", tags=["mock"])
 
 
 def _resolve_bundle_key(bundle_key: str, builder: MockPayloadBuilder) -> str:
-    """Resolve canonical bundle key, accepting unambiguous legacy render aliases."""
+    """Resolve canonical bundle key, accepting unambiguous render aliases."""
     if bundle_key in builder.known_bundle_keys:
         return bundle_key
 
@@ -52,7 +52,7 @@ def _resolve_bundle_key(bundle_key: str, builder: MockPayloadBuilder) -> str:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                f"Ambiguous legacy render key '{bundle_key}'. "
+                f"Ambiguous render key '{bundle_key}'. "
                 f"Use one of canonical bundle keys: {aliases}"
             ),
         )

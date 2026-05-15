@@ -6,7 +6,6 @@ from typing import Any, Protocol, cast
 
 from agents.interpreter.fallback import FallbackHandler
 from agents.interpreter.missing_fields import MissingFieldDetector
-from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
@@ -16,7 +15,7 @@ from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
-from domain.services.bundle_recommendation import BundleRecommendationService
+from domain.services.registry_facade import RegistryFacade
 
 logger = get_logger(__name__)
 
@@ -107,7 +106,7 @@ class ConversationTurnRequest:
     # Canonical Week 3 input.
     session: Session | None = None
 
-    # Legacy compatibility fields (kept for existing tests/callers).
+    # Compatibility fields kept for existing tests/callers.
     confirmed: bool = False
     accumulated_extraction: ExtractionResult | None = None
     preselected_bundle_key: str | None = None
@@ -164,16 +163,17 @@ class ConversationFlow:
         self,
         interpreter_service: InterpreterPort,
         replier_service: ReplierPort,
-        bundle_catalog: BundleCatalog,
-        required_slots_by_bundle: dict[str, list[str]],
+        bundle_catalog: object | None = None,
+        required_slots_by_bundle: dict[str, list[str]] | None = None,
+        registry_facade: RegistryFacade | None = None,
     ) -> None:
+        _ = bundle_catalog  # backward-compatible constructor arg
         self._interpreter = interpreter_service
         self._replier = replier_service
         self._missing_field_detector = MissingFieldDetector(
-            bundle_catalog, required_slots_by_bundle
+            required_slots_by_bundle or {}
         )
         self._fallback_handler = FallbackHandler(
-            bundle_catalog,
             proceed_threshold=self._setting_or_default(
                 "CONFIDENCE_PROCEED_THRESHOLD", 0.75
             ),
@@ -185,7 +185,7 @@ class ConversationFlow:
                 self._setting_or_default("MAX_CLARIFICATION_TURNS", 3)
             ),
         )
-        self._recommendation_service = BundleRecommendationService(bundle_catalog)
+        self._registry_facade = registry_facade
 
     @staticmethod
     def _setting_or_default(name: str, default: float | int) -> float | int:
@@ -396,9 +396,8 @@ class ConversationFlow:
             clarification_turn_count=session.clarification_turn_count,
         )
 
-        recommendation = self._recommendation_service.recommend(
+        recommendation = self._build_recommendation(
             classification=classification,
-            extracted=extracted,
             preselected_bundle_key=preselected_bundle_key,
         )
 
@@ -411,6 +410,77 @@ class ConversationFlow:
             top=top,
             slots=slots,
         )
+
+    def _build_recommendation(
+        self,
+        classification: ClassificationResult,
+        preselected_bundle_key: str | None,
+    ) -> RecommendationResult:
+        selected = classification.selected_bundle
+
+        if preselected_bundle_key:
+            if selected is None:
+                selected = BundleSuggestion(
+                    bundle_key=preselected_bundle_key,
+                    display_name=preselected_bundle_key,
+                    confidence=1.0,
+                    reasoning="Pre-selected by user",
+                    matched_signals=[],
+                )
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=[],
+                recommendation_status="preselected",
+                inferred_modules=self._inferred_modules_for(selected.bundle_key),
+                reasoning="Bundle pre-selected by user",
+            )
+
+        if classification.confidence_status == "suggest_alternatives":
+            fallbacks = classification.ranked_candidates[1:3]
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=fallbacks,
+                recommendation_status="needs_clarification",
+                inferred_modules=self._inferred_modules_for(
+                    selected.bundle_key if selected is not None else "generic"
+                ),
+                reasoning="Multiple viable bundles; user choice required",
+            )
+
+        if classification.confidence_status == "fallback_generic":
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=[],
+                recommendation_status="fallback_generic",
+                inferred_modules=self._inferred_modules_for(
+                    selected.bundle_key if selected is not None else "generic"
+                ),
+                reasoning=classification.reasoning,
+            )
+
+        status = (
+            "ready"
+            if classification.confidence_status == "proceed"
+            else "needs_clarification"
+        )
+        return RecommendationResult(
+            session_id=classification.session_id,
+            primary_bundle=selected,
+            fallback_bundles=[],
+            recommendation_status=status,
+            inferred_modules=self._inferred_modules_for(
+                selected.bundle_key if selected is not None else "generic"
+            ),
+            reasoning=classification.reasoning or "Need more context from the user",
+        )
+
+    def _inferred_modules_for(self, bundle_key: str) -> list[str]:
+        if self._registry_facade is not None:
+            return self._registry_facade.inferred_modules_for_bundle(bundle_key)
+        return []
 
     def _mock_preselected_classification(
         self,
