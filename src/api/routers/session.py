@@ -34,6 +34,7 @@ from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
+from domain.services.registry_facade import RegistryFacade
 from orchestrators.conversation_flow import (
     ConversationFlow,
     ConversationTurnRequest,
