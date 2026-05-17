@@ -105,6 +105,13 @@ class ReplierPort(Protocol):
         bundle_key: str,
     ) -> tuple[object | None, str]: ...
 
+    async def build_bundle_verification_question(
+        self,
+        session_id: str,
+        top_bundle_key: str,
+        slots: dict[str, object],
+    ) -> str: ...
+
     async def build_bundle_suggestion(
         self,
         session_id: str,
@@ -176,6 +183,25 @@ class ConversationFlow:
             self._persist_session_state(session, context, result)
             return result
 
+        # Always ask exactly one verification question on the first unconfirmed turn,
+        # regardless of confidence, to collect user context and confirm the bundle fit.
+        # This runs before all confidence-based branching so every path gets the same
+        # smart follow-up on turn 1.
+        if (
+            session.clarification_turn_count == 0
+            and not session.confirmed
+            and session.preselected_bundle_key is None
+        ):
+            top_key = context.top.bundle_key if context.top is not None else "unknown"
+            question = await self._replier.build_bundle_verification_question(
+                turn_request.session_id,
+                top_key,
+                context.slots,
+            )
+            result = self._awaiting_input_response(question, context)
+            self._persist_session_state(session, context, result)
+            return result
+
         status = context.classification.confidence_status
 
         if (
@@ -203,11 +229,10 @@ class ConversationFlow:
         if not session.confirmed:
             suggestion = context.top
             if suggestion is None:
-                question = "".join(
-                    [
-                        "Could you share a bit more so I can suggest ",
-                        "the right bundle?",
-                    ]
+                question = (
+                    "Could you tell me a bit more about what you're looking to "
+                    "manage? That'll help me configure this the right way for "
+                    "your team."
                 )
                 result = self._awaiting_input_response(question, context)
                 self._persist_session_state(session, context, result)
@@ -220,8 +245,9 @@ class ConversationFlow:
             )
             if status == "fallback_generic":
                 message = (
-                    "I couldn't confidently classify your request yet, so I'll use the "
-                    "generic bundle unless you'd like to clarify first.\n\n"
+                    "I want to make sure this is set up right for you — could you share "
+                    "a bit more about your team's focus? In the meantime, here's what "
+                    "I've put together based on what you've shared:\n\n"
                     f"{message}"
                 )
             result = self._pending_confirmation_response(message, context)
@@ -386,8 +412,9 @@ class ConversationFlow:
             if options:
                 names = ", ".join(option.display_name for option in options)
                 return (
-                    "I found multiple possible bundles. Which one fits best: "
-                    f"{names}?"
+                    "To get this configured just right, could you tell me a bit more "
+                    "about what your team is mainly focused on? For example, does your "
+                    f"work lean more toward {names}?"
                 )
 
         target_key = context.top.bundle_key if context.top is not None else "unknown"
