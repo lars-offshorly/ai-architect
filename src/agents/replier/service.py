@@ -14,7 +14,7 @@ from .clarification import (
     generate_clarification_question,
     is_critical,
 )
-from .prompts import BUNDLE_SUGGESTION_SYSTEM_PROMPT
+from .prompts import BUNDLE_SUGGESTION_SYSTEM_PROMPT, BUNDLE_VERIFICATION_SYSTEM_PROMPT
 
 logger = get_logger(__name__)
 
@@ -56,6 +56,36 @@ class ReplierService:
         )
         session_logger.info("Clarification needed for field=%s", target.value)
         return target, question
+
+    async def build_bundle_verification_question(
+        self,
+        session_id: str,
+        top_bundle_key: str,
+        slots: dict[str, object],
+    ) -> str:
+        session_logger = get_session_logger(__name__, session_id)
+        try:
+            response = await self._model.ainvoke(
+                [
+                    SystemMessage(content=BUNDLE_VERIFICATION_SYSTEM_PROMPT),
+                    HumanMessage(
+                        content=(
+                            f"Identified workspace type: {top_bundle_key}\n"
+                            f"Context gathered so far: {slots}"
+                        )
+                    ),
+                ]
+            )
+            question = str(response.content).strip()
+        except (RuntimeError, ValueError, TypeError) as exc:
+            session_logger.error(
+                "Bundle verification question generation failed: %s", exc
+            )
+            question = (
+                "Could you tell me a bit more about your team — "
+                "like how many people are involved and how you currently manage things?"
+            )
+        return question
 
     async def build_bundle_suggestion(
         self,
