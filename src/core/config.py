@@ -31,8 +31,8 @@ class Settings(BaseSettings):
     TEMPLATES_DIR: str = "src/templates/bundles"
     BUNDLE_REGISTRY_PATH: str = "src/templates/bundle_registry.yaml"
 
-    JWT_SECRET: str = ""
-    JWT_ALGORITHM: str = "HS256"
+    REDIS_URL: str = "redis://localhost:6379/0"
+    DEV_BYPASS: bool = False
     RATE_LIMIT_PER_MINUTE: int = 60
 
     ENABLE_MOCK_ENDPOINTS: bool = False
