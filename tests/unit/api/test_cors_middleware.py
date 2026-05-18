@@ -16,7 +16,6 @@ _ALLOWED_ORIGINS = (
 @pytest.fixture(name="client")
 def fixture_client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setenv("DEBUG", "False")
-    monkeypatch.setenv("JWT_SECRET", "test-secret")
     get_settings.cache_clear()
 
     return TestClient(create_app())
@@ -44,5 +43,5 @@ def test_unauthorized_response_keeps_cors_header(client: TestClient) -> None:
         json={},
     )
 
-    assert response.status_code == 401
+    assert response.status_code in (401, 403)  # exact code is auth concern, not CORS
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"

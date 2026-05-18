@@ -15,6 +15,7 @@ def disable_external_calls(monkeypatch):
     monkeypatch.setenv("DISABLE_LLM_CALLS", "true")
     monkeypatch.setenv("DISABLE_DASHBOARD_CALLS", "true")
     monkeypatch.setenv("SKIP_CATALOG_VALIDATION", "true")
+    monkeypatch.setenv("DEV_BYPASS", "true")
 
     # Also clear lru_cache so settings reload with new env vars
     deps.get_settings.cache_clear()

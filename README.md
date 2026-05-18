@@ -22,7 +22,7 @@ AI-powered onboarding conversation pipeline built with FastAPI.
    cp .env.example .env
    ```
 
-3. Update `.env` with required values (at minimum `OPENAI_API_KEY`, `DATABASE_URL`, `JWT_SECRET`).
+3. Update `.env` with required values (at minimum `OPENAI_API_KEY`, `DATABASE_URL`, `REDIS_URL`).
 
 4. Run the API:
 
@@ -98,26 +98,25 @@ make seed BUNDLE=hr_hub
 
 ## Authentication
 
-All endpoints except `/health`, `/docs`, `/openapi.json`, and `/redoc` require a JWT bearer token:
+All endpoints except `/health`, `/docs`, `/openapi.json`, and `/redoc` require a bearer session token:
 
 ```http
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <session_token>
 ```
 
-JWT requirements:
+Authentication uses the shared Redis session cache used by the other Python
+services. Tokens are looked up at `:1:{token}` in `REDIS_URL`; the cached value
+must contain a serialized `user` object with an integer `id`.
 
-- Algorithm: `HS256` (configurable via `JWT_ALGORITHM`)
-- Secret: `JWT_SECRET`
-- Must include an identity claim: `user_id`, `sub`, or `id`
-- `exp` is enforced when present
+For local development only, set `DEV_BYPASS=true` to bypass auth.
 
 ## Environment Variables
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
 | `OPENAI_API_KEY` | — | Yes | OpenAI API key |
-| `JWT_SECRET` | — | Yes | Secret used to sign and verify JWT tokens |
 | `DATABASE_URL` | — | Yes | PostgreSQL connection string |
+| `REDIS_URL` | `redis://localhost:6379/0` | Yes | Redis connection string for shared auth token cache |
 | `OPENAI_MODEL` | `gpt-4.1` | No | Model used for AI agents |
 | `CLASSIFIER_TEMPERATURE` | `0.0` | No | Temperature for bundle classifier |
 | `CONVERSATIONAL_TEMPERATURE` | `0.3` | No | Temperature for conversational replies |
@@ -129,7 +128,7 @@ JWT requirements:
 | `TOP_K_BUNDLES` | `3` | No | Number of bundle candidates to rank |
 | `LOG_LEVEL` | `INFO` | No | Application log level |
 | `RATE_LIMIT_PER_MINUTE` | `60` | No | Per-IP request rate limit |
-| `JWT_ALGORITHM` | `HS256` | No | JWT signing algorithm |
+| `DEV_BYPASS` | `false` | No | Bypass auth locally and set a default admin user |
 | `ENABLE_MOCK_ENDPOINTS` | `false` | No | Mounts mock endpoints at `/mock/**` |
 | `SENTRY_DSN` | — | No | Sentry error tracking DSN |
 | `LANGCHAIN_TRACING_V2` | `false` | No | Enable LangSmith tracing |
