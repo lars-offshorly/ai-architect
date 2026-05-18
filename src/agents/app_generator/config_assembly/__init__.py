@@ -1,23 +1,19 @@
-"""config_assembly — pipeline for producing the final generation_json config.
+"""config_assembly — helpers that shape the final ``generation_json`` config.
 
-Sub-modules
------------
-relationship_mapper   Infer entity relationships from bundle entity definitions.
-config_encoder        Encode preview configuration into the final JSON blueprint.
-customization_merger  Merge workspace customization data into the base config.
-config_optimizer      Remove redundancies and optimise the assembled JSON structure.
+Currently contains a single live helper:
+
+    relationship_mapper.map_relationships  Infer entity relationships
+                                            from bundle entity definitions.
+
+The earlier ``config_encoder`` / ``customization_merger`` / ``config_optimizer``
+stubs (CORE-AI-012/014/016) were removed pending a decision on whether the
+``generation_json.config`` concept survives the v2 manifest migration.
 """
 
 from __future__ import annotations
 
-from .config_encoder import encode_config
-from .config_optimizer import optimize_config
-from .customization_merger import merge_customization
 from .relationship_mapper import map_relationships
 
 __all__ = [
     "map_relationships",
-    "encode_config",
-    "merge_customization",
-    "optimize_config",
 ]

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from core import Database, get_logger, get_settings, pinecone_client
+from core import Database, get_logger, get_settings
 
 from .middleware import RateLimitMiddleware
 from .middleware.auth import is_authenticated
@@ -28,12 +28,10 @@ logger = get_logger(__name__)
 async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
     logger.info("Initializing API dependencies")
     await Database.initialize()
-    pinecone_client.initialize()
     try:
         yield
     finally:
         logger.info("Closing API dependencies")
-        await pinecone_client.close()
         await Database.close()
 
 
