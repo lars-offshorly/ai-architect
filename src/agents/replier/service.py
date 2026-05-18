@@ -8,6 +8,7 @@ from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
 from domain.models.bundle import BundleSuggestion
+from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import ExtractionResult
 
 from .clarification import (
@@ -34,6 +35,7 @@ class ReplierService:
         session_id: str,
         extracted: ExtractionResult,
         bundle_key: str,
+        history: list[ConversationMessage] | None = None,
     ) -> tuple[MissingFieldType | None, str]:
         session_logger = get_session_logger(__name__, session_id)
         missing = extracted.missing_fields
@@ -53,6 +55,7 @@ class ReplierService:
             bundle_key,
             slots,
             variants=variants,
+            history=history,
         )
         session_logger.info("Clarification needed for field=%s", target.value)
         return target, question
@@ -60,20 +63,21 @@ class ReplierService:
     async def build_bundle_verification_question(
         self,
         session_id: str,
-        top_bundle_key: str,
+        display_name: str,
         slots: dict[str, object],
+        history: list[ConversationMessage] | None = None,
     ) -> str:
         session_logger = get_session_logger(__name__, session_id)
+        recent = (history or [])[-6:]
+        history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
+        context = f"Workspace category: {display_name}\nContext gathered so far: {slots}"
+        if history_text:
+            context = f"Recent conversation:\n{history_text}\n\n{context}"
         try:
             response = await self._model.ainvoke(
                 [
                     SystemMessage(content=BUNDLE_VERIFICATION_SYSTEM_PROMPT),
-                    HumanMessage(
-                        content=(
-                            f"Identified workspace type: {top_bundle_key}\n"
-                            f"Context gathered so far: {slots}"
-                        )
-                    ),
+                    HumanMessage(content=context),
                 ]
             )
             question = str(response.content).strip()
@@ -100,8 +104,7 @@ class ReplierService:
                     SystemMessage(content=BUNDLE_SUGGESTION_SYSTEM_PROMPT),
                     HumanMessage(
                         content=(
-                            "Recommended workspace: "
-                            f"{suggestion.display_name} ({suggestion.bundle_key})\n"
+                            f"Workspace category: {suggestion.display_name}\n"
                             f"What we know about the user: {slots}"
                         )
                     ),
