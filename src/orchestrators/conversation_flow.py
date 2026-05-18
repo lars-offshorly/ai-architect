@@ -37,11 +37,57 @@ _PREVIEW_KEYWORDS = [
     "build it now",
 ]
 
+_CONFIRMATION_PHRASES = [
+    "go ahead",
+    "proceed",
+    "looks good",
+    "yes please",
+    "sounds good",
+    "confirm",
+    "do it",
+    "that works",
+    "let's do it",
+    "yes",
+]
+
+_NEGATION_WORDS = ["don't", "dont", "do not", "not", "never", "no"]
+
 
 def _detect_preview_intent(user_message: str) -> bool:
     """Return True if the user message contains a recognised preview-request keyword."""
     lowered = user_message.lower()
     return any(kw in lowered for kw in _PREVIEW_KEYWORDS)
+
+
+def _detect_confirmation_intent(user_message: str) -> bool:
+    """Return True if the message expresses confirmation and is not negated.
+
+    Negation-aware: a negation word immediately preceding the phrase (within
+    three tokens) suppresses the match.  A leading "no" followed by a comma
+    and a confirmation phrase (e.g. "no, go ahead") is NOT treated as negation
+    because the comma separates the clauses.
+    """
+    lowered = user_message.lower()
+    for phrase in _CONFIRMATION_PHRASES:
+        if phrase not in lowered:
+            continue
+        phrase_start = lowered.index(phrase)
+        preceding = lowered[:phrase_start]
+        # Strip punctuation that acts as a clause boundary (comma, period, etc.)
+        # so "no, go ahead" is not negated.
+        clause_boundary = max(
+            preceding.rfind(","),
+            preceding.rfind("."),
+            preceding.rfind("!"),
+            preceding.rfind(";"),
+        )
+        text_before_phrase = preceding[clause_boundary + 1 :]
+        tokens = text_before_phrase.split()
+        nearby_tokens = tokens[-3:] if len(tokens) > 3 else tokens
+        if any(neg in nearby_tokens for neg in _NEGATION_WORDS):
+            continue
+        return True
+    return False
 
 
 @dataclass(slots=True)
@@ -173,6 +219,20 @@ class ConversationFlow:
             turn_request.user_message, turn_request.options.force_preview
         ):
             result = self._build_early_preview_response(context, session_logger)
+            self._persist_session_state(session, context, result)
+            return result
+
+        if (
+            not session.confirmed
+            and session.selected_bundle_key is not None
+            and _detect_confirmation_intent(turn_request.user_message)
+        ):
+            session_logger.info(
+                "Confirmation intent detected for bundle=%s",
+                session.selected_bundle_key,
+            )
+            session.confirmed = True
+            result = self._ready_for_preview_response(context, preview_type="confirmed")
             self._persist_session_state(session, context, result)
             return result
 
