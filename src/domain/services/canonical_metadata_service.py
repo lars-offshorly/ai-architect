@@ -51,10 +51,4 @@ class CanonicalMetadataService:
         )
 
     def _manifest_for_bundle(self, bundle_key: str) -> dict[str, Any] | None:
-        by_industry = self._registry.by_industry()
-        mapping = self._registry.industry_bundle_map()
-        for industry, payload in by_industry.items():
-            spec = mapping.get(industry, {})
-            if spec.get("bundle_key") == bundle_key:
-                return payload
-        return None
+        return self._registry.manifest_for_bundle(bundle_key)

@@ -130,6 +130,22 @@ class CanonicalManifestRegistry:
                 indexed[industry] = payload
         return indexed
 
+    def manifest_for_bundle(self, bundle_key: str) -> dict[str, Any] | None:
+        """Return the canonical manifest payload for a given bundle key.
+
+        Resolves bundle_key -> industry via ``industry_bundle_map``, then
+        looks up the manifest indexed by that industry. Returns ``None`` if
+        the bundle is unknown or has no associated manifest.
+        """
+        mapping = self.industry_bundle_map()
+        by_industry = self.by_industry()
+        for industry, spec in mapping.items():
+            if spec.get("bundle_key") == bundle_key:
+                manifest = by_industry.get(industry)
+                if manifest is not None:
+                    return manifest
+        return None
+
     def industry_bundle_map(self) -> dict[str, dict[str, Any]]:
         if self._mapping_cache is not None:
             return dict(self._mapping_cache)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from catalog.bundle_catalog import BundleCatalog
 from domain.models.bundle_metadata import BundleMetadata
@@ -46,6 +47,10 @@ class RegistryFacade:
 
     def get_bundle_metadata(self, bundle_key: str) -> BundleMetadata:
         return self.metadata_service.get_metadata(bundle_key)
+
+    def get_raw_manifest(self, bundle_key: str) -> dict[str, Any] | None:
+        """Return the loaded canonical manifest dict for a bundle, or None."""
+        return self.resolver.registry.manifest_for_bundle(bundle_key)
 
     def list_supported_bundles(self) -> list[str]:
         return sorted(self.metadata_service.known_bundle_keys())

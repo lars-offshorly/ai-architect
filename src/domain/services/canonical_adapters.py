@@ -43,4 +43,3 @@ def _ensure_list(value: Any) -> list[Any]:
     if isinstance(value, list):
         return value
     return []
-
