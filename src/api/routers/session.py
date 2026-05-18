@@ -164,10 +164,8 @@ async def start_session(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[ConversationFlow, Depends(get_conversation_flow)],
-    catalog: object | None = None,
 ) -> SessionStartedResponse:
     """Create a new session and process the opening user message."""
-    _ = catalog  # backward-compatible parameter for older tests/callers
     facade = get_registry_facade()
     preselected_bundle_key: str | None = None
     if body.preselected_bundle_key is not None:

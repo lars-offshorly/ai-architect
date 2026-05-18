@@ -6,7 +6,7 @@ import pytest
 from fastapi import HTTPException
 
 from api.routers.bundles import get_bundle_metadata
-from domain.models.bundle_metadata import BundleMetadata
+from api.schemas.bundle_metadata import BundleMetadataResponseSchema
 from domain.services.canonical_bundle_resolver import CanonicalBundleResolver
 from domain.services.canonical_manifest_registry import CanonicalManifestRegistry
 from domain.services.canonical_metadata_service import CanonicalMetadataService
@@ -28,7 +28,7 @@ def test_get_bundle_metadata_returns_existing_bundle_metadata() -> None:
         registry_facade=facade,
     )
 
-    assert isinstance(metadata, BundleMetadata)
+    assert isinstance(metadata, BundleMetadataResponseSchema)
     assert metadata.bundle_key == "ticketing"
     assert metadata.kpis
 

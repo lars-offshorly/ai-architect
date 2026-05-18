@@ -416,6 +416,12 @@ class ConversationFlow:
         classification: ClassificationResult,
         preselected_bundle_key: str | None,
     ) -> RecommendationResult:
+        """Map ``ClassificationResult`` → ``RecommendationResult``.
+
+        This is the sole owner of recommendation construction. The earlier
+        ``BundleRecommendationService`` was removed when the canonical
+        registry path landed; the logic now lives inline here.
+        """
         selected = classification.selected_bundle
 
         if preselected_bundle_key:

@@ -75,22 +75,14 @@ class PreviewFlow:
             extraction_result:  Dev A's accumulated ExtractionResult. When present,
                                 the pipeline skips its own keyword scan / LLM call.
             preselected_intent: User-chosen intent before conversation started.
-            variant_key:        Bundle variant (``app-01``/``app-02``/``app-03``)
-                                chosen by the interpreter's VariantSelector. When
-                                omitted, ``extraction_result.bundle_variant_key``
-                                is used; when both are absent, the default variant
-                                is used for template + dashboard resolution.
+            variant_key:        Legacy compatibility input; ignored by canonical
+                                runtime path.
         """
+        _ = variant_key
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info(
-            "Running preview flow for bundle=%s variant=%s",
+            "Running preview flow for bundle=%s",
             bundle_key,
-            variant_key
-            or (
-                extraction_result.bundle_variant_key
-                if extraction_result is not None
-                else None
-            ),
         )
 
         generation_json, dummy_data_json, user_context = self._preview_gen.generate(
@@ -116,12 +108,6 @@ class PreviewFlow:
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
-            variant_key=variant_key
-            or (
-                extraction_result.bundle_variant_key
-                if extraction_result is not None
-                else None
-            ),
         )
         if template_warning is not None:
             preview_warnings.append(template_warning)
@@ -132,12 +118,6 @@ class PreviewFlow:
             bundle_key=bundle_key,
             dummy_data_json=dummy_data_json,
             user_context=user_context,
-            variant_key=variant_key
-            or (
-                extraction_result.bundle_variant_key
-                if extraction_result is not None
-                else None
-            ),
         )
 
         if preview_warnings:
@@ -174,9 +154,8 @@ class PreviewFlow:
     ) -> dict[str, str] | None:
         """Overlay operational stores from a static app-0*.json variant.
 
-        Resolves the variant by ``variant_key`` (emitted upstream by the
-        interpreter's ``VariantSelector``) and overlays the variant's
-        ``stores`` dict into ``dummy_data_json["stores"]``. Pipeline-owned
+        Overlays the template ``stores`` dict into ``dummy_data_json["stores"]``.
+        Pipeline-owned
         keys (``kpis``) and dashboard-owned keys (``dashboard_widgets``,
         ``dashboard_generation_output``) are skipped.
 
@@ -189,11 +168,10 @@ class PreviewFlow:
                 "message": "Static bundle template loader is not initialized.",
             }
 
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        _ = user_context
+        _ = variant_key
         try:
-            template = self._bundle_template_loader.load(
-                bundle_key, resolved_variant_key
-            )
+            template = self._bundle_template_loader.load(bundle_key)
         except Exception as exc:  # pylint: disable=broad-except
             logger.warning(
                 "session=%s — bundle template load error: %s", session_id, exc
@@ -246,12 +224,11 @@ class PreviewFlow:
         variant_key: str | None = None,
     ) -> None:
         """Populate ``stores.dashboard_widgets`` from static pre-generated output."""
-        resolved_variant_key = variant_key or _extract_variant_key(user_context)
+        _ = user_context
+        _ = variant_key
         stores: dict = dummy_data_json.setdefault("stores", {})
 
-        payload = self._resolve_static_payload(
-            session_id, bundle_key, resolved_variant_key
-        )
+        payload = self._resolve_static_payload(session_id, bundle_key)
         if payload is None:
             stores["dashboard_widgets"] = []
             return
@@ -263,11 +240,9 @@ class PreviewFlow:
         self._patch_generation_output(stores, dashboard_obj, widgets)
 
         logger.info(
-            "session=%s: static dashboard output injected "
-            "bundle=%s variant=%s widgets=%d",
+            "session=%s: static dashboard output injected bundle=%s widgets=%d",
             session_id,
             bundle_key,
-            resolved_variant_key,
             len(widgets),
         )
 
@@ -275,7 +250,6 @@ class PreviewFlow:
         self,
         session_id: str,
         bundle_key: str,
-        resolved_variant_key: str | None,
     ) -> dict | None:
         """Return the full template payload, or None on any failure."""
         if self._static_dashboard_outputs is None:
@@ -284,13 +258,12 @@ class PreviewFlow:
             )
             return None
 
-        payload = self._static_dashboard_outputs.get(bundle_key, resolved_variant_key)
+        payload = self._static_dashboard_outputs.get(bundle_key)
         if payload is None:
             logger.warning(
-                "session=%s: no static dashboard output for bundle=%s variant=%s",
+                "session=%s: no static dashboard output for bundle=%s",
                 session_id,
                 bundle_key,
-                resolved_variant_key,
             )
             return None
 
@@ -298,10 +271,9 @@ class PreviewFlow:
         if not dashboard_entries or not dashboard_entries[0].get("widget_templates"):
             logger.warning(
                 "session=%s: empty widget_templates in static dashboard output "
-                "for bundle=%s variant=%s",
+                "for bundle=%s",
                 session_id,
                 bundle_key,
-                resolved_variant_key,
             )
             return None
 
@@ -410,22 +382,3 @@ class PreviewFlow:
             )
 
         return canonical
-
-
-def _extract_variant_key(user_context: Any) -> str | None:
-    """Pull ``bundle_variant_key`` off a ``UserContext`` / ExtractedInfo-like object.
-
-    Uses attribute access first (pydantic models, dataclasses), then falls
-    back to ``.slots['bundle_variant_key']`` when present.
-    """
-    if user_context is None:
-        return None
-    value = getattr(user_context, "bundle_variant_key", None)
-    if isinstance(value, str) and value:
-        return value
-    slots = getattr(user_context, "slots", None)
-    if isinstance(slots, dict):
-        slot_value = slots.get("bundle_variant_key")
-        if isinstance(slot_value, str) and slot_value:
-            return slot_value
-    return None

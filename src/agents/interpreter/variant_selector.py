@@ -1,4 +1,8 @@
-"""Deterministic variant selector.
+"""Deterministic variant selector — legacy/non-runtime.
+
+Retained only for legacy unit tests. The canonical runtime path does not
+invoke this module: variant selection is removed pending a canonical
+variant contract. See ``INTERPRETER_CANONICAL_MIGRATION.md``.
 
 Scores each of a bundle's ``variants`` against the interpreter's extracted
 signals and picks one. All logic is pure / rule-based — no LLM call.

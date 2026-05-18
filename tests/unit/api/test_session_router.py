@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import BackgroundTasks, HTTPException
+
 from api.schemas.request import ReplyRequest, StartSessionRequest
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
@@ -130,7 +131,6 @@ class TestStartSessionPersistsExtraction:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         # Retrieve the saved session
@@ -163,7 +163,6 @@ class TestStartSessionPersistsExtraction:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -194,7 +193,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -222,7 +220,6 @@ class TestStartSessionValidatesPreselectedFields:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -250,7 +247,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -278,7 +274,6 @@ class TestStartSessionValidatesPreselectedFields:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -306,7 +301,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -410,7 +404,6 @@ class TestStartSessionPersistsLatestClassification:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -445,7 +438,6 @@ class TestStartSessionPersistsLatestClassification:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -637,7 +629,6 @@ class TestReplySessionForwardsPreselectedBundleKey:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -667,7 +658,6 @@ class TestStartSessionCaseInsensitiveIntent:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -694,7 +684,6 @@ class TestStartSessionCaseInsensitiveIntent:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -725,7 +714,6 @@ async def test_start_session_schedules_background_template_warm(
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
         assert response.session_id is not None
         background_tasks.add_task.assert_called_once_with(mock_warm)

@@ -58,7 +58,7 @@ def test_enriches_dashboard_widgets_from_static_output_when_available(caplog) ->
         assert "position" in w and all(
             k in w["position"] for k in ("row", "col", "width", "height")
         )
-    registry.get.assert_called_once_with("hr_management", "app-01")
+    registry.get.assert_called_once_with("hr_management")
     assert "static dashboard output injected" in caplog.text
 
 

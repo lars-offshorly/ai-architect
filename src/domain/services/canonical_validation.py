@@ -1,3 +1,13 @@
+"""Canonical manifest validation specs.
+
+These specs are consumed by :mod:`scripts.validate_canonical_manifests`
+(run via ``make ci-preflight`` / CI), not by the runtime request path.
+Runtime correctness is enforced at manifest-load time inside
+:class:`CanonicalManifestRegistry`; these specs run additional structural
+checks (unique IDs, referential integrity, employee mutable fields)
+against the loaded payloads.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -27,16 +37,19 @@ class UniqueIdsSpec:
         for path, items in paths.items():
             if not isinstance(items, list):
                 continue
-            ids: list[str] = [
+            ids: list[object] = [
                 value
                 for i in items
                 if isinstance(i, dict)
                 for value in [i.get("id")]
-                if isinstance(value, str)
+                if isinstance(value, (str, int))
             ]
             dupes = {x for x in ids if ids.count(x) > 1}
             if dupes:
-                errors.append(f"{filename}: duplicate IDs in {path}: {sorted(dupes)}")
+                errors.append(
+                    f"{filename}: duplicate IDs in {path}: "
+                    f"{sorted(str(x) for x in dupes)}"
+                )
         return errors
 
 

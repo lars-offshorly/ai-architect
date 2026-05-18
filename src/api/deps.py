@@ -62,9 +62,9 @@ def get_conversation_repository() -> ConversationRepository:
 
 @lru_cache(maxsize=1)
 def get_interpreter_service() -> InterpreterService:
-    """Return a cached InterpreterService seeded with all known bundle keys."""
+    """Return a cached InterpreterService wired for canonical runtime selection."""
     settings = get_settings()
-    catalog = get_bundle_catalog()
+    registry_facade = get_registry_facade()
 
     if settings.DISABLE_LLM_CALLS:
         model = None
@@ -82,9 +82,8 @@ def get_interpreter_service() -> InterpreterService:
         )
 
     return InterpreterService(
-        bundle_keys=catalog.list_keys(),
-        catalog=catalog,
-        registry_facade=get_registry_facade(),
+        bundle_keys=registry_facade.list_supported_bundles(),
+        registry_facade=registry_facade,
         model=model,
         summarizer_model=summarizer_model,
     )

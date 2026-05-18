@@ -1,3 +1,11 @@
+"""Legacy bundle classifier — evaluation/non-runtime only.
+
+The canonical runtime path resolves bundles via ``RegistryFacade`` against
+``new_json_samples/*.jsonc``. This module is kept for offline evaluation
+harnesses and legacy unit tests that still exercise catalog-based ranking.
+Do not wire it into runtime dependencies.
+"""
+
 from __future__ import annotations
 
 from langchain_core.messages import HumanMessage, SystemMessage

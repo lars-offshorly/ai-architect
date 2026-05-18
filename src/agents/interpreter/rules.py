@@ -1,3 +1,9 @@
+"""Legacy signal-rule boosts — evaluation/non-runtime only.
+
+Consumed by :mod:`agents.interpreter.classifier`, which is itself legacy.
+The canonical runtime path does not invoke these helpers.
+"""
+
 from __future__ import annotations
 
 from catalog.bundle_catalog import BundleDefinition

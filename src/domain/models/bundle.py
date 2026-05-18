@@ -22,12 +22,10 @@ class BundleSuggestion(BaseModel):
 class SuggestedBundles(BaseModel):
     """DEPRECATED: Use ClassificationResult instead.
 
-    This class is retained temporarily for backward compatibility.
-    It will be removed after the deprecation period (target: 2025-05-07).
-
-    Migration path:
-        - Replace SuggestedBundles with ClassificationResult
-        - Use BundleResolutionService.rank_to_classification() instead of rank()
+    Retained only for backward-compatible deserialization of older session
+    snapshots (see ``Session`` field validator). New code paths resolve
+    bundles via ``RegistryFacade.resolve_bundle()`` and return
+    ``ClassificationResult`` directly.
     """
 
     session_id: str
