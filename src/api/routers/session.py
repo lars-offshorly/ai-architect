@@ -125,7 +125,7 @@ def _build_classification_info(
         top_confidence=classification.top_confidence,
         score_gap=classification.score_gap,
         missing_context=classification.missing_context,
-        reasoning=classification.reasoning,
+        reasoning="",
         ranked_candidates=[
             BundleCandidateInfo(
                 bundle_key=item.bundle_key,

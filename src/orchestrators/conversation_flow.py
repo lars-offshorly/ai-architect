@@ -149,13 +149,15 @@ class ReplierPort(Protocol):
         session_id: str,
         extracted: ExtractionResult,
         bundle_key: str,
+        history: list[ConversationMessage] | None = None,
     ) -> tuple[object | None, str]: ...
 
     async def build_bundle_verification_question(
         self,
         session_id: str,
-        top_bundle_key: str,
+        display_name: str,
         slots: dict[str, object],
+        history: list[ConversationMessage] | None = None,
     ) -> str: ...
 
     async def build_bundle_suggestion(
@@ -238,11 +240,12 @@ class ConversationFlow:
             and not session.confirmed
             and session.preselected_bundle_key is None
         ):
-            top_key = context.top.bundle_key if context.top is not None else "unknown"
+            top_display = context.top.display_name if context.top is not None else ""
             question = await self._replier.build_bundle_verification_question(
                 turn_request.session_id,
-                top_key,
+                top_display,
                 context.slots,
+                history=turn_request.history,
             )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
@@ -266,6 +269,7 @@ class ConversationFlow:
             turn_request.session_id,
             context.extracted,
             target_key,
+            history=turn_request.history,
         )
         if missing_field is not None:
             result = self._awaiting_input_response(question, context)
@@ -454,20 +458,20 @@ class ConversationFlow:
     ) -> str:
         status = context.classification.confidence_status
         if status == "suggest_alternatives":
-            options = context.classification.ranked_candidates[:3]
-            if options:
-                names = ", ".join(option.display_name for option in options)
-                return (
-                    "To get this configured just right, could you tell me a bit more "
-                    "about what your team is mainly focused on? For example, does your "
-                    f"work lean more toward {names}?"
-                )
+            top_display = context.top.display_name if context.top is not None else ""
+            return await self._replier.build_bundle_verification_question(
+                request.session_id,
+                top_display,
+                context.slots,
+                history=request.history,
+            )
 
         target_key = context.top.bundle_key if context.top is not None else "unknown"
         _, question = await self._replier.build_clarification(
             request.session_id,
             context.extracted,
             target_key,
+            history=request.history,
         )
         return question
 

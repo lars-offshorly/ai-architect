@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from catalog.bundle_catalog import BundleVariantDefinition
 from core.logging import get_logger
 from domain.enums.missing_field_type import MissingFieldType
+from domain.models.conversation import ConversationMessage
 
 from .prompts import CLARIFICATION_SYSTEM_PROMPT
 
@@ -31,6 +32,7 @@ async def generate_clarification_question(
     bundle_key: str,
     slots: dict[str, object],
     variants: list[BundleVariantDefinition] | None = None,
+    history: list[ConversationMessage] | None = None,
 ) -> str:
     # Bundle-variant clarification is deterministic: we enumerate the
     # declared variants verbatim so the user sees the exact set the system
@@ -38,17 +40,17 @@ async def generate_clarification_question(
     if missing_field == MissingFieldType.BUNDLE_VARIANT:
         return build_bundle_variant_question(bundle_key, variants or [])
 
+    recent = (history or [])[-6:]
+    history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
+    context = f"Context gathered so far: {slots}\nStill need: {missing_field.value.replace('_', ' ')}"
+    if history_text:
+        context = f"Recent conversation:\n{history_text}\n\n{context}"
+
     try:
         response = await model.ainvoke(
             [
                 SystemMessage(content=CLARIFICATION_SYSTEM_PROMPT),
-                HumanMessage(
-                    content=(
-                        f"Workspace type being set up: {bundle_key}\n"
-                        f"Already collected: {slots}\n"
-                        f"Still need: {missing_field.value.replace('_', ' ')}"
-                    )
-                ),
+                HumanMessage(content=context),
             ]
         )
         question = str(response.content).strip()
