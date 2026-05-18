@@ -102,7 +102,8 @@ class CanonicalBundleResolver:
         for industry, spec in mapping.items():
             aliases = spec.get("aliases", [])
             if isinstance(aliases, list) and any(
-                isinstance(token, str) and token.lower() in haystack for token in aliases
+                isinstance(token, str) and token.lower() in haystack
+                for token in aliases
             ):
                 return industry
 

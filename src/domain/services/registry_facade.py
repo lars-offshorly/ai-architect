@@ -11,7 +11,6 @@ from .canonical_bundle_resolver import CanonicalBundleResolver
 from .canonical_metadata_service import CanonicalMetadataService
 from .canonical_payload_builder import CanonicalPayloadBuilder
 
-
 _DEFAULT_MODULES: dict[str, list[str]] = {
     "ticketing": ["tickets", "kpi", "dashboard"],
     "construction": ["projects", "kpi", "dashboard"],

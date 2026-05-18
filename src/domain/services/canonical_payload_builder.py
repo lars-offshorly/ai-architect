@@ -15,7 +15,9 @@ class CanonicalPayloadBuilder:
     def __init__(self, registry: CanonicalManifestRegistry) -> None:
         self._registry = registry
 
-    def apply_to_dummy_data(self, bundle_key: str, dummy_data_json: dict[str, Any]) -> bool:
+    def apply_to_dummy_data(
+        self, bundle_key: str, dummy_data_json: dict[str, Any]
+    ) -> bool:
         manifest = self._manifest_for_bundle(bundle_key)
         if manifest is None:
             return False

@@ -27,10 +27,10 @@ from core.exceptions import (
 )
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
-from domain.services.registry_facade import RegistryFacade
 from domain.services.early_preview_policy import (
     resolve_early_bundle_key,
 )
+from domain.services.registry_facade import RegistryFacade
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository

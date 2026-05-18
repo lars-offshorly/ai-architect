@@ -5,12 +5,15 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .canonical_adapters import normalize_manifest_for_runtime
+
 
 class CanonicalManifestRegistryError(RuntimeError):
     """Raised when canonical manifest files are missing or invalid."""
 
 
 _JSONC_LINE_COMMENT_RE = re.compile(r"(^|[^:\\])//.*$")
+_VALID_POLICY_MODES = {"strict", "compat", "latest_only"}
 
 
 class CanonicalManifestRegistry:
@@ -24,6 +27,7 @@ class CanonicalManifestRegistry:
         self._dir = Path(manifests_dir)
         self._cache: dict[str, dict[str, Any]] = {}
         self._mapping_cache: dict[str, dict[str, Any]] | None = None
+        self._policy_cache: dict[str, Any] | None = None
 
     def list_files(self) -> list[Path]:
         if not self._dir.is_dir():
@@ -40,8 +44,79 @@ class CanonicalManifestRegistry:
             raise CanonicalManifestRegistryError(
                 f"No canonical manifests found under: {self._dir}"
             )
+        self._validate_schema_versions(manifests)
         self._cache = manifests
         return dict(manifests)
+
+    def schema_policy(self) -> dict[str, Any]:
+        if self._policy_cache is not None:
+            return dict(self._policy_cache)
+
+        path = self._dir / "schema_policy.json"
+        if not path.exists():
+            # Safe default for existing deployments that have not created policy yet.
+            default = {
+                "mode": "strict",
+                "active_versions": ["2.0"],
+                "deprecated_versions": [],
+                "default_version": "2.0",
+            }
+            self._policy_cache = default
+            return dict(default)
+
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise CanonicalManifestRegistryError(
+                f"Invalid schema policy file: {path}"
+            ) from exc
+
+        mode = data.get("mode", "strict")
+        if not isinstance(mode, str) or mode not in _VALID_POLICY_MODES:
+            raise CanonicalManifestRegistryError(
+                "schema_policy.mode must be one of: "
+                f"{', '.join(sorted(_VALID_POLICY_MODES))}"
+            )
+        active_versions = data.get("active_versions", [])
+        deprecated_versions = data.get("deprecated_versions", [])
+        default_version = data.get("default_version")
+
+        if not isinstance(active_versions, list) or not active_versions:
+            raise CanonicalManifestRegistryError(
+                "schema_policy.active_versions must be a non-empty list"
+            )
+        if not isinstance(deprecated_versions, list):
+            raise CanonicalManifestRegistryError(
+                "schema_policy.deprecated_versions must be a list"
+            )
+        if not isinstance(default_version, str) or not default_version.strip():
+            raise CanonicalManifestRegistryError(
+                "schema_policy.default_version must be a non-empty string"
+            )
+
+        normalized_active = _normalize_versions(active_versions, "active_versions")
+        normalized_deprecated = _normalize_versions(
+            deprecated_versions, "deprecated_versions"
+        )
+
+        if default_version not in normalized_active:
+            raise CanonicalManifestRegistryError(
+                "schema_policy.default_version must exist in active_versions"
+            )
+        overlap = sorted(set(normalized_active).intersection(normalized_deprecated))
+        if overlap:
+            raise CanonicalManifestRegistryError(
+                "schema_policy active/deprecated overlap: " + ", ".join(overlap)
+            )
+
+        policy = {
+            "mode": mode,
+            "active_versions": normalized_active,
+            "deprecated_versions": normalized_deprecated,
+            "default_version": default_version,
+        }
+        self._policy_cache = policy
+        return dict(policy)
 
     def by_industry(self) -> dict[str, dict[str, Any]]:
         manifests = self._cache or self.load_all()
@@ -127,8 +202,59 @@ class CanonicalManifestRegistry:
                 f"Invalid JSONC payload in {path.name}: {exc}"
             ) from exc
 
+        if not isinstance(payload, dict):
+            raise CanonicalManifestRegistryError(
+                f"{path.name}: top-level payload must be object"
+            )
+
+        payload = normalize_manifest_for_runtime(payload)
         _validate_minimum_shape(path.name, payload)
         return payload
+
+    def _validate_schema_versions(self, manifests: dict[str, dict[str, Any]]) -> None:
+        policy = self.schema_policy()
+        mode = str(policy["mode"])
+        active = {str(v) for v in policy["active_versions"]}
+        deprecated = {str(v) for v in policy["deprecated_versions"]}
+        allowed = active.union(deprecated)
+        latest_active = _latest_version(list(active))
+
+        deprecated_found: list[str] = []
+        for filename, payload in manifests.items():
+            version = payload.get("schema_version")
+            if not isinstance(version, str) or not version.strip():
+                raise CanonicalManifestRegistryError(
+                    f"{filename}: schema_version must be a non-empty string"
+                )
+            _parse_version(version)
+
+            if version not in allowed:
+                raise CanonicalManifestRegistryError(
+                    f"{filename}: schema_version '{version}' is not in schema policy "
+                    f"(active={sorted(active)}, deprecated={sorted(deprecated)})"
+                )
+
+            if mode == "strict" and version in deprecated:
+                raise CanonicalManifestRegistryError(
+                    f"{filename}: schema_version '{version}' is deprecated "
+                    "and disallowed in strict mode"
+                )
+            if mode == "latest_only" and version != latest_active:
+                raise CanonicalManifestRegistryError(
+                    f"{filename}: schema_version '{version}' is not latest "
+                    f"active version '{latest_active}'"
+                )
+            if mode == "compat" and version in deprecated:
+                deprecated_found.append(f"{filename}:{version}")
+
+        if deprecated_found:
+            # Non-fatal for compat mode; keep explicit signal in logs/validator output.
+            # Stored on cache for script visibility without adding logger
+            # dependency here.
+            self._policy_cache = {
+                **policy,
+                "deprecated_found": deprecated_found,
+            }
 
 
 def _strip_jsonc_comments(text: str) -> str:
@@ -143,7 +269,9 @@ def _strip_jsonc_comments(text: str) -> str:
 
 def _validate_minimum_shape(filename: str, payload: dict[str, Any]) -> None:
     if not isinstance(payload, dict):
-        raise CanonicalManifestRegistryError(f"{filename}: top-level payload must be object")
+        raise CanonicalManifestRegistryError(
+            f"{filename}: top-level payload must be object"
+        )
 
     required_top_level = {
         "schema_version",
@@ -164,20 +292,53 @@ def _validate_minimum_shape(filename: str, payload: dict[str, Any]) -> None:
 
     tenant = payload.get("tenant")
     if not isinstance(tenant, dict) or not tenant.get("industry"):
-        raise CanonicalManifestRegistryError(
-            f"{filename}: tenant.industry is required"
-        )
+        raise CanonicalManifestRegistryError(f"{filename}: tenant.industry is required")
 
-    for path in ("tickets.queues", "projects.projects", "dashboard.dashboards", "kpi.kpis", "hr_hub.request_types"):
+    for path in (
+        "tickets.queues",
+        "projects.projects",
+        "dashboard.dashboards",
+        "kpi.kpis",
+        "hr_hub.request_types",
+    ):
         parent, child = path.split(".")
         node = payload.get(parent)
         if not isinstance(node, dict) or not isinstance(node.get(child), list):
-            raise CanonicalManifestRegistryError(
-                f"{filename}: {path} must be a list"
-            )
+            raise CanonicalManifestRegistryError(f"{filename}: {path} must be a list")
 
     hr_hub = payload.get("hr_hub")
     if not isinstance(hr_hub, dict) or not isinstance(hr_hub.get("employees"), list):
         raise CanonicalManifestRegistryError(
             f"{filename}: hr_hub.employees must be a list"
         )
+
+
+def _parse_version(raw: str) -> tuple[int, ...]:
+    parts = raw.split(".")
+    if not parts or any(not p.isdigit() for p in parts):
+        raise CanonicalManifestRegistryError(
+            f"Invalid schema version '{raw}'. Expected numeric dotted "
+            "version like '2.0'"
+        )
+    return tuple(int(p) for p in parts)
+
+
+def _latest_version(versions: list[str]) -> str:
+    if not versions:
+        raise CanonicalManifestRegistryError("No active schema versions configured")
+    return max(versions, key=_parse_version)
+
+
+def _normalize_versions(values: list[Any], field: str) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if not isinstance(value, str) or not value.strip():
+            raise CanonicalManifestRegistryError(
+                f"schema_policy.{field} contains invalid version: {value!r}"
+            )
+        _parse_version(value)
+        if value not in seen:
+            out.append(value)
+            seen.add(value)
+    return out

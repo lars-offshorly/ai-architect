@@ -27,8 +27,14 @@ class UniqueIdsSpec:
         for path, items in paths.items():
             if not isinstance(items, list):
                 continue
-            ids: list[object] = [i.get("id") for i in items if isinstance(i, dict)]
-            dupes = {x for x in ids if x is not None and ids.count(x) > 1}
+            ids: list[str] = [
+                value
+                for i in items
+                if isinstance(i, dict)
+                for value in [i.get("id")]
+                if isinstance(value, str)
+            ]
+            dupes = {x for x in ids if ids.count(x) > 1}
             if dupes:
                 errors.append(f"{filename}: duplicate IDs in {path}: {sorted(dupes)}")
         return errors
@@ -82,13 +88,15 @@ class EmployeeMutableFieldsSpec:
             extra_keys = sorted(set(emp.keys()) - self._allowed)
             if extra_keys:
                 errors.append(
-                    f"{filename}: hr_hub.employees[{idx}] has unsupported fields: {extra_keys}"
+                    f"{filename}: hr_hub.employees[{idx}] has unsupported "
+                    f"fields: {extra_keys}"
                 )
             for key in self._allowed - {"id"}:
                 value = emp.get(key)
                 if not isinstance(value, str) or not value.strip():
                     errors.append(
-                        f"{filename}: hr_hub.employees[{idx}].{key} must be non-empty string"
+                        f"{filename}: hr_hub.employees[{idx}].{key} must be "
+                        "non-empty string"
                     )
         return errors
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# pylint: disable=wrong-import-position
 import sys
 from pathlib import Path
 
@@ -25,6 +26,7 @@ def main() -> int:
     registry = CanonicalManifestRegistry(ROOT / "new_json_samples")
     try:
         manifests = registry.load_all()
+        policy = registry.schema_policy()
         registry.validate_mapping_coverage()
         ValidationChain(
             specs=(
@@ -43,6 +45,18 @@ def main() -> int:
     industries = sorted(registry.by_industry().keys())
     print(f"✓ loaded {len(manifests)} canonical manifests")
     print(f"✓ industries: {', '.join(industries)}")
+    print(
+        "✓ schema policy: "
+        f"mode={policy['mode']} active={policy['active_versions']} "
+        "deprecated="
+        f"{policy['deprecated_versions']} default={policy['default_version']}"
+    )
+    deprecated_found = policy.get("deprecated_found", [])
+    if deprecated_found:
+        print(
+            "⚠ deprecated schema versions used (compat mode): "
+            + ", ".join(deprecated_found)
+        )
     return 0
 
 

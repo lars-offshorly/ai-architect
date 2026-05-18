@@ -155,8 +155,14 @@ def get_registry_facade() -> RegistryFacade:
         resolver=resolver,
         payload_builder=payload_builder,
         metadata_service=metadata_service,
-        catalog_fallback=(get_bundle_catalog() if settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK else None),
-        allow_registry_module_fallback=settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK,
+        catalog_fallback=(
+            get_bundle_catalog()
+            if settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK
+            else None
+        ),
+        allow_registry_module_fallback=(
+            settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK
+        ),
     )
 
 
