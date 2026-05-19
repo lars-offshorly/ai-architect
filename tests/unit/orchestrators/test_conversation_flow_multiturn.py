@@ -351,7 +351,7 @@ class TestMissingFieldsRecomputedPerTurn:
             )
         )
 
-        assert result["status"] == "pending_confirmation"
+        assert result["status"] == "awaiting_input"
 
 
 class TestSessionStatePersistenceSimulation:
