@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pydantic import ValidationError
+
+from agents.preview_generator.schemas import AppPayloadV2
 from core.exceptions import InvalidPayloadError
 from core.logging import get_logger
 
@@ -56,3 +59,11 @@ def validate_dummy_data_json(
     if not isinstance(stores, dict):
         raise InvalidPayloadError("dummy_data_json 'stores' must be a dict")
     logger.info("dummy_data_json validation passed for bundle=%s", bundle_key)
+
+
+def validate_v2_manifest(data: dict[str, object]) -> None:
+    try:
+        AppPayloadV2.model_validate(data)
+    except ValidationError as exc:
+        raise InvalidPayloadError(str(exc)) from exc
+    logger.info("v2 manifest validation passed for session=%s", data.get("session_id"))

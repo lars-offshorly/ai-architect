@@ -127,3 +127,66 @@ class EditAction(BaseModel):
     action_type: EditActionType
     target: str | None = None
     raw_instruction: str = ""
+
+
+# ---------------------------------------------------------------------------
+# v2 Tenant Provisioning Manifest models
+# ---------------------------------------------------------------------------
+
+
+class TenantInfo(BaseModel):
+    company_name: str
+    industry: str
+    size_band: str
+    primary_region: str
+    locale: str
+    timezone: str
+
+
+class CatalogRef(BaseModel):
+    id: int = Field(..., gt=0)
+    name: str
+
+
+class EmployeeRecord(BaseModel):
+    id: int = Field(..., gt=0)
+    position: str
+    team: str
+    department: str
+    job_title: str
+    job_type: str
+    job_level: str
+
+
+class TicketQueuesSection(BaseModel):
+    queues: list[CatalogRef]
+
+
+class ProjectsSection(BaseModel):
+    projects: list[CatalogRef]
+
+
+class DashboardSection(BaseModel):
+    dashboards: list[CatalogRef]
+
+
+class KpiSection(BaseModel):
+    kpis: list[CatalogRef]
+
+
+class HrHubSection(BaseModel):
+    employees: list[EmployeeRecord]
+    request_types: list[CatalogRef]
+
+
+# TODO: rename to AppPayload when legacy domain model is removed (Phase 8)
+class AppPayloadV2(BaseModel):
+    schema_version: Literal["2.0"]
+    session_id: str
+    generated_at: str
+    tenant: TenantInfo
+    tickets: TicketQueuesSection
+    projects: ProjectsSection
+    dashboard: DashboardSection
+    kpi: KpiSection
+    hr_hub: HrHubSection
