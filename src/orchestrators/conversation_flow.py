@@ -139,7 +139,7 @@ class InterpreterPort(Protocol):
     ) -> tuple[ExtractionResult, ClassificationResult]: ...
 
     def top_bundle(
-        self, suggested: ClassificationResult
+        self, _suggested: ClassificationResult
     ) -> BundleSuggestion | None: ...
 
 
