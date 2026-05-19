@@ -12,3 +12,4 @@ class AppPayload(BaseModel):
     generation_json: dict[str, object] = Field(default_factory=dict)
     dummy_data_json: dict[str, object] = Field(default_factory=dict)
     metadata: dict[str, object] = Field(default_factory=dict)
+    v2_manifest: dict[str, object] | None = None
