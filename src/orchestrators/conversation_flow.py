@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import re
 from dataclasses import dataclass, field
 from logging import LoggerAdapter
 from typing import Any, Protocol, cast
@@ -51,6 +52,20 @@ _CONFIRMATION_PHRASES = [
 ]
 
 _NEGATION_WORDS = ["don't", "dont", "do not", "not", "never", "no"]
+_WORKFLOW_HINTS: dict[str, tuple[str, ...]] = {
+    "ticketing": ("ticket", "tickets", "ticketing", "queue", "queues"),
+    "project_mgmt": ("project", "projects", "task", "tasks"),
+    "hr_management": ("hr", "recruitment", "employee", "employees", "hiring"),
+}
+_INDUSTRY_LABELS: dict[str, str] = {
+    "construction_firm": "construction",
+    "bpo_contact_center": "BPO/contact center",
+    "hr_recruitment_agency": "HR recruitment",
+}
+
+
+def _contains_term(text: str, term: str) -> bool:
+    return re.search(r"\b" + re.escape(term.lower()) + r"\b", text.lower()) is not None
 
 
 def _detect_preview_intent(user_message: str) -> bool:
@@ -122,6 +137,7 @@ class _TurnContext:
     recommendation: RecommendationResult
     top: BundleSuggestion | None
     slots: dict[str, object]
+    selection_context: str = ""
 
 
 class InterpreterPort(Protocol):
@@ -214,8 +230,10 @@ class ConversationFlow:
         request: ConversationTurnRequest | None = None,
         **kwargs: object,
     ) -> _FlowResult:
+        # pylint: disable=too-many-locals
         turn_request = self._coerce_turn_request(request, kwargs)
         session = self._resolve_session(turn_request)
+        self._update_session_context(session, turn_request.user_message)
         session_logger = get_session_logger(__name__, turn_request.session_id)
 
         summary_for_turn = await self._resolve_summary(turn_request, session)
@@ -224,6 +242,21 @@ class ConversationFlow:
             session,
             summary_for_turn,
         )
+
+        ambiguous_industries = self._ambiguous_industries(turn_request.user_message)
+        if (
+            ambiguous_industries
+            and session.company_industry_claim is None
+            and not session.confirmed
+            and session.preselected_bundle_key is None
+        ):
+            question = (
+                "To tailor this correctly, which best describes your business: "
+                "construction, BPO/contact center, or HR recruitment?"
+            )
+            result = self._awaiting_input_response(question, context)
+            self._persist_session_state(session, context, result)
+            return result
 
         if self.should_generate_early_preview(
             turn_request.user_message, turn_request.options.force_preview
@@ -302,7 +335,8 @@ class ConversationFlow:
             )
             if status == "fallback_generic":
                 message = (
-                    "I want to make sure this is set up right for you — could you share "
+                    "I want to make sure this is set up right for you - "
+                    "could you share "
                     "a bit more about your team's focus? In the meantime, here's what "
                     "I've put together based on what you've shared:\n\n"
                     f"{message}"
@@ -360,6 +394,96 @@ class ConversationFlow:
             preselected_bundle_key=request.preselected_bundle_key,
             preselected_intent=request.options.preselected_intent,
         )
+
+    def _industry_mapping(self) -> dict[str, dict[str, Any]]:
+        if self._registry_facade is None:
+            return {}
+        return self._registry_facade.industry_bundle_map()
+
+    def _ambiguous_industries(self, user_message: str) -> list[str]:
+        mapping = self._industry_mapping()
+        if not mapping:
+            return []
+        matched: list[str] = []
+        lowered = user_message.lower()
+        for industry, spec in mapping.items():
+            if _contains_term(lowered, industry.lower()):
+                matched.append(industry)
+                continue
+            aliases = spec.get("aliases", [])
+            if isinstance(aliases, list) and any(
+                isinstance(alias, str) and _contains_term(lowered, alias)
+                for alias in aliases
+            ):
+                matched.append(industry)
+        return matched if len(matched) >= 2 else []
+
+    def _update_session_context(self, session: Session, user_message: str) -> None:
+        text = user_message.lower()
+        mapping = self._industry_mapping()
+        for industry, label in _INDUSTRY_LABELS.items():
+            if _contains_term(text, industry) or _contains_term(text, label):
+                session.company_industry_claim = industry
+                bundle_key = mapping.get(industry, {}).get("bundle_key")
+                if isinstance(bundle_key, str):
+                    session.preselected_bundle_key = bundle_key
+                break
+
+        for workflow, hints in _WORKFLOW_HINTS.items():
+            if any(_contains_term(text, hint) for hint in hints):
+                session.primary_workflow = workflow
+                break
+
+        if "internal" in text and "only" in text:
+            session.audience_scope = "internal_only"
+        elif any(
+            _contains_term(text, token)
+            for token in ("client", "customer", "subcontractor")
+        ):
+            session.audience_scope = "external_or_mixed"
+
+        size_match = re.search(
+            r"\b(\d{1,4})\s+(?:people|person|users?|employees?|team)\b", text
+        )
+        if size_match:
+            session.inferred_team_size = int(size_match.group(1))
+
+        company_match = re.search(
+            (
+                r"\b(?:company called|called)\s+([a-z0-9][a-z0-9 '&.-]{1,60}?)"
+                r"(?=\s+(?:and|with|that)\b|[.,!?;:]|$)"
+            ),
+            user_message,
+            flags=re.IGNORECASE,
+        )
+        if company_match:
+            session.inferred_company_name = company_match.group(1).strip(" .,!?:;")
+
+        if any(
+            _contains_term(text, token)
+            for token in ("philippines", "from ph", "manila", "cebu", "davao")
+        ):
+            session.inferred_region = "PH"
+
+    def _confirmation_summary(self, session: Session, bundle_key: str | None) -> str:
+        details: list[str] = []
+        industry = session.company_industry_claim
+        if industry:
+            details.append(f"Industry: {_INDUSTRY_LABELS.get(industry, industry)}")
+        workflow = session.primary_workflow
+        if workflow:
+            details.append(f"Workflow: {workflow.replace('_', ' ')}")
+        audience = session.audience_scope
+        if audience == "internal_only":
+            details.append("Audience: internal teams")
+        if not details:
+            return ""
+        bundle_line = (
+            f"Proposed bundle: {bundle_key}"
+            if bundle_key
+            else "Proposed bundle selected"
+        )
+        return bundle_line + " | " + " | ".join(details)
 
     async def _resolve_summary(
         self,
@@ -426,12 +550,17 @@ class ConversationFlow:
 
         slots = extracted.to_extracted_info().slots
         top = recommendation.primary_bundle or classification.selected_bundle
+        selection_context = self._confirmation_summary(
+            session,
+            top.bundle_key if top is not None else None,
+        )
         return _TurnContext(
             extracted=extracted,
             classification=classification,
             recommendation=recommendation,
             top=top,
             slots=slots,
+            selection_context=selection_context,
         )
 
     def _build_recommendation(
@@ -649,6 +778,7 @@ class ConversationFlow:
             "classification": context.classification,
             "recommendation": context.recommendation,
             "slots": context.slots,
+            "selection_context": context.selection_context,
             # Temporary migration shim removed - use classification directly
         }
 

@@ -27,6 +27,12 @@ class Session(BaseModel):
     clarification_turn_count: int = 0
     preselected_intent: str | None = None
     preselected_bundle_key: str | None = None
+    company_industry_claim: str | None = None
+    primary_workflow: str | None = None
+    audience_scope: str | None = None
+    inferred_team_size: int | None = None
+    inferred_company_name: str | None = None
+    inferred_region: str | None = None
 
     @field_validator("latest_classification", mode="before")
     @classmethod

@@ -39,8 +39,12 @@ class RegistryFacade:
         session_id: str,
         user_message: str,
         extracted: ExtractionResult | None = None,
-    ) -> ClassificationResult:
+    ) -> ClassificationResult | None:
         return self.resolver.resolve(session_id, user_message, extracted)
+
+    def industry_bundle_map(self) -> dict[str, dict[str, Any]]:
+        """Expose the canonical industry-to-bundle map for upstream consumers."""
+        return self.resolver.registry.industry_bundle_map()
 
     def build_payload_stores(self, bundle_key: str, dummy_data_json: dict) -> bool:
         return self.payload_builder.apply_to_dummy_data(bundle_key, dummy_data_json)

@@ -20,7 +20,7 @@ from __future__ import annotations
 from .catalog_view import CatalogEmployee, CatalogItem, CatalogView
 from .emitter import EmitterError, emit_tenant_provisioning
 from .schemas import EmployeeOverride, SelectionResult, TenantSelection
-from .selector import BaselineSelector, BundleSelector
+from .selector import BaselineSelector, BundleSelector, LLMSelector
 from .service import TenantProvisioningError, TenantProvisioningService
 
 __all__ = [
@@ -31,6 +31,7 @@ __all__ = [
     "CatalogView",
     "EmitterError",
     "EmployeeOverride",
+    "LLMSelector",
     "SelectionResult",
     "TenantProvisioningError",
     "TenantProvisioningService",

@@ -551,14 +551,288 @@ function renderGenericListSection(storeKey, rows) {
     </div>`;
 }
 
+// ─── Dashboard: v2 tenant-provisioning manifest renderer ─────────────────────
+
+function pickV2Manifest(payload) {
+  if (!payload) return null;
+  const candidates = [
+    payload,
+    payload.dummy_data_json,
+    payload.generation_json,
+    payload.manifest,
+    payload.tenant_manifest,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== 'object') continue;
+    const tenant = candidate.tenant;
+    if (!tenant || typeof tenant !== 'object') continue;
+    const looksV2 =
+      (candidate.tickets && Array.isArray(candidate.tickets.queues)) ||
+      (candidate.projects && Array.isArray(candidate.projects.projects)) ||
+      (candidate.dashboard && Array.isArray(candidate.dashboard.dashboards)) ||
+      (candidate.kpi && Array.isArray(candidate.kpi.kpis)) ||
+      (candidate.hr_hub && Array.isArray(candidate.hr_hub.employees));
+    if (looksV2) return candidate;
+  }
+  return null;
+}
+
+function renderTpItemList(items) {
+  if (!items || !items.length) {
+    return `<p class="tp-list-empty">None selected.</p>`;
+  }
+  return `
+    <ul class="tp-list">
+      ${items.map(it => `
+        <li class="tp-list-item">
+          <span class="tp-list-id">#${escapeHtml(String(it.id ?? ''))}</span>
+          <span class="tp-list-name">${escapeHtml(String(it.name ?? '—'))}</span>
+        </li>`).join('')}
+    </ul>`;
+}
+
+function renderTpChipRow(items) {
+  if (!items || !items.length) {
+    return `<p class="tp-list-empty">None selected.</p>`;
+  }
+  return `
+    <div class="tp-chip-row">
+      ${items.map(it => `
+        <span class="tp-chip">
+          <span class="tp-chip-id">#${escapeHtml(String(it.id ?? ''))}</span>
+          ${escapeHtml(String(it.name ?? '—'))}
+        </span>`).join('')}
+    </div>`;
+}
+
+function renderTpKpiGrid(kpis) {
+  if (!kpis || !kpis.length) {
+    return `<p class="tp-list-empty">None selected.</p>`;
+  }
+  return `
+    <div class="tp-kpi-grid">
+      ${kpis.map(k => `
+        <div class="tp-kpi-tile">
+          <span class="tp-list-id">#${escapeHtml(String(k.id ?? ''))}</span>
+          <span class="tp-kpi-name">${escapeHtml(String(k.name ?? '—'))}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function levelClass(level = '') {
+  const l = String(level).toLowerCase();
+  if (l.includes('director')) return 'tp-level-director';
+  if (l.includes('manager') || l.includes('lead')) return 'tp-level-manager';
+  if (l.includes('staff') || l.includes('analyst') || l.includes('rep')) return 'tp-level-staff';
+  return 'tp-level-default';
+}
+
+function renderTpEmployeesTable(employees) {
+  if (!employees || !employees.length) {
+    return `<p class="tp-list-empty">No employees selected.</p>`;
+  }
+  const rows = employees.map(e => `
+    <tr>
+      <td>
+        <div class="tp-emp-name">${escapeHtml(e.position || e.job_title || '—')}</div>
+        <div class="tp-emp-meta">ID #${escapeHtml(String(e.id ?? '—'))} · ${escapeHtml(e.job_title || '')}</div>
+      </td>
+      <td>${escapeHtml(e.team || '—')}</td>
+      <td>${escapeHtml(e.department || '—')}</td>
+      <td>${escapeHtml(e.job_type || '—')}</td>
+      <td>
+        <span class="tp-level ${levelClass(e.job_level)}">
+          ${escapeHtml(e.job_level || '—')}
+        </span>
+      </td>
+    </tr>`).join('');
+
+  return `
+    <div class="tbl-scroll">
+      <table class="tp-emp-table">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Team</th>
+            <th>Department</th>
+            <th>Job Type</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function buildEmployeeLevelSummary(employees) {
+  const summary = { director: 0, manager: 0, staff: 0, other: 0 };
+  employees.forEach((e) => {
+    const level = String(e.job_level || '').toLowerCase();
+    if (level.includes('director')) summary.director += 1;
+    else if (level.includes('manager') || level.includes('lead')) summary.manager += 1;
+    else if (level.includes('staff') || level.includes('analyst') || level.includes('rep')) summary.staff += 1;
+    else summary.other += 1;
+  });
+  return summary;
+}
+
+function buildTopDepartmentSummary(employees) {
+  const counts = new Map();
+  employees.forEach((e) => {
+    const dep = e.department || 'Unspecified';
+    counts.set(dep, (counts.get(dep) || 0) + 1);
+  });
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([name, value]) => ({ name, value }));
+}
+
+function renderV2Dashboard(manifest, previewType) {
+  const tenant = manifest.tenant || {};
+  const queues = (manifest.tickets && manifest.tickets.queues) || [];
+  const projects = (manifest.projects && manifest.projects.projects) || [];
+  const dashboards = (manifest.dashboard && manifest.dashboard.dashboards) || [];
+  const kpis = (manifest.kpi && manifest.kpi.kpis) || [];
+  const employees = (manifest.hr_hub && manifest.hr_hub.employees) || [];
+  const requestTypes = (manifest.hr_hub && manifest.hr_hub.request_types) || [];
+  const schemaVersion = manifest.schema_version || '2.0';
+  const generatedAt = manifest.generated_at || '';
+  const sessionId = manifest.session_id || '';
+  const isEarly = previewType === 'early';
+  const companyName = tenant.company_name || 'New Tenant';
+  const industryLabel = titleCase(tenant.industry || 'workspace');
+  const employeeLevel = buildEmployeeLevelSummary(employees);
+  const departmentMix = buildTopDepartmentSummary(employees);
+
+  const heroChips = [
+    tenant.size_band && { label: 'Headcount', value: tenant.size_band },
+    tenant.primary_region && { label: 'Region', value: tenant.primary_region },
+    tenant.locale && { label: 'Locale', value: tenant.locale },
+    tenant.timezone && { label: 'Timezone', value: tenant.timezone },
+  ].filter(Boolean);
+
+  return `
+    <div class="tp-dashboard">
+      <div class="tp-hero">
+        <div class="tp-hero-badges">
+          <span class="tp-badge tp-badge-primary">Tenant Manifest</span>
+          <span class="tp-badge tp-badge-outline">Schema ${escapeHtml(schemaVersion)}</span>
+          <span class="tp-badge tp-badge-outline">${escapeHtml(industryLabel)}</span>
+          ${generatedAt ? `<span class="tp-badge tp-badge-outline">${escapeHtml(generatedAt.slice(0, 10))}</span>` : ''}
+          ${isEarly ? `<span class="tp-badge tp-badge-warning">Early Preview</span>` : ''}
+        </div>
+        <h1 class="tp-hero-title">${escapeHtml(companyName)}</h1>
+        <p class="tp-hero-sub">
+          Provisioning preview — the AI agent picked the right queues, projects, dashboards, KPIs,
+          HR request types and employee roster for this org.
+        </p>
+        <div class="tp-hero-chips">
+          ${heroChips.map(c => `
+            <span class="tp-hero-chip">
+              <span class="chip-label">${escapeHtml(c.label)}</span>
+              <strong>${escapeHtml(c.value)}</strong>
+            </span>`).join('')}
+        </div>
+      </div>
+
+      <div class="tp-selection-strip">
+        <div class="tp-select-item"><span class="tp-select-key">Queues</span><strong>${queues.length}</strong></div>
+        <div class="tp-select-item"><span class="tp-select-key">Projects</span><strong>${projects.length}</strong></div>
+        <div class="tp-select-item"><span class="tp-select-key">Dashboards</span><strong>${dashboards.length}</strong></div>
+        <div class="tp-select-item"><span class="tp-select-key">KPIs</span><strong>${kpis.length}</strong></div>
+        <div class="tp-select-item"><span class="tp-select-key">Employees</span><strong>${employees.length}</strong></div>
+        <div class="tp-select-item"><span class="tp-select-key">HR Types</span><strong>${requestTypes.length}</strong></div>
+      </div>
+
+      <div class="tp-grid">
+        <section class="tp-card tp-card-peach">
+          <div class="tp-card-head">
+            <h2 class="tp-card-title">Ticket Queues</h2>
+            <span class="tp-card-count">${queues.length}</span>
+          </div>
+          ${renderTpItemList(queues)}
+        </section>
+
+        <section class="tp-card tp-card-rose">
+          <div class="tp-card-head">
+            <h2 class="tp-card-title">Projects</h2>
+            <span class="tp-card-count">${projects.length}</span>
+          </div>
+          ${renderTpItemList(projects)}
+        </section>
+
+        <section class="tp-card tp-card-mint">
+          <div class="tp-card-head">
+            <h2 class="tp-card-title">Dashboards</h2>
+            <span class="tp-card-count">${dashboards.length}</span>
+          </div>
+          ${renderTpItemList(dashboards)}
+        </section>
+      </div>
+
+      <section class="tp-card tp-card-lavender tp-card-wide">
+        <div class="tp-card-head">
+          <h2 class="tp-card-title">KPIs</h2>
+          <span class="tp-card-count">${kpis.length}</span>
+        </div>
+        ${renderTpKpiGrid(kpis)}
+      </section>
+
+      <section class="tp-card tp-card-sky tp-card-wide">
+        <div class="tp-card-head">
+          <h2 class="tp-card-title">HR Hub — Employees</h2>
+          <span class="tp-card-count">${employees.length}</span>
+        </div>
+        <div class="tp-employee-mix">
+          <span class="tp-level tp-level-director">Director: ${employeeLevel.director}</span>
+          <span class="tp-level tp-level-manager">Manager: ${employeeLevel.manager}</span>
+          <span class="tp-level tp-level-staff">Staff: ${employeeLevel.staff}</span>
+          ${employeeLevel.other ? `<span class="tp-level tp-level-default">Other: ${employeeLevel.other}</span>` : ''}
+          ${departmentMix.map(d => `<span class="tp-level tp-level-default">${escapeHtml(d.name)}: ${d.value}</span>`).join('')}
+        </div>
+        ${renderTpEmployeesTable(employees)}
+      </section>
+
+      <section class="tp-card tp-card-yellow tp-card-wide">
+        <div class="tp-card-head">
+          <h2 class="tp-card-title">HR Request Types</h2>
+          <span class="tp-card-count">${requestTypes.length}</span>
+        </div>
+        ${renderTpChipRow(requestTypes)}
+      </section>
+
+      <div class="tp-deploy-row">
+        <button id="deployBtn" class="success-btn" ${isEarly ? 'disabled' : ''}>
+          ${isEarly ? 'Confirm Bundle to Deploy' : 'Finalize &amp; Deploy Tenant'}
+        </button>
+      </div>
+    </div>`;
+}
+
 // ─── Dashboard: root export ───────────────────────────────────────────────────
 
 export function renderDashboard(payload, previewType) {
-  if (!payload || !payload.dummy_data_json) {
+  if (!payload) {
     return `
-      <div class="dashboard-empty">
-        <span>📊</span>
-        <p>Generate a preview to see your dashboard data.</p>
+      <div class="dashboard-empty dashboard-empty-card">
+        <div class="dashboard-empty-icon">✦</div>
+        <h3>Your preview space is ready</h3>
+        <p>Run Generate Preview from chat to load your dashboard and sample data.</p>
+      </div>`;
+  }
+
+  const v2Manifest = pickV2Manifest(payload);
+  if (v2Manifest) {
+    return renderV2Dashboard(v2Manifest, previewType);
+  }
+
+  if (!payload.dummy_data_json) {
+    return `
+      <div class="dashboard-empty dashboard-empty-card">
+        <div class="dashboard-empty-icon">✦</div>
+        <h3>Your preview space is ready</h3>
+        <p>Run Generate Preview from chat to load your dashboard and sample data.</p>
       </div>`;
   }
 

@@ -9,16 +9,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from agents.preview_generator.edit.apply import apply_edit
 from agents.preview_generator.edit.parse import parse_edit_instruction
+from api.adapters.v2_manifest_adapter import build_v2_manifest
 from api.deps import (
     get_bundle_catalog,
     get_conversation_repository,
     get_preview_flow,
     get_registry_facade,
     get_session_repository,
+    get_v2_manifest_model,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.preview import EditPreviewRequestSchema
 from catalog.bundle_catalog import BundleCatalog
+from core.config import get_settings
 from core.exceptions import (
     BundleNotFoundError,
     InvalidPayloadError,
@@ -27,6 +30,7 @@ from core.exceptions import (
 )
 from core.logging import get_logger
 from domain.models.extraction_result import ExtractionResult
+from domain.models.session import Session
 from domain.services.early_preview_policy import (
     resolve_early_bundle_key,
 )
@@ -65,7 +69,7 @@ def _format_preview_warnings(
     )
 
 
-def _execute_preview_pipeline(
+async def _execute_preview_pipeline(
     session_id: str,
     bundle_key: str,
     conv_repo: ConversationRepository,
@@ -75,7 +79,10 @@ def _execute_preview_pipeline(
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
+    session: Session | None = None,
+    v2_model: Any = None,
 ) -> AppPayloadResponseSchema:
+    # pylint: disable=too-many-locals
     """Execute the preview pipeline and assemble the response schema."""
     if not registry_facade.has_bundle(bundle_key):
         raise HTTPException(
@@ -121,6 +128,32 @@ def _execute_preview_pipeline(
     preview_warnings = payload.generation_json.get("preview_warnings")
     warning = _format_preview_warnings(preview_warnings, warning)
 
+    dummy_data_json = dict(payload.dummy_data_json or {})
+    if session is not None:
+        try:
+            settings = get_settings()
+            manifest = await build_v2_manifest(
+                session=session,
+                dummy_data_json=dummy_data_json,
+                bundle_key=payload.bundle_key,
+                display_name=payload.display_name,
+                conversation_history=conversation_history,
+                registry_facade=registry_facade,
+                model=v2_model,
+                disable_llm_calls=settings.DISABLE_LLM_CALLS,
+            )
+            manifest_overlay = dict(manifest)
+            # Keep v1 dummy_data_json contract stable for /app finalization.
+            # The v2 sections (tenant/tickets/projects/...) are still attached
+            # for FE rendering, but schema_version must remain v1 ("1.0").
+            manifest_overlay.pop("schema_version", None)
+            dummy_data_json.update(manifest_overlay)
+        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            logger.exception(
+                "v2 manifest adapter failed for session=%s; returning v1-only payload",
+                session_id,
+            )
+
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,
         session_id=payload.session_id,
@@ -128,7 +161,7 @@ def _execute_preview_pipeline(
         display_name=payload.display_name,
         modules=payload.modules,
         generation_json=payload.generation_json,
-        dummy_data_json=payload.dummy_data_json,
+        dummy_data_json=dummy_data_json,
         preview_type=preview_type,
         warning=warning,
     )
@@ -141,6 +174,7 @@ async def generate_preview(
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
+    v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -156,7 +190,7 @@ async def generate_preview(
             detail="Session bundle must be confirmed before generating preview.",
         )
 
-    return _execute_preview_pipeline(
+    return await _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
@@ -165,6 +199,8 @@ async def generate_preview(
         preview_type="confirmed",
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
+        session=session,
+        v2_model=v2_model,
     )
 
 
@@ -175,6 +211,7 @@ async def generate_early_preview(
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
+    v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -195,7 +232,7 @@ async def generate_early_preview(
         "Early preview for session=%s using bundle=%s", session_id, resolved_key
     )
 
-    return _execute_preview_pipeline(
+    return await _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=resolved_key,
         conv_repo=conv_repo,
@@ -205,6 +242,8 @@ async def generate_early_preview(
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
+        session=session,
+        v2_model=v2_model,
     )
 
 

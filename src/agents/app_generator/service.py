@@ -56,10 +56,11 @@ class AppGeneratorService:
             )
 
         # Load from template unless caller provides generation_json from preview.
+        template_generation_json = self._repo.load_app_json(template_dir)
         generation_json = (
-            dict(generation_data)
+            self._merge_generation_defaults(template_generation_json, generation_data)
             if generation_data is not None
-            else self._repo.load_app_json(template_dir)
+            else dict(template_generation_json)
         )
         generation_json["session_id"] = session_id
         # Canonical bundle key is the API-facing identity.
@@ -128,6 +129,38 @@ class AppGeneratorService:
         )
         session_logger.info("App payload assembled for session=%s", session_id)
         return payload
+
+    @staticmethod
+    def _merge_generation_defaults(
+        template_generation_json: dict[str, object],
+        generation_data: dict[str, object] | None,
+    ) -> dict[str, object]:
+        """Merge client generation_json onto template defaults.
+
+        Preview/finalize clients can send partial generation_json payloads.
+        Preserve strict schema validation by backfilling missing keys from the
+        canonical template, while allowing client values to override defaults.
+        """
+        merged = dict(template_generation_json)
+        if generation_data is None:
+            return merged
+
+        for key, value in generation_data.items():
+            if key == "config":
+                continue
+            merged[key] = value
+
+        template_config = template_generation_json.get("config")
+        incoming_config = generation_data.get("config")
+        if isinstance(template_config, dict):
+            merged_config = dict(template_config)
+            if isinstance(incoming_config, dict):
+                merged_config.update(incoming_config)
+            merged["config"] = merged_config
+        elif incoming_config is not None:
+            merged["config"] = incoming_config
+
+        return merged
 
     @staticmethod
     def _normalize_dummy_data(data: dict[str, object]) -> dict[str, object]:

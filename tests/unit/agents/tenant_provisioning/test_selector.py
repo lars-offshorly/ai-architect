@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from agents.tenant_provisioning import BaselineSelector, CatalogView
+import pytest
+
+from agents.tenant_provisioning import BaselineSelector, CatalogView, LLMSelector
 from agents.tenant_provisioning.catalog_view import CatalogEmployee, CatalogItem
 
 
@@ -66,3 +68,75 @@ def test_baseline_is_pure_and_repeatable() -> None:
     a = BaselineSelector().select(view, "msg")
     b = BaselineSelector().select(view, "different msg")
     assert a == b
+
+
+class _FakeStructuredInvoker:
+    def __init__(self, result: object) -> None:
+        self._result = result
+
+    async def ainvoke(self, _messages: object) -> object:
+        return self._result
+
+
+class _FakeModel:
+    def __init__(self, result: object) -> None:
+        self._result = result
+
+    def with_structured_output(self, _schema: object, method: str) -> _FakeStructuredInvoker:
+        assert method == "function_calling"
+        return _FakeStructuredInvoker(self._result)
+
+
+@pytest.mark.asyncio
+async def test_llm_selector_validates_output_and_locks_industry() -> None:
+    payload = {
+        "tenant": {
+            "company_name": "Persona Co",
+            "industry": "wrong_industry",
+            "size_band": "50-200",
+            "primary_region": "APAC",
+            "locale": "en-PH",
+            "timezone": "Asia/Manila",
+        },
+        "selected_queue_ids": [101],
+        "selected_project_ids": [501],
+        "selected_dashboard_ids": [701],
+        "selected_kpi_ids": [1],
+        "selected_request_type_ids": [801],
+        "selected_employee_ids": [1],
+        "employee_overrides": [
+            {
+                "id": 1,
+                "position": "Director",
+                "team": "Ops",
+                "department": "Operations",
+                "job_title": "Director",
+                "job_type": "Full-Time",
+                "job_level": "Director",
+            }
+        ],
+    }
+    selector = LLMSelector(model=_FakeModel(payload))  # type: ignore[arg-type]
+    result = await selector.select_async(_view(), "We are in PH")
+    assert result.tenant.company_name == "Persona Co"
+    assert result.tenant.industry == "bpo_contact_center"
+
+
+@pytest.mark.asyncio
+async def test_llm_selector_falls_back_on_model_error() -> None:
+    class _FailingInvoker:
+        async def ainvoke(self, _messages: object) -> object:
+            raise RuntimeError("boom")
+
+    class _FailingModel:
+        def with_structured_output(self, _schema: object, method: str) -> _FailingInvoker:
+            assert method == "function_calling"
+            return _FailingInvoker()
+
+    selector = LLMSelector(
+        model=_FailingModel(),  # type: ignore[arg-type]
+        fallback_selector=BaselineSelector(),
+    )
+    result = await selector.select_async(_view(), "ignored")
+    assert result.tenant.company_name == "Manifest Defaults Co"
+    assert result.selected_queue_ids == [101, 102]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from core.logging import get_logger
@@ -25,7 +26,14 @@ class CanonicalBundleResolver:
         session_id: str,
         user_message: str,
         extracted: ExtractionResult | None = None,
-    ) -> ClassificationResult:
+    ) -> ClassificationResult | None:
+        """Return a ClassificationResult when an industry alias matches, else None.
+
+        Never raises on a no-match query: returning ``None`` is the signal that
+        upstream (the interpreter) should try its LLM fallback. The
+        ``strict_mapping`` flag now only controls the boot-time consistency
+        check between manifests and the industry mapping file.
+        """
         manifests_by_industry = self.registry.by_industry()
         mapping = self.registry.industry_bundle_map()
 
@@ -35,28 +43,11 @@ class CanonicalBundleResolver:
         industry = self._infer_industry(user_message, extracted, mapping)
 
         if industry is None:
-            if self.strict_mapping:
-                raise CanonicalManifestRegistryError(
-                    "No mapped canonical industry signal matched the request"
-                )
-            fallback = BundleSuggestion(
-                bundle_key="generic",
-                display_name="Custom Workspace",
-                confidence=0.45,
-                reasoning="No canonical industry signal matched",
-                matched_signals=[],
+            logger.info(
+                "session=%s canonical resolver miss; deferring to LLM stage",
+                session_id,
             )
-            logger.warning(
-                "session=%s canonical resolver fallback to generic", session_id
-            )
-            return ClassificationResult(
-                session_id=session_id,
-                selected_bundle=fallback,
-                ranked_candidates=[fallback],
-                confidence_status="fallback_generic",
-                top_confidence=fallback.confidence,
-                reasoning="Canonical resolver fallback",
-            )
+            return None
 
         bundle_key = str(mapping[industry]["bundle_key"])
         suggestion = BundleSuggestion(
@@ -95,16 +86,95 @@ class CanonicalBundleResolver:
             haystack_parts.extend(x.lower() for x in cs.workflow_hints)
         haystack = " ".join(haystack_parts)
 
-        for industry in mapping:
-            if industry.lower() in haystack:
-                return industry
+        industry_scores = CanonicalBundleResolver._score_industries(haystack, mapping)
+        if not industry_scores:
+            return None
 
+        ranked = sorted(industry_scores.items(), key=lambda item: item[1], reverse=True)
+        top_industry, top_score = ranked[0]
+        if top_score <= 0:
+            return None
+
+        second_score = ranked[1][1] if len(ranked) > 1 else 0.0
+        # Require a minimum margin so mixed-signal prompts ask upstream LLM stage.
+        if top_score - second_score < 1.0:
+            return None
+        return top_industry
+
+    @staticmethod
+    def _score_industries(
+        haystack: str,
+        mapping: dict[str, dict[str, object]],
+    ) -> dict[str, float]:
+        workflow_terms = {
+            "ticket",
+            "tickets",
+            "ticketing",
+            "project",
+            "projects",
+            "task",
+            "tasks",
+            "workflow",
+            "dashboard",
+            "kpi",
+        }
+        business_type_patterns: dict[str, tuple[str, ...]] = {
+            "construction_firm": (
+                "construction company",
+                "construction firm",
+                "contractor company",
+                "we are construction",
+            ),
+            "hr_recruitment_agency": (
+                "recruitment agency",
+                "staffing agency",
+                "headhunting firm",
+                "hr agency",
+            ),
+            "bpo_contact_center": (
+                "bpo company",
+                "contact center company",
+                "call center company",
+            ),
+        }
+
+        scores: dict[str, float] = dict.fromkeys(mapping, 0.0)
         for industry, spec in mapping.items():
-            aliases = spec.get("aliases", [])
-            if isinstance(aliases, list) and any(
-                isinstance(token, str) and token.lower() in haystack
-                for token in aliases
-            ):
-                return industry
+            # Highest-weight signal: explicit business identity phrase.
+            for pattern in business_type_patterns.get(industry, ()):
+                if CanonicalBundleResolver._contains_term(haystack, pattern):
+                    scores[industry] += 4.0
 
-        return None
+            if CanonicalBundleResolver._contains_term(haystack, industry.lower()):
+                scores[industry] += 3.0
+
+            aliases = spec.get("aliases", [])
+            if not isinstance(aliases, list):
+                continue
+            for token in aliases:
+                if not isinstance(token, str):
+                    continue
+                normalized = token.lower().strip()
+                if not normalized or not CanonicalBundleResolver._contains_term(
+                    haystack, normalized
+                ):
+                    continue
+                if normalized in workflow_terms:
+                    scores[industry] += 0.4
+                elif (
+                    "company" in normalized
+                    or "agency" in normalized
+                    or "firm" in normalized
+                ):
+                    scores[industry] += 3.0
+                else:
+                    scores[industry] += 1.5
+        return scores
+
+    @staticmethod
+    def _contains_term(haystack: str, term: str) -> bool:
+        if not term:
+            return False
+        # Boundary-aware match prevents accidental hits like "site" in "website".
+        pattern = r"\b" + re.escape(term) + r"\b"
+        return re.search(pattern, haystack) is not None

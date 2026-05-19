@@ -9,7 +9,10 @@ from langchain_openai import ChatOpenAI
 
 from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.app_generator.service import AppGeneratorService
+from agents.interpreter.llm_industry_classifier import LLMIndustryClassifier
 from agents.interpreter.service import InterpreterService
+from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
+from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from catalog.bundle_catalog import BundleCatalog
@@ -69,6 +72,7 @@ def get_interpreter_service() -> InterpreterService:
     if settings.DISABLE_LLM_CALLS:
         model = None
         summarizer_model = None
+        llm_industry_classifier: LLMIndustryClassifier | None = None
     else:
         model = ChatOpenAI(
             model=settings.OPENAI_MODEL,
@@ -80,12 +84,18 @@ def get_interpreter_service() -> InterpreterService:
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
+        llm_industry_classifier = LLMIndustryClassifier(
+            model=model,
+            industry_map=registry_facade.industry_bundle_map(),
+            min_confidence=settings.CONFIDENCE_SUGGEST_THRESHOLD,
+        )
 
     return InterpreterService(
         bundle_keys=registry_facade.list_supported_bundles(),
         registry_facade=registry_facade,
         model=model,
         summarizer_model=summarizer_model,
+        llm_industry_classifier=llm_industry_classifier,
     )
 
 
@@ -128,8 +138,21 @@ def get_preview_flow() -> PreviewFlow:
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
         registry_facade=get_registry_facade(),
-        bundle_template_loader=None,
-        static_dashboard_outputs=None,
+        bundle_template_loader=BundleTemplateLoader(),
+        static_dashboard_outputs=DashboardTemplateRegistry(catalog=catalog),
+    )
+
+
+@lru_cache(maxsize=1)
+def get_v2_manifest_model() -> ChatOpenAI | None:
+    """Return cached model for v2 manifest selector (or None when disabled)."""
+    settings = get_settings()
+    if settings.DISABLE_LLM_CALLS:
+        return None
+    return ChatOpenAI(
+        model=settings.OPENAI_MODEL,
+        temperature=settings.CLASSIFIER_TEMPERATURE,
+        api_key=settings.OPENAI_API_KEY,
     )
 
 

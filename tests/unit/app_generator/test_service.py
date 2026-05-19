@@ -291,3 +291,65 @@ def test_assemble_backfills_dashboard_generation_output() -> None:
     stores = payload.dummy_data_json.get("stores", {})
     assert isinstance(stores, dict)
     assert "dashboard_generation_output" in stores
+
+
+def test_assemble_backfills_missing_config_keys_from_template_generation_json() -> None:
+    svc = AppGeneratorService(
+        template_repo=_FakeTemplateRepo(
+            {
+                "finance": {
+                    "schema_version": "1.0",
+                    "bundle_key": "finance",
+                    "modules": ["projects", "dashboard", "kpi"],
+                    "config": {
+                        "task_statuses": ["backlog", "in_progress", "done"],
+                        "task_priorities": ["low", "medium", "high"],
+                        "milestone_statuses": ["pending", "at_risk", "achieved"],
+                        "kpi_definitions": [
+                            {
+                                "key": "on_time_delivery",
+                                "label": "On-time Delivery",
+                                "unit": "percentage",
+                            }
+                        ],
+                    },
+                }
+            }
+        ),
+        catalog=_FakeCatalog(
+            {
+                "finance": _FakeBundle(
+                    template_dir="finance",
+                    render_key="finance",
+                    default_modules=["projects", "dashboard", "kpi"],
+                )
+            }
+        ),
+    )
+
+    payload = svc.assemble(
+        session_id="test-session",
+        bundle_key="finance",
+        display_name="Finance",
+        generation_data={
+            "schema_version": "1.0",
+            "bundle_key": "finance",
+            "modules": ["projects", "dashboard", "kpi"],
+            "config": {
+                "kpi_definitions": [
+                    {
+                        "key": "budget_variance",
+                        "label": "Budget Variance",
+                        "unit": "count",
+                    }
+                ]
+            },
+        },
+        dummy_data={"bundle_key": "finance", "stores": {}, "session_id": "test-session"},
+    )
+
+    config = payload.generation_json.get("config")
+    assert isinstance(config, dict)
+    assert config["task_statuses"] == ["backlog", "in_progress", "done"]
+    assert config["task_priorities"] == ["low", "medium", "high"]
+    assert config["milestone_statuses"] == ["pending", "at_risk", "achieved"]

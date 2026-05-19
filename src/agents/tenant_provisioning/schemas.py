@@ -121,9 +121,7 @@ class SelectionResult(BaseModel):
             if override.id not in selected:
                 unknown.append(override.id)
         if dupes:
-            raise ValueError(
-                f"employee_overrides has duplicate ids: {sorted(dupes)}"
-            )
+            raise ValueError(f"employee_overrides has duplicate ids: {sorted(dupes)}")
         if unknown:
             raise ValueError(
                 "employee_overrides reference ids not in selected_employee_ids: "

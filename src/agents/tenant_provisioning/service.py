@@ -64,7 +64,9 @@ class TenantProvisioningService:
             )
 
         catalog_view = CatalogView.from_manifest(manifest)
-        selection = self.selector.select(catalog_view, user_message)
+        selection = self.selector.select(  # pylint: disable=assignment-from-no-return
+            catalog_view, user_message
+        )
         return emit_tenant_provisioning(
             manifest,
             selection,

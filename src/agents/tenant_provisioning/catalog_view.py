@@ -43,6 +43,7 @@ class CatalogEmployee:
 
 
 @dataclass(slots=True, frozen=True)
+# pylint: disable=too-many-instance-attributes
 class CatalogView:
     """Flattened, prompt-ready projection of a canonical manifest.
 
@@ -171,15 +172,11 @@ def _collect_items(
     items: list[CatalogItem] = []
     for index, entry in enumerate(raw):
         if not isinstance(entry, dict):
-            raise ValueError(
-                f"{section}.{array_key}[{index}] must be an object"
-            )
+            raise ValueError(f"{section}.{array_key}[{index}] must be an object")
         entry_id = entry.get("id")
         name = entry.get("name")
         if not isinstance(entry_id, int):
-            raise ValueError(
-                f"{section}.{array_key}[{index}].id must be an int"
-            )
+            raise ValueError(f"{section}.{array_key}[{index}].id must be an int")
         if not isinstance(name, str) or not name.strip():
             raise ValueError(
                 f"{section}.{array_key}[{index}].name must be a non-empty string"

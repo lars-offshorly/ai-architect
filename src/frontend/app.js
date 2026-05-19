@@ -45,6 +45,11 @@ const els = {
   sendBtn: document.getElementById('sendBtn'),
   previewPanel: document.getElementById('previewPanel'),
   pipelineContainer: document.getElementById('pipelineContainer'),
+  pipelineToggleBtn: document.getElementById('pipelineToggleBtn'),
+  pipelineToggleChevron: document.getElementById('pipelineToggleChevron'),
+  suggestionsRail: document.getElementById('suggestionsRail'),
+  suggestionsLeftBtn: document.getElementById('suggestionsLeftBtn'),
+  suggestionsRightBtn: document.getElementById('suggestionsRightBtn'),
 };
 
 // Initialize
@@ -76,6 +81,26 @@ function bindEvents() {
       handleSendMessage();
     }
   });
+
+  if (els.suggestionsLeftBtn && els.suggestionsRail) {
+    els.suggestionsLeftBtn.addEventListener('click', () => {
+      els.suggestionsRail.scrollBy({ left: -320, behavior: 'smooth' });
+    });
+  }
+
+  if (els.suggestionsRightBtn && els.suggestionsRail) {
+    els.suggestionsRightBtn.addEventListener('click', () => {
+      els.suggestionsRail.scrollBy({ left: 320, behavior: 'smooth' });
+    });
+  }
+
+  if (els.pipelineToggleBtn && els.pipelineContainer && els.pipelineToggleChevron) {
+    els.pipelineToggleBtn.addEventListener('click', () => {
+      const collapsed = els.pipelineContainer.classList.toggle('pipeline-collapsed');
+      els.pipelineToggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      els.pipelineToggleChevron.textContent = collapsed ? '▸' : '▾';
+    });
+  }
 }
 
 function startThinking() {
@@ -324,6 +349,7 @@ function appendCustomHTML(html) {
 }
 
 function addActionButton(label, id) {
+  if (document.getElementById(id)) return;
   appendCustomHTML(`
     <div class="msg-bubble msg-assistant action-bubble">
       <button id="${id}" class="primary-btn">${label}</button>

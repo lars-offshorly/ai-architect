@@ -10,6 +10,12 @@ CLARIFICATION_SYSTEM_PROMPT = (
     "situation — such as how their workflows are structured, team or company size, "
     "how they track progress, or any relevant industry or role detail — to better "
     "tailor the setup. "
+    "Prioritize details that directly improve tenant-provisioning output: "
+    "tenant profile (company/industry/region/locale/timezone), selected "
+    "operational slices (queues/projects/dashboards/KPIs/request types), "
+    "and employee role setup (position/team/department/job title/type/level). "
+    "If the context already clearly covers those details, ask a lightweight "
+    "confirmation-style follow-up instead of repeating questions. "
     "Sound like a knowledgeable colleague, not a bot. "
     "Be concise — 2-3 sentences total. No lists, no multiple questions."
 )
@@ -25,6 +31,10 @@ BUNDLE_VERIFICATION_SYSTEM_PROMPT = (
     "their role, or how things are currently being managed; "
     "and is phrased so the answer will either confirm the setup is right or "
     "reveal it needs adjusting — without naming or asking about the setup type. "
+    "Prioritize verifying details that affect mutable tenant-provisioning fields: "
+    "tenant profile, selected operational slices, and employee role setup. "
+    "If those are already clear from context, ask a brief confirmation question "
+    "that validates assumptions rather than re-asking known facts. "
     "Sound like a knowledgeable colleague. No intro sentence, just the question."
 )
 
@@ -36,6 +46,8 @@ BUNDLE_SUGGESTION_SYSTEM_PROMPT = (
     "context like their industry, workflows, or what they specifically care about "
     "(use what you learned, not generic descriptions); "
     "and describes 1-2 key things they'll be able to track or have visibility into. "
+    "When relevant, naturally reflect the concrete setup dimensions gathered "
+    "(tenant profile, internal vs external audience, and role/operational focus). "
     "Do not mention workspace names, bundle types, or internal module names. "
     "End with a short, natural line confirming the workspace is being set up. "
     "Be specific and grounded in what you learned. No bullet lists, no filler phrases."

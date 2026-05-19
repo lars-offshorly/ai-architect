@@ -13,10 +13,14 @@ from domain.services.registry_facade import RegistryFacade
 
 from .classifier import Classifier
 from .extractor import Extractor
+from .llm_industry_classifier import IndustryChoice, LLMIndustryClassifier
 from .signal_accumulator import SignalAccumulator
 from .summarizer import Summarizer
 
 logger = get_logger(__name__)
+
+_GENERIC_BUNDLE_KEY = "generic"
+_GENERIC_DISPLAY_NAME = "Custom Workspace"
 
 
 def _build_catalog_context(bundle_keys: list[str]) -> str:
@@ -31,6 +35,7 @@ class InterpreterService:
         registry_facade: RegistryFacade | None = None,
         model: ChatOpenAI | None = None,
         summarizer_model: ChatOpenAI | None = None,
+        llm_industry_classifier: LLMIndustryClassifier | None = None,
     ) -> None:
         self._bundle_keys = bundle_keys
         self._registry_facade = registry_facade
@@ -41,6 +46,7 @@ class InterpreterService:
             else None
         )
         self._summarizer = Summarizer(summarizer_model) if summarizer_model else None
+        self._llm_industry_classifier = llm_industry_classifier
 
     @staticmethod
     def _inject_preselected_intent(
@@ -84,59 +90,17 @@ class InterpreterService:
             extracted = request.accumulated_extraction or ExtractionResult(
                 session_id=request.session_id
             )
-            if self._registry_facade is not None:
-                suggested = self._registry_facade.resolve_bundle(
-                    session_id=request.session_id,
-                    user_message=request.user_message,
-                    extracted=extracted,
-                )
-            else:
-                default_bundle_key = "generic"
-                selected_bundle = BundleSuggestion(
-                    bundle_key=default_bundle_key,
-                    display_name="Custom Workspace",
-                    confidence=1.0,
-                    reasoning="Stubbed selection (LLM disabled)",
-                )
-                suggested = ClassificationResult(
-                    session_id=request.session_id,
-                    selected_bundle=selected_bundle,
-                    ranked_candidates=[selected_bundle],
-                    confidence_status="proceed",
-                    top_confidence=1.0,
-                    reasoning="Deterministic stub",
-                )
-            return extracted, suggested
-
-        current = await self._extractor.extract(
-            request.session_id,
-            request.user_message,
-            history=request.history,
-            summary=request.summary,
-        )
-        extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
-        self._inject_preselected_intent(extracted, request.preselected_intent)
-
-        if self._registry_facade is not None:
-            suggested = self._registry_facade.resolve_bundle(
-                session_id=request.session_id,
-                user_message=request.user_message,
-                extracted=extracted,
-            )
-        elif self._classifier is not None:
-            suggested = await self._classifier.classify(
+        else:
+            current = await self._extractor.extract(
                 request.session_id,
                 request.user_message,
-                self._bundle_keys,
-                extracted=extracted,
-                preselected_intent=request.preselected_intent,
+                history=request.history,
+                summary=request.summary,
             )
-        else:
-            suggested = ClassificationResult(
-                session_id=request.session_id,
-                confidence_status="fallback_generic",
-                reasoning="No classifier available",
-            )
+            extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
+            self._inject_preselected_intent(extracted, request.preselected_intent)
+
+        suggested = await self._resolve_classification(request, extracted)
 
         session_logger.info(
             "Interpreter complete: top_bundle=%s",
@@ -147,6 +111,103 @@ class InterpreterService:
             ),
         )
         return extracted, suggested
+
+    async def _resolve_classification(
+        self,
+        request: InterpreterRequest,
+        extracted: ExtractionResult,
+    ) -> ClassificationResult:
+        """Run the 3-stage bundle resolution: alias → LLM → generic."""
+        if self._registry_facade is None:
+            if self._classifier is not None:
+                return await self._classifier.classify(
+                    request.session_id,
+                    request.user_message,
+                    self._bundle_keys,
+                    extracted=extracted,
+                    preselected_intent=request.preselected_intent,
+                )
+            return self._generic_fallback(
+                request.session_id, reason="No classifier available"
+            )
+
+        # Stage 1: deterministic alias resolver.
+        stage1 = self._registry_facade.resolve_bundle(
+            session_id=request.session_id,
+            user_message=request.user_message,
+            extracted=extracted,
+        )
+        if stage1 is not None and stage1.selected_bundle is not None:
+            return stage1
+
+        # Stage 2: LLM industry classifier (only if available).
+        if self._llm_industry_classifier is not None:
+            choice = await self._llm_industry_classifier.classify(
+                session_id=request.session_id,
+                user_message=request.user_message,
+                extracted=extracted,
+            )
+            if choice.industry is not None:
+                return self._build_classification_from_industry(
+                    request.session_id, choice
+                )
+
+        # Stage 3: generic fallback.
+        return self._generic_fallback(
+            request.session_id, reason="No canonical industry matched"
+        )
+
+    def _build_classification_from_industry(
+        self, session_id: str, choice: IndustryChoice
+    ) -> ClassificationResult:
+        industry = choice.industry
+        if industry is None:
+            return self._generic_fallback(
+                session_id, reason="LLM classifier returned no industry"
+            )
+        confidence = float(choice.confidence)
+        reasoning = choice.reasoning
+        mapping = (
+            self._registry_facade.industry_bundle_map()
+            if self._registry_facade is not None
+            else {}
+        )
+        spec = mapping.get(industry, {})
+        bundle_key = str(spec.get("bundle_key") or _GENERIC_BUNDLE_KEY)
+
+        suggestion = BundleSuggestion(
+            bundle_key=bundle_key,
+            display_name=bundle_key.replace("_", " ").title(),
+            confidence=confidence,
+            reasoning=f"LLM matched industry '{industry}': {reasoning}",
+            matched_signals=[industry],
+        )
+        return ClassificationResult(
+            session_id=session_id,
+            selected_bundle=suggestion,
+            ranked_candidates=[suggestion],
+            confidence_status="proceed",
+            top_confidence=confidence,
+            reasoning="LLM canonical industry classifier",
+        )
+
+    @staticmethod
+    def _generic_fallback(session_id: str, reason: str) -> ClassificationResult:
+        suggestion = BundleSuggestion(
+            bundle_key=_GENERIC_BUNDLE_KEY,
+            display_name=_GENERIC_DISPLAY_NAME,
+            confidence=0.45,
+            reasoning=reason,
+            matched_signals=[],
+        )
+        return ClassificationResult(
+            session_id=session_id,
+            selected_bundle=suggestion,
+            ranked_candidates=[suggestion],
+            confidence_status="fallback_generic",
+            top_confidence=suggestion.confidence,
+            reasoning=reason,
+        )
 
     def top_bundle(self, suggested: ClassificationResult) -> BundleSuggestion | None:
         return suggested.selected_bundle

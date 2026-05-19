@@ -20,10 +20,27 @@ The LLM selector lands as a separate implementation behind the same
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 from .catalog_view import CatalogView
 from .schemas import EmployeeOverride, SelectionResult, TenantSelection
+
+_SELECTOR_SYSTEM_PROMPT = """
+You are a tenant-provisioning selector for workspace onboarding.
+
+Your job is to return ONLY structured output that matches the SelectionResult schema.
+
+Rules:
+1) Only select IDs that exist in the provided catalog.
+2) Use the user request to personalize tenant fields and optional employee overrides.
+3) Keep tenant.industry aligned with the routing-locked bundle industry
+   from the catalog.
+4) If uncertain, prefer catalog defaults and conservative selections.
+5) Do not invent IDs, fields, or values outside the schema.
+""".strip()
 
 
 class BundleSelector(Protocol):
@@ -32,6 +49,58 @@ class BundleSelector(Protocol):
     def select(
         self, catalog_view: CatalogView, user_message: str
     ) -> SelectionResult: ...
+
+
+@dataclass(slots=True)
+class LLMSelector:
+    """LLM-backed selector with structured-output validation and safe fallback."""
+
+    model: ChatOpenAI
+    fallback_selector: BundleSelector | None = None
+
+    async def select_async(
+        self, catalog_view: CatalogView, user_message: str
+    ) -> SelectionResult:
+        structured = self._model_with_schema()
+        prompt_context = catalog_view.to_prompt()
+        user_prompt = (
+            "User request:\n"
+            f"{user_message}\n\n"
+            "Catalog:\n"
+            f"{prompt_context}\n"
+            "Return the best SelectionResult."
+        )
+        try:
+            result = await structured.ainvoke(
+                [
+                    SystemMessage(content=_SELECTOR_SYSTEM_PROMPT),
+                    HumanMessage(content=user_prompt),
+                ]
+            )
+            selection = (
+                result
+                if isinstance(result, SelectionResult)
+                else SelectionResult.model_validate(result)
+            )
+            # Enforce routing lock even if model drifts.
+            if selection.tenant.industry != catalog_view.bundle_industry:
+                selection = selection.model_copy(
+                    update={
+                        "tenant": selection.tenant.model_copy(
+                            update={"industry": catalog_view.bundle_industry}
+                        )
+                    }
+                )
+            return selection
+        except (RuntimeError, ValueError, TypeError):
+            if self.fallback_selector is not None:
+                return self.fallback_selector.select(catalog_view, user_message)
+            return BaselineSelector().select(catalog_view, user_message)
+
+    def _model_with_schema(self) -> Any:
+        return self.model.with_structured_output(
+            SelectionResult, method="function_calling"
+        )
 
 
 @dataclass(slots=True)
@@ -47,9 +116,7 @@ class BaselineSelector:
 
     tenant_overrides: dict[str, str] | None = None
 
-    def select(
-        self, catalog_view: CatalogView, user_message: str
-    ) -> SelectionResult:
+    def select(self, catalog_view: CatalogView, user_message: str) -> SelectionResult:
         _ = user_message  # baseline ignores the message; placeholder until LLM lands
 
         tenant_fields = dict(catalog_view.tenant_defaults)
