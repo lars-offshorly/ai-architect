@@ -15,6 +15,7 @@ from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
+from agents.tenant_provisioning.service import TenantProvisioningService
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
 from domain.services.canonical_bundle_resolver import CanonicalBundleResolver
@@ -130,6 +131,12 @@ def get_conversation_flow() -> ConversationFlow:
 
 
 @lru_cache(maxsize=1)
+def get_tenant_provisioning_service() -> TenantProvisioningService:
+    """Return a cached TenantProvisioningService using the baseline (deterministic) selector."""
+    return TenantProvisioningService.with_baseline(registry_facade=get_registry_facade())
+
+
+@lru_cache(maxsize=1)
 def get_preview_flow() -> PreviewFlow:
     """Return a cached PreviewFlow wired to the preview generator service."""
     catalog = get_bundle_catalog()
@@ -140,6 +147,7 @@ def get_preview_flow() -> PreviewFlow:
         registry_facade=get_registry_facade(),
         bundle_template_loader=BundleTemplateLoader(),
         static_dashboard_outputs=DashboardTemplateRegistry(catalog=catalog),
+        tenant_provisioning_service=get_tenant_provisioning_service(),
     )
 
 
