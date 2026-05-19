@@ -8,6 +8,7 @@ from agents.preview_generator.bundle_template_loader import (
     PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
+from agents.tenant_provisioning.service import TenantProvisioningService
 from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from core.logging import get_logger, get_session_logger
@@ -51,12 +52,14 @@ class PreviewFlow:
         registry_facade: RegistryFacade | None = None,
         bundle_template_loader: BundleTemplateLoader | None = None,
         static_dashboard_outputs: DashboardTemplateRegistry | None = None,
+        tenant_provisioning_service: TenantProvisioningService | None = None,
     ) -> None:
         self._preview_gen = preview_generator_service
         self._display_names = bundle_display_names
         self._registry_facade = registry_facade
         self._bundle_template_loader = bundle_template_loader
         self._static_dashboard_outputs = static_dashboard_outputs
+        self._tenant_provisioning_service = tenant_provisioning_service
 
     def run(
         self,
@@ -123,6 +126,12 @@ class PreviewFlow:
         if preview_warnings:
             generation_json["preview_warnings"] = preview_warnings
 
+        v2_manifest = self._build_v2_manifest(
+            session_id=session_id,
+            bundle_key=bundle_key,
+            conversation_history=conversation_history,
+        )
+
         payload = AppPayload(
             session_id=session_id,
             bundle_key=bundle_key,
@@ -130,6 +139,7 @@ class PreviewFlow:
             modules=generation_json.get("modules", []),
             generation_json=generation_json,
             dummy_data_json=dummy_data_json,
+            v2_manifest=v2_manifest,
         )
 
         session_logger.info(
@@ -321,6 +331,31 @@ class PreviewFlow:
         meta["widgets_extracted"] = len(widgets)
         meta["widgets_explicit"] = len(widgets)
 
+    def _build_v2_manifest(
+        self,
+        session_id: str,
+        bundle_key: str,
+        conversation_history: list[dict],
+    ) -> dict[str, object] | None:
+        """Call TenantProvisioningService; return manifest dict or None on any failure."""
+        if self._tenant_provisioning_service is None:
+            return None
+        user_message = _last_user_message(conversation_history)
+        try:
+            return self._tenant_provisioning_service.provision(
+                bundle_key=bundle_key,
+                user_message=user_message,
+                session_id=session_id,
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            logger.warning(
+                "session=%s — v2 manifest provisioning failed for bundle=%s: %s",
+                session_id,
+                bundle_key,
+                exc,
+            )
+            return None
+
     @staticmethod
     def _coerce_dashboard_widgets(raw_widgets: Any) -> list[dict[str, Any]]:
         """Coerce static dashboard widget lists into app-generator-safe schema.
@@ -382,3 +417,11 @@ class PreviewFlow:
             )
 
         return canonical
+
+
+def _last_user_message(conversation_history: list[dict]) -> str:
+    """Return the content of the last user-role message, or empty string."""
+    for msg in reversed(conversation_history):
+        if msg.get("role") == "user":
+            return str(msg.get("content", ""))
+    return ""

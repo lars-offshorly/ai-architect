@@ -6,6 +6,7 @@ import logging
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from agents.tenant_provisioning.service import TenantProvisioningError
 from orchestrators.preview_flow import PreviewFlow
 
 
@@ -98,3 +99,129 @@ def test_does_not_call_any_http_client_during_dashboard_enrichment() -> None:
         flow._enrich_dashboard_widgets("s1", "hr_management", dummy, None, "app-01")
 
     mock_post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# v2 manifest emission tests
+# ---------------------------------------------------------------------------
+
+
+def _v2_manifest_dict() -> dict[str, object]:
+    return {
+        "schema_version": "2.0",
+        "session_id": "sess-v2",
+        "generated_at": "2026-05-20T00:00:00Z",
+        "tenant": {
+            "company_name": "Acme",
+            "industry": "Technology",
+            "size_band": "mid-sized",
+            "primary_region": "us-east-1",
+            "locale": "en-US",
+            "timezone": "America/New_York",
+        },
+        "tickets": {"queues": []},
+        "projects": {"projects": []},
+        "dashboard": {"dashboards": []},
+        "kpi": {"kpis": []},
+        "hr_hub": {"employees": [], "request_types": []},
+    }
+
+
+def _make_flow_with_provisioning(provisioning_service=None) -> PreviewFlow:
+    preview_service = MagicMock()
+    preview_service.generate.return_value = (
+        {"modules": ["HR Hub"]},
+        {"stores": {}},
+        None,
+    )
+    return PreviewFlow(
+        preview_generator_service=preview_service,
+        bundle_display_names={"hr_hub": "HR Hub"},
+        tenant_provisioning_service=provisioning_service,
+    )
+
+
+def test_run_populates_v2_manifest_when_provisioning_service_present() -> None:
+    svc = MagicMock()
+    svc.provision.return_value = _v2_manifest_dict()
+    flow = _make_flow_with_provisioning(svc)
+
+    payload = flow.run(
+        session_id="sess-v2",
+        bundle_key="hr_hub",
+        conversation_history=[{"role": "user", "content": "I need HR tools"}],
+    )
+
+    assert payload.v2_manifest == _v2_manifest_dict()
+    svc.provision.assert_called_once_with(
+        bundle_key="hr_hub",
+        user_message="I need HR tools",
+        session_id="sess-v2",
+    )
+
+
+def test_run_sets_v2_manifest_none_when_provisioning_service_absent() -> None:
+    flow = _make_flow_with_provisioning(None)
+    payload = flow.run(
+        session_id="sess-noprovisioning",
+        bundle_key="hr_hub",
+        conversation_history=[{"role": "user", "content": "hello"}],
+    )
+    assert payload.v2_manifest is None
+
+
+def test_run_sets_v2_manifest_none_when_provisioning_raises(caplog) -> None:
+    svc = MagicMock()
+    svc.provision.side_effect = TenantProvisioningError("no manifest for bundle")
+    flow = _make_flow_with_provisioning(svc)
+
+    with caplog.at_level(logging.WARNING):
+        payload = flow.run(
+            session_id="sess-fail",
+            bundle_key="unknown_bundle",
+            conversation_history=[{"role": "user", "content": "help"}],
+        )
+
+    assert payload.v2_manifest is None
+    assert "v2 manifest provisioning failed" in caplog.text
+
+
+def test_last_user_message_extracted_from_history() -> None:
+    svc = MagicMock()
+    svc.provision.return_value = _v2_manifest_dict()
+    flow = _make_flow_with_provisioning(svc)
+
+    flow.run(
+        session_id="sess-msg",
+        bundle_key="hr_hub",
+        conversation_history=[
+            {"role": "assistant", "content": "How can I help?"},
+            {"role": "user", "content": "I manage a team"},
+            {"role": "assistant", "content": "Tell me more"},
+            {"role": "user", "content": "We use HR Hub"},
+        ],
+    )
+
+    svc.provision.assert_called_once_with(
+        bundle_key="hr_hub",
+        user_message="We use HR Hub",
+        session_id="sess-msg",
+    )
+
+
+def test_run_passes_empty_string_when_no_user_message_in_history() -> None:
+    svc = MagicMock()
+    svc.provision.return_value = _v2_manifest_dict()
+    flow = _make_flow_with_provisioning(svc)
+
+    flow.run(
+        session_id="sess-empty",
+        bundle_key="hr_hub",
+        conversation_history=[{"role": "assistant", "content": "Hello"}],
+    )
+
+    svc.provision.assert_called_once_with(
+        bundle_key="hr_hub",
+        user_message="",
+        session_id="sess-empty",
+    )
