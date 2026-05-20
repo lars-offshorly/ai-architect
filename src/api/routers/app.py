@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from agents.app_generator.service import AppGeneratorService
+from agents.app_generator.validators import validate_v2_manifest
 from api.deps import (
     get_app_generator_service,
     get_registry_facade,
@@ -31,6 +32,7 @@ logger = get_logger(__name__)
 async def generate_app_payload(
     session_id: str,
     body: GenerateAppRequest,
+    response: Response,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     app_generator: Annotated[AppGeneratorService, Depends(get_app_generator_service)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
@@ -63,12 +65,17 @@ async def generate_app_payload(
 
     # Use the session-stored bundle info + the client-provided dummy data
     try:
+        requested_v2_manifest = getattr(body, "v2_manifest", None)
+        if requested_v2_manifest is not None:
+            validate_v2_manifest(requested_v2_manifest)
+
         payload = app_generator.assemble(
             session_id=session_id,
             bundle_key=session.selected_bundle_key,
             display_name=display_name,
             dummy_data=body.dummy_data_json,
             generation_data=body.generation_json,
+            v2_manifest=requested_v2_manifest,
         )
     except InvalidPayloadError as exc:
         raise HTTPException(
@@ -81,6 +88,20 @@ async def generate_app_payload(
             detail=str(exc),
         ) from exc
 
+    if requested_v2_manifest is not None:
+        response.headers["X-Deprecated-Fields"] = "generation_json,dummy_data_json"
+        return AppPayloadResponseSchema(
+            schema_version=payload.schema_version,
+            session_id=payload.session_id,
+            bundle_key=payload.bundle_key,
+            display_name=payload.display_name,
+            modules=payload.modules,
+            generation_json=body.generation_json or {},
+            dummy_data_json=body.dummy_data_json,
+            preview_type="confirmed",
+            v2_manifest=payload.v2_manifest,
+        )
+
     return AppPayloadResponseSchema(
         schema_version=payload.schema_version,
         session_id=payload.session_id,
@@ -90,4 +111,5 @@ async def generate_app_payload(
         generation_json=payload.generation_json,
         dummy_data_json=payload.dummy_data_json,
         preview_type="confirmed",
+        v2_manifest=payload.v2_manifest,
     )

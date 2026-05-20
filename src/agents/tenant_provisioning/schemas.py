@@ -35,6 +35,8 @@ from collections.abc import Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from agents.preview_generator.schemas import EmployeeRecord, TenantInfo
+
 
 def _no_duplicates(values: Sequence[int], field: str) -> list[int]:
     seen: set[int] = set()
@@ -48,7 +50,7 @@ def _no_duplicates(values: Sequence[int], field: str) -> list[int]:
     return list(values)
 
 
-class TenantSelection(BaseModel):
+class TenantSelection(TenantInfo):
     """Six tenant-level fields the LLM sets freely (within emitter rules)."""
 
     model_config = ConfigDict(extra="forbid")
@@ -61,7 +63,7 @@ class TenantSelection(BaseModel):
     timezone: str = Field(min_length=1)
 
 
-class EmployeeOverride(BaseModel):
+class EmployeeOverride(EmployeeRecord):
     """Per-employee mutable fields. ``id`` is a frozen catalog reference."""
 
     model_config = ConfigDict(extra="forbid")

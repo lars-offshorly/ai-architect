@@ -15,6 +15,7 @@ class AppPayloadFormatter:
         display_name: str,
         generation_json: dict[str, object],
         dummy_data_json: dict[str, object],
+        v2_manifest: dict[str, object] | None = None,
     ) -> AppPayload:
         modules = generation_json.get("modules")
         payload = AppPayload(
@@ -25,6 +26,7 @@ class AppPayloadFormatter:
             modules=modules if isinstance(modules, list) else [],
             generation_json=generation_json,
             dummy_data_json=dummy_data_json,
+            v2_manifest=v2_manifest,
         )
         logger.info(
             "App payload formatted for session=%s bundle=%s", session_id, bundle_key

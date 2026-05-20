@@ -7,7 +7,7 @@ from core.exceptions import PreviewGenerationError
 from core.logging import get_logger, get_session_logger
 from domain.models.extraction_result import ExtractionResult
 
-from .pipeline import compiled_graph
+from .pipeline import compiled_graph, compiled_graph_skip_sample_data
 from .schemas import PreviewOutput, UserContext
 from .state import PreviewGeneratorState
 
@@ -24,8 +24,9 @@ class PreviewGeneratorService:
     inside the pipeline nodes.
     """
 
-    def __init__(self, catalog: BundleCatalog) -> None:
+    def __init__(self, catalog: BundleCatalog, *, emit_v2: bool = False) -> None:
         self._catalog = catalog
+        self._emit_v2 = emit_v2
 
     def generate(
         self,
@@ -68,7 +69,8 @@ class PreviewGeneratorService:
             catalog=self._catalog,
         )
 
-        result: dict = compiled_graph.invoke(initial_state)
+        graph = compiled_graph_skip_sample_data if self._emit_v2 else compiled_graph
+        result: dict = graph.invoke(initial_state)
 
         raw = result.get("output")
         if raw is None:

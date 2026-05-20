@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # KPI metrics
@@ -120,6 +120,10 @@ class EditActionType(str, Enum):
     REMOVE_KPI = "remove_kpi"
     ADD_DASHBOARD = "add_dashboard"
     REMOVE_DASHBOARD = "remove_dashboard"
+    ADD_QUEUE = "add_queue"
+    REMOVE_QUEUE = "remove_queue"
+    ADD_DASHBOARD_BY_ID = "add_dashboard_by_id"
+    REMOVE_DASHBOARD_BY_ID = "remove_dashboard_by_id"
     UNSUPPORTED = "unsupported"
 
 
@@ -135,6 +139,8 @@ class EditAction(BaseModel):
 
 
 class TenantInfo(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     company_name: str
     industry: str
     size_band: str
@@ -144,11 +150,15 @@ class TenantInfo(BaseModel):
 
 
 class CatalogRef(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: int = Field(..., gt=0)
     name: str
 
 
 class EmployeeRecord(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: int = Field(..., gt=0)
     position: str
     team: str
@@ -159,27 +169,39 @@ class EmployeeRecord(BaseModel):
 
 
 class TicketQueuesSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     queues: list[CatalogRef]
 
 
 class ProjectsSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     projects: list[CatalogRef]
 
 
 class DashboardSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     dashboards: list[CatalogRef]
 
 
 class KpiSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     kpis: list[CatalogRef]
 
 
 class HrHubSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     employees: list[EmployeeRecord]
     request_types: list[CatalogRef]
 
 
 class TenantProvisioningManifest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     schema_version: Literal["2.0"]
     session_id: str
     generated_at: str

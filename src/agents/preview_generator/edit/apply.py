@@ -265,6 +265,121 @@ def _add_dashboard(payload: dict) -> None:
     logger.info("Added dashboard")
 
 
+def _as_positive_int(target: str | None) -> int | None:
+    if target is None:
+        return None
+    try:
+        parsed = int(target)
+    except ValueError:
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _get_v2_manifest(payload: dict) -> dict | None:
+    manifest = payload.get("v2_manifest")
+    if not isinstance(manifest, dict):
+        return None
+    if manifest.get("schema_version") != "2.0":
+        return None
+    return manifest
+
+
+def _find_name_from_v1_store(payload: dict, store_key: str, item_id: int) -> str | None:
+    stores = payload.get("dummy_data_json", {}).get("stores", {})
+    if not isinstance(stores, dict):
+        return None
+    items = stores.get(store_key)
+    if not isinstance(items, list):
+        return None
+    for item in items:
+        if (
+            isinstance(item, dict)
+            and isinstance(item.get("id"), int)
+            and item.get("id") == item_id
+            and isinstance(item.get("name"), str)
+            and item.get("name")
+        ):
+            return item["name"]
+    return None
+
+
+def apply_edit_v2(
+    payload: dict,
+    action: EditAction,
+    catalog: BundleCatalog,
+) -> tuple[dict, str | None]:
+    """Apply v2 edits against payload.v2_manifest (schema_version=2.0)."""
+    _ = catalog
+    result = copy.deepcopy(payload)
+    warning: str | None = None
+
+    if action.action_type == EditActionType.UNSUPPORTED:
+        warning = (
+            f"Unsupported edit instruction: '{action.raw_instruction}'. "
+            "No changes were applied."
+        )
+        result["warning"] = warning
+        return result, warning
+
+    manifest = _get_v2_manifest(result)
+    if manifest is None:
+        warning = "v2_manifest missing or invalid for v2 edit path."
+        result["warning"] = warning
+        return result, warning
+
+    target_id = _as_positive_int(action.target)
+
+    if action.action_type in {EditActionType.ADD_QUEUE, EditActionType.REMOVE_QUEUE}:
+        if target_id is None:
+            return result, "Queue edit requires positive integer target id."
+        ticket_section = manifest.setdefault("tickets", {})
+        queues = ticket_section.setdefault("queues", [])
+        if not isinstance(queues, list):
+            queues = []
+            ticket_section["queues"] = queues
+        if action.action_type == EditActionType.REMOVE_QUEUE:
+            ticket_section["queues"] = [
+                queue
+                for queue in queues
+                if not (isinstance(queue, dict) and queue.get("id") == target_id)
+            ]
+            return result, None
+        if not any(
+            isinstance(queue, dict) and queue.get("id") == target_id for queue in queues
+        ):
+            queue_name = _find_name_from_v1_store(result, "queues", target_id)
+            queues.append({"id": target_id, "name": queue_name or f"Queue {target_id}"})
+        return result, None
+
+    if action.action_type in {
+        EditActionType.ADD_DASHBOARD_BY_ID,
+        EditActionType.REMOVE_DASHBOARD_BY_ID,
+    }:
+        if target_id is None:
+            return result, "Dashboard edit requires positive integer target id."
+        dashboard_section = manifest.setdefault("dashboard", {})
+        dashboards = dashboard_section.setdefault("dashboards", [])
+        if not isinstance(dashboards, list):
+            dashboards = []
+            dashboard_section["dashboards"] = dashboards
+        if action.action_type == EditActionType.REMOVE_DASHBOARD_BY_ID:
+            dashboard_section["dashboards"] = [
+                item
+                for item in dashboards
+                if not (isinstance(item, dict) and item.get("id") == target_id)
+            ]
+            return result, None
+        if not any(
+            isinstance(item, dict) and item.get("id") == target_id for item in dashboards
+        ):
+            dashboards.append({"id": target_id, "name": f"Dashboard {target_id}"})
+        return result, None
+
+    # For v2 payloads, keep existing module/KPI/dashboard boolean actions
+    # available as compatibility fallback until parser/tests fully migrate.
+    return apply_edit(result, action, catalog)
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------

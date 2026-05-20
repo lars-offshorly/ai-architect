@@ -32,6 +32,7 @@ class AppGeneratorService:
         display_name: str,
         dummy_data: dict[str, object],
         generation_data: dict[str, object] | None = None,
+        v2_manifest: dict[str, object] | None = None,
     ) -> AppPayload:
         session_logger = get_session_logger(__name__, session_id)
         session_logger.info("Assembling app payload for bundle=%s", bundle_key)
@@ -126,6 +127,7 @@ class AppGeneratorService:
             display_name=display_name,
             generation_json=generation_json,
             dummy_data_json=normalized_dummy_data,
+            v2_manifest=v2_manifest,
         )
         session_logger.info("App payload assembled for session=%s", session_id)
         return payload

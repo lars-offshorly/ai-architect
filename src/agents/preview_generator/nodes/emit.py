@@ -7,7 +7,20 @@ from datetime import datetime, timezone
 from core.logging import get_logger
 
 from ..dashboard.static_ids import BUNDLE_TO_DASHBOARD, DASHBOARD_IDS, WIDGET_TEMPLATES
-from ..schemas import DummyDataJson, GenerationJson, PreviewOutput
+from ..schemas import (
+    CatalogRef,
+    DummyDataJson,
+    EmployeeRecord,
+    GenerationJson,
+    HrHubSection,
+    KpiSection,
+    PreviewOutput,
+    ProjectsSection,
+    TenantInfo,
+    TenantProvisioningManifest,
+    TicketQueuesSection,
+    DashboardSection,
+)
 from ..state import PreviewGeneratorState
 
 logger = get_logger(__name__)
@@ -455,3 +468,74 @@ def emit_preview(state: PreviewGeneratorState) -> dict:
             generation_json=generation_json, dummy_data_json=dummy_data_json
         ).model_dump()
     }
+
+
+def _to_catalog_refs(items: list[dict]) -> list[CatalogRef]:
+    refs: list[CatalogRef] = []
+    for item in items:
+        item_id = item.get("id")
+        name = item.get("name")
+        if isinstance(item_id, int) and item_id > 0 and isinstance(name, str) and name:
+            refs.append(CatalogRef(id=item_id, name=name))
+    return refs
+
+
+def _to_employee_records(items: list[dict]) -> list[EmployeeRecord]:
+    records: list[EmployeeRecord] = []
+    for item in items:
+        item_id = item.get("id")
+        if not isinstance(item_id, int) or item_id <= 0:
+            continue
+        records.append(
+            EmployeeRecord(
+                id=item_id,
+                position=str(item.get("position") or ""),
+                team=str(item.get("team") or ""),
+                department=str(item.get("department") or ""),
+                job_title=str(item.get("job_title") or ""),
+                job_type=str(item.get("job_type") or ""),
+                job_level=str(item.get("job_level") or ""),
+            )
+        )
+    return records
+
+
+def emit_v2(state: PreviewGeneratorState) -> dict:
+    """Build a v2 tenant provisioning manifest from preview state."""
+    now_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    tenant = TenantInfo(
+        company_name=(
+            state.user_context.company_name
+            if state.user_context and state.user_context.company_name
+            else "Generated Tenant"
+        ),
+        industry=state.bundle_key,
+        size_band=(
+            state.user_context.company_size
+            if state.user_context and state.user_context.company_size
+            else "unknown"
+        ),
+        primary_region="unknown",
+        locale="en-US",
+        timezone="UTC",
+    )
+    manifest = TenantProvisioningManifest(
+        schema_version="2.0",
+        session_id=state.session_id,
+        generated_at=now_utc,
+        tenant=tenant,
+        tickets=TicketQueuesSection(queues=_to_catalog_refs(state.sample_tickets)),
+        projects=ProjectsSection(projects=_to_catalog_refs(state.sample_projects)),
+        dashboard=DashboardSection(dashboards=[]),
+        kpi=KpiSection(
+            kpis=[
+                CatalogRef(id=index + 1, name=metric.label)
+                for index, metric in enumerate(state.kpi_metrics)
+            ]
+        ),
+        hr_hub=HrHubSection(
+            employees=_to_employee_records(state.sample_employees),
+            request_types=[],
+        ),
+    )
+    return manifest.model_dump()

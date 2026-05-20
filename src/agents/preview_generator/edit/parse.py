@@ -150,6 +150,41 @@ def _regex_kpi_action(text: str, instruction: str) -> EditAction | None:
     return None
 
 
+def _v2_id_action(text: str, instruction: str) -> EditAction | None:
+    queue_match = re.search(r"\bqueue\s+(\d+)\b", text)
+    if queue_match:
+        queue_id = queue_match.group(1)
+        if _has_any_verb(text, _ADD_VERBS):
+            return EditAction(
+                action_type=EditActionType.ADD_QUEUE,
+                target=queue_id,
+                raw_instruction=instruction,
+            )
+        if _has_any_verb(text, _REMOVE_VERBS):
+            return EditAction(
+                action_type=EditActionType.REMOVE_QUEUE,
+                target=queue_id,
+                raw_instruction=instruction,
+            )
+
+    dashboard_match = re.search(r"\bdashboard\s+(\d+)\b", text)
+    if dashboard_match:
+        dashboard_id = dashboard_match.group(1)
+        if _has_any_verb(text, _ADD_VERBS):
+            return EditAction(
+                action_type=EditActionType.ADD_DASHBOARD_BY_ID,
+                target=dashboard_id,
+                raw_instruction=instruction,
+            )
+        if _has_any_verb(text, _REMOVE_VERBS):
+            return EditAction(
+                action_type=EditActionType.REMOVE_DASHBOARD_BY_ID,
+                target=dashboard_id,
+                raw_instruction=instruction,
+            )
+    return None
+
+
 def parse_edit_instruction(instruction: str, catalog: BundleCatalog) -> EditAction:
     """Parse a natural language instruction into a structured EditAction.
 
@@ -164,6 +199,10 @@ def parse_edit_instruction(instruction: str, catalog: BundleCatalog) -> EditActi
     text = instruction.lower().strip()
     metrics_catalog = catalog.get_metrics_catalog()
     parsed = _dashboard_action(text, instruction)
+    if parsed is not None:
+        return parsed
+
+    parsed = _v2_id_action(text, instruction)
     if parsed is not None:
         return parsed
 
