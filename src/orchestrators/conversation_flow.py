@@ -149,7 +149,16 @@ class ReplierPort(Protocol):
         session_id: str,
         extracted: ExtractionResult,
         bundle_key: str,
+        history: list[ConversationMessage] | None = None,
     ) -> tuple[object | None, str]: ...
+
+    async def build_bundle_verification_question(
+        self,
+        session_id: str,
+        display_name: str,
+        slots: dict[str, object],
+        history: list[ConversationMessage] | None = None,
+    ) -> str: ...
 
     async def build_bundle_suggestion(
         self,
@@ -222,17 +231,23 @@ class ConversationFlow:
             self._persist_session_state(session, context, result)
             return result
 
+        # Always ask exactly one verification question on the first unconfirmed turn,
+        # regardless of confidence, to collect user context and confirm the bundle fit.
+        # This runs before all confidence-based branching so every path gets the same
+        # smart follow-up on turn 1.
         if (
-            not session.confirmed
-            and session.selected_bundle_key is not None
-            and _detect_confirmation_intent(turn_request.user_message)
+            session.clarification_turn_count == 0
+            and not session.confirmed
+            and session.preselected_bundle_key is None
         ):
-            session_logger.info(
-                "Confirmation intent detected for bundle=%s",
-                session.selected_bundle_key,
+            top_display = context.top.display_name if context.top is not None else ""
+            question = await self._replier.build_bundle_verification_question(
+                turn_request.session_id,
+                top_display,
+                context.slots,
+                history=turn_request.history,
             )
-            session.confirmed = True
-            result = self._ready_for_preview_response(context, preview_type="confirmed")
+            result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
             return result
 
@@ -254,6 +269,7 @@ class ConversationFlow:
             turn_request.session_id,
             context.extracted,
             target_key,
+            history=turn_request.history,
         )
         if missing_field is not None:
             result = self._awaiting_input_response(question, context)
@@ -263,11 +279,10 @@ class ConversationFlow:
         if not session.confirmed:
             suggestion = context.top
             if suggestion is None:
-                question = "".join(
-                    [
-                        "Could you share a bit more so I can suggest ",
-                        "the right bundle?",
-                    ]
+                question = (
+                    "Could you tell me a bit more about what you're looking to "
+                    "manage? That'll help me configure this the right way for "
+                    "your team."
                 )
                 result = self._awaiting_input_response(question, context)
                 self._persist_session_state(session, context, result)
@@ -280,8 +295,9 @@ class ConversationFlow:
             )
             if status == "fallback_generic":
                 message = (
-                    "I couldn't confidently classify your request yet, so I'll use the "
-                    "generic bundle unless you'd like to clarify first.\n\n"
+                    "I want to make sure this is set up right for you — could you share "
+                    "a bit more about your team's focus? In the meantime, here's what "
+                    "I've put together based on what you've shared:\n\n"
                     f"{message}"
                 )
             result = self._pending_confirmation_response(message, context)
@@ -442,19 +458,20 @@ class ConversationFlow:
     ) -> str:
         status = context.classification.confidence_status
         if status == "suggest_alternatives":
-            options = context.classification.ranked_candidates[:3]
-            if options:
-                names = ", ".join(option.display_name for option in options)
-                return (
-                    "I found multiple possible bundles. Which one fits best: "
-                    f"{names}?"
-                )
+            top_display = context.top.display_name if context.top is not None else ""
+            return await self._replier.build_bundle_verification_question(
+                request.session_id,
+                top_display,
+                context.slots,
+                history=request.history,
+            )
 
         target_key = context.top.bundle_key if context.top is not None else "unknown"
         _, question = await self._replier.build_clarification(
             request.session_id,
             context.extracted,
             target_key,
+            history=request.history,
         )
         return question
 
