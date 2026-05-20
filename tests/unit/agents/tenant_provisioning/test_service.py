@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from unittest.mock import MagicMock
 
 import pytest
 
 from agents.tenant_provisioning import (
     CatalogView,
+    LLMSelector,
     SelectionResult,
     TenantProvisioningError,
     TenantProvisioningService,
@@ -123,3 +125,85 @@ def test_service_hr_management_bundle_round_trips(facade: RegistryFacade) -> Non
     )
     assert result["tenant"]["industry"] == "hr_recruitment_agency"
     assert len(result["hr_hub"]["request_types"]) > 0
+
+
+# ---------------------------------------------------------------------------
+# provision_async
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_provision_async_with_baseline_emits_full_manifest(
+    facade: RegistryFacade,
+) -> None:
+    service = TenantProvisioningService.with_baseline(facade)
+    result = await service.provision_async(
+        bundle_key="ticketing",
+        user_message="bpo contact center",
+        session_id="sess-async",
+        generated_at=datetime(2026, 5, 18, 12, 0, 0, tzinfo=timezone.utc),
+    )
+    assert result["session_id"] == "sess-async"
+    assert result["schema_version"] == "2.0"
+    assert len(result["tickets"]["queues"]) == 6
+
+
+@pytest.mark.asyncio
+async def test_provision_async_raises_for_unknown_bundle(
+    facade: RegistryFacade,
+) -> None:
+    service = TenantProvisioningService.with_baseline(facade)
+    with pytest.raises(TenantProvisioningError, match="No canonical manifest"):
+        await service.provision_async(
+            bundle_key="no_such_bundle",
+            user_message="",
+            session_id="sess-x",
+        )
+
+
+@pytest.mark.asyncio
+async def test_provision_async_delegates_to_stub_select_async(
+    facade: RegistryFacade,
+) -> None:
+    captured: dict[str, object] = {}
+
+    class StubAsyncSelector:
+        async def select_async(
+            self, catalog_view: CatalogView, user_message: str
+        ) -> SelectionResult:
+            captured["message"] = user_message
+            return SelectionResult(
+                tenant=TenantSelection(
+                    company_name="Async Co",
+                    industry=catalog_view.bundle_industry,
+                    size_band="10-50",
+                    primary_region="APAC",
+                    locale="en-PH",
+                    timezone="Asia/Manila",
+                ),
+                selected_queue_ids=[101],
+            )
+
+    service = TenantProvisioningService(
+        registry_facade=facade, selector=StubAsyncSelector()  # type: ignore[arg-type]
+    )
+    result = await service.provision_async(
+        bundle_key="ticketing",
+        user_message="async test",
+        session_id="sess-stub-async",
+    )
+    assert captured["message"] == "async test"
+    assert result["tenant"]["company_name"] == "Async Co"
+    assert len(result["tickets"]["queues"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# with_llm
+# ---------------------------------------------------------------------------
+
+
+def test_with_llm_creates_service_with_llm_selector(facade: RegistryFacade) -> None:
+    model = MagicMock()
+    service = TenantProvisioningService.with_llm(model=model, registry_facade=facade)
+    assert isinstance(service.selector, LLMSelector)
+    assert service.selector.fallback_selector is not None

@@ -70,6 +70,14 @@ def test_baseline_is_pure_and_repeatable() -> None:
     assert a == b
 
 
+@pytest.mark.asyncio
+async def test_baseline_select_async_returns_same_as_select() -> None:
+    view = _view()
+    sync_result = BaselineSelector().select(view, "msg")
+    async_result = await BaselineSelector().select_async(view, "msg")
+    assert async_result == sync_result
+
+
 class _FakeStructuredInvoker:
     def __init__(self, result: object) -> None:
         self._result = result

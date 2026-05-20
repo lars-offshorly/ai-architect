@@ -50,6 +50,10 @@ class BundleSelector(Protocol):
         self, catalog_view: CatalogView, user_message: str
     ) -> SelectionResult: ...
 
+    async def select_async(
+        self, catalog_view: CatalogView, user_message: str
+    ) -> SelectionResult: ...
+
 
 @dataclass(slots=True)
 class LLMSelector:
@@ -57,6 +61,11 @@ class LLMSelector:
 
     model: ChatOpenAI
     fallback_selector: BundleSelector | None = None
+
+    def select(self, catalog_view: CatalogView, user_message: str) -> SelectionResult:
+        if self.fallback_selector is not None:
+            return self.fallback_selector.select(catalog_view, user_message)
+        return BaselineSelector().select(catalog_view, user_message)
 
     async def select_async(
         self, catalog_view: CatalogView, user_message: str
@@ -115,6 +124,11 @@ class BaselineSelector:
     """
 
     tenant_overrides: dict[str, str] | None = None
+
+    async def select_async(
+        self, catalog_view: CatalogView, user_message: str
+    ) -> SelectionResult:
+        return self.select(catalog_view, user_message)
 
     def select(self, catalog_view: CatalogView, user_message: str) -> SelectionResult:
         _ = user_message  # baseline ignores the message; placeholder until LLM lands

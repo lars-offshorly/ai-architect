@@ -26,11 +26,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from langchain_openai import ChatOpenAI
+
 from domain.services.registry_facade import RegistryFacade
 
 from .catalog_view import CatalogView
 from .emitter import emit_tenant_provisioning
-from .selector import BaselineSelector, BundleSelector
+from .selector import BaselineSelector, BundleSelector, LLMSelector
 
 
 class TenantProvisioningError(RuntimeError):
@@ -48,6 +50,16 @@ class TenantProvisioningService:
     ) -> TenantProvisioningService:
         """Convenience builder using the deterministic baseline selector."""
         return cls(registry_facade=registry_facade, selector=BaselineSelector())
+
+    @classmethod
+    def with_llm(
+        cls, model: ChatOpenAI, registry_facade: RegistryFacade
+    ) -> TenantProvisioningService:
+        """Convenience builder using the LLM selector with a baseline fallback."""
+        return cls(
+            registry_facade=registry_facade,
+            selector=LLMSelector(model=model, fallback_selector=BaselineSelector()),
+        )
 
     def provision(
         self,
@@ -67,6 +79,28 @@ class TenantProvisioningService:
         selection = self.selector.select(  # pylint: disable=assignment-from-no-return
             catalog_view, user_message
         )
+        return emit_tenant_provisioning(
+            manifest,
+            selection,
+            session_id=session_id,
+            generated_at=generated_at,
+        )
+
+    async def provision_async(
+        self,
+        bundle_key: str,
+        user_message: str,
+        *,
+        session_id: str,
+        generated_at: datetime | None = None,
+    ) -> dict[str, Any]:
+        manifest = self.registry_facade.get_raw_manifest(bundle_key)
+        if manifest is None:
+            raise TenantProvisioningError(
+                f"No canonical manifest registered for bundle '{bundle_key}'"
+            )
+        catalog_view = CatalogView.from_manifest(manifest)
+        selection = await self.selector.select_async(catalog_view, user_message)
         return emit_tenant_provisioning(
             manifest,
             selection,

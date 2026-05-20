@@ -7,7 +7,7 @@ from agents.preview_generator.schemas import (
     CatalogRef,
     EmployeeRecord,
     HrHubSection,
-    AppPayloadV2,
+    TenantProvisioningManifest,
     TicketQueuesSection,
 )
 
@@ -47,7 +47,7 @@ def _valid_manifest_dict() -> dict:
 
 
 def test_parses_valid_manifest_from_target_contract_sample() -> None:
-    manifest = AppPayloadV2(**_valid_manifest_dict())
+    manifest = TenantProvisioningManifest(**_valid_manifest_dict())
     assert manifest.schema_version == "2.0"
     assert manifest.session_id == "sess-abc123"
     assert manifest.tenant.company_name == "Acme Corp"
@@ -57,35 +57,35 @@ def test_rejects_schema_version_1_0() -> None:
     data = _valid_manifest_dict()
     data["schema_version"] = "1.0"
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)
 
 
 def test_rejects_schema_version_missing() -> None:
     data = _valid_manifest_dict()
     del data["schema_version"]
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)
 
 
 def test_rejects_missing_tenant() -> None:
     data = _valid_manifest_dict()
     del data["tenant"]
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)
 
 
 def test_rejects_missing_hr_hub() -> None:
     data = _valid_manifest_dict()
     del data["hr_hub"]
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)
 
 
 def test_rejects_missing_kpi() -> None:
     data = _valid_manifest_dict()
     del data["kpi"]
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)
 
 
 def test_rejects_negative_catalog_ref_id() -> None:
@@ -124,4 +124,4 @@ def test_tenant_info_rejects_missing_industry() -> None:
     data = _valid_manifest_dict()
     del data["tenant"]["industry"]
     with pytest.raises(ValidationError):
-        AppPayloadV2(**data)
+        TenantProvisioningManifest(**data)

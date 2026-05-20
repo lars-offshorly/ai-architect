@@ -14,9 +14,11 @@ class FallbackHandler:
         suggest_threshold: float = 0.50,
         score_gap_minimum: float = 0.15,
         max_clarification_turns: int = 3,
+        catalog: object | None = None,
         # These constructor params are intentionally explicit and configurable.
         # pylint: disable=too-many-arguments,too-many-positional-arguments
     ) -> None:
+        _ = catalog  # backward-compatible constructor arg
         self._proceed_threshold = proceed_threshold
         self._suggest_threshold = suggest_threshold
         self._score_gap_minimum = score_gap_minimum
@@ -131,7 +133,7 @@ class FallbackHandler:
                 "top_confidence": top.confidence if top is not None else 0.0,
                 "score_gap": score_gap,
                 "missing_context": missing_context,
-                "reasoning": "",
+                "reasoning": "Clarification budget exhausted; using generic fallback.",
             }
         )
 

@@ -1,0 +1,1 @@
+"""Legacy generator compatibility package."""

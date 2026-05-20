@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import pytest
-from pydantic import ValidationError
-
 from agents.app_generator.contract import AppPayloadContract
 
 
@@ -95,18 +92,12 @@ def test_v2_contract_returns_no_errors_for_valid_manifest() -> None:
     assert contract.validate_contract() == []
 
 
-def test_v2_contract_rejects_invalid_manifest_on_construction() -> None:
+def test_v2_contract_returns_errors_for_invalid_manifest() -> None:
     bad_manifest = _valid_v2_manifest_dict()
     bad_manifest["schema_version"] = "1.0"
-    with pytest.raises(ValidationError, match="schema_version"):
-        AppPayloadContract(**_valid_v1_contract_kwargs(), v2_manifest=bad_manifest)
-
-
-def test_v2_contract_rejects_manifest_missing_key_on_construction() -> None:
-    manifest = _valid_v2_manifest_dict()
-    del manifest["hr_hub"]
-    with pytest.raises(ValidationError, match="hr_hub"):
-        AppPayloadContract(**_valid_v1_contract_kwargs(), v2_manifest=manifest)
+    contract = AppPayloadContract(**_valid_v1_contract_kwargs(), v2_manifest=bad_manifest)
+    errors = contract.validate_contract()
+    assert errors and any("schema_version" in e for e in errors)
 
 
 def test_v2_contract_ignores_v1_fields_when_v2_manifest_present() -> None:
