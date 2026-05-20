@@ -9,10 +9,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from agents.preview_generator.edit.apply import apply_edit
 from agents.preview_generator.edit.parse import parse_edit_instruction
+from agents.tenant_provisioning.service import (
+    TenantProvisioningError,
+    TenantProvisioningService,
+)
 from api.adapters.v2_manifest_adapter import build_v2_manifest
 from api.deps import (
     get_bundle_catalog,
     get_conversation_repository,
+    get_llm_tenant_provisioning_service,
     get_preview_flow,
     get_registry_facade,
     get_session_repository,
@@ -69,22 +74,33 @@ def _format_preview_warnings(
     )
 
 
+def _last_user_message(conversation_history: list[dict]) -> str:
+    for msg in reversed(conversation_history):
+        if msg.get("role") == "user":
+            return str(msg.get("content", ""))
+    return ""
+
+
 async def _execute_preview_pipeline(
     session_id: str,
     bundle_key: str,
     conv_repo: ConversationRepository,
     flow: PreviewFlow,
     registry_facade: RegistryFacade,
+    catalog: BundleCatalog,
     preview_type: str | None = None,
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
     session: Session | None = None,
     v2_model: Any = None,
+    llm_tps: TenantProvisioningService | None = None,
 ) -> AppPayloadResponseSchema:
     # pylint: disable=too-many-locals
     """Execute the preview pipeline and assemble the response schema."""
-    if not registry_facade.has_bundle(bundle_key):
+    if not registry_facade.has_bundle(bundle_key) and not catalog.has_bundle(
+        bundle_key
+    ):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bundle not found: {bundle_key}",
@@ -129,28 +145,51 @@ async def _execute_preview_pipeline(
     warning = _format_preview_warnings(preview_warnings, warning)
 
     dummy_data_json = dict(payload.dummy_data_json or {})
+    v2_manifest: dict[str, Any] | None = None
     if session is not None:
         try:
             settings = get_settings()
-            manifest = await build_v2_manifest(
-                session=session,
-                dummy_data_json=dummy_data_json,
-                bundle_key=payload.bundle_key,
-                display_name=payload.display_name,
-                conversation_history=conversation_history,
-                registry_facade=registry_facade,
-                model=v2_model,
-                disable_llm_calls=settings.DISABLE_LLM_CALLS,
-            )
-            manifest_overlay = dict(manifest)
-            # Keep v1 dummy_data_json contract stable for /app finalization.
-            # The v2 sections (tenant/tickets/projects/...) are still attached
-            # for FE rendering, but schema_version must remain v1 ("1.0").
-            manifest_overlay.pop("schema_version", None)
-            dummy_data_json.update(manifest_overlay)
+
+            # Primary path: TenantProvisioningService with LLM (or baseline fallback).
+            if llm_tps is not None:
+                try:
+                    v2_manifest = await llm_tps.provision_async(
+                        bundle_key=bundle_key,
+                        user_message=_last_user_message(conversation_history),
+                        session_id=session_id,
+                    )
+                except TenantProvisioningError:
+                    logger.warning(
+                        "session=%s — no canonical manifest for bundle=%s; "
+                        "falling back to adapter",
+                        session_id,
+                        bundle_key,
+                    )
+
+            # Fallback: adapter synthesis for bundles without canonical manifests.
+            if v2_manifest is None:
+                v2_manifest = await build_v2_manifest(
+                    session=session,
+                    dummy_data_json=dummy_data_json,
+                    bundle_key=payload.bundle_key,
+                    display_name=payload.display_name,
+                    conversation_history=conversation_history,
+                    registry_facade=registry_facade,
+                    model=v2_model,
+                    disable_llm_calls=settings.DISABLE_LLM_CALLS,
+                )
+
+            if v2_manifest is not None:
+                manifest_overlay = dict(v2_manifest)
+                # Keep v1 dummy_data_json contract stable for /app finalization.
+                # The v2 sections (tenant/tickets/projects/...) are still attached
+                # for FE rendering, but schema_version must remain v1 ("1.0").
+                manifest_overlay.pop("schema_version", None)
+                dummy_data_json.update(manifest_overlay)
+
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             logger.exception(
-                "v2 manifest adapter failed for session=%s; returning v1-only payload",
+                "v2 manifest failed for session=%s; returning v1-only payload",
                 session_id,
             )
 
@@ -164,6 +203,7 @@ async def _execute_preview_pipeline(
         dummy_data_json=dummy_data_json,
         preview_type=preview_type,
         warning=warning,
+        v2_manifest=v2_manifest,
     )
 
 
@@ -174,7 +214,11 @@ async def generate_preview(
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
     v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
+    llm_tps: Annotated[
+        TenantProvisioningService, Depends(get_llm_tenant_provisioning_service)
+    ],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -196,11 +240,13 @@ async def generate_preview(
         conv_repo=conv_repo,
         flow=flow,
         registry_facade=registry_facade,
+        catalog=catalog,
         preview_type="confirmed",
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
         session=session,
         v2_model=v2_model,
+        llm_tps=llm_tps,
     )
 
 
@@ -211,7 +257,11 @@ async def generate_early_preview(
     conv_repo: Annotated[ConversationRepository, Depends(get_conversation_repository)],
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
+    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
     v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
+    llm_tps: Annotated[
+        TenantProvisioningService, Depends(get_llm_tenant_provisioning_service)
+    ],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -238,12 +288,14 @@ async def generate_early_preview(
         conv_repo=conv_repo,
         flow=flow,
         registry_facade=registry_facade,
+        catalog=catalog,
         preview_type="early",
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
         session=session,
         v2_model=v2_model,
+        llm_tps=llm_tps,
     )
 
 
@@ -290,4 +342,5 @@ async def edit_preview(
         dummy_data_json=updated.get("dummy_data_json", {}),
         preview_type=updated.get("preview_type"),
         warning=warning,
+        v2_manifest=updated.get("v2_manifest"),
     )

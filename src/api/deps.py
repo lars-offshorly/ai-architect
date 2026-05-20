@@ -132,8 +132,31 @@ def get_conversation_flow() -> ConversationFlow:
 
 @lru_cache(maxsize=1)
 def get_tenant_provisioning_service() -> TenantProvisioningService:
-    """Return a cached TenantProvisioningService using the baseline (deterministic) selector."""
-    return TenantProvisioningService.with_baseline(registry_facade=get_registry_facade())
+    """Return cached tenant provisioning service with baseline selection."""
+    return TenantProvisioningService.with_baseline(
+        registry_facade=get_registry_facade()
+    )
+
+
+@lru_cache(maxsize=1)
+def get_llm_tenant_provisioning_service() -> TenantProvisioningService:
+    """Return a cached TenantProvisioningService backed by LLMSelector in production.
+
+    Falls back to the deterministic baseline selector when DISABLE_LLM_CALLS is set.
+    """
+    settings = get_settings()
+    if settings.DISABLE_LLM_CALLS:
+        return TenantProvisioningService.with_baseline(
+            registry_facade=get_registry_facade()
+        )
+    return TenantProvisioningService.with_llm(
+        model=ChatOpenAI(
+            model=settings.OPENAI_MODEL,
+            temperature=settings.CLASSIFIER_TEMPERATURE,
+            api_key=settings.OPENAI_API_KEY,
+        ),
+        registry_facade=get_registry_facade(),
+    )
 
 
 @lru_cache(maxsize=1)

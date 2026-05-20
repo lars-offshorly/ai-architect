@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from agents.preview_generator.schemas import AppPayloadV2
+from agents.app_generator.validators import validate_v2_manifest
+from core.exceptions import InvalidPayloadError
 
 _REQUIRED_GENERATION_KEYS: frozenset[str] = frozenset(
     {"schema_version", "bundle_key", "modules", "config"}
@@ -21,12 +22,20 @@ class AppPayloadContract(BaseModel):
     # Set to True when the bundle exposes entity_relationships so the contract
     # can warn if relationships were not injected into config.
     has_entity_relationships: bool = False
-    v2_manifest: AppPayloadV2 | None = None
+    v2_manifest: dict[str, object] | None = None
 
     def validate_contract(self) -> list[str]:
         if self.v2_manifest is not None:
-            return []
+            return _validate_v2(self.v2_manifest)
         return _validate_v1(self)
+
+
+def _validate_v2(manifest: dict[str, object]) -> list[str]:
+    try:
+        validate_v2_manifest(manifest)
+    except InvalidPayloadError as exc:
+        return [str(exc)]
+    return []
 
 
 def _validate_v1(contract: AppPayloadContract) -> list[str]:

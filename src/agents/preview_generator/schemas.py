@@ -179,8 +179,7 @@ class HrHubSection(BaseModel):
     request_types: list[CatalogRef]
 
 
-# TODO: rename to AppPayload when legacy domain model is removed (Phase 8)
-class AppPayloadV2(BaseModel):
+class TenantProvisioningManifest(BaseModel):
     schema_version: Literal["2.0"]
     session_id: str
     generated_at: str
@@ -190,3 +189,6 @@ class AppPayloadV2(BaseModel):
     dashboard: DashboardSection
     kpi: KpiSection
     hr_hub: HrHubSection
+
+
+AppPayloadV2 = TenantProvisioningManifest

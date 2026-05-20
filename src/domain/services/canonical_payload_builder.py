@@ -38,19 +38,20 @@ class CanonicalPayloadBuilder:
             if isinstance(p, dict)
         ]
 
-        kpis = manifest.get("kpi", {}).get("kpis", [])
-        stores["kpis"] = [
-            {
-                "id": k.get("id"),
-                "key": _slug(str(k.get("name", ""))),
-                "label": k.get("name"),
-                "value": 0,
-                "unit": "count",
-                "trend": "stable",
-            }
-            for k in kpis
-            if isinstance(k, dict)
-        ]
+        if not stores.get("kpis"):
+            kpis = manifest.get("kpi", {}).get("kpis", [])
+            stores["kpis"] = [
+                {
+                    "id": k.get("id"),
+                    "key": _slug(str(k.get("name", ""))),
+                    "label": k.get("name"),
+                    "value": 0,
+                    "unit": "count",
+                    "trend": "stable",
+                }
+                for k in kpis
+                if isinstance(k, dict)
+            ]
 
         employees = manifest.get("hr_hub", {}).get("employees", [])
         stores["employees"] = [e for e in employees if isinstance(e, dict)]

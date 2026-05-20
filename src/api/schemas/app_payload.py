@@ -28,3 +28,11 @@ class AppPayloadResponseSchema(BaseModel):
             "Indicates the output may contain generic or incomplete data."
         ),
     )
+    v2_manifest: dict[str, object] | None = Field(
+        default=None,
+        description=(
+            "v2 tenant-provisioning manifest (schema_version 2.0). "
+            "Present when the canonical registry has a manifest for the "
+            "requested bundle."
+        ),
+    )

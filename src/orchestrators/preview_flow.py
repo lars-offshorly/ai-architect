@@ -8,9 +8,9 @@ from agents.preview_generator.bundle_template_loader import (
     PIPELINE_OWNED_STORE_KEYS,
     BundleTemplateLoader,
 )
-from agents.tenant_provisioning.service import TenantProvisioningService
 from agents.preview_generator.dashboard.static_ids import DASHBOARD_IDS
 from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
+from agents.tenant_provisioning.service import TenantProvisioningService
 from core.logging import get_logger, get_session_logger
 from domain.models.app_payload import AppPayload
 from domain.models.extraction_result import ExtractionResult
@@ -337,7 +337,7 @@ class PreviewFlow:
         bundle_key: str,
         conversation_history: list[dict],
     ) -> dict[str, object] | None:
-        """Call TenantProvisioningService; return manifest dict or None on any failure."""
+        """Return v2 manifest from TenantProvisioningService when available."""
         if self._tenant_provisioning_service is None:
             return None
         user_message = _last_user_message(conversation_history)
