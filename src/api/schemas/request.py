@@ -64,3 +64,12 @@ class GenerateAppRequest(BaseModel):
             "payload instead of loading static app.json."
         ),
     )
+    v2_manifest: dict[str, object] | None = Field(
+        default=None,
+        description=(
+            "Optional. V2 tenant provisioning manifest produced by the preview pipeline. "
+            "When provided, /sessions/{id}/app validates and packages this manifest "
+            "as the primary response payload. Old clients that omit this field are "
+            "unaffected — default is None."
+        ),
+    )

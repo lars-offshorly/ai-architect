@@ -102,3 +102,14 @@ class TestGenerateAppRequestFields:
             },
         )
         assert req.generation_json is not None
+
+    def test_v2_manifest_defaults_to_none(self) -> None:
+        req = GenerateAppRequest(dummy_data_json={"bundle_key": "ticketing", "stores": {}})
+        assert req.v2_manifest is None
+
+    def test_v2_manifest_accepted_when_provided(self) -> None:
+        req = GenerateAppRequest(
+            dummy_data_json={"bundle_key": "ticketing", "stores": {}},
+            v2_manifest={"schema_version": "2.0", "session_id": "s1"},
+        )
+        assert req.v2_manifest == {"schema_version": "2.0", "session_id": "s1"}
