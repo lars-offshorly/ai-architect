@@ -90,3 +90,28 @@ async def test_preview_then_app_preserves_dashboard_widgets(client: AsyncClient)
     assert isinstance(gen_out, dict)
     assert gen_out.get("widgets", {}).get("total") == len(app_widgets)
     assert gen_out.get("dashboard", {}).get("external_id")
+
+
+@pytest.mark.asyncio
+async def test_v1_roundtrip_ticketing_bundle(
+    client: AsyncClient,
+    v1_fixture: dict,
+) -> None:
+    sid = _unique_id()
+    _seed_confirmed_session(sid, "ticketing")
+
+    preview = (await client.post(f"/sessions/{sid}/preview")).json()
+    assert preview["bundle_key"] == "ticketing"
+    assert preview["preview_type"] == "confirmed"
+
+    # Use only v1 keys (no v2_manifest) to drive the app request
+    v1_keys = set(v1_fixture.keys())
+    request_body = {k: preview[k] for k in v1_keys if k in preview}
+
+    app_payload = (
+        await client.post(f"/sessions/{sid}/app", json=request_body)
+    ).json()
+
+    assert app_payload["bundle_key"] == "ticketing"
+    assert app_payload["preview_type"] == "confirmed"
+    assert "v2_manifest" in app_payload
