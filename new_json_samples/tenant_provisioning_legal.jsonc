@@ -1,0 +1,143 @@
+// Legal services firm variant. Same envelope as the BPO sample.
+// AI's only mutable surface: tenant info, per-employee role assignment,
+// and the lists of IDs to show for queues / projects / dashboards / kpis /
+// hr request types. Everything else is frozen.
+
+{
+  "schema_version": "2.0",
+  "session_id": "7c4e2f1a-8b5d-4a9e-b3f2-c6d1e0f8a2b4",
+  "generated_at": "2026-05-21T10:00:00Z",
+
+  "tenant": {
+    "company_name": "Harmon & Associates",
+    "industry": "legal_services_firm",
+    "size_band": "20-50",
+    "primary_region": "AMER",
+    "locale": "en-US",
+    "timezone": "America/Chicago"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config and
+  //     employee assignments come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 180, "name": "Client Intake" },              // name frozen
+      { "id": 181, "name": "Case Management" },            // name frozen
+      { "id": 182, "name": "Billing & Invoicing" },        // name frozen
+      { "id": 183, "name": "Compliance & Filing" }         // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 580, "name": "Corporate Litigation — Q2 Cases" }, // name frozen
+      { "id": 581, "name": "Contract Template Overhaul" },      // name frozen
+      { "id": 582, "name": "Compliance Audit 2026" }            // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout
+  //     and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 760, "name": "Case Pipeline" },              // name frozen
+      { "id": 761, "name": "Attorney Performance" },       // name frozen
+      { "id": 762, "name": "Billing & Revenue" }           // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 70, "name": "Active Cases" },                // name frozen
+      { "id": 71, "name": "Case Closure Rate" },           // name frozen
+      { "id": 72, "name": "Avg. Case Duration" },          // name frozen
+      { "id": 73, "name": "Billable Hours %" },            // name frozen
+      { "id": 74, "name": "Client Retention Rate" },       // name frozen
+      { "id": 75, "name": "Invoice Collection Rate" }      // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "Managing Partner",
+        "team": "Leadership",
+        "department": "Legal",
+        "job_title": "Managing Partner",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 3,                                    // frozen: catalog ref
+        "position": "Head of Litigation",
+        "team": "Litigation",
+        "department": "Legal",
+        "job_title": "Senior Partner",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 4,                                    // frozen: catalog ref
+        "position": "Practice Manager",
+        "team": "Operations",
+        "department": "Operations",
+        "job_title": "Practice Manager",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 6,                                    // frozen: catalog ref
+        "position": "Associate Attorney",
+        "team": "Litigation",
+        "department": "Legal",
+        "job_title": "Associate",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 9,                                    // frozen: catalog ref
+        "position": "Paralegal",
+        "team": "Support",
+        "department": "Legal",
+        "job_title": "Paralegal",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 11,                                   // frozen: catalog ref
+        "position": "Legal Secretary",
+        "team": "Support",
+        "department": "Operations",
+        "job_title": "Legal Secretary",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 13,                                   // frozen: catalog ref
+        "position": "Billing Administrator",
+        "team": "Finance",
+        "department": "Finance",
+        "job_title": "Billing Admin",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },              // name frozen
+      { "id": 806, "name": "Expense Reimbursement" },      // name frozen
+      { "id": 820, "name": "Continuing Legal Education" }  // name frozen
+    ]
+  }
+}

@@ -53,6 +53,68 @@
         "people ops",
         "people operations"
       ]
+    },
+    "healthcare_provider": {
+      "bundle_key": "healthcare",
+      "aliases": [
+        "healthcare",
+        "hospital",
+        "clinic",
+        "medical center",
+        "health system",
+        "patient care",
+        "medical practice",
+        "health clinic",
+        "doctor",
+        "nurse",
+        "physician"
+      ]
+    },
+    "legal_services_firm": {
+      "bundle_key": "legal_services",
+      "aliases": [
+        "law firm",
+        "legal",
+        "attorney",
+        "lawyer",
+        "law office",
+        "legal services",
+        "litigation",
+        "counsel",
+        "barrister",
+        "solicitor"
+      ]
+    },
+    "real_estate_brokerage": {
+      "bundle_key": "real_estate",
+      "aliases": [
+        "real estate",
+        "property",
+        "realty",
+        "broker",
+        "brokerage",
+        "listings",
+        "realtor",
+        "property management",
+        "leasing",
+        "housing"
+      ]
+    },
+    "education_institution": {
+      "bundle_key": "education",
+      "aliases": [
+        "school",
+        "university",
+        "college",
+        "academy",
+        "education",
+        "learning",
+        "campus",
+        "students",
+        "faculty",
+        "teacher",
+        "professor"
+      ]
     }
   }
 }

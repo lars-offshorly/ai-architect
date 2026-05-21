@@ -1,0 +1,143 @@
+// Education institution variant. Same envelope as the BPO sample.
+// AI's only mutable surface: tenant info, per-employee role assignment,
+// and the lists of IDs to show for queues / projects / dashboards / kpis /
+// hr request types. Everything else is frozen.
+
+{
+  "schema_version": "2.0",
+  "session_id": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
+  "generated_at": "2026-05-21T10:00:00Z",
+
+  "tenant": {
+    "company_name": "Pinecrest Academy",
+    "industry": "education_institution",
+    "size_band": "50-200",
+    "primary_region": "AMER",
+    "locale": "en-US",
+    "timezone": "America/Chicago"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config and
+  //     employee assignments come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 220, "name": "Student Services" },          // name frozen
+      { "id": 221, "name": "Admissions" },                // name frozen
+      { "id": 222, "name": "IT & Library Support" },      // name frozen
+      { "id": 223, "name": "Faculty Requests" }           // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 600, "name": "2026 Curriculum Review" },    // name frozen
+      { "id": 601, "name": "Student LMS Migration" },     // name frozen
+      { "id": 602, "name": "Campus Safety Upgrade" }      // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout
+  //     and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 780, "name": "Academic Performance" },      // name frozen
+      { "id": 781, "name": "Enrollment & Retention" },    // name frozen
+      { "id": 782, "name": "Faculty & Staff" }            // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 90, "name": "Student Enrollment" },         // name frozen
+      { "id": 91, "name": "Graduation Rate" },            // name frozen
+      { "id": 92, "name": "Avg. Academic Score" },        // name frozen
+      { "id": 93, "name": "Student Retention Rate" },     // name frozen
+      { "id": 94, "name": "Faculty-to-Student Ratio" },   // name frozen
+      { "id": 95, "name": "Course Completion Rate" }      // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "School Principal",
+        "team": "Administration",
+        "department": "Leadership",
+        "job_title": "Principal",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 3,                                    // frozen: catalog ref
+        "position": "Head of Academics",
+        "team": "Academic",
+        "department": "Academics",
+        "job_title": "Head of Academics",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 5,                                    // frozen: catalog ref
+        "position": "Department Head",
+        "team": "Science Dept.",
+        "department": "Academics",
+        "job_title": "Dept. Head",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 7,                                    // frozen: catalog ref
+        "position": "Teacher",
+        "team": "Math Dept.",
+        "department": "Academics",
+        "job_title": "Teacher",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 9,                                    // frozen: catalog ref
+        "position": "Teacher",
+        "team": "Science Dept.",
+        "department": "Academics",
+        "job_title": "Teacher",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 11,                                   // frozen: catalog ref
+        "position": "Admin Coordinator",
+        "team": "Administration",
+        "department": "Operations",
+        "job_title": "Admin Coordinator",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 13,                                   // frozen: catalog ref
+        "position": "Librarian",
+        "team": "Library",
+        "department": "Student Services",
+        "job_title": "Librarian",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },              // name frozen
+      { "id": 840, "name": "Professional Development" },   // name frozen
+      { "id": 841, "name": "Curriculum Approval" }         // name frozen
+    ]
+  }
+}

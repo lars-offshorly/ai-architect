@@ -1,0 +1,143 @@
+// Healthcare provider variant. Same envelope as the BPO sample.
+// AI's only mutable surface: tenant info, per-employee role assignment,
+// and the lists of IDs to show for queues / projects / dashboards / kpis /
+// hr request types. Everything else is frozen.
+
+{
+  "schema_version": "2.0",
+  "session_id": "4b7d9c2e-1a3f-4e8b-a2c5-9d0f1e2b3a4c",
+  "generated_at": "2026-05-21T10:00:00Z",
+
+  "tenant": {
+    "company_name": "MediCare Solutions",
+    "industry": "healthcare_provider",
+    "size_band": "50-200",
+    "primary_region": "AMER",
+    "locale": "en-US",
+    "timezone": "America/New_York"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config and
+  //     employee assignments come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 160, "name": "Patient Services" },          // name frozen
+      { "id": 161, "name": "Billing & Insurance" },        // name frozen
+      { "id": 162, "name": "Lab & Diagnostics" },          // name frozen
+      { "id": 163, "name": "Appointment Scheduling" }      // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 570, "name": "Patient Portal Rollout" },     // name frozen
+      { "id": 571, "name": "EHR Integration Q2" },         // name frozen
+      { "id": 572, "name": "Clinical Compliance Audit" }   // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout
+  //     and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 750, "name": "Clinical Operations" },        // name frozen
+      { "id": 751, "name": "Patient Satisfaction" },       // name frozen
+      { "id": 752, "name": "Billing Performance" }         // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 60, "name": "Avg. Patient Wait Time" },      // name frozen
+      { "id": 61, "name": "Bed Occupancy Rate" },          // name frozen
+      { "id": 62, "name": "Treatment Completion %" },      // name frozen
+      { "id": 63, "name": "Staff Utilization" },           // name frozen
+      { "id": 64, "name": "Patient Satisfaction Score" },  // name frozen
+      { "id": 65, "name": "Appointment No-Show Rate" }     // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "Chief Medical Officer",
+        "team": "Medical Leadership",
+        "department": "Clinical",
+        "job_title": "CMO",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 2,                                    // frozen: catalog ref
+        "position": "Head of Nursing",
+        "team": "Nursing",
+        "department": "Clinical",
+        "job_title": "Head of Nursing",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 4,                                    // frozen: catalog ref
+        "position": "Clinic Supervisor",
+        "team": "Patient Services",
+        "department": "Operations",
+        "job_title": "Clinic Supervisor",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 5,                                    // frozen: catalog ref
+        "position": "Registered Nurse",
+        "team": "Nursing",
+        "department": "Clinical",
+        "job_title": "RN",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 7,                                    // frozen: catalog ref
+        "position": "Medical Receptionist",
+        "team": "Front Desk",
+        "department": "Operations",
+        "job_title": "Receptionist",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 11,                                   // frozen: catalog ref
+        "position": "Billing Specialist",
+        "team": "Billing",
+        "department": "Finance",
+        "job_title": "Billing Specialist",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 13,                                   // frozen: catalog ref
+        "position": "Lab Technician",
+        "team": "Diagnostics",
+        "department": "Clinical",
+        "job_title": "Lab Tech",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },              // name frozen
+      { "id": 810, "name": "Medical Leave" },              // name frozen
+      { "id": 811, "name": "Overtime Authorization" }      // name frozen
+    ]
+  }
+}
