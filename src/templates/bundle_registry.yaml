@@ -847,6 +847,17 @@ bundles:
       - weaves
       - dashboard
       - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
 
     synonyms:
       - accounting
@@ -1064,6 +1075,17 @@ bundles:
       - projects
       - kpi
       - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
 
     synonyms:
       - marketing campaigns
@@ -1521,6 +1543,17 @@ bundles:
       - tickets
       - kpi
       - notifications
+    landing_pages:
+      - id: 321
+        module: Tickets
+        selectionAutoShow: true
+        default: Ticket
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
 
     synonyms:
       - medical records
@@ -2001,6 +2034,17 @@ bundles:
       - projects
       - kpi
       - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
 
     synonyms:
       - construction management
@@ -2221,6 +2265,17 @@ bundles:
       - projects
       - kpi
       - notifications
+    landing_pages:
+      - id: 108
+        module: Projects
+        selectionAutoShow: false
+        default: List
+        showTutorial: true
+      - id: 311
+        module: Dashboard
+        selectionAutoShow: true
+        default: Dashboard
+        showTutorial: false
 
     synonyms:
       - real estate management
