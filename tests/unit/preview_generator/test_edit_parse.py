@@ -138,7 +138,7 @@ def test_add_kpi_by_label(catalog: BundleCatalog) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Dashboard
+# Dashboard — module toggle
 # ---------------------------------------------------------------------------
 
 
@@ -152,6 +152,46 @@ def test_add_dashboard(catalog: BundleCatalog) -> None:
     action = parse_edit_instruction("add a dashboard", catalog)
     assert action.action_type == EditActionType.ADD_DASHBOARD
     assert action.target == "dashboard-module"
+
+
+# ---------------------------------------------------------------------------
+# Dashboard — by name
+# ---------------------------------------------------------------------------
+
+
+def test_remove_dashboard_by_name(catalog: BundleCatalog) -> None:
+    action = parse_edit_instruction("remove Workforce & Attrition dashboard", catalog)
+    assert action.action_type == EditActionType.REMOVE_DASHBOARD
+    assert action.target == "workforce & attrition"
+
+
+def test_remove_dashboard_by_name_with_the(catalog: BundleCatalog) -> None:
+    action = parse_edit_instruction("remove the Ops dashboard", catalog)
+    assert action.action_type == EditActionType.REMOVE_DASHBOARD
+    assert action.target == "ops"
+
+
+def test_add_dashboard_by_name(catalog: BundleCatalog) -> None:
+    action = parse_edit_instruction("add the Workforce Analytics dashboard", catalog)
+    assert action.action_type == EditActionType.ADD_DASHBOARD
+    assert action.target == "workforce analytics"
+
+
+# ---------------------------------------------------------------------------
+# Dashboard — by ID
+# ---------------------------------------------------------------------------
+
+
+def test_remove_dashboard_by_id(catalog: BundleCatalog) -> None:
+    action = parse_edit_instruction("remove dashboard 703", catalog)
+    assert action.action_type == EditActionType.REMOVE_DASHBOARD_BY_ID
+    assert action.target == "703"
+
+
+def test_add_dashboard_by_id(catalog: BundleCatalog) -> None:
+    action = parse_edit_instruction("add dashboard 703", catalog)
+    assert action.action_type == EditActionType.ADD_DASHBOARD_BY_ID
+    assert action.target == "703"
 
 
 # ---------------------------------------------------------------------------
