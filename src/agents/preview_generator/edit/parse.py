@@ -57,6 +57,35 @@ def _dashboard_action(text: str, instruction: str) -> EditAction | None:
     return None
 
 
+def _dashboard_name_action(text: str, instruction: str) -> EditAction | None:
+    remove_match = re.search(
+        r"(?:remove|delete|hide|disable|drop)\s+(?:the\s+)?(.+?)\s+dashboard\b",
+        text,
+    )
+    if remove_match:
+        target = remove_match.group(1).strip()
+        if target:
+            return EditAction(
+                action_type=EditActionType.REMOVE_DASHBOARD,
+                target=target,
+                raw_instruction=instruction,
+            )
+
+    add_match = re.search(
+        r"(?:add|enable|show|include)\s+(?:the\s+)?(.+?)\s+dashboard\b",
+        text,
+    )
+    if add_match:
+        target = add_match.group(1).strip()
+        if target:
+            return EditAction(
+                action_type=EditActionType.ADD_DASHBOARD,
+                target=target,
+                raw_instruction=instruction,
+            )
+    return None
+
+
 def _kpi_label_to_slug(metrics_catalog: dict[str, dict[str, object]]) -> dict[str, str]:
     label_to_slug: dict[str, str] = {}
     for slug, entry in metrics_catalog.items():
@@ -198,11 +227,15 @@ def parse_edit_instruction(instruction: str, catalog: BundleCatalog) -> EditActi
     """
     text = instruction.lower().strip()
     metrics_catalog = catalog.get_metrics_catalog()
-    parsed = _dashboard_action(text, instruction)
+    parsed = _v2_id_action(text, instruction)
     if parsed is not None:
         return parsed
 
-    parsed = _v2_id_action(text, instruction)
+    parsed = _dashboard_name_action(text, instruction)
+    if parsed is not None:
+        return parsed
+
+    parsed = _dashboard_action(text, instruction)
     if parsed is not None:
         return parsed
 

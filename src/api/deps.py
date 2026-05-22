@@ -8,11 +8,8 @@ from pathlib import Path
 from langchain_openai import ChatOpenAI
 
 from agents.app_generator.mock_builder import MockPayloadBuilder
-from agents.app_generator.service import AppGeneratorService
 from agents.interpreter.llm_industry_classifier import LLMIndustryClassifier
 from agents.interpreter.service import InterpreterService
-from agents.preview_generator.bundle_template_loader import BundleTemplateLoader
-from agents.preview_generator.dashboard.templates import DashboardTemplateRegistry
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from agents.tenant_provisioning.service import TenantProvisioningService
@@ -27,7 +24,6 @@ from orchestrators.conversation_flow import ConversationFlow
 from orchestrators.preview_flow import PreviewFlow
 from repositories.conversation_repository import ConversationRepository
 from repositories.session_repository import SessionRepository
-from repositories.template_repository import TemplateRepository
 
 
 @lru_cache(maxsize=1)
@@ -43,13 +39,6 @@ def get_bundle_catalog() -> BundleCatalog:
         catalog.validate(templates_dir=templates_dir)
         catalog.validate_template_consistency(templates_dir=templates_dir)
     return catalog
-
-
-@lru_cache(maxsize=1)
-def get_template_repository() -> TemplateRepository:
-    """Return a cached TemplateRepository pointed at the configured templates dir."""
-    settings = get_settings()
-    return TemplateRepository(Path(settings.TEMPLATES_DIR))
 
 
 @lru_cache(maxsize=1)
@@ -113,12 +102,6 @@ def get_preview_generator_service() -> PreviewGeneratorService:
 
 
 @lru_cache(maxsize=1)
-def get_app_generator_service() -> AppGeneratorService:
-    """Return a cached AppGeneratorService backed by the template repository."""
-    return AppGeneratorService(get_template_repository(), get_bundle_catalog())
-
-
-@lru_cache(maxsize=1)
 def get_conversation_flow() -> ConversationFlow:
     """Return a cached ConversationFlow wired to interpreter and replier services."""
     required_slots: dict[str, list[str]] = {}
@@ -167,23 +150,7 @@ def get_preview_flow() -> PreviewFlow:
     return PreviewFlow(
         preview_generator_service=get_preview_generator_service(),
         bundle_display_names=display_names,
-        registry_facade=get_registry_facade(),
-        bundle_template_loader=BundleTemplateLoader(),
-        static_dashboard_outputs=DashboardTemplateRegistry(catalog=catalog),
         tenant_provisioning_service=get_tenant_provisioning_service(),
-    )
-
-
-@lru_cache(maxsize=1)
-def get_v2_manifest_model() -> ChatOpenAI | None:
-    """Return cached model for v2 manifest selector (or None when disabled)."""
-    settings = get_settings()
-    if settings.DISABLE_LLM_CALLS:
-        return None
-    return ChatOpenAI(
-        model=settings.OPENAI_MODEL,
-        temperature=settings.CLASSIFIER_TEMPERATURE,
-        api_key=settings.OPENAI_API_KEY,
     )
 
 

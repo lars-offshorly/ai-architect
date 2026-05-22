@@ -17,7 +17,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
-from agents.app_generator.validators import validate_dummy_data_json
+from agents.app_generator.validators import validate_manifest
 from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
 from orchestrators.preview_flow import PreviewFlow
@@ -38,11 +38,7 @@ class MockPayload:
     """Assembled mock payload returned by MockPayloadBuilder."""
 
     bundle_key: str
-    generation_json: dict[str, Any]
-    dummy_data_json: dict[str, Any]
-    feature_flags: list[dict[str, Any]]
-    permission_services: list[str]
-    landing_pages: list[dict[str, Any]]
+    manifest: dict[str, Any]
     service_mocks: dict[str, Any] = field(default_factory=dict)
 
 
@@ -105,22 +101,16 @@ class MockPayloadBuilder:
     def build(
         self,
         bundle_key: str,
-        dummy_data_override: dict[str, Any] | None = None,
+        manifest_override: dict[str, Any] | None = None,
         session_id: str | None = None,
     ) -> MockPayload:
         """Assemble and return a complete MockPayload for the given render key.
 
-        Runs the preview generator pipeline to produce generation_json and
-        dummy_data_json. When dummy_data_override is supplied, the pipeline
-        still runs for generation_json but dummy_data_json is taken from the
-        override instead.
+        Runs preview flow to produce manifest.
 
         Args:
             bundle_key:           Render key (e.g. hr_hub, project_mgmt, ticketing).
-            dummy_data_override:  Caller-supplied dummy_data_json. When provided the
-                                  pipeline dummy data output is discarded.
-                                  Accepted shape: bundle_key, session_id,
-                                  company_name, stores.
+            manifest_override: Caller-supplied manifest.
             session_id:           Used as the pipeline session identifier.
                                   A UUID is generated when omitted.
         """
@@ -132,50 +122,36 @@ class MockPayloadBuilder:
             conversation_history=_DEFAULT_MOCK_HISTORY,
         )
 
-        if dummy_data_override is not None:
-            validate_dummy_data_json(dummy_data_override, bundle_key)
-            dummy_data_json: dict[str, Any] = _normalize_dummy_data_json(
-                dict(dummy_data_override)
-            )
-            if not dummy_data_json.get("session_id"):
-                dummy_data_json = {**dummy_data_json, "session_id": resolved_session_id}
+        if manifest_override is not None:
+            validate_manifest(manifest_override)
+            manifest: dict[str, Any] = dict(manifest_override)
             logger.info(
                 "MockPayload built: bundle_key=%s source=override session=%s",
                 bundle_key,
                 resolved_session_id,
             )
         else:
-            dummy_data_json = payload.dummy_data_json
+            manifest = dict(payload.manifest)
             logger.info(
                 "MockPayload built: bundle_key=%s source=pipeline session=%s",
                 bundle_key,
                 resolved_session_id,
             )
 
-        generation_json: dict[str, Any] = payload.generation_json
-        flags = generation_json.get("feature_flags", [])
-        config = generation_json.get("config", {})
-        permission_services: list[str] = config.get("permission_services", [])
-        landing_pages: list[dict[str, Any]] = config.get("landing_pages", [])
-
         logger.info(
-            "MockPayload flags: bundle_key=%s flags_enabled=%d",
+            "MockPayload manifest served: bundle_key=%s schema=%s",
             bundle_key,
-            sum(1 for f in flags if f.get("isEnabled")),
+            manifest.get("schema_version"),
         )
 
         return MockPayload(
             bundle_key=bundle_key,
-            generation_json=generation_json,
-            dummy_data_json=dummy_data_json,
-            feature_flags=flags,
-            permission_services=permission_services,
-            landing_pages=landing_pages,
+            manifest=manifest,
             service_mocks=self._service_mocks,
         )
 
     def build_stores(self, bundle_key: str) -> dict[str, Any]:
-        """Return dummy_data_json (store seed data) for a bundle via the pipeline."""
+        """Return manifest for a bundle via the pipeline."""
         self._validate_bundle_key(bundle_key)
         payload = self._preview_flow.run(
             session_id=str(uuid.uuid4()),
@@ -183,7 +159,7 @@ class MockPayloadBuilder:
             conversation_history=_DEFAULT_MOCK_HISTORY,
         )
         logger.info("MockPayload stores built: bundle_key=%s", bundle_key)
-        return payload.dummy_data_json
+        return payload.manifest
 
     def build_flags(
         self, bundle_key: str
@@ -195,17 +171,10 @@ class MockPayloadBuilder:
             bundle_key=bundle_key,
             conversation_history=_DEFAULT_MOCK_HISTORY,
         )
-        generation_json: dict[str, Any] = payload.generation_json
-        flags: list[dict[str, Any]] = generation_json.get("feature_flags", [])
-        config: dict[str, Any] = generation_json.get("config", {})
-        permission_services: list[str] = config.get("permission_services", [])
-        landing_pages: list[dict[str, Any]] = config.get("landing_pages", [])
-        logger.info(
-            "MockPayload flags built: bundle_key=%s flags_enabled=%d",
-            bundle_key,
-            sum(1 for f in flags if f.get("isEnabled")),
-        )
-        return flags, permission_services, landing_pages
+        manifest = payload.manifest
+        tenant = manifest.get("tenant", {}) if isinstance(manifest, dict) else {}
+        logger.info("MockPayload flags built: bundle_key=%s", bundle_key)
+        return [], [str(tenant.get("industry", ""))], []
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -214,48 +183,6 @@ class MockPayloadBuilder:
     def _validate_bundle_key(self, bundle_key: str) -> None:
         if bundle_key not in self._known_bundle_keys:
             raise ValueError(f"Unknown bundle key: {bundle_key!r}")
-
-
-def _normalize_dummy_data_json(dummy_data_json: dict[str, Any]) -> dict[str, Any]:
-    """Normalize dummy_data_json overrides to keep downstream contracts stable."""
-    stores = dummy_data_json.get("stores")
-    if not isinstance(stores, dict):
-        return dummy_data_json
-
-    normalized_stores = dict(stores)
-    if "dashboard_generation_output" not in normalized_stores:
-        widgets_raw = normalized_stores.get("dashboard_widgets")
-        widget_count = len(widgets_raw) if isinstance(widgets_raw, list) else 0
-        normalized_stores["dashboard_generation_output"] = {
-            "success": True,
-            "dashboard": {
-                "id": "dash-preview",
-                "name": "Preview Dashboard",
-                "url": None,
-            },
-            "widgets": {"total": widget_count},
-            "execution_time": "0m 1s",
-            "errors": [],
-            "debug_payload": {"total_widgets": widget_count},
-            "generation_metadata": {"widgets_extracted": widget_count},
-        }
-
-    # KPI IDs are expected downstream; best-effort backfill when missing.
-    kpis = normalized_stores.get("kpis")
-    if isinstance(kpis, list):
-        patched_kpis: list[object] = []
-        for idx, item in enumerate(kpis, start=1):
-            if not isinstance(item, dict):
-                patched_kpis.append(item)
-                continue
-            patched = dict(item)
-            if not patched.get("id"):
-                key = patched.get("key")
-                patched["id"] = key if isinstance(key, str) and key else idx
-            patched_kpis.append(patched)
-        normalized_stores["kpis"] = patched_kpis
-
-    return {**dummy_data_json, "stores": normalized_stores}
 
 
 # ---------------------------------------------------------------------------

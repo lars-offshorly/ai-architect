@@ -1,355 +1,63 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import pytest
 
 from agents.app_generator.service import AppGeneratorService
 from core.exceptions import InvalidPayloadError
 
 
-@dataclass
-class _FakeBundle:
-    template_dir: str
-    render_key: str
-    default_modules: list[str]
-
-
 class _FakeCatalog:
-    def __init__(self, bundles: dict[str, _FakeBundle]) -> None:
-        self._bundles = bundles
-
-    def get(self, bundle_key: str) -> _FakeBundle | None:
-        return self._bundles.get(bundle_key)
+    def get(self, bundle_key: str):  # noqa: ANN001
+        return None
 
 
 class _FakeTemplateRepo:
-    def __init__(self, templates: dict[str, dict[str, object]]) -> None:
-        self._templates = templates
-
-    def load_app_json(self, bundle_key: str) -> dict[str, object]:
-        return dict(self._templates[bundle_key])
+    pass
 
 
-def test_assemble_injects_modules_when_template_omits_them() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "field_service": {
-                    "schema_version": "1.0",
-                    "bundle_key": "ticketing",
-                    "config": {
-                        "work_order_statuses": ["open"],
-                        "work_order_priorities": ["high"],
-                        "service_types": ["incident"],
-                        "kpi_definitions": [
-                            {
-                                "key": "avg_resolution_time",
-                                "label": "Average Resolution Time",
-                                "unit": "duration",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "ticketing": _FakeBundle(
-                    template_dir="field_service",
-                    render_key="ticketing",
-                    default_modules=["tickets", "dashboard", "kpi"],
-                )
-            }
-        ),
-    )
-
-    payload = svc.assemble(
-        session_id="test-session",
-        bundle_key="ticketing",
-        display_name="Ticketing Tool",
-        dummy_data={"bundle_key": "ticketing", "stores": {}, "session_id": "test-session"},
-    )
-
-    assert payload.modules == ["tickets", "dashboard", "kpi"]
-    assert payload.generation_json["modules"] == ["tickets", "dashboard", "kpi"]
-
-
-def test_assemble_uses_canonical_bundle_key_in_payload() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "hr_hub": {
-                    "schema_version": "1.0",
-                    "bundle_key": "hr_hub",
-                    "config": {
-                        "ticket_categories": ["leave"],
-                        "default_statuses": ["open"],
-                        "default_priorities": ["high"],
-                        "queue_names": ["HR Requests"],
-                        "kpi_definitions": [
-                            {
-                                "key": "active_headcount",
-                                "label": "Active Headcount",
-                                "unit": "count",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "hr_management": _FakeBundle(
-                    template_dir="hr_hub",
-                    render_key="hr_hub",
-                    default_modules=["hr_hub"],
-                )
-            }
-        ),
-    )
-
-    payload = svc.assemble(
-        session_id="test-session",
-        bundle_key="hr_management",
-        display_name="HR Management",
-        dummy_data={"bundle_key": "hr_management", "stores": {}, "session_id": "test-session"},
-    )
-
-    assert payload.bundle_key == "hr_management"
-    assert payload.generation_json["bundle_key"] == "hr_management"
-
-
-def test_assemble_adds_missing_kpi_ids_to_dummy_data() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "field_service": {
-                    "schema_version": "1.0",
-                    "bundle_key": "ticketing",
-                    "config": {
-                        "work_order_statuses": ["open"],
-                        "work_order_priorities": ["high"],
-                        "service_types": ["incident"],
-                        "kpi_definitions": [
-                            {
-                                "key": "avg_resolution_time",
-                                "label": "Average Resolution Time",
-                                "unit": "duration",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "ticketing": _FakeBundle(
-                    template_dir="field_service",
-                    render_key="ticketing",
-                    default_modules=["tickets", "dashboard", "kpi"],
-                )
-            }
-        ),
-    )
-
-    payload = svc.assemble(
-        session_id="test-session",
-        bundle_key="ticketing",
-        display_name="Ticketing Tool",
-        dummy_data={
-            "bundle_key": "ticketing",
-            "stores": {
-                "kpis": [
-                    {
-                        "key": "avg_resolution_time",
-                        "label": "Avg. Resolution Time",
-                        "type": "duration",
-                        "source_service": "tickets",
-                        "sample_value": 3.2,
-                    }
-                ]
-            },
-            "session_id": "test-session",
+def _valid_manifest() -> dict[str, object]:
+    return {
+        "schema_version": "2.0",
+        "session_id": "sess-abc123",
+        "generated_at": "2026-05-19T10:00:00Z",
+        "tenant": {
+            "company_name": "Acme Corp",
+            "industry": "Technology",
+            "size_band": "mid-sized",
+            "primary_region": "us-east-1",
+            "locale": "en-US",
+            "timezone": "America/New_York",
         },
+        "tickets": {"queues": []},
+        "projects": {"projects": []},
+        "dashboard": {"dashboards": []},
+        "kpi": {"kpis": []},
+        "hr_hub": {"employees": [], "request_types": []},
+    }
+
+
+def test_assemble_returns_v2_only_payload() -> None:
+    svc = AppGeneratorService(template_repo=_FakeTemplateRepo(), catalog=_FakeCatalog())
+    payload = svc.assemble(
+        session_id="sess-abc123",
+        bundle_key="hr_hub",
+        display_name="HR Hub",
+        manifest=_valid_manifest(),
+        modules=["hr_hub"],
     )
-
-    kpis = payload.dummy_data_json.get("stores", {}).get("kpis", [])
-    assert isinstance(kpis, list)
-    assert isinstance(kpis[0], dict)
-    assert kpis[0]["id"] == "avg_resolution_time"
+    assert payload.schema_version == "2.0"
+    assert payload.manifest["schema_version"] == "2.0"
+    assert payload.modules == ["hr_hub"]
 
 
-def test_assemble_raises_on_dummy_data_bundle_key_mismatch() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "field_service": {
-                    "schema_version": "1.0",
-                    "bundle_key": "ticketing",
-                    "config": {
-                        "work_order_statuses": ["open"],
-                        "work_order_priorities": ["high"],
-                        "service_types": ["incident"],
-                        "kpi_definitions": [
-                            {
-                                "key": "avg_resolution_time",
-                                "label": "Average Resolution Time",
-                                "unit": "duration",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "ticketing": _FakeBundle(
-                    template_dir="field_service",
-                    render_key="ticketing",
-                    default_modules=["tickets", "dashboard", "kpi"],
-                )
-            }
-        ),
-    )
-
-    with pytest.raises(InvalidPayloadError, match="bundle_key mismatch"):
+def test_assemble_rejects_invalid_manifest() -> None:
+    svc = AppGeneratorService(template_repo=_FakeTemplateRepo(), catalog=_FakeCatalog())
+    manifest = _valid_manifest()
+    manifest["schema_version"] = "1.0"
+    with pytest.raises(InvalidPayloadError):
         svc.assemble(
-            session_id="test-session",
-            bundle_key="ticketing",
-            display_name="Ticketing Tool",
-            dummy_data={
-                "bundle_key": "hr_hub",
-                "stores": {},
-                "session_id": "test-session",
-            },
+            session_id="sess-abc123",
+            bundle_key="hr_hub",
+            display_name="HR Hub",
+            manifest=manifest,
         )
-
-
-def test_assemble_backfills_dashboard_generation_output() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "field_service": {
-                    "schema_version": "1.0",
-                    "bundle_key": "ticketing",
-                    "config": {
-                        "work_order_statuses": ["open"],
-                        "work_order_priorities": ["high"],
-                        "service_types": ["incident"],
-                        "kpi_definitions": [
-                            {
-                                "key": "avg_resolution_time",
-                                "label": "Average Resolution Time",
-                                "unit": "duration",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "ticketing": _FakeBundle(
-                    template_dir="field_service",
-                    render_key="ticketing",
-                    default_modules=["tickets", "dashboard", "kpi"],
-                )
-            }
-        ),
-    )
-
-    payload = svc.assemble(
-        session_id="test-session",
-        bundle_key="ticketing",
-        display_name="Ticketing Tool",
-        dummy_data={
-            "bundle_key": "ticketing",
-            "stores": {
-                "kpis": [
-                    {
-                        "key": "avg_resolution_time",
-                        "label": "Avg. Resolution Time",
-                        "type": "duration",
-                        "source_service": "tickets",
-                        "sample_value": 3.2,
-                    }
-                ],
-                "dashboard_widgets": [
-                    {
-                        "id": "widget-1",
-                        "type": "number",
-                        "title": "Resolution Time",
-                        "position": {"row": 0, "col": 0, "width": 2, "height": 1},
-                    }
-                ],
-            },
-            "session_id": "test-session",
-        },
-    )
-
-    stores = payload.dummy_data_json.get("stores", {})
-    assert isinstance(stores, dict)
-    assert "dashboard_generation_output" in stores
-
-
-def test_assemble_backfills_missing_config_keys_from_template_generation_json() -> None:
-    svc = AppGeneratorService(
-        template_repo=_FakeTemplateRepo(
-            {
-                "finance": {
-                    "schema_version": "1.0",
-                    "bundle_key": "finance",
-                    "modules": ["projects", "dashboard", "kpi"],
-                    "config": {
-                        "task_statuses": ["backlog", "in_progress", "done"],
-                        "task_priorities": ["low", "medium", "high"],
-                        "milestone_statuses": ["pending", "at_risk", "achieved"],
-                        "kpi_definitions": [
-                            {
-                                "key": "on_time_delivery",
-                                "label": "On-time Delivery",
-                                "unit": "percentage",
-                            }
-                        ],
-                    },
-                }
-            }
-        ),
-        catalog=_FakeCatalog(
-            {
-                "finance": _FakeBundle(
-                    template_dir="finance",
-                    render_key="finance",
-                    default_modules=["projects", "dashboard", "kpi"],
-                )
-            }
-        ),
-    )
-
-    payload = svc.assemble(
-        session_id="test-session",
-        bundle_key="finance",
-        display_name="Finance",
-        generation_data={
-            "schema_version": "1.0",
-            "bundle_key": "finance",
-            "modules": ["projects", "dashboard", "kpi"],
-            "config": {
-                "kpi_definitions": [
-                    {
-                        "key": "budget_variance",
-                        "label": "Budget Variance",
-                        "unit": "count",
-                    }
-                ]
-            },
-        },
-        dummy_data={"bundle_key": "finance", "stores": {}, "session_id": "test-session"},
-    )
-
-    config = payload.generation_json.get("config")
-    assert isinstance(config, dict)
-    assert config["task_statuses"] == ["backlog", "in_progress", "done"]
-    assert config["task_priorities"] == ["low", "medium", "high"]
-    assert config["milestone_statuses"] == ["pending", "at_risk", "achieved"]

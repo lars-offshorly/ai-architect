@@ -46,8 +46,8 @@ class RegistryFacade:
         """Expose the canonical industry-to-bundle map for upstream consumers."""
         return self.resolver.registry.industry_bundle_map()
 
-    def build_payload_stores(self, bundle_key: str, dummy_data_json: dict) -> bool:
-        return self.payload_builder.apply_to_dummy_data(bundle_key, dummy_data_json)
+    def build_payload_stores(self, bundle_key: str, payload_data: dict) -> bool:
+        return self.payload_builder.apply_to_stores_payload(bundle_key, payload_data)
 
     def get_bundle_metadata(self, bundle_key: str) -> BundleMetadata:
         return self.metadata_service.get_metadata(bundle_key)

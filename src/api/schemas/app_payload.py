@@ -11,8 +11,6 @@ class AppPayloadResponseSchema(BaseModel):
     bundle_key: str
     display_name: str
     modules: list[str] = Field(default_factory=list)
-    generation_json: dict[str, object] = Field(default_factory=dict)
-    dummy_data_json: dict[str, object] = Field(default_factory=dict)
     preview_type: Literal["confirmed", "early"] | None = Field(
         default=None,
         description=(
@@ -28,11 +26,10 @@ class AppPayloadResponseSchema(BaseModel):
             "Indicates the output may contain generic or incomplete data."
         ),
     )
-    v2_manifest: dict[str, object] | None = Field(
-        default=None,
+    manifest: dict[str, object] = Field(
+        ...,
         description=(
             "v2 tenant-provisioning manifest (schema_version 2.0). "
-            "Present when the canonical registry has a manifest for the "
-            "requested bundle."
+            "Primary and only payload contract."
         ),
     )

@@ -19,10 +19,6 @@ class TemplateRepository:
         path = self._selector.app_json_path(bundle_key)
         return self._load_json(path)
 
-    def load_dummy_data(self, bundle_key: str) -> dict[str, object]:
-        path = self._selector.dummy_data_path(bundle_key)
-        return self._load_json(path)
-
     def bundle_exists(self, bundle_key: str) -> bool:
         return self._selector.bundle_dir_exists(bundle_key)
 

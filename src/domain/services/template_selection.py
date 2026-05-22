@@ -15,8 +15,5 @@ class TemplateSelectionService:
     def app_json_path(self, bundle_key: str) -> Path:
         return self._templates_dir / bundle_key / "app.json"
 
-    def dummy_data_path(self, bundle_key: str) -> Path:
-        return self._templates_dir / bundle_key / "dummy_data.json"
-
     def bundle_dir_exists(self, bundle_key: str) -> bool:
         return (self._templates_dir / bundle_key).is_dir()

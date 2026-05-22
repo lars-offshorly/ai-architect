@@ -108,7 +108,7 @@ def test_payload_builder_populates_required_stores() -> None:
     builder = CanonicalPayloadBuilder(_registry())
     payload = {"stores": {}}
 
-    populated = builder.apply_to_dummy_data("hr_management", payload)
+    populated = builder.apply_to_stores_payload("hr_management", payload)
 
     assert populated is True
     stores = payload["stores"]

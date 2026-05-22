@@ -10,19 +10,19 @@ def _slug(label: str) -> str:
 
 
 class CanonicalPayloadBuilder:
-    """Builds dummy_data stores from canonical tenant provisioning manifests."""
+    """Builds payload stores from canonical tenant provisioning manifests."""
 
     def __init__(self, registry: CanonicalManifestRegistry) -> None:
         self._registry = registry
 
-    def apply_to_dummy_data(
-        self, bundle_key: str, dummy_data_json: dict[str, Any]
+    def apply_to_stores_payload(
+        self, bundle_key: str, payload_data: dict[str, Any]
     ) -> bool:
         manifest = self._manifest_for_bundle(bundle_key)
         if manifest is None:
             return False
 
-        stores = dummy_data_json.setdefault("stores", {})
+        stores = payload_data.setdefault("stores", {})
 
         queues = manifest.get("tickets", {}).get("queues", [])
         stores["queues"] = [

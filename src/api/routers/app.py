@@ -4,12 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from agents.app_generator.service import AppGeneratorService
-from agents.app_generator.validators import validate_v2_manifest
+from agents.app_generator.validators import validate_manifest
 from api.deps import (
-    get_app_generator_service,
     get_registry_facade,
     get_session_repository,
 )
@@ -32,16 +30,10 @@ logger = get_logger(__name__)
 async def generate_app_payload(
     session_id: str,
     body: GenerateAppRequest,
-    response: Response,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
-    app_generator: Annotated[AppGeneratorService, Depends(get_app_generator_service)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
 ) -> AppPayloadResponseSchema:
-    """Assembles the final app payload for a confirmed session.
-
-    Loads the static app.json from templates, validates it against the
-    provided dummy_data, and packages the result into the AppPayload contract.
-    """
+    """Validate and return the manifest for a confirmed session."""
     try:
         session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
@@ -63,20 +55,8 @@ async def generate_app_payload(
 
     display_name = session.selected_bundle_key
 
-    # Use the session-stored bundle info + the client-provided dummy data
     try:
-        requested_v2_manifest = getattr(body, "v2_manifest", None)
-        if requested_v2_manifest is not None:
-            validate_v2_manifest(requested_v2_manifest)
-
-        payload = app_generator.assemble(
-            session_id=session_id,
-            bundle_key=session.selected_bundle_key,
-            display_name=display_name,
-            dummy_data=body.dummy_data_json,
-            generation_data=body.generation_json,
-            v2_manifest=requested_v2_manifest,
-        )
+        validate_manifest(body.manifest)
     except InvalidPayloadError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -88,28 +68,12 @@ async def generate_app_payload(
             detail=str(exc),
         ) from exc
 
-    if requested_v2_manifest is not None:
-        response.headers["X-Deprecated-Fields"] = "generation_json,dummy_data_json"
-        return AppPayloadResponseSchema(
-            schema_version=payload.schema_version,
-            session_id=payload.session_id,
-            bundle_key=payload.bundle_key,
-            display_name=payload.display_name,
-            modules=payload.modules,
-            generation_json=body.generation_json or {},
-            dummy_data_json=body.dummy_data_json,
-            preview_type="confirmed",
-            v2_manifest=payload.v2_manifest,
-        )
-
     return AppPayloadResponseSchema(
-        schema_version=payload.schema_version,
-        session_id=payload.session_id,
-        bundle_key=payload.bundle_key,
-        display_name=payload.display_name,
-        modules=payload.modules,
-        generation_json=payload.generation_json,
-        dummy_data_json=payload.dummy_data_json,
+        schema_version="2.0",
+        session_id=session_id,
+        bundle_key=session.selected_bundle_key,
+        display_name=display_name,
+        modules=[],
         preview_type="confirmed",
-        v2_manifest=payload.v2_manifest,
+        manifest=body.manifest,
     )

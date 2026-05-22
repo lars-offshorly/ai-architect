@@ -22,37 +22,6 @@ class KpiMetric(BaseModel):
     sample_value: float | int | str
 
 
-# ---------------------------------------------------------------------------
-# Preview output payloads
-# ---------------------------------------------------------------------------
-
-
-class GenerationJson(BaseModel):
-    """Knit workspace configuration payload (feature flags, modules, config)."""
-
-    schema_version: str
-    bundle_key: str
-    feature_flags: list[dict]  # shape: {id, name, description, isEnabled, module}
-    modules: list[str]
-    config: dict[str, object]
-
-
-class DummyDataJson(BaseModel):
-    """Sample data stores payload used to seed the preview workspace."""
-
-    bundle_key: str
-    session_id: str
-    company_name: str | None = None
-    stores: dict  # keys vary per bundle — stays untyped
-
-
-class PreviewOutput(BaseModel):
-    """Combined output of the preview pipeline: workspace config + sample data."""
-
-    generation_json: GenerationJson
-    dummy_data_json: DummyDataJson
-
-
 class PersonDetail(BaseModel):
     """A person mentioned in the conversation — employee, team member, or the user
     themselves."""

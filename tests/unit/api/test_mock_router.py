@@ -9,11 +9,24 @@ from api.routers.mock import router as mock_router
 class _FakePayload:
     def __init__(self, bundle_key: str) -> None:
         self.bundle_key = bundle_key
-        self.generation_json = {"bundle_key": bundle_key, "modules": ["A"], "config": {}}
-        self.dummy_data_json = {"bundle_key": bundle_key, "stores": {}}
-        self.feature_flags = []
-        self.permission_services = []
-        self.landing_pages = []
+        self.manifest = {
+            "schema_version": "2.0",
+            "session_id": "sess-1",
+            "generated_at": "2026-05-19T10:00:00Z",
+            "tenant": {
+                "company_name": "Acme",
+                "industry": "Technology",
+                "size_band": "mid-sized",
+                "primary_region": "us-east-1",
+                "locale": "en-US",
+                "timezone": "America/New_York",
+            },
+            "tickets": {"queues": []},
+            "projects": {"projects": []},
+            "dashboard": {"dashboards": []},
+            "kpi": {"kpis": []},
+            "hr_hub": {"employees": [], "request_types": []},
+        }
         self.service_mocks = {}
 
 
@@ -25,11 +38,11 @@ class _FakeBuilder:
         "alias_ticketing": ["healthcare", "ticketing"],
     }
 
-    def build(self, bundle_key: str, dummy_data_override=None, session_id=None):
+    def build(self, bundle_key: str, manifest_override=None, session_id=None):
         return _FakePayload(bundle_key)
 
     def build_stores(self, bundle_key: str):
-        return {"bundle_key": bundle_key, "stores": {}}
+        return _FakePayload(bundle_key).manifest
 
     def build_flags(self, bundle_key: str):
         return [], [], []

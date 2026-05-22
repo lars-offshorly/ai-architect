@@ -8,21 +8,17 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from agents.preview_generator.edit.apply import apply_edit
-from agents.preview_generator.edit.apply import apply_edit_v2
 from agents.preview_generator.edit.parse import parse_edit_instruction
-from api.adapters.v2_manifest_adapter import build_v2_manifest
 from api.deps import (
     get_bundle_catalog,
     get_conversation_repository,
     get_preview_flow,
     get_registry_facade,
     get_session_repository,
-    get_v2_manifest_model,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.preview import EditPreviewRequestSchema
 from catalog.bundle_catalog import BundleCatalog
-from core.config import get_settings
 from core.exceptions import (
     BundleNotFoundError,
     InvalidPayloadError,
@@ -82,7 +78,6 @@ async def _execute_preview_pipeline(
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
     session: Session | None = None,
-    v2_model: Any = None,
 ) -> AppPayloadResponseSchema:
     # pylint: disable=too-many-locals
     """Execute the preview pipeline and assemble the response schema."""
@@ -129,54 +124,18 @@ async def _execute_preview_pipeline(
             detail=str(exc),
         ) from exc
 
-    preview_warnings = payload.generation_json.get("preview_warnings")
-    warning = _format_preview_warnings(preview_warnings, warning)
-
-    dummy_data_json = dict(payload.dummy_data_json or {})
-    v2_manifest: dict[str, Any] | None = None
-    if isinstance(payload.v2_manifest, dict):
-        v2_manifest = dict(payload.v2_manifest)
-    if session is not None and v2_manifest is None:
-        try:
-            settings = get_settings()
-            # Fallback: adapter synthesis for bundles without canonical manifests
-            # or when orchestration did not provide payload.v2_manifest.
-            v2_manifest = await build_v2_manifest(
-                session=session,
-                dummy_data_json=dummy_data_json,
-                bundle_key=payload.bundle_key,
-                display_name=payload.display_name,
-                conversation_history=conversation_history,
-                registry_facade=registry_facade,
-                model=v2_model,
-                disable_llm_calls=settings.DISABLE_LLM_CALLS,
-            )
-
-            if v2_manifest is not None:
-                manifest_overlay = dict(v2_manifest)
-                # Keep v1 dummy_data_json contract stable for /app finalization.
-                # The v2 sections (tenant/tickets/projects/...) are still attached
-                # for FE rendering, but schema_version must remain v1 ("1.0").
-                manifest_overlay.pop("schema_version", None)
-                dummy_data_json.update(manifest_overlay)
-
-        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
-            logger.exception(
-                "v2 manifest failed for session=%s; returning v1-only payload",
-                session_id,
-            )
+    manifest = payload.manifest
+    warning = _format_preview_warnings([], warning)
 
     return AppPayloadResponseSchema(
-        schema_version=payload.schema_version,
+        schema_version="2.0",
         session_id=payload.session_id,
         bundle_key=payload.bundle_key,
         display_name=payload.display_name,
         modules=payload.modules,
-        generation_json=payload.generation_json,
-        dummy_data_json=dummy_data_json,
         preview_type=preview_type,
         warning=warning,
-        v2_manifest=v2_manifest,
+        manifest=manifest,
     )
 
 
@@ -188,7 +147,6 @@ async def generate_preview(
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
-    v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -215,7 +173,6 @@ async def generate_preview(
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
         session=session,
-        v2_model=v2_model,
     )
 
 
@@ -227,7 +184,6 @@ async def generate_early_preview(
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
-    v2_model: Annotated[Any, Depends(get_v2_manifest_model)],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -260,7 +216,6 @@ async def generate_early_preview(
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
         session=session,
-        v2_model=v2_model,
     )
 
 
@@ -289,14 +244,16 @@ async def edit_preview(
     action = parse_edit_instruction(body.instruction, catalog)
     current_preview = dict(body.current_preview)
     v2_schema_version = (
-        current_preview.get("v2_manifest", {}).get("schema_version")
-        if isinstance(current_preview.get("v2_manifest"), dict)
+        current_preview.get("manifest", {}).get("schema_version")
+        if isinstance(current_preview.get("manifest"), dict)
         else None
     )
-    if v2_schema_version == "2.0":
-        updated, warning = apply_edit_v2(current_preview, action, catalog)
-    else:
-        updated, warning = apply_edit(current_preview, action, catalog)
+    if v2_schema_version != "2.0":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="current_preview.manifest (schema_version=2.0) is required.",
+        )
+    updated, warning = apply_edit(current_preview, action, catalog)
 
     logger.info(
         "Edit preview session=%s action=%s target=%s warning=%s",
@@ -307,14 +264,12 @@ async def edit_preview(
     )
 
     return AppPayloadResponseSchema(
-        schema_version=updated.get("schema_version", "1.0"),
+        schema_version="2.0",
         session_id=updated.get("session_id", session_id),
         bundle_key=updated.get("bundle_key", ""),
         display_name=updated.get("display_name", ""),
         modules=updated.get("modules", []),
-        generation_json=updated.get("generation_json", {}),
-        dummy_data_json=updated.get("dummy_data_json", {}),
         preview_type=updated.get("preview_type"),
         warning=warning,
-        v2_manifest=updated.get("v2_manifest"),
+        manifest=updated.get("manifest", {}),
     )

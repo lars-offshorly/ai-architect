@@ -88,15 +88,6 @@ function safeRows(arr) {
 
 // ─── Dashboard: normalization layer ──────────────────────────────────────────
 
-function getStores(payload) {
-  return (
-    payload?.dummy_data_json?.stores ||
-    payload?.stores ||
-    payload?.generation_json?.stores ||
-    {}
-  );
-}
-
 function normalizeKpis(kpis) {
   return safeRows(kpis).slice(0, 8).map(k => ({
     label: k.label || titleCase(k.key || 'Metric'),
@@ -557,8 +548,7 @@ function pickV2Manifest(payload) {
   if (!payload) return null;
   const candidates = [
     payload,
-    payload.dummy_data_json,
-    payload.generation_json,
+    payload.manifest,
     payload.manifest,
     payload.tenant_manifest,
   ];
@@ -827,65 +817,11 @@ export function renderDashboard(payload, previewType) {
     return renderV2Dashboard(v2Manifest, previewType);
   }
 
-  if (!payload.dummy_data_json) {
-    return `
-      <div class="dashboard-empty dashboard-empty-card">
-        <div class="dashboard-empty-icon">✦</div>
-        <h3>Your preview space is ready</h3>
-        <p>Run Generate Preview from chat to load your dashboard and sample data.</p>
-      </div>`;
-  }
-
-  const stores = getStores(payload);
-  const displayName = payload.display_name || titleCase(payload.bundle_key || 'Operations');
-  const bundleName = titleCase(payload.bundle_key || 'dashboard');
-  const badgeLabel = previewType === 'early' ? 'Early Preview' : 'Preview Mode';
-
-  const kpis = normalizeKpis(stores.kpis);
-  const tickets = normalizeTickets(stores.tickets);
-  const projects = normalizeProjects(stores.projects);
-  const tasks = normalizeTasks(stores.tasks);
-  const employees = normalizeEmployees(stores.employees);
-  const queues = buildQueueData(stores.queues, tickets);
-
-  const processedKeys = new Set(['kpis', 'tickets', 'projects', 'tasks', 'employees', 'queues',
-    'dashboard_generation_output', 'dashboard_widgets']);
-
-  const extraSections = Object.entries(stores)
-    .filter(([k, v]) => !processedKeys.has(k) && !INTERNAL_STORE_KEYS.has(k) && Array.isArray(v) && v.length > 0)
-    .map(([k, v]) => renderGenericListSection(k, v))
-    .join('');
-
-  const summary = buildSummaryData({ tickets, projects, tasks, employees, queues });
-
-  const disableDeploy = previewType === 'early';
-
   return `
-    <div class="exec-dashboard">
-      <div class="exec-header">
-        <div class="exec-header-left">
-          <div class="exec-badges">
-            <span class="exec-badge exec-badge-dark">${escapeHtml(badgeLabel)}</span>
-            <span class="exec-badge exec-badge-outline">${escapeHtml(bundleName)}</span>
-          </div>
-          <h1 class="exec-title">${escapeHtml(displayName)} Dashboard</h1>
-        </div>
-        ${summary.length ? renderSummaryBar(summary) : ''}
-      </div>
-
-      ${renderStatCards(kpis)}
-      ${queues.length ? renderQueuesSection(queues) : ''}
-      ${tickets.length ? renderTicketsSection(tickets) : ''}
-      ${projects.length ? renderProjectsSection(projects) : ''}
-      ${tasks.length ? renderTasksSection(tasks) : ''}
-      ${employees.length ? renderEmployeesSection(employees) : ''}
-      ${extraSections}
-
-      <div class="exec-deploy-row">
-        <button id="deployBtn" class="success-btn" ${disableDeploy ? 'disabled' : ''}>
-          ${disableDeploy ? 'Confirm Bundle to Deploy' : 'Finalize &amp; Deploy App'}
-        </button>
-      </div>
+    <div class="dashboard-empty dashboard-empty-card">
+      <div class="dashboard-empty-icon">✦</div>
+      <h3>Manifest missing</h3>
+      <p>Preview response must include manifest (schema_version 2.0).</p>
     </div>`;
 }
 

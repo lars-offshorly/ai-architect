@@ -100,6 +100,35 @@ def _make_preview_payload(session_id: str = "sess-1") -> dict:
                 },
             },
         },
+        "manifest": {
+            "schema_version": "2.0",
+            "session_id": session_id,
+            "generated_at": "2026-05-21T10:00:00Z",
+            "tenant": {
+                "company_name": "TestCo",
+                "industry": "bpo_contact_center",
+                "size_band": "50-200",
+                "primary_region": "APAC",
+                "locale": "en-PH",
+                "timezone": "Asia/Manila",
+            },
+            "tickets": {"queues": [{"id": 101, "name": "Customer Care"}]},
+            "projects": {"projects": [{"id": 501, "name": "Project A"}]},
+            "dashboard": {"dashboards": [{"id": 701, "name": "Ops"}]},
+            "kpi": {"kpis": [{"id": 1, "name": "ART"}]},
+            "hr_hub": {
+                "employees": [{
+                    "id": 1,
+                    "position": "Director",
+                    "team": "Ops",
+                    "department": "Operations",
+                    "job_title": "Director",
+                    "job_type": "Full-Time",
+                    "job_level": "Director",
+                }],
+                "request_types": [{"id": 801, "name": "Leave Request"}],
+            },
+        },
         "warning": None,
     }
 
@@ -197,13 +226,13 @@ class TestEditEndpoint:
             "/sessions/sess-1/preview/edit",
             json={
                 "current_preview": _make_preview_payload(),
-                "instruction": "add SLA compliance KPI",
+                "instruction": "add queue 202",
             },
         )
         assert resp.status_code == 200
         data = resp.json()
-        kpi_keys = [k["key"] for k in data["dummy_data_json"]["stores"]["kpis"]]
-        assert "sla_compliance" in kpi_keys
+        queue_ids = [q["id"] for q in data["manifest"]["tickets"]["queues"]]
+        assert 202 in queue_ids
 
     def test_edit_response_schema_shape(self) -> None:
         """Verify the response has the expected top-level keys."""
@@ -217,6 +246,5 @@ class TestEditEndpoint:
         assert resp.status_code == 200
         data = resp.json()
         assert "schema_version" in data
-        assert "generation_json" in data
-        assert "dummy_data_json" in data
+        assert "manifest" in data
         assert "modules" in data

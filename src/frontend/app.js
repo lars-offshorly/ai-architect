@@ -243,8 +243,7 @@ async function handleDeployApp() {
     // Step 5: Final Delivery
     const finalPayload = await generateApp(
       state.sessionId,
-      state.previewPayload.dummy_data_json,
-      state.previewPayload.generation_json,
+      state.previewPayload.manifest,
     );
     stopThinking();
     state.lastStatus = 'complete';

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from langchain_openai import ChatOpenAI
 
-from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
@@ -11,7 +10,6 @@ from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
 from domain.services.registry_facade import RegistryFacade
 
-from .classifier import Classifier
 from .extractor import Extractor
 from .llm_industry_classifier import IndustryChoice, LLMIndustryClassifier
 from .signal_accumulator import SignalAccumulator
@@ -23,15 +21,10 @@ _GENERIC_BUNDLE_KEY = "generic"
 _GENERIC_DISPLAY_NAME = "Custom Workspace"
 
 
-def _build_catalog_context(bundle_keys: list[str]) -> str:
-    return "\n".join(f"- {key}" for key in bundle_keys)
-
-
 class InterpreterService:
     def __init__(
         self,
         bundle_keys: list[str],
-        catalog: BundleCatalog | None = None,
         registry_facade: RegistryFacade | None = None,
         model: ChatOpenAI | None = None,
         summarizer_model: ChatOpenAI | None = None,
@@ -40,11 +33,6 @@ class InterpreterService:
         self._bundle_keys = bundle_keys
         self._registry_facade = registry_facade
         self._extractor = Extractor(model) if model else None
-        self._classifier = (
-            Classifier(model, _build_catalog_context(bundle_keys), catalog)
-            if model and catalog is not None
-            else None
-        )
         self._summarizer = Summarizer(summarizer_model) if summarizer_model else None
         self._llm_industry_classifier = llm_industry_classifier
 
@@ -119,16 +107,8 @@ class InterpreterService:
     ) -> ClassificationResult:
         """Run the 3-stage bundle resolution: alias → LLM → generic."""
         if self._registry_facade is None:
-            if self._classifier is not None:
-                return await self._classifier.classify(
-                    request.session_id,
-                    request.user_message,
-                    self._bundle_keys,
-                    extracted=extracted,
-                    preselected_intent=request.preselected_intent,
-                )
             return self._generic_fallback(
-                request.session_id, reason="No classifier available"
+                request.session_id, reason="No canonical registry available"
             )
 
         # Stage 1: deterministic alias resolver.

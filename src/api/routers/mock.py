@@ -73,20 +73,15 @@ def get_mock_payload(
 ) -> dict[str, Any]:
     """Return a full mock payload for a given bundle render key.
 
-    Accepts an optional request body to supply custom dummy_data_json.
-    When dummy_data_json is omitted the bundle template file is used instead.
+    Accepts optional manifest override.
 
     Request body (all fields optional):
-      - session_id:      Injected into dummy_data_json if not already present.
+      - session_id:      Session id for generated payload.
       - display_name:    Human-readable workspace name surfaced in the response.
-      - dummy_data_json: Full store data override. Accepted shape:
-                           { bundle_key, session_id, company_name, stores: {...} }
-                         When provided the template dummy_data.json is skipped.
+      - manifest:     Full manifest override.
 
     Response combines:
-      - generation_json:  verbatim app.json from the bundle template
-      - dummy_data_json:  caller-supplied override OR template fallback
-      - feature_flags:    flag snapshot with bundle-specific flags enabled
+      - manifest:      caller-supplied override OR pipeline output
       - service_mocks:    all sections from docs/api-mocks.json
     """
     resolved_bundle_key = _resolve_bundle_key(bundle_key, builder)
@@ -94,7 +89,7 @@ def get_mock_payload(
     try:
         payload = builder.build(
             bundle_key=resolved_bundle_key,
-            dummy_data_override=body.dummy_data_json,
+            manifest_override=body.manifest,
             session_id=body.session_id,
         )
     except InvalidPayloadError as exc:
@@ -112,15 +107,13 @@ def get_mock_payload(
         "Mock payload served: bundle_key=%s display_name=%s source=%s",
         resolved_bundle_key,
         body.display_name,
-        "override" if body.dummy_data_json is not None else "template",
+        "override" if body.manifest is not None else "pipeline",
     )
 
     return {
         "bundle_key": payload.bundle_key,
         "display_name": body.display_name,
-        "generation_json": payload.generation_json,
-        "dummy_data_json": payload.dummy_data_json,
-        "feature_flags": payload.feature_flags,
+        "manifest": payload.manifest,
         "service_mocks": payload.service_mocks,
     }
 
@@ -130,14 +123,14 @@ def get_mock_stores(
     bundle_key: str,
     builder: Annotated[MockPayloadBuilder, Depends(get_mock_payload_builder)],
 ) -> dict[str, Any]:
-    """Return pipeline-generated dummy_data_json (store seed data) for a bundle."""
+    """Return pipeline-generated manifest for a bundle."""
     resolved_bundle_key = _resolve_bundle_key(bundle_key, builder)
 
-    dummy_data_json = builder.build_stores(resolved_bundle_key)
+    manifest = builder.build_stores(resolved_bundle_key)
 
     logger.info("Mock stores served: bundle_key=%s", resolved_bundle_key)
 
-    return {"bundle_key": resolved_bundle_key, "dummy_data_json": dummy_data_json}
+    return {"bundle_key": resolved_bundle_key, "manifest": manifest}
 
 
 @router.get("/{bundle_key}/flags")
