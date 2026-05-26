@@ -7,7 +7,6 @@ from pathlib import Path
 
 from langchain_openai import ChatOpenAI
 
-from agents.app_generator.mock_builder import MockPayloadBuilder
 from agents.interpreter.llm_industry_classifier import LLMIndustryClassifier
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.service import PreviewGeneratorService
@@ -102,6 +101,19 @@ def get_preview_generator_service() -> PreviewGeneratorService:
 
 
 @lru_cache(maxsize=1)
+def get_edit_llm_model() -> ChatOpenAI | None:
+    """Return cached model for edit parser fallback, if enabled."""
+    settings = get_settings()
+    if settings.DISABLE_LLM_CALLS or not settings.EDIT_LLM_FALLBACK_ENABLED:
+        return None
+    return ChatOpenAI(
+        model=settings.OPENAI_MODEL,
+        temperature=0.0,
+        api_key=settings.OPENAI_API_KEY,
+    )
+
+
+@lru_cache(maxsize=1)
 def get_conversation_flow() -> ConversationFlow:
     """Return a cached ConversationFlow wired to interpreter and replier services."""
     required_slots: dict[str, list[str]] = {}
@@ -183,22 +195,4 @@ def get_registry_facade() -> RegistryFacade:
         allow_registry_module_fallback=(
             settings.CANONICAL_ALLOW_REGISTRY_MODULE_FALLBACK
         ),
-    )
-
-
-@lru_cache(maxsize=1)
-def get_mock_payload_builder() -> MockPayloadBuilder:
-    """Return a cached MockPayloadBuilder backed by the preview generator pipeline."""
-    import json
-    import pathlib
-
-    mocks_path = pathlib.Path(__file__).parent.parent.parent / "docs" / "api-mocks.json"
-    service_mocks: dict = {}
-    if mocks_path.exists():
-        with mocks_path.open(encoding="utf-8") as f:
-            service_mocks = json.load(f)
-    return MockPayloadBuilder(
-        preview_flow=get_preview_flow(),
-        catalog=get_bundle_catalog(),
-        service_mocks=service_mocks,
     )

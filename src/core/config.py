@@ -37,11 +37,18 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     DEV_BYPASS: bool = False
     RATE_LIMIT_PER_MINUTE: int = 60
+    ENABLE_RATE_LIMIT: bool = True
 
-    ENABLE_MOCK_ENDPOINTS: bool = False
     DISABLE_LLM_CALLS: bool = False
     DISABLE_DASHBOARD_CALLS: bool = False
     SKIP_CATALOG_VALIDATION: bool = False
+    EDIT_LLM_FALLBACK_ENABLED: bool = False
+    EDIT_LLM_TIMEOUT_MS: int = Field(default=1200, ge=100, le=10000)
+    EDIT_LLM_MAX_RETRIES: int = Field(default=1, ge=0, le=3)
+    EDIT_LLM_CB_THRESHOLD: int = Field(default=3, ge=1, le=20)
+    EDIT_LLM_CB_COOLDOWN_SEC: int = Field(default=30, ge=1, le=600)
+    MAX_APP_MANIFEST_BYTES: int = Field(default=200_000, ge=10_000, le=5_000_000)
+    MAX_EDIT_PREVIEW_BYTES: int = Field(default=400_000, ge=10_000, le=10_000_000)
 
     SENTRY_DSN: str = ""
     LANGCHAIN_TRACING_V2: bool = False

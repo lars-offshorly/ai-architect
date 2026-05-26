@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from agents.app_generator.validators import validate_manifest
+from agents.tenant_provisioning.validators import validate_manifest
 from core.exceptions import InvalidPayloadError
 
 

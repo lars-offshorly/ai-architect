@@ -49,7 +49,10 @@ def create_app() -> FastAPI:
     ]
     if settings.DEBUG:
         cors_origins.append("*")
-    app.add_middleware(RateLimitMiddleware)
+    if settings.ENABLE_RATE_LIMIT:
+        app.add_middleware(RateLimitMiddleware)
+    else:
+        logger.warning("Rate limiting disabled (ENABLE_RATE_LIMIT=false)")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
@@ -64,12 +67,6 @@ def create_app() -> FastAPI:
     app.include_router(preview_router, dependencies=_auth)
     app.include_router(bundles_router, dependencies=_auth)
     app.include_router(app_router, dependencies=_auth)
-
-    if settings.ENABLE_MOCK_ENDPOINTS:
-        from .routers.mock import router as mock_router
-
-        app.include_router(mock_router, dependencies=_auth)
-        logger.info("Mock endpoints enabled")
 
     if _FRONTEND_DIR.exists():
         app.mount("/static", StaticFiles(directory=_FRONTEND_DIR), name="static")

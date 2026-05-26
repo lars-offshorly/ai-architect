@@ -3,15 +3,27 @@
 from __future__ import annotations
 
 # pylint: disable=duplicate-code
+import json
+import time
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from langchain_openai import ChatOpenAI
+from pydantic import ValidationError
 
 from agents.preview_generator.edit.apply import apply_edit
-from agents.preview_generator.edit.parse import parse_edit_instruction
+from agents.preview_generator.edit.parse import (
+    llm_parse_edit_instruction,
+    parse_edit_instruction_with_fallback,
+)
+from agents.tenant_provisioning.validators import (
+    format_manifest_validation_errors,
+    validate_manifest_model,
+)
 from api.deps import (
     get_bundle_catalog,
     get_conversation_repository,
+    get_edit_llm_model,
     get_preview_flow,
     get_registry_facade,
     get_session_repository,
@@ -26,6 +38,7 @@ from core.exceptions import (
     SessionNotFoundError,
 )
 from core.logging import get_logger
+from core.metrics import metrics
 from domain.models.extraction_result import ExtractionResult
 from domain.models.session import Session
 from domain.services.early_preview_policy import (
@@ -42,6 +55,42 @@ logger = get_logger(__name__)
 _EARLY_PREVIEW_WARNING = (
     "Preview generated with incomplete information. Some data may be generic."
 )
+
+
+def _json_size_bytes(payload: object) -> int:
+    return len(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    )
+
+
+def _manifest_counts(payload: dict[str, Any]) -> dict[str, int]:
+    manifest = payload.get("manifest")
+    if not isinstance(manifest, dict):
+        return {"modules": 0, "queues": 0, "dashboards": 0, "kpis": 0}
+    modules = payload.get("modules")
+    modules_count = len(modules) if isinstance(modules, list) else 0
+    tickets = manifest.get("tickets", {})
+    dashboard = manifest.get("dashboard", {})
+    kpi = manifest.get("kpi", {})
+    queues = tickets.get("queues", []) if isinstance(tickets, dict) else []
+    dashboards = (
+        dashboard.get("dashboards", []) if isinstance(dashboard, dict) else []
+    )
+    kpis = kpi.get("kpis", []) if isinstance(kpi, dict) else []
+    return {
+        "modules": modules_count,
+        "queues": len(queues) if isinstance(queues, list) else 0,
+        "dashboards": len(dashboards) if isinstance(dashboards, list) else 0,
+        "kpis": len(kpis) if isinstance(kpis, list) else 0,
+    }
+
+
+def _warning_code(warning: str | None) -> str:
+    if not warning:
+        return "none"
+    if ":" not in warning:
+        return "uncoded"
+    return warning.split(":", 1)[0].strip() or "uncoded"
 
 
 def _format_preview_warnings(
@@ -81,6 +130,7 @@ async def _execute_preview_pipeline(
 ) -> AppPayloadResponseSchema:
     # pylint: disable=too-many-locals
     """Execute the preview pipeline and assemble the response schema."""
+    start = time.perf_counter()
     if not registry_facade.has_bundle(bundle_key) and not catalog.has_bundle(
         bundle_key
     ):
@@ -127,7 +177,7 @@ async def _execute_preview_pipeline(
     manifest = payload.manifest
     warning = _format_preview_warnings([], warning)
 
-    return AppPayloadResponseSchema(
+    response = AppPayloadResponseSchema(
         schema_version="2.0",
         session_id=payload.session_id,
         bundle_key=payload.bundle_key,
@@ -137,6 +187,18 @@ async def _execute_preview_pipeline(
         warning=warning,
         manifest=manifest,
     )
+    elapsed_ms = int((time.perf_counter() - start) * 1000)
+    metrics.inc("preview.requests.total")
+    if elapsed_ms >= 1000:
+        metrics.inc("preview.latency.ge_1000ms")
+    logger.info(
+        "preview_event session=%s bundle=%s preview_type=%s elapsed_ms=%s",
+        session_id,
+        bundle_key,
+        preview_type,
+        elapsed_ms,
+    )
+    return response
 
 
 @router.post("/{session_id}/preview", response_model=AppPayloadResponseSchema)
@@ -223,8 +285,10 @@ async def generate_early_preview(
 async def edit_preview(
     session_id: str,
     body: EditPreviewRequestSchema,
+    request: Request,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    edit_llm_model: Annotated[ChatOpenAI | None, Depends(get_edit_llm_model)],
 ) -> AppPayloadResponseSchema:
     """Apply a natural-language edit to an existing preview payload.
 
@@ -241,7 +305,34 @@ async def edit_preview(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
 
-    action = parse_edit_instruction(body.instruction, catalog)
+    start = time.perf_counter()
+    from core.config import get_settings
+
+    settings = get_settings()
+    preview_bytes = _json_size_bytes(body.current_preview)
+    if preview_bytes > settings.MAX_EDIT_PREVIEW_BYTES:
+        metrics.inc("edit.rejected.payload_too_large")
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=(
+                f"current_preview payload too large: {preview_bytes} bytes "
+                f"(max {settings.MAX_EDIT_PREVIEW_BYTES})"
+            ),
+        )
+    action = parse_edit_instruction_with_fallback(
+        body.instruction,
+        catalog,
+        llm_parser=(
+            (lambda instruction: llm_parse_edit_instruction(instruction, edit_llm_model))
+            if edit_llm_model is not None
+            else None
+        ),
+        enabled=settings.EDIT_LLM_FALLBACK_ENABLED,
+        timeout_ms=settings.EDIT_LLM_TIMEOUT_MS,
+        max_retries=settings.EDIT_LLM_MAX_RETRIES,
+        cb_threshold=settings.EDIT_LLM_CB_THRESHOLD,
+        cb_cooldown_sec=settings.EDIT_LLM_CB_COOLDOWN_SEC,
+    )
     current_preview = dict(body.current_preview)
     v2_schema_version = (
         current_preview.get("manifest", {}).get("schema_version")
@@ -253,17 +344,62 @@ async def edit_preview(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="current_preview.manifest (schema_version=2.0) is required.",
         )
+    try:
+        validate_manifest_model(current_preview["manifest"])
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "code": "manifest_validation_error",
+                "errors": format_manifest_validation_errors(exc),
+            },
+        ) from exc
+    before_counts = _manifest_counts(current_preview)
     updated, warning = apply_edit(current_preview, action, catalog)
+    after_counts = _manifest_counts(updated)
+    warning_code = _warning_code(warning)
+    outcome = "success" if warning is None else "warning"
+
+    metrics.inc("edit.requests.total")
+    metrics.inc(f"edit.actions.{action.action_type.value}")
+    metrics.inc(f"edit.outcome.{outcome}")
+    if warning is not None:
+        metrics.inc(f"edit.warning.{warning_code}")
 
     logger.info(
-        "Edit preview session=%s action=%s target=%s warning=%s",
+        (
+            "edit_event session=%s action=%s target=%s outcome=%s warning_code=%s "
+            "before=%s after=%s instruction=%r"
+        ),
         session_id,
         action.action_type.value,
         action.target,
-        warning,
+        outcome,
+        warning_code,
+        before_counts,
+        after_counts,
+        body.instruction,
+    )
+    client_ip = (
+        request.headers.get("x-forwarded-for")
+        or (request.client.host if request.client is not None else "unknown")
+    )
+    logger.info(
+        (
+            "audit_edit session=%s ip=%s action=%s target=%s outcome=%s warning_code=%s "
+            "before=%s after=%s"
+        ),
+        session_id,
+        client_ip,
+        action.action_type.value,
+        action.target,
+        outcome,
+        warning_code,
+        before_counts,
+        after_counts,
     )
 
-    return AppPayloadResponseSchema(
+    response = AppPayloadResponseSchema(
         schema_version="2.0",
         session_id=updated.get("session_id", session_id),
         bundle_key=updated.get("bundle_key", ""),
@@ -273,3 +409,13 @@ async def edit_preview(
         warning=warning,
         manifest=updated.get("manifest", {}),
     )
+    elapsed_ms = int((time.perf_counter() - start) * 1000)
+    if elapsed_ms >= 500:
+        metrics.inc("edit.latency.ge_500ms")
+    logger.info(
+        "edit_latency session=%s elapsed_ms=%s payload_bytes=%s",
+        session_id,
+        elapsed_ms,
+        preview_bytes,
+    )
+    return response
