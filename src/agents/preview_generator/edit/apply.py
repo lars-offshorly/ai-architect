@@ -120,6 +120,7 @@ def apply_edit(
     catalog: BundleCatalog,
 ) -> tuple[dict, str | None]:
     """Apply v2 edits against payload.manifest (schema_version=2.0)."""
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     _ = catalog
     result = copy.deepcopy(payload)
 
@@ -137,7 +138,9 @@ def apply_edit(
 
     manifest = _get_manifest(result)
     if manifest is None:
-        warning = _warn("manifest_invalid", "manifest missing or invalid for edit path.")
+        warning = _warn(
+            "manifest_invalid", "manifest missing or invalid for edit path."
+        )
         result["warning"] = warning
         return result, warning
     for section in _FROZEN_MANIFEST_SECTIONS:
@@ -158,7 +161,9 @@ def apply_edit(
     if action.action_type in {EditActionType.ADD_MODULE, EditActionType.REMOVE_MODULE}:
         module_name = _FLAG_TO_MODULE.get(action.target or "", action.target)
         if not isinstance(module_name, str) or not module_name:
-            return result, _warn("invalid_target", "Module edit requires valid module target.")
+            return result, _warn(
+                "invalid_target", "Module edit requires valid module target."
+            )
         if action.action_type == EditActionType.REMOVE_MODULE:
             result["modules"] = [m for m in modules if m != module_name]
             return result, None
@@ -181,7 +186,9 @@ def apply_edit(
 
         target_name = (action.target or "").strip()
         if not target_name:
-            return result, _warn("invalid_target", "Dashboard edit requires target name.")
+            return result, _warn(
+                "invalid_target", "Dashboard edit requires target name."
+            )
 
         dashboard_section = manifest.setdefault("dashboard", {})
         dashboards = dashboard_section.setdefault("dashboards", [])
@@ -189,10 +196,12 @@ def apply_edit(
             dashboards = []
             dashboard_section["dashboards"] = dashboards
 
-        resolved, warning = _resolve_ref_by_name(dashboards, target_name)
+        resolved, warning_msg = _resolve_ref_by_name(dashboards, target_name)
         if action.action_type == EditActionType.REMOVE_DASHBOARD:
-            if warning is not None or resolved is None:
-                return result, _warn("resolution_failed", f"Dashboard edit failed: {warning}")
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"Dashboard edit failed: {warning_msg}"
+                )
             resolved_id = resolved.get("id")
             dashboard_section["dashboards"] = [
                 item
@@ -201,9 +210,11 @@ def apply_edit(
             ]
             return result, None
 
-        if warning is None and resolved is not None:
+        if warning_msg is None and resolved is not None:
             return result, None
-        return result, _warn("resolution_failed", f"Dashboard edit failed: {warning}")
+        return result, _warn(
+            "resolution_failed", f"Dashboard edit failed: {warning_msg}"
+        )
 
     if action.action_type in {EditActionType.ADD_QUEUE, EditActionType.REMOVE_QUEUE}:
         ticket_section = manifest.setdefault("tickets", {})
@@ -213,13 +224,16 @@ def apply_edit(
             ticket_section["queues"] = queues
         if target_id is None:
             target_name = (action.target or "").strip()
-            resolved, warning = _resolve_ref_by_name(queues, target_name)
-            if warning is not None or resolved is None:
-                return result, _warn("resolution_failed", f"Queue edit failed: {warning}")
+            resolved, warning_msg = _resolve_ref_by_name(queues, target_name)
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"Queue edit failed: {warning_msg}"
+                )
             target_id = _as_positive_int(str(resolved.get("id")))
             if target_id is None:
                 return result, _warn(
-                    "invalid_target", "Queue edit failed: resolved queue has invalid id."
+                    "invalid_target",
+                    "Queue edit failed: resolved queue has invalid id.",
                 )
         if action.action_type == EditActionType.REMOVE_QUEUE:
             ticket_section["queues"] = [
@@ -244,9 +258,11 @@ def apply_edit(
         kpi_id = target_id
         if kpi_id is None:
             target_name = (action.target or "").strip()
-            resolved, warning = _resolve_ref_by_name(kpis, target_name)
-            if warning is not None or resolved is None:
-                return result, _warn("resolution_failed", f"KPI edit failed: {warning}")
+            resolved, warning_msg = _resolve_ref_by_name(kpis, target_name)
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"KPI edit failed: {warning_msg}"
+                )
             kpi_id = _as_positive_int(str(resolved.get("id")))
             if kpi_id is None:
                 return result, _warn(
@@ -260,7 +276,9 @@ def apply_edit(
                 if not (isinstance(item, dict) and item.get("id") == kpi_id)
             ]
             return result, None
-        if not any(isinstance(item, dict) and item.get("id") == kpi_id for item in kpis):
+        if not any(
+            isinstance(item, dict) and item.get("id") == kpi_id for item in kpis
+        ):
             kpis.append({"id": kpi_id, "name": f"KPI {kpi_id}"})
         return result, None
 
@@ -283,7 +301,8 @@ def apply_edit(
             ]
             return result, None
         if not any(
-            isinstance(item, dict) and item.get("id") == target_id for item in dashboards
+            isinstance(item, dict) and item.get("id") == target_id
+            for item in dashboards
         ):
             dashboards.append({"id": target_id, "name": f"Dashboard {target_id}"})
         return result, None

@@ -94,7 +94,8 @@ async def is_authenticated(request: Request) -> UserSchema:
     if settings.DEV_BYPASS:
         if not settings.DEBUG:
             logger.error(
-                "Unsafe auth config: DEV_BYPASS=true while DEBUG=false. Rejecting request."
+                "Unsafe auth config: DEV_BYPASS=true while DEBUG=false. "
+                "Rejecting request."
             )
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

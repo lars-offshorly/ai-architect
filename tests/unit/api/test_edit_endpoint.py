@@ -34,72 +34,11 @@ def _build_app(
 def _make_preview_payload(session_id: str = "sess-1") -> dict:
     """Build a minimal preview payload for edit testing."""
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "session_id": session_id,
         "bundle_key": "project_mgmt",
         "display_name": "Project Management",
         "modules": ["Projects", "Chat", "Dashboard", "KPI"],
-        "generation_json": {
-            "schema_version": "1.0",
-            "bundle_key": "project_mgmt",
-            "feature_flags": [
-                {
-                    "id": 5,
-                    "name": "chat-module",
-                    "description": "Chat Module",
-                    "isEnabled": True,
-                    "module": "Global",
-                },
-                {
-                    "id": 7,
-                    "name": "projects-module",
-                    "description": "Projects Module",
-                    "isEnabled": True,
-                    "module": "Global",
-                },
-                {
-                    "id": 2,
-                    "name": "dashboard-module",
-                    "description": "Dashboard Module",
-                    "isEnabled": True,
-                    "module": "Global",
-                },
-                {
-                    "id": 123,
-                    "name": "kpi-module",
-                    "description": "KPI Module",
-                    "isEnabled": True,
-                    "module": "Global",
-                },
-            ],
-            "modules": ["Projects", "Chat", "Dashboard", "KPI"],
-            "config": {
-                "permission_services": ["projects", "kpi"],
-                "landing_pages": [],
-                "kpi_definitions": ["capacity_utilization"],
-            },
-        },
-        "dummy_data_json": {
-            "bundle_key": "project_mgmt",
-            "session_id": session_id,
-            "company_name": "TestCo",
-            "stores": {
-                "kpis": [
-                    {
-                        "key": "capacity_utilization",
-                        "label": "Capacity Utilization",
-                        "type": "percentage",
-                        "source_service": "hr_hub",
-                        "sample_value": 87.5,
-                    }
-                ],
-                "dashboard_widgets": [],
-                "dashboard_generation_output": {
-                    "success": True,
-                    "execution_time": "0m 1s",
-                },
-            },
-        },
         "manifest": {
             "schema_version": "2.0",
             "session_id": session_id,

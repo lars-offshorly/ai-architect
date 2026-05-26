@@ -123,5 +123,7 @@ def build_manifest(state: PreviewGeneratorState) -> dict:
 def emit_preview(state: PreviewGeneratorState) -> dict:
     modules = _derive_modules(state.feature_flags, state)
     manifest = build_manifest(state)
-    logger.info("session=%s — emitted v2 preview: modules=%s", state.session_id, modules)
+    logger.info(
+        "session=%s — emitted v2 preview: modules=%s", state.session_id, modules
+    )
     return {"output": {"modules": modules, "manifest": manifest}}

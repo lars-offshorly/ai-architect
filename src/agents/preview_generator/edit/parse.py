@@ -9,13 +9,15 @@ from __future__ import annotations
 import json
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
-from typing import Callable
+
+from langchain_openai import ChatOpenAI
 
 from catalog.bundle_catalog import BundleCatalog
 from core.logging import get_logger
-from langchain_openai import ChatOpenAI
 
 from ..schemas import EditAction, EditActionType
 
@@ -426,7 +428,9 @@ def parse_edit_instruction_with_fallback(
     if not enabled or llm_parser is None:
         return rule_action
     if not _CIRCUIT.allow():
-        logger.warning("edit_llm_fallback_skipped circuit_open instruction=%s", instruction)
+        logger.warning(
+            "edit_llm_fallback_skipped circuit_open instruction=%s", instruction
+        )
         return rule_action
 
     for attempt in range(max_retries + 1):

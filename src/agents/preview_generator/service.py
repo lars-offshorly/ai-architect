@@ -51,7 +51,9 @@ class PreviewGeneratorService:
             preselected_intent=preselected_intent,
             catalog=self._catalog,
         )
-        graph = compiled_graph_skip_sample_data if self._build_manifest else compiled_graph
+        graph = (
+            compiled_graph_skip_sample_data if self._build_manifest else compiled_graph
+        )
         result: dict = graph.invoke(initial_state)
 
         raw = result.get("output")

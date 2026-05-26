@@ -21,4 +21,3 @@ class InMemoryMetrics:
 
 
 metrics = InMemoryMetrics()
-

@@ -15,7 +15,7 @@ async def test_interpreter_service_handles_none_llm():
     """
     service = get_interpreter_service()
     assert service._extractor is None
-    assert service._classifier is None
+    assert service._llm_industry_classifier is None
 
     request = InterpreterRequest(
         session_id="test-session",

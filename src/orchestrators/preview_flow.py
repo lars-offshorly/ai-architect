@@ -12,6 +12,7 @@ from domain.models.extraction_result import ExtractionResult
 
 logger = get_logger(__name__)
 
+
 class PreviewFlow:
     """Orchestrates preview generation and assembles v2 AppPayload."""
 
@@ -110,6 +111,7 @@ class PreviewFlow:
                 exc,
             )
             return None
+
 
 def _last_user_message(conversation_history: list[dict]) -> str:
     """Return the content of the last user-role message, or empty string."""

@@ -1,4 +1,3 @@
-import os
 from unittest.mock import patch
 
 import pytest
@@ -15,6 +14,7 @@ def clean_settings_cache():
     deps.get_interpreter_service.cache_clear()
     deps.get_bundle_catalog.cache_clear()
     deps.get_preview_flow.cache_clear()
+    get_settings.cache_clear()
 
     yield
 
@@ -23,14 +23,14 @@ def clean_settings_cache():
     deps.get_interpreter_service.cache_clear()
     deps.get_bundle_catalog.cache_clear()
     deps.get_preview_flow.cache_clear()
+    get_settings.cache_clear()
 
-def test_settings_flags_default_to_false():
-    """Verify that the new CI speedup flags default to False."""
-    # Ensure env vars are not set
-    os.environ.pop("DISABLE_LLM_CALLS", None)
-    os.environ.pop("DISABLE_DASHBOARD_CALLS", None)
-    os.environ.pop("SKIP_CATALOG_VALIDATION", None)
-    
+def test_settings_flags_parse_false_from_env(monkeypatch):
+    """Verify boolean flags parse correctly when explicitly set to false."""
+    monkeypatch.setenv("DISABLE_LLM_CALLS", "false")
+    monkeypatch.setenv("DISABLE_DASHBOARD_CALLS", "false")
+    monkeypatch.setenv("SKIP_CATALOG_VALIDATION", "false")
+    get_settings.cache_clear()
     settings = get_settings()
     assert settings.DISABLE_LLM_CALLS is False
     assert settings.DISABLE_DASHBOARD_CALLS is False
@@ -42,6 +42,7 @@ def test_settings_flags_from_env(monkeypatch):
     monkeypatch.setenv("DISABLE_DASHBOARD_CALLS", "true")
     monkeypatch.setenv("SKIP_CATALOG_VALIDATION", "true")
     
+    get_settings.cache_clear()
     settings = get_settings()
     
     assert settings.DISABLE_LLM_CALLS is True

@@ -277,7 +277,9 @@ def _dedupe_valid_slugs(
 def _name_pool(state: PreviewGeneratorState) -> list[str]:
     if state.user_context and state.user_context.people:
         extracted = [person.name for person in state.user_context.people if person.name]
-        combined = extracted + [name for name in _DEFAULT_NAMES if name not in extracted]
+        combined = extracted + [
+            name for name in _DEFAULT_NAMES if name not in extracted
+        ]
         return combined[:10]
     return list(_DEFAULT_NAMES)
 
@@ -306,7 +308,9 @@ def _dept_pool(state: PreviewGeneratorState, bundle_key: str) -> list[str]:
         return [team.name for team in state.user_context.teams]
     branch_names = None
     if state.extraction_result:
-        branch_names = state.extraction_result.personalization_signals.branch_names or None
+        branch_names = (
+            state.extraction_result.personalization_signals.branch_names or None
+        )
     if branch_names:
         return branch_names
     return _DEPARTMENTS_BY_BUNDLE.get(
@@ -334,7 +338,9 @@ def _company_slug(state: PreviewGeneratorState) -> str:
     return "Apex"
 
 
-def _build_sample_employees(state: PreviewGeneratorState, bundle_key: str) -> list[dict]:
+def _build_sample_employees(
+    state: PreviewGeneratorState, bundle_key: str
+) -> list[dict]:
     names = _name_pool(state)
     roles = _role_pool(state, bundle_key)
     depts = _dept_pool(state, bundle_key)
@@ -368,7 +374,9 @@ def _build_sample_projects(
         templates = _HR_QUEUE_NAMES
         for index in range(5):
             name = templates[index % len(templates)]
-            lead = employees[index % len(employees)]["name"] if employees else "Unassigned"
+            lead = (
+                employees[index % len(employees)]["name"] if employees else "Unassigned"
+            )
             projects.append(
                 {
                     "id": index + 1,
@@ -450,13 +458,17 @@ def _build_sample_weaves(employees: list[dict], projects: list[dict]) -> list[di
     weaves: list[dict] = []
     for index in range(4):
         template = _WEAVE_TITLES[index % len(_WEAVE_TITLES)]
-        project_name = projects[index % len(projects)]["name"] if projects else "Project"
+        project_name = (
+            projects[index % len(projects)]["name"] if projects else "Project"
+        )
         title = template.format(
             month=_MONTHS[index % 12],
             project=project_name.split("—")[0].strip(),
         )
         creator = employees[index % len(employees)]["name"] if employees else "Admin"
-        participants = [emp["name"] for emp in employees[1:3]] if len(employees) >= 3 else []
+        participants = (
+            [emp["name"] for emp in employees[1:3]] if len(employees) >= 3 else []
+        )
         weaves.append(
             {
                 "id": index + 1,

@@ -40,7 +40,6 @@ from core.exceptions import (
 from core.logging import get_logger
 from core.metrics import metrics
 from domain.models.extraction_result import ExtractionResult
-from domain.models.session import Session
 from domain.services.early_preview_policy import (
     resolve_early_bundle_key,
 )
@@ -73,9 +72,7 @@ def _manifest_counts(payload: dict[str, Any]) -> dict[str, int]:
     dashboard = manifest.get("dashboard", {})
     kpi = manifest.get("kpi", {})
     queues = tickets.get("queues", []) if isinstance(tickets, dict) else []
-    dashboards = (
-        dashboard.get("dashboards", []) if isinstance(dashboard, dict) else []
-    )
+    dashboards = dashboard.get("dashboards", []) if isinstance(dashboard, dict) else []
     kpis = kpi.get("kpis", []) if isinstance(kpi, dict) else []
     return {
         "modules": modules_count,
@@ -126,7 +123,6 @@ async def _execute_preview_pipeline(
     warning: str | None = None,
     extraction_result: ExtractionResult | None = None,
     preselected_intent: str | None = None,
-    session: Session | None = None,
 ) -> AppPayloadResponseSchema:
     # pylint: disable=too-many-locals
     """Execute the preview pipeline and assemble the response schema."""
@@ -234,7 +230,6 @@ async def generate_preview(
         preview_type="confirmed",
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
-        session=session,
     )
 
 
@@ -277,7 +272,6 @@ async def generate_early_preview(
         warning=_EARLY_PREVIEW_WARNING,
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
-        session=session,
     )
 
 
@@ -298,6 +292,7 @@ async def edit_preview(
 
     No pipeline re-run — purely client-side JSON mutation.
     """
+    # pylint: disable=too-many-locals
     try:
         session_repo.get(session_id)
     except SessionNotFoundError as exc:
@@ -323,7 +318,11 @@ async def edit_preview(
         body.instruction,
         catalog,
         llm_parser=(
-            (lambda instruction: llm_parse_edit_instruction(instruction, edit_llm_model))
+            (
+                lambda instruction: llm_parse_edit_instruction(
+                    instruction, edit_llm_model
+                )
+            )
             if edit_llm_model is not None
             else None
         ),
@@ -380,14 +379,13 @@ async def edit_preview(
         after_counts,
         body.instruction,
     )
-    client_ip = (
-        request.headers.get("x-forwarded-for")
-        or (request.client.host if request.client is not None else "unknown")
+    client_ip = request.headers.get("x-forwarded-for") or (
+        request.client.host if request.client is not None else "unknown"
     )
     logger.info(
         (
-            "audit_edit session=%s ip=%s action=%s target=%s outcome=%s warning_code=%s "
-            "before=%s after=%s"
+            "audit_edit session=%s ip=%s action=%s target=%s outcome=%s "
+            "warning_code=%s before=%s after=%s"
         ),
         session_id,
         client_ip,
