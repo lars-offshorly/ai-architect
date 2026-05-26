@@ -67,9 +67,7 @@ class ReplierService:
         session_logger = get_session_logger(__name__, session_id)
         recent = (history or [])[-6:]
         history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
-        context = (
-            f"Workspace category: {display_name}\nContext gathered so far: {slots}"
-        )
+        context = f"Workspace category: {display_name}\nContext gathered so far: {slots}"
         if history_text:
             context = f"Recent conversation:\n{history_text}\n\n{context}"
         try:

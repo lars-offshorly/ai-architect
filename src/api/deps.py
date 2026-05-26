@@ -34,9 +34,7 @@ def get_bundle_catalog() -> BundleCatalog:
     settings = get_settings()
     catalog = BundleCatalog(Path(settings.BUNDLE_REGISTRY_PATH))
     if not settings.SKIP_CATALOG_VALIDATION:
-        templates_dir = Path(settings.TEMPLATES_DIR)
-        catalog.validate(templates_dir=templates_dir)
-        catalog.validate_template_consistency(templates_dir=templates_dir)
+        catalog.validate()
     return catalog
 
 
@@ -134,27 +132,6 @@ def get_tenant_provisioning_service() -> TenantProvisioningService:
 
 
 @lru_cache(maxsize=1)
-def get_llm_tenant_provisioning_service() -> TenantProvisioningService:
-    """Return a cached TenantProvisioningService backed by LLMSelector in production.
-
-    Falls back to the deterministic baseline selector when DISABLE_LLM_CALLS is set.
-    """
-    settings = get_settings()
-    if settings.DISABLE_LLM_CALLS:
-        return TenantProvisioningService.with_baseline(
-            registry_facade=get_registry_facade()
-        )
-    return TenantProvisioningService.with_llm(
-        model=ChatOpenAI(
-            model=settings.OPENAI_MODEL,
-            temperature=settings.CLASSIFIER_TEMPERATURE,
-            api_key=settings.OPENAI_API_KEY,
-        ),
-        registry_facade=get_registry_facade(),
-    )
-
-
-@lru_cache(maxsize=1)
 def get_preview_flow() -> PreviewFlow:
     """Return a cached PreviewFlow wired to the preview generator service."""
     catalog = get_bundle_catalog()
@@ -164,12 +141,6 @@ def get_preview_flow() -> PreviewFlow:
         bundle_display_names=display_names,
         tenant_provisioning_service=get_tenant_provisioning_service(),
     )
-
-
-@lru_cache(maxsize=1)
-def get_bundle_metadata_service() -> CanonicalMetadataService:
-    """Return metadata service backed by canonical manifests."""
-    return get_registry_facade().metadata_service
 
 
 @lru_cache(maxsize=1)
