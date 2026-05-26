@@ -6,7 +6,14 @@ from orchestrators.preview_flow import PreviewFlow
 
 
 class _TenantProvisioning:
-    def provision(self, bundle_key: str, user_message: str, session_id: str) -> dict:
+    def provision(
+        self,
+        bundle_key: str,
+        user_message: str,
+        session_id: str,
+        tenant_overrides: dict[str, str] | None = None,
+    ) -> dict:
+        _ = (bundle_key, user_message, tenant_overrides)
         return {
             "schema_version": "2.0",
             "session_id": session_id,

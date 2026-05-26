@@ -58,6 +58,7 @@ def test_run_populates_manifest_when_provisioning_service_present() -> None:
         bundle_key="hr_hub",
         user_message="I need HR tools",
         session_id="sess-v2",
+        tenant_overrides=None,
     )
 
 

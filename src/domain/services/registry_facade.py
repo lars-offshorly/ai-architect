@@ -18,6 +18,13 @@ _DEFAULT_MODULES: dict[str, list[str]] = {
     "hr_management": ["hr_hub", "tickets", "kpi", "dashboard"],
     "generic": ["tickets", "kpi", "dashboard"],
 }
+
+# The synthetic ``generic`` bundle has no canonical manifest of its own. When
+# the fallback handler exhausts the clarification budget we still need a real
+# manifest to provision a preview from — BPO/ticketing is the chosen baseline
+# because its tenant header (tickets/kpi/dashboard) matches the generic
+# default-modules list above.
+_GENERIC_MANIFEST_ALIAS = "ticketing"
 _CANONICAL_BASELINE_INTENTS: tuple[str, ...] = (
     "manage employees",
     "track attendance",
@@ -53,8 +60,15 @@ class RegistryFacade:
         return self.metadata_service.get_metadata(bundle_key)
 
     def get_raw_manifest(self, bundle_key: str) -> dict[str, Any] | None:
-        """Return the loaded canonical manifest dict for a bundle, or None."""
-        return self.resolver.registry.manifest_for_bundle(bundle_key)
+        """Return the loaded canonical manifest dict for a bundle, or None.
+
+        ``generic`` falls back to the BPO/ticketing manifest so generic-fallback
+        sessions still produce a usable preview.
+        """
+        resolved_key = (
+            _GENERIC_MANIFEST_ALIAS if bundle_key == "generic" else bundle_key
+        )
+        return self.resolver.registry.manifest_for_bundle(resolved_key)
 
     def list_supported_bundles(self) -> list[str]:
         return sorted(self.metadata_service.known_bundle_keys())

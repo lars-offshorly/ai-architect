@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     CONFIDENCE_PROCEED_THRESHOLD: float = Field(default=0.75, ge=0.0, le=1.0)
     CONFIDENCE_SUGGEST_THRESHOLD: float = Field(default=0.50, ge=0.0, le=1.0)
     SCORE_GAP_MINIMUM: float = Field(default=0.15, ge=0.0, le=1.0)
+    # Cap clarifications at 3 by default. The v2 canonical manifest only needs a
+    # tiny tenant header (industry, company, size, region), but giving the user
+    # a few rounds to specify it before we fall back to a generic bundle keeps
+    # the conversation feeling cooperative rather than tripping into a generic
+    # baseline after the first miss.
     MAX_CLARIFICATION_TURNS: int = Field(default=3, ge=1)
 
     TEMPLATES_DIR: str = "src/templates/bundles"

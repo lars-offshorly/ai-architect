@@ -38,3 +38,12 @@ def test_inferred_modules_can_fallback_to_registry_when_enabled(shared_catalog: 
     facade.catalog_fallback = shared_catalog
     modules = facade.inferred_modules_for_bundle("ticketing")
     assert modules  # from registry default_modules
+
+
+def test_get_raw_manifest_for_generic_aliases_to_ticketing() -> None:
+    """The synthetic generic bundle reuses the BPO/ticketing manifest."""
+    facade = _facade()
+    generic_manifest = facade.get_raw_manifest("generic")
+    ticketing_manifest = facade.get_raw_manifest("ticketing")
+    assert generic_manifest is not None
+    assert generic_manifest == ticketing_manifest

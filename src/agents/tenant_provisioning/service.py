@@ -68,6 +68,7 @@ class TenantProvisioningService:
         *,
         session_id: str,
         generated_at: datetime | None = None,
+        tenant_overrides: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         manifest = self.registry_facade.get_raw_manifest(bundle_key)
         if manifest is None:
@@ -79,6 +80,10 @@ class TenantProvisioningService:
         selection = self.selector.select(  # pylint: disable=assignment-from-no-return
             catalog_view, user_message
         )
+        if tenant_overrides:
+            selection = _apply_tenant_overrides(
+                selection, tenant_overrides, catalog_view.bundle_industry
+            )
         return emit_tenant_provisioning(
             manifest,
             selection,
@@ -93,6 +98,7 @@ class TenantProvisioningService:
         *,
         session_id: str,
         generated_at: datetime | None = None,
+        tenant_overrides: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         manifest = self.registry_facade.get_raw_manifest(bundle_key)
         if manifest is None:
@@ -101,9 +107,35 @@ class TenantProvisioningService:
             )
         catalog_view = CatalogView.from_manifest(manifest)
         selection = await self.selector.select_async(catalog_view, user_message)
+        if tenant_overrides:
+            selection = _apply_tenant_overrides(
+                selection, tenant_overrides, catalog_view.bundle_industry
+            )
         return emit_tenant_provisioning(
             manifest,
             selection,
             session_id=session_id,
             generated_at=generated_at,
         )
+
+
+def _apply_tenant_overrides(
+    selection: Any,
+    overrides: dict[str, str],
+    bundle_industry: str,
+) -> Any:
+    """Apply user-derived overrides to the selection's tenant block.
+
+    ``industry`` is silently locked to ``bundle_industry`` to keep the emitter
+    happy regardless of what an override might try to set.
+    """
+    cleaned = {
+        key: value
+        for key, value in overrides.items()
+        if isinstance(value, str) and value.strip()
+    }
+    if not cleaned:
+        return selection
+    cleaned["industry"] = bundle_industry
+    new_tenant = selection.tenant.model_copy(update=cleaned)
+    return selection.model_copy(update={"tenant": new_tenant})

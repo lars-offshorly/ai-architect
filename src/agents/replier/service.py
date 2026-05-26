@@ -3,6 +3,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from agents.interpreter.provisioning_readiness import ProvisioningReadinessResult
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.enums.missing_field_type import MissingFieldType
@@ -13,6 +14,8 @@ from domain.models.extraction_result import ExtractionResult
 from .clarification import (
     generate_clarification_question,
     is_critical,
+    known_facts_from_readiness,
+    question_for_tenant_field,
 )
 from .prompts import BUNDLE_SUGGESTION_SYSTEM_PROMPT, BUNDLE_VERIFICATION_SYSTEM_PROMPT
 
@@ -34,6 +37,7 @@ class ReplierService:
         extracted: ExtractionResult,
         bundle_key: str,
         history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> tuple[MissingFieldType | None, str]:
         session_logger = get_session_logger(__name__, session_id)
         missing = extracted.missing_fields
@@ -42,10 +46,27 @@ class ReplierService:
         target = critical[0] if critical else (missing[0] if missing else None)
 
         if target is None:
+            # No ``MissingFieldType`` left to ask about — but the
+            # readiness gate may still flag tenant fields (industry,
+            # company name, size band, region). Surface a deterministic
+            # question for the first missing required tenant field so the
+            # flow doesn't return an empty awaiting_input.
+            if readiness is not None and readiness.missing_required:
+                next_field = readiness.missing_required[0]
+                session_logger.info(
+                    "No MissingFieldType; asking about tenant field=%s",
+                    next_field.value,
+                )
+                return None, question_for_tenant_field(next_field)
             session_logger.info("No missing fields detected")
             return None, ""
 
         slots = extracted.to_extracted_info().slots
+        known_facts = (
+            known_facts_from_readiness(readiness, slots)
+            if readiness is not None
+            else None
+        )
         question = await generate_clarification_question(
             self._model,
             target,
@@ -53,6 +74,8 @@ class ReplierService:
             slots,
             variants=None,
             history=history,
+            readiness=readiness,
+            known_facts=known_facts,
         )
         session_logger.info("Clarification needed for field=%s", target.value)
         return target, question
@@ -63,13 +86,15 @@ class ReplierService:
         display_name: str,
         slots: dict[str, object],
         history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> str:
         session_logger = get_session_logger(__name__, session_id)
-        recent = (history or [])[-6:]
-        history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
-        context = f"Workspace category: {display_name}\nContext gathered so far: {slots}"
-        if history_text:
-            context = f"Recent conversation:\n{history_text}\n\n{context}"
+        context = self._build_verification_context(
+            display_name=display_name,
+            slots=slots,
+            history=history,
+            readiness=readiness,
+        )
         try:
             response = await self._model.ainvoke(
                 [
@@ -87,6 +112,44 @@ class ReplierService:
                 "like how many people are involved and how you currently manage things?"
             )
         return question
+
+    @staticmethod
+    def _build_verification_context(
+        display_name: str,
+        slots: dict[str, object],
+        history: list[ConversationMessage] | None,
+        readiness: ProvisioningReadinessResult | None,
+    ) -> str:
+        sections: list[str] = []
+        recent = (history or [])[-6:]
+        if recent:
+            history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
+            sections.append(f"Recent conversation:\n{history_text}")
+
+        sections.append(f"Workspace category: {display_name}")
+
+        if readiness is not None:
+            known_facts = known_facts_from_readiness(readiness, slots)
+            if known_facts:
+                lines = [f"- {k}: {v}" for k, v in known_facts.items() if v]
+                if lines:
+                    sections.append("Known tenant facts:\n" + "\n".join(lines))
+            missing_required = [f.value for f in readiness.missing_required]
+            missing_optional = [f.value for f in readiness.missing_optional]
+            if missing_required:
+                sections.append(
+                    "Ask about (required, in order): " + ", ".join(missing_required)
+                )
+            elif missing_optional:
+                sections.append(
+                    "Ask about (optional, in order): " + ", ".join(missing_optional)
+                )
+            else:
+                sections.append("All tenant facts known — return an empty string.")
+        else:
+            sections.append(f"Context gathered so far: {slots}")
+
+        return "\n\n".join(sections)
 
     async def build_bundle_suggestion(
         self,

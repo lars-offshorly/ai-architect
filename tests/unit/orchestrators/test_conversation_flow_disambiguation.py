@@ -17,15 +17,25 @@ class _FakeRegistryFacade:
         return {
             "bpo_contact_center": {
                 "bundle_key": "ticketing",
-                "aliases": ["call center", "customer support"],
+                "aliases": [
+                    "call center",
+                    "customer support",
+                    "help desk",
+                    "service desk",
+                ],
             },
             "construction_firm": {
                 "bundle_key": "construction",
-                "aliases": ["contractor", "construction"],
+                "aliases": [
+                    "contractor",
+                    "construction",
+                    "subcontractor",
+                    "jobsite",
+                ],
             },
             "hr_recruitment_agency": {
                 "bundle_key": "hr_management",
-                "aliases": ["recruitment", "staffing"],
+                "aliases": ["recruitment", "staffing", "talent", "payroll"],
             },
         }
 
@@ -33,7 +43,9 @@ class _FakeRegistryFacade:
         return []
 
 
-def _make_flow() -> tuple[ConversationFlow, MagicMock, MagicMock]:
+def _make_flow(
+    classification_status: str = "proceed",
+) -> tuple[ConversationFlow, MagicMock, MagicMock]:
     interpreter = MagicMock()
     interpreter.summarize_history = AsyncMock(return_value="")
     interpreter.extract_only = AsyncMock(return_value=ExtractionResult(session_id="s1"))
@@ -50,7 +62,7 @@ def _make_flow() -> tuple[ConversationFlow, MagicMock, MagicMock]:
                     matched_signals=[],
                 ),
                 ranked_candidates=[],
-                confidence_status="proceed",
+                confidence_status=classification_status,
                 top_confidence=0.9,
                 score_gap=0.5,
                 missing_context=[],
@@ -81,9 +93,15 @@ def _make_flow() -> tuple[ConversationFlow, MagicMock, MagicMock]:
 
 @pytest.mark.asyncio
 async def test_asks_industry_disambiguation_when_multiple_industries_match() -> None:
-    flow, _interpreter, _replier = _make_flow()
+    # The classifier itself is uncertain ("clarify") AND multiple industries
+    # have strong alias hits in the message: that is the only case where the
+    # disambiguation question should fire.
+    flow, _interpreter, _replier = _make_flow(classification_status="clarify")
     session = Session(session_id="s1", clarification_turn_count=1)
-    msg = "We have contractor workflows and also run a call center support operation"
+    msg = (
+        "We have contractor and subcontractor workflows on every jobsite, "
+        "and we also run a call center and help desk for customer support."
+    )
 
     result = await flow.process_turn(
         ConversationTurnRequest(
@@ -96,6 +114,30 @@ async def test_asks_industry_disambiguation_when_multiple_industries_match() -> 
 
     assert result["status"] == "awaiting_input"
     assert "which best describes your business" in str(result["question"]).lower()
+
+
+@pytest.mark.asyncio
+async def test_skips_disambiguation_when_resolver_is_confident() -> None:
+    # Even with alias hits for multiple industries, a confident classifier
+    # ("proceed") should suppress the disambiguation question.
+    flow, _interpreter, _replier = _make_flow(classification_status="proceed")
+    session = Session(session_id="s1", clarification_turn_count=1)
+    msg = "We run a BPO contact center with a call center and 280 employees"
+
+    result = await flow.process_turn(
+        ConversationTurnRequest(
+            session_id="s1",
+            user_message=msg,
+            history=[ConversationMessage(role="user", content=msg)],
+            session=session,
+        )
+    )
+
+    # Should NOT be the disambiguation question; flow continues to next step.
+    assert (
+        "which best describes your business"
+        not in str(result.get("question", "")).lower()
+    )
 
 
 @pytest.mark.asyncio

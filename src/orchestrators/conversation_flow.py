@@ -8,6 +8,10 @@ from typing import Any, Protocol, cast
 
 from agents.interpreter.fallback import FallbackHandler
 from agents.interpreter.missing_fields import MissingFieldDetector
+from agents.interpreter.provisioning_readiness import (
+    ProvisioningReadiness,
+    ProvisioningReadinessResult,
+)
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
@@ -66,6 +70,43 @@ _INDUSTRY_LABELS: dict[str, str] = {
 
 def _contains_term(text: str, term: str) -> bool:
     return re.search(r"\b" + re.escape(term.lower()) + r"\b", text.lower()) is not None
+
+
+# Phrases that introduce a company name. The capture group reads up to the
+# next clause boundary (and/with/that, punctuation, or end of string) so
+# names like "Equip", "Nexora Connect", or "Smith & Co." are captured cleanly.
+_COMPANY_NAME_PATTERN = re.compile(
+    (
+        r"\b(?:"
+        r"company\s+(?:called|named|name(?:'?s|d)?)"  # "company called/named/name is"
+        r"|business\s+(?:called|named)"  # "business called/named"
+        r"|team\s+(?:called|named)"  # "team called/named"
+        r"|(?:we|i)['’]?re?\s+called"  # "we're called X" / "i am called X"
+        r"|called"  # bare "called X"
+        r"|named"  # bare "named X"
+        r"|name\s+is"  # "name is X"
+        r"|by\s+the\s+name\s+of"  # "by the name of X"
+        r")\s+"
+        r"([A-Z0-9][A-Za-z0-9 '&.\-]{0,60}?)"  # capture: starts with caps/digit
+        r"(?=\s+(?:and|with|that|for|in|is|was|who|which|because|so|to)\b"
+        r"|[.,!?;:]|$)"
+    ),
+    flags=re.IGNORECASE,
+)
+
+
+def _extract_company_name(user_message: str) -> str | None:
+    """Extract a company name from a user message via introducer phrases.
+
+    Returns ``None`` when no introducer phrase is present. The LLM extractor
+    handles freer-form mentions; this regex is the deterministic fast-path
+    that keeps obvious cases out of the LLM round-trip.
+    """
+    match = _COMPANY_NAME_PATTERN.search(user_message)
+    if not match:
+        return None
+    candidate = match.group(1).strip(" .,!?:;'\"")
+    return candidate or None
 
 
 def _detect_preview_intent(user_message: str) -> bool:
@@ -166,6 +207,7 @@ class ReplierPort(Protocol):
         extracted: ExtractionResult,
         bundle_key: str,
         history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> tuple[object | None, str]: ...
 
     async def build_bundle_verification_question(
@@ -174,6 +216,7 @@ class ReplierPort(Protocol):
         display_name: str,
         slots: dict[str, object],
         history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> str: ...
 
     async def build_bundle_suggestion(
@@ -243,7 +286,19 @@ class ConversationFlow:
             summary_for_turn,
         )
 
-        ambiguous_industries = self._ambiguous_industries(turn_request.user_message)
+        # Only ask the disambiguation question when the canonical resolver itself
+        # is uncertain. If classification already came back with `proceed` (i.e.,
+        # the alias scorer found a clear winner with margin), there is no real
+        # ambiguity — trust it and skip the question.
+        resolver_is_confident = (
+            context.classification.confidence_status == "proceed"
+            and context.top is not None
+        )
+        ambiguous_industries = (
+            []
+            if resolver_is_confident
+            else self._ambiguous_industries(turn_request.user_message)
+        )
         if (
             ambiguous_industries
             and session.company_industry_claim is None
@@ -277,16 +332,29 @@ class ConversationFlow:
             session.confirmed = True
             result = self._ready_for_preview_response(context, preview_type="confirmed")
 
-        # Always ask exactly one verification question on the first unconfirmed turn,
-        # regardless of confidence, to collect user context and confirm the bundle fit.
-        # This runs before all confidence-based branching so every path gets the same
-        # smart follow-up on turn 1.
+        # Provisioning-readiness gate. The v2 manifest only needs a few tenant
+        # header fields (industry, company_name, size_band, region). When the
+        # session already has the required ones, skip every question-asking
+        # branch and head straight to bundle suggestion.
+        readiness = ProvisioningReadiness.evaluate(session, context.extracted)
+        session_logger.info(
+            "Provisioning readiness: is_ready=%s missing_required=%s",
+            readiness.is_ready,
+            [f.value for f in readiness.missing_required],
+        )
+
+        # Ask one verification question on the first unconfirmed turn only when
+        # we are NOT already provisioning-ready. Skipping this when ready cuts
+        # out the unnecessary "How do you currently track..." follow-ups.
         if (
             session.clarification_turn_count == 0
             and not session.confirmed
             and session.preselected_bundle_key is None
+            and not readiness.is_ready
         ):
-            question = await self._build_verification_question(turn_request, context)
+            question = await self._build_verification_question(
+                turn_request, context, readiness
+            )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
             return result
@@ -297,24 +365,33 @@ class ConversationFlow:
             status in {"clarify", "suggest_alternatives"}
             and not session.confirmed
             and session.preselected_bundle_key is None
+            and not readiness.is_ready
         ):
-            question = await self._build_awaiting_question(turn_request, context)
+            question = await self._build_awaiting_question(
+                turn_request, context, readiness
+            )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
             return result
 
-        # For proceed/fallback_generic/preselected, verify slot completeness.
-        target_key = context.top.bundle_key if context.top is not None else "unknown"
-        missing_field, question = await self._replier.build_clarification(
-            turn_request.session_id,
-            context.extracted,
-            target_key,
-            history=turn_request.history,
-        )
-        if missing_field is not None:
-            result = self._awaiting_input_response(question, context)
-            self._persist_session_state(session, context, result)
-            return result
+        # Slot-completeness clarification only runs when readiness is still
+        # incomplete. Once the tenant header is filled, no further LLM-invented
+        # follow-ups are useful — the catalog handles the rest.
+        if not readiness.is_ready:
+            target_key = (
+                context.top.bundle_key if context.top is not None else "unknown"
+            )
+            missing_field, question = await self._replier.build_clarification(
+                turn_request.session_id,
+                context.extracted,
+                target_key,
+                history=turn_request.history,
+                readiness=readiness,
+            )
+            if missing_field is not None:
+                result = self._awaiting_input_response(question, context)
+                self._persist_session_state(session, context, result)
+                return result
 
         if not session.confirmed:
             suggestion = context.top
@@ -401,33 +478,105 @@ class ConversationFlow:
         return self._registry_facade.industry_bundle_map()
 
     def _ambiguous_industries(self, user_message: str) -> list[str]:
+        """Return industries that genuinely conflict in the user's message.
+
+        Score each industry by alias hits (industry-name hit weighted higher than
+        a single alias). Only return industries whose top two scores are both
+        above a meaningful threshold *and* close together. This prevents a
+        single weak alias hit (e.g. the word "employees" matching
+        ``hr_recruitment_agency``) from manufacturing ambiguity against an
+        otherwise clear industry signal.
+        """
         mapping = self._industry_mapping()
         if not mapping:
             return []
-        matched: list[str] = []
-        lowered = user_message.lower()
+        scores = self._score_industry_aliases(user_message.lower(), mapping)
+        if len(scores) < 2:
+            return []
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        top_score = ranked[0][1]
+        second_score = ranked[1][1]
+        # A genuine conflict needs both to score >= 2.0 (i.e. neither is a
+        # single accidental alias hit) and the gap to be small (< 1.5).
+        if second_score < 2.0 or top_score - second_score >= 1.5:
+            return []
+        return [industry for industry, score in ranked if score >= 2.0]
+
+    @staticmethod
+    def _set_industry_claim_from_text(
+        session: Session,
+        lowered: str,
+        mapping: dict[str, dict[str, Any]],
+    ) -> None:
+        """Set ``company_industry_claim`` + ``preselected_bundle_key`` from text.
+
+        Two-stage matching:
+        1. Fast-path: if the industry's canonical name or human label appears
+           literally (e.g. "construction", "BPO/contact center"), claim it.
+        2. Fallback: use alias scoring so natural phrasings like "BPO
+           contact center" (no slash) also claim correctly. Requires the
+           top industry to score at least 2.0 and beat the runner-up by 1.0.
+        """
+        if not mapping:
+            return
+        claimed = ConversationFlow._match_industry_by_canonical_name(lowered)
+        if claimed is None:
+            claimed = ConversationFlow._match_industry_by_alias_score(lowered, mapping)
+        if claimed is None:
+            return
+        session.company_industry_claim = claimed
+        bundle_key = mapping.get(claimed, {}).get("bundle_key")
+        if isinstance(bundle_key, str):
+            session.preselected_bundle_key = bundle_key
+
+    @staticmethod
+    def _match_industry_by_canonical_name(lowered: str) -> str | None:
+        for industry, label in _INDUSTRY_LABELS.items():
+            if _contains_term(lowered, industry) or _contains_term(lowered, label):
+                return industry
+        return None
+
+    @staticmethod
+    def _match_industry_by_alias_score(
+        lowered: str,
+        mapping: dict[str, dict[str, Any]],
+    ) -> str | None:
+        scores = ConversationFlow._score_industry_aliases(lowered, mapping)
+        if not scores:
+            return None
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        top_industry, top_score = ranked[0]
+        if top_score < 2.0:
+            return None
+        second_score = ranked[1][1] if len(ranked) > 1 else 0.0
+        if top_score - second_score < 1.0:
+            return None
+        return top_industry
+
+    @staticmethod
+    def _score_industry_aliases(
+        lowered: str, mapping: dict[str, dict[str, Any]]
+    ) -> dict[str, float]:
+        scores: dict[str, float] = {}
         for industry, spec in mapping.items():
-            if _contains_term(lowered, industry.lower()):
-                matched.append(industry)
-                continue
+            score = 3.0 if _contains_term(lowered, industry.lower()) else 0.0
             aliases = spec.get("aliases", [])
-            if isinstance(aliases, list) and any(
-                isinstance(alias, str) and _contains_term(lowered, alias)
-                for alias in aliases
-            ):
-                matched.append(industry)
-        return matched if len(matched) >= 2 else []
+            if isinstance(aliases, list):
+                score += sum(
+                    1.0
+                    for alias in aliases
+                    if isinstance(alias, str)
+                    and alias.strip()
+                    and _contains_term(lowered, alias)
+                )
+            if score > 0:
+                scores[industry] = score
+        return scores
 
     def _update_session_context(self, session: Session, user_message: str) -> None:
         text = user_message.lower()
         mapping = self._industry_mapping()
-        for industry, label in _INDUSTRY_LABELS.items():
-            if _contains_term(text, industry) or _contains_term(text, label):
-                session.company_industry_claim = industry
-                bundle_key = mapping.get(industry, {}).get("bundle_key")
-                if isinstance(bundle_key, str):
-                    session.preselected_bundle_key = bundle_key
-                break
+        self._set_industry_claim_from_text(session, text, mapping)
 
         for workflow, hints in _WORKFLOW_HINTS.items():
             if any(_contains_term(text, hint) for hint in hints):
@@ -448,16 +597,9 @@ class ConversationFlow:
         if size_match:
             session.inferred_team_size = int(size_match.group(1))
 
-        company_match = re.search(
-            (
-                r"\b(?:company called|called)\s+([a-z0-9][a-z0-9 '&.-]{1,60}?)"
-                r"(?=\s+(?:and|with|that)\b|[.,!?;:]|$)"
-            ),
-            user_message,
-            flags=re.IGNORECASE,
-        )
-        if company_match:
-            session.inferred_company_name = company_match.group(1).strip(" .,!?:;")
+        company_name = _extract_company_name(user_message)
+        if company_name:
+            session.inferred_company_name = company_name
 
         if any(
             _contains_term(text, token)
@@ -667,10 +809,11 @@ class ConversationFlow:
         self,
         request: ConversationTurnRequest,
         context: _TurnContext,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> str:
         status = context.classification.confidence_status
         if status == "suggest_alternatives":
-            return await self._build_verification_question(request, context)
+            return await self._build_verification_question(request, context, readiness)
 
         target_key = context.top.bundle_key if context.top is not None else "unknown"
         _, question = await self._replier.build_clarification(
@@ -678,6 +821,7 @@ class ConversationFlow:
             context.extracted,
             target_key,
             history=request.history,
+            readiness=readiness,
         )
         return question
 
@@ -685,6 +829,7 @@ class ConversationFlow:
         self,
         request: ConversationTurnRequest,
         context: _TurnContext,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> str:
         top_display = context.top.display_name if context.top is not None else ""
         question_or_awaitable = self._replier.build_bundle_verification_question(
@@ -692,6 +837,7 @@ class ConversationFlow:
             top_display,
             context.slots,
             history=request.history,
+            readiness=readiness,
         )
         if inspect.isawaitable(question_or_awaitable):
             return await question_or_awaitable
@@ -702,6 +848,7 @@ class ConversationFlow:
             context.extracted,
             target_key,
             history=request.history,
+            readiness=readiness,
         )
         return question
 

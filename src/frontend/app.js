@@ -5,6 +5,7 @@ import {
   generatePreview,
   generateEarlyPreview,
   generateApp,
+  editPreview,
 } from './api.js';
 import {
   renderMessage,
@@ -138,22 +139,46 @@ async function handleSendMessage() {
   startThinking();
 
   try {
-    let response;
     if (!state.sessionId) {
       // Step 1: Start Conversation
-      response = await startSession({ message });
+      const response = await startSession({ message });
+      stopThinking();
+      applyTurnResponse(response);
+    } else if (state.previewPayload) {
+      // Step 4b: Edit Loop — preview already exists, so the user's message
+      // is an edit instruction ("remove projects", "add KPI for SLA", etc).
+      // Route it to the dedicated edit endpoint instead of the conversation
+      // flow so it actually mutates the manifest.
+      const updated = await editPreview(
+        state.sessionId,
+        state.previewPayload,
+        message,
+      );
+      stopThinking();
+      applyEditResponse(updated);
     } else {
       // Step 2: Chat Loop
-      response = await replySession(state.sessionId, { message });
+      const response = await replySession(state.sessionId, { message });
+      stopThinking();
+      applyTurnResponse(response);
     }
-    
-    stopThinking();
-    applyTurnResponse(response);
   } catch (error) {
     stopThinking();
     appendErrorMessage(error.message);
   } finally {
     setProcessing(false);
+  }
+}
+
+function applyEditResponse(payload) {
+  if (!payload) return;
+  state.previewPayload = payload;
+  state.previewType = payload.preview_type || state.previewType;
+  refreshUI();
+  if (payload.warning) {
+    appendSystemMessage(`⚠️ ${payload.warning}`);
+  } else {
+    appendSystemMessage('Updated the preview.');
   }
 }
 
