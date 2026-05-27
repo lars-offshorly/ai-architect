@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import inspect
 import re
 from dataclasses import dataclass, field
@@ -16,12 +17,13 @@ from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
-from domain.models.conversation import ConversationMessage
+from domain.models.conversation import ConversationMessage, ConversationSummary
 from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
 from domain.services.registry_facade import RegistryFacade
+from repositories.conversation_repository import ConversationRepository
 
 logger = get_logger(__name__)
 
@@ -232,6 +234,7 @@ class ConversationFlow:
         self,
         interpreter_service: InterpreterPort,
         replier_service: ReplierPort,
+        conversation_repository: ConversationRepository | None = None,
         bundle_catalog: object | None = None,
         required_slots_by_bundle: dict[str, list[str]] | None = None,
         registry_facade: RegistryFacade | None = None,
@@ -239,6 +242,7 @@ class ConversationFlow:
         _ = bundle_catalog  # backward-compatible constructor arg
         self._interpreter = interpreter_service
         self._replier = replier_service
+        self._conversation_repository = conversation_repository or ConversationRepository()
         self._missing_field_detector = MissingFieldDetector(
             required_slots_by_bundle or {}
         )
@@ -279,11 +283,14 @@ class ConversationFlow:
         self._update_session_context(session, turn_request.user_message)
         session_logger = get_session_logger(__name__, turn_request.session_id)
 
-        summary_for_turn = await self._resolve_summary(turn_request, session)
-        context = await self._resolve_turn_context(
-            turn_request,
-            session,
-            summary_for_turn,
+        # Run summarization and context extraction concurrently.
+        # _resolve_summary saves the fresh summary to the conversation repository;
+        # _resolve_turn_context reads the *previous* turn's cached summary from
+        # the same repository, so the two coroutines have no data dependency and
+        # can safely run in parallel.
+        _, context = await asyncio.gather(
+            self._resolve_summary(turn_request, session),
+            self._resolve_turn_context(turn_request, session),
         )
 
         # Only ask the disambiguation question when the canonical resolver itself
@@ -631,22 +638,53 @@ class ConversationFlow:
         self,
         request: ConversationTurnRequest,
         session: Session,
-    ) -> str:
+    ) -> None:
+        """Compute the current-turn summary and persist it to the conversation
+        repository.
+
+        The return value is intentionally ``None``; callers retrieve the
+        summary from the repository via ``_resolve_turn_context``.  This
+        decoupling is what allows the two coroutines to run concurrently in
+        ``process_turn`` — ``_resolve_turn_context`` reads the *previous*
+        turn's cached summary while this coroutine computes the fresh one.
+        """
         if request.options.summary:
-            return request.options.summary
+            self._conversation_repository.save_summary(
+                ConversationSummary(
+                    session_id=request.session_id,
+                    summary_text=request.options.summary,
+                    message_count=len(request.history),
+                )
+            )
+            return
+
         summary_history = request.history[:-1] if request.history else []
-        return await self._interpreter.summarize_history(
+        summary_text = await self._interpreter.summarize_history(
             request.session_id,
             summary_history,
             session.accumulated_extraction,
+        )
+        self._conversation_repository.save_summary(
+            ConversationSummary(
+                session_id=request.session_id,
+                summary_text=summary_text,
+                message_count=len(summary_history),
+            )
         )
 
     async def _resolve_turn_context(
         self,
         request: ConversationTurnRequest,
         session: Session,
-        summary_for_turn: str,
     ) -> _TurnContext:
+        # Read the summary that was cached by the *previous* turn's
+        # ``_resolve_summary`` call.  On turn 1 this is ``None`` and we fall
+        # back to an empty string, which is identical to the prior behaviour.
+        # On subsequent turns the cached summary provides full prior context
+        # while the fresh summary for *this* turn is computed concurrently.
+        cached = self._conversation_repository.get_summary(request.session_id)
+        summary_for_turn = cached.summary_text if cached is not None else ""
+
         interpreter_request = InterpreterRequest(
             session_id=request.session_id,
             user_message=request.user_message,

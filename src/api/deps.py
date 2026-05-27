@@ -118,6 +118,7 @@ def get_conversation_flow() -> ConversationFlow:
     return ConversationFlow(
         interpreter_service=get_interpreter_service(),
         replier_service=get_replier_service(),
+        conversation_repository=get_conversation_repository(),
         required_slots_by_bundle=required_slots,
         registry_facade=get_registry_facade(),
     )
