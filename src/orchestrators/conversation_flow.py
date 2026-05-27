@@ -659,6 +659,14 @@ class ConversationFlow:
             return
 
         summary_history = request.history[:-1] if request.history else []
+
+        # Fix #2: skip the LLM call if the cached summary already covers this
+        # exact history length.  A message_count mismatch means new turns have
+        # been added since the last summarisation, so we recompute.
+        existing = self._conversation_repository.get_summary(request.session_id)
+        if existing is not None and existing.message_count == len(summary_history):
+            return  # cache hit — nothing to recompute
+
         summary_text = await self._interpreter.summarize_history(
             request.session_id,
             summary_history,
