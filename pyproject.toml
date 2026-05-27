@@ -17,8 +17,6 @@ dependencies = [
     "langchain-openai==1.1.12",
     "langgraph==1.1.6",
     "langgraph-checkpoint-postgres>=3.0.2,<4.0.0",
-    # Pinecone
-    "pinecone[asyncio]>=5.0.0",
     # Database
     "asyncpg>=0.30.0,<0.31.0",
     "psycopg[binary,pool]>=3.1.0",

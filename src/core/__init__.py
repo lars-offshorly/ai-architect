@@ -11,7 +11,6 @@ from .exceptions import (
 )
 from .llm import get_openai_chat_model
 from .logging import get_logger, get_session_logger
-from .pinecone import pinecone_client
 
 __all__ = [
     "AppError",
@@ -25,5 +24,4 @@ __all__ = [
     "get_openai_chat_model",
     "get_session_logger",
     "get_settings",
-    "pinecone_client",
 ]

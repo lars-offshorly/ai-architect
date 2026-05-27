@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Architect | Smart Workspace Builder</title>
+    <title>AI Architect | Stay + Workspace Designer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,61 +13,87 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="app-container">
-      <!-- Left Side: Chat & Status -->
-      <aside class="sidebar">
-        <header class="sidebar-header">
-          <div class="logo">
-            <span class="logo-icon">🏗️</span>
-            <h1>AI Architect</h1>
-          </div>
-          <p class="subtitle">Personalized Workspace Generator</p>
-        </header>
-
-        <section class="chat-section">
-          <div id="chatLog" class="chat-log">
-            <!-- Messages will be injected here -->
-          </div>
-
-          <div class="quick-suggestions">
-            <button class="suggestion-chip" data-msg="I want to have an app to manage my IT team's tickets">
-              🎫 IT Ticketing App
-            </button>
-          </div>
-
-          <div class="chat-input-area">
-            <div class="input-wrapper">
-              <textarea
-                id="messageInput"
-                placeholder="I want an HR app for 50 people..."
-                rows="1"
-              ></textarea>
-              <button id="sendBtn" class="send-btn">Send</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="pipeline-section">
-          <h3>Internal State</h3>
-          <div id="pipelineContainer">
-            <!-- Pipeline status will be injected here -->
-          </div>
-        </section>
-      </aside>
-
-      <!-- Right Side: Preview / Canvas -->
-      <main class="main-content">
-        <div id="previewPanel" class="preview-panel">
-          <!-- Dashboard will be injected here -->
-          <div class="preview-placeholder">
-            <div class="placeholder-content">
-              <span>📊</span>
-              <h2>Interactive Preview</h2>
-              <p>Chat with the AI to generate your personalized dashboard and app configuration.</p>
-            </div>
-          </div>
+    <div class="airbnb-shell">
+      <header class="top-nav">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <h1>AI Architect</h1>
         </div>
-      </main>
+      </header>
+
+      <div class="app-container">
+        <aside class="sidebar">
+          <header class="sidebar-header">
+            <p class="subtitle">Describe the workspace you want to build.</p>
+          </header>
+
+          <section class="chat-section">
+            <div id="chatLog" class="chat-log"></div>
+
+            <div class="quick-suggestions-shell">
+              <button id="suggestionsLeftBtn" class="suggestions-nav-btn" aria-label="Scroll suggestions left">‹</button>
+              <div id="suggestionsRail" class="quick-suggestions">
+                <button class="suggestion-chip" data-msg="I want to have an app to manage my IT team's tickets">
+                  IT Ticketing App
+                </button>
+                <button class="suggestion-chip" data-msg="Im from PH and I have construction company named Equip. I need a ticketing website for 5 employees please">
+                  Construction (PH + 5)
+                </button>
+                <button class="suggestion-chip" data-msg="We are a construction company in Cebu called BuildAxis. We need internal queues for site safety incidents, equipment requests, and permit compliance for 45 employees.">
+                  Construction Fields
+                </button>
+                <button class="suggestion-chip" data-msg="We run a BPO contact center in Manila called Nexora Connect. We need customer care, billing, and technical support queues with QA dashboards for 280 employees.">
+                  BPO Core
+                </button>
+                <button class="suggestion-chip" data-msg="I own a BPO company in PH called SkyServe. We support US customers and need ticketing for customer support, retention, and escalation teams. Team size is 120 and timezone is Asia/Manila.">
+                  BPO Fields
+                </button>
+                <button class="suggestion-chip" data-msg="We are an HR recruitment agency in London named TalentBridge Partners. We need candidate pipeline tracking, interview scheduling, and recruiter performance dashboards for a 25-person team.">
+                  HR Agency Core
+                </button>
+                <button class="suggestion-chip" data-msg="I run a staffing agency called HireFlow in Singapore. We need internal ticketing for client requests, offer onboarding, and commission inquiries. We have 18 employees.">
+                  HR Fields
+                </button>
+                <button class="suggestion-chip" data-msg="Our business is construction, not BPO. We only need internal ticketing for subcontractor issues and equipment requests. Company name is Offshorly and team size is 5.">
+                  Construction vs BPO
+                </button>
+              </div>
+              <button id="suggestionsRightBtn" class="suggestions-nav-btn" aria-label="Scroll suggestions right">›</button>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="input-wrapper">
+                <textarea
+                  id="messageInput"
+                  placeholder="Design a workspace for..."
+                  rows="1"
+                ></textarea>
+                <button id="sendBtn" class="send-btn">Send</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="pipeline-section">
+            <button id="pipelineToggleBtn" class="pipeline-toggle-btn" aria-expanded="false">
+              <span>Internal State</span>
+              <span id="pipelineToggleChevron">▸</span>
+            </button>
+            <div id="pipelineContainer" class="pipeline-collapsed"></div>
+          </section>
+        </aside>
+
+        <main class="main-content">
+          <div id="previewPanel" class="preview-panel">
+            <div class="preview-placeholder">
+              <div class="placeholder-content">
+                <span>✦</span>
+                <h2>Interactive Preview</h2>
+                <p>Chat with AI Architect to generate your tailored dashboard and app manifest.</p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <script src="/static/app.js" type="module"></script>

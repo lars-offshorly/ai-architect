@@ -17,7 +17,7 @@ def _detector(shared_catalog: BundleCatalog) -> MissingFieldDetector:
     required_slots = {
         bundle.bundle_key: bundle.required_slots for bundle in shared_catalog.list_all()
     }
-    return MissingFieldDetector(shared_catalog, required_slots)
+    return MissingFieldDetector(required_slots)
 
 
 def test_compute_includes_generic_critical_fields_when_no_signals(shared_catalog: BundleCatalog) -> None:
@@ -28,37 +28,6 @@ def test_compute_includes_generic_critical_fields_when_no_signals(shared_catalog
 
     assert MissingFieldType.PRIMARY_USE_CASE in missing
     assert MissingFieldType.ENTITY_TYPE in missing
-
-
-def test_compute_includes_workflow_type_when_required_signals_do_not_overlap(shared_catalog: BundleCatalog) -> None:
-    detector = _detector(shared_catalog)
-    extracted = ExtractionResult(
-        session_id="s1",
-        classification_signals=ClassificationSignals(
-            keywords=["calendar"], entities=["room"], intents=["book meeting"]
-        ),
-    )
-
-    missing = detector.compute(extracted, bundle_key="hr_management")
-
-    assert MissingFieldType.WORKFLOW_TYPE in missing
-
-
-def test_compute_omits_workflow_type_when_required_signal_overlaps(shared_catalog: BundleCatalog) -> None:
-    detector = _detector(shared_catalog)
-    extracted = ExtractionResult(
-        session_id="s1",
-        classification_signals=ClassificationSignals(
-            keywords=["leave management"],
-            entities=["employee"],
-            intents=["handle leave requests"],
-            workflow_hints=["employee leave workflow"],
-        ),
-    )
-
-    missing = detector.compute(extracted, bundle_key="hr_management")
-
-    assert MissingFieldType.WORKFLOW_TYPE not in missing
 
 
 def test_compute_only_checks_supported_enum_slots(shared_catalog: BundleCatalog) -> None:

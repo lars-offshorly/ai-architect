@@ -2,29 +2,41 @@
 
 from __future__ import annotations
 
+import json
+import time
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import ValidationError
 
-from agents.app_generator.service import AppGeneratorService
+from agents.tenant_provisioning.validators import (
+    format_manifest_validation_errors,
+    validate_manifest_model,
+)
 from api.deps import (
-    get_app_generator_service,
-    get_bundle_catalog,
+    get_registry_facade,
     get_session_repository,
 )
 from api.schemas.app_payload import AppPayloadResponseSchema
 from api.schemas.request import GenerateAppRequest
-from catalog.bundle_catalog import BundleCatalog
 from core.exceptions import (
     InvalidPayloadError,
     PreviewGenerationError,
     SessionNotFoundError,
 )
 from core.logging import get_logger
+from core.metrics import metrics
+from domain.services.registry_facade import RegistryFacade
 from repositories.session_repository import SessionRepository
 
 router = APIRouter(prefix="/sessions", tags=["app"])
 logger = get_logger(__name__)
+
+
+def _json_size_bytes(payload: object) -> int:
+    return len(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    )
 
 
 @router.post("/{session_id}/app", response_model=AppPayloadResponseSchema)
@@ -32,14 +44,10 @@ async def generate_app_payload(
     session_id: str,
     body: GenerateAppRequest,
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
-    app_generator: Annotated[AppGeneratorService, Depends(get_app_generator_service)],
-    catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
 ) -> AppPayloadResponseSchema:
-    """Assembles the final app payload for a confirmed session.
-
-    Loads the static app.json from templates, validates it against the
-    provided dummy_data, and packages the result into the AppPayload contract.
-    """
+    """Validate and return the manifest for a confirmed session."""
+    start = time.perf_counter()
     try:
         session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
@@ -53,24 +61,37 @@ async def generate_app_payload(
             detail="Session bundle must be confirmed before generating final app.",
         )
 
-    if not catalog.has_bundle(session.selected_bundle_key):
+    if not registry_facade.has_bundle(session.selected_bundle_key):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bundle not found: {session.selected_bundle_key}",
         )
 
-    bundle = catalog.get(session.selected_bundle_key)
-    display_name = bundle.display_name if bundle else session.selected_bundle_key
+    display_name = session.selected_bundle_key
+    from core.config import get_settings
 
-    # Use the session-stored bundle info + the client-provided dummy data
-    try:
-        payload = app_generator.assemble(
-            session_id=session_id,
-            bundle_key=session.selected_bundle_key,
-            display_name=display_name,
-            dummy_data=body.dummy_data_json,
-            generation_data=body.generation_json,
+    settings = get_settings()
+    manifest_bytes = _json_size_bytes(body.manifest)
+    if manifest_bytes > settings.MAX_APP_MANIFEST_BYTES:
+        metrics.inc("app.rejected.payload_too_large")
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=(
+                f"manifest payload too large: {manifest_bytes} bytes "
+                f"(max {settings.MAX_APP_MANIFEST_BYTES})"
+            ),
         )
+
+    try:
+        validate_manifest_model(body.manifest)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "code": "manifest_validation_error",
+                "errors": format_manifest_validation_errors(exc),
+            },
+        ) from exc
     except InvalidPayloadError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -82,13 +103,23 @@ async def generate_app_payload(
             detail=str(exc),
         ) from exc
 
-    return AppPayloadResponseSchema(
-        schema_version=payload.schema_version,
-        session_id=payload.session_id,
-        bundle_key=payload.bundle_key,
-        display_name=payload.display_name,
-        modules=payload.modules,
-        generation_json=payload.generation_json,
-        dummy_data_json=payload.dummy_data_json,
+    response = AppPayloadResponseSchema(
+        schema_version="2.0",
+        session_id=session_id,
+        bundle_key=session.selected_bundle_key,
+        display_name=display_name,
+        modules=[],
         preview_type="confirmed",
+        manifest=body.manifest,
     )
+    elapsed_ms = int((time.perf_counter() - start) * 1000)
+    metrics.inc("app.requests.total")
+    if elapsed_ms >= 500:
+        metrics.inc("app.latency.ge_500ms")
+    logger.info(
+        "app_event session=%s manifest_bytes=%s elapsed_ms=%s",
+        session_id,
+        manifest_bytes,
+        elapsed_ms,
+    )
+    return response

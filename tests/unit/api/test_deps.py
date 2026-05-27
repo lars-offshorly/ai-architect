@@ -9,7 +9,7 @@ import pytest
 from api import deps
 
 
-def test_get_bundle_catalog_runs_both_validators(
+def test_get_bundle_catalog_runs_catalog_validator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     deps.get_bundle_catalog.cache_clear()
@@ -22,7 +22,6 @@ def test_get_bundle_catalog_runs_both_validators(
         "get_settings",
         lambda: SimpleNamespace(
             BUNDLE_REGISTRY_PATH="tmp/registry.yaml",
-            TEMPLATES_DIR="tmp/templates",
             SKIP_CATALOG_VALIDATION=False,
         ),
     )
@@ -30,8 +29,6 @@ def test_get_bundle_catalog_runs_both_validators(
     deps.get_bundle_catalog()
 
     fake_bundle_catalog_cls.assert_called_once_with(Path("tmp/registry.yaml"))
-    fake_catalog.validate.assert_called_once_with(templates_dir=Path("tmp/templates"))
-    fake_catalog.validate_template_consistency.assert_called_once_with(
-        templates_dir=Path("tmp/templates")
-    )
+    fake_catalog.validate.assert_called_once_with()
+    fake_catalog.validate_template_consistency.assert_not_called()
     deps.get_bundle_catalog.cache_clear()

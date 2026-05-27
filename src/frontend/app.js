@@ -5,6 +5,7 @@ import {
   generatePreview,
   generateEarlyPreview,
   generateApp,
+  editPreview,
 } from './api.js';
 import {
   renderMessage,
@@ -45,6 +46,11 @@ const els = {
   sendBtn: document.getElementById('sendBtn'),
   previewPanel: document.getElementById('previewPanel'),
   pipelineContainer: document.getElementById('pipelineContainer'),
+  pipelineToggleBtn: document.getElementById('pipelineToggleBtn'),
+  pipelineToggleChevron: document.getElementById('pipelineToggleChevron'),
+  suggestionsRail: document.getElementById('suggestionsRail'),
+  suggestionsLeftBtn: document.getElementById('suggestionsLeftBtn'),
+  suggestionsRightBtn: document.getElementById('suggestionsRightBtn'),
 };
 
 // Initialize
@@ -76,6 +82,26 @@ function bindEvents() {
       handleSendMessage();
     }
   });
+
+  if (els.suggestionsLeftBtn && els.suggestionsRail) {
+    els.suggestionsLeftBtn.addEventListener('click', () => {
+      els.suggestionsRail.scrollBy({ left: -320, behavior: 'smooth' });
+    });
+  }
+
+  if (els.suggestionsRightBtn && els.suggestionsRail) {
+    els.suggestionsRightBtn.addEventListener('click', () => {
+      els.suggestionsRail.scrollBy({ left: 320, behavior: 'smooth' });
+    });
+  }
+
+  if (els.pipelineToggleBtn && els.pipelineContainer && els.pipelineToggleChevron) {
+    els.pipelineToggleBtn.addEventListener('click', () => {
+      const collapsed = els.pipelineContainer.classList.toggle('pipeline-collapsed');
+      els.pipelineToggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      els.pipelineToggleChevron.textContent = collapsed ? '▸' : '▾';
+    });
+  }
 }
 
 function startThinking() {
@@ -113,22 +139,46 @@ async function handleSendMessage() {
   startThinking();
 
   try {
-    let response;
     if (!state.sessionId) {
       // Step 1: Start Conversation
-      response = await startSession({ message });
+      const response = await startSession({ message });
+      stopThinking();
+      applyTurnResponse(response);
+    } else if (state.previewPayload) {
+      // Step 4b: Edit Loop — preview already exists, so the user's message
+      // is an edit instruction ("remove projects", "add KPI for SLA", etc).
+      // Route it to the dedicated edit endpoint instead of the conversation
+      // flow so it actually mutates the manifest.
+      const updated = await editPreview(
+        state.sessionId,
+        state.previewPayload,
+        message,
+      );
+      stopThinking();
+      applyEditResponse(updated);
     } else {
       // Step 2: Chat Loop
-      response = await replySession(state.sessionId, { message });
+      const response = await replySession(state.sessionId, { message });
+      stopThinking();
+      applyTurnResponse(response);
     }
-    
-    stopThinking();
-    applyTurnResponse(response);
   } catch (error) {
     stopThinking();
     appendErrorMessage(error.message);
   } finally {
     setProcessing(false);
+  }
+}
+
+function applyEditResponse(payload) {
+  if (!payload) return;
+  state.previewPayload = payload;
+  state.previewType = payload.preview_type || state.previewType;
+  refreshUI();
+  if (payload.warning) {
+    appendSystemMessage(`⚠️ ${payload.warning}`);
+  } else {
+    appendSystemMessage('Updated the preview.');
   }
 }
 
@@ -218,8 +268,7 @@ async function handleDeployApp() {
     // Step 5: Final Delivery
     const finalPayload = await generateApp(
       state.sessionId,
-      state.previewPayload.dummy_data_json,
-      state.previewPayload.generation_json,
+      state.previewPayload.manifest,
     );
     stopThinking();
     state.lastStatus = 'complete';
@@ -324,6 +373,7 @@ function appendCustomHTML(html) {
 }
 
 function addActionButton(label, id) {
+  if (document.getElementById(id)) return;
   appendCustomHTML(`
     <div class="msg-bubble msg-assistant action-bubble">
       <button id="${id}" class="primary-btn">${label}</button>

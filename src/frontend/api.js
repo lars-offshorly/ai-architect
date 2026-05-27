@@ -31,12 +31,21 @@ export async function generateEarlyPreview(sessionId) {
   });
 }
 
-export async function generateApp(sessionId, dummyDataJson, generationJson = null) {
+export async function editPreview(sessionId, currentPreview, instruction) {
+  return requestJson(`/sessions/${sessionId}/preview/edit`, {
+    method: 'POST',
+    body: JSON.stringify({
+      current_preview: currentPreview,
+      instruction,
+    }),
+  });
+}
+
+export async function generateApp(sessionId, v2Manifest) {
   return requestJson(`/sessions/${sessionId}/app`, {
     method: 'POST',
     body: JSON.stringify({
-      dummy_data_json: dummyDataJson,
-      ...(generationJson ? { generation_json: generationJson } : {}),
+      manifest: v2Manifest,
     }),
   });
 }

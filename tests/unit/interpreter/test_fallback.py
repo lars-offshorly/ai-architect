@@ -44,7 +44,8 @@ def _extraction(*, missing: list[MissingFieldType] | None = None) -> ExtractionR
 
 
 def test_fallback_proceed_branch(shared_catalog: BundleCatalog) -> None:
-    handler = FallbackHandler(shared_catalog)
+    _ = shared_catalog
+    handler = FallbackHandler()
     result = handler.apply(
         _classification(confidence=0.9, score_gap=0.3),
         _extraction(),
@@ -54,7 +55,8 @@ def test_fallback_proceed_branch(shared_catalog: BundleCatalog) -> None:
 
 
 def test_fallback_suggest_alternatives_for_tie_gap(shared_catalog: BundleCatalog) -> None:
-    handler = FallbackHandler(shared_catalog)
+    _ = shared_catalog
+    handler = FallbackHandler()
     result = handler.apply(
         _classification(confidence=0.8, score_gap=0.05),
         _extraction(),
@@ -64,7 +66,8 @@ def test_fallback_suggest_alternatives_for_tie_gap(shared_catalog: BundleCatalog
 
 
 def test_fallback_critical_missing_fields_clarify(shared_catalog: BundleCatalog) -> None:
-    handler = FallbackHandler(shared_catalog)
+    _ = shared_catalog
+    handler = FallbackHandler()
     extraction = _extraction(missing=[MissingFieldType.PRIMARY_USE_CASE])
     result = handler.apply(
         _classification(confidence=0.3, score_gap=0.1),
@@ -75,7 +78,8 @@ def test_fallback_critical_missing_fields_clarify(shared_catalog: BundleCatalog)
 
 
 def test_fallback_budget_exhaustion_uses_generic(shared_catalog: BundleCatalog) -> None:
-    handler = FallbackHandler(shared_catalog)
+    _ = shared_catalog
+    handler = FallbackHandler()
     result = handler.apply(
         _classification(confidence=0.2, score_gap=0.01),
         _extraction(),

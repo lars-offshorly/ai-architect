@@ -1,22 +1,17 @@
-"""Edit sub-graph node: applies an EditAction to an existing preview payload.
+"""v2 preview edit mutator.
 
-State retention rule: only the targeted part of the JSON changes.
-Everything else is preserved. Cascading effects are handled explicitly.
+Applies edits against payload.manifest only.
 """
 
 from __future__ import annotations
 
 import copy
+import re
 
 from catalog.bundle_catalog import BundleCatalog
-from core.logging import get_logger
 
 from ..schemas import EditAction, EditActionType
 
-logger = get_logger(__name__)
-
-
-# Flag name → display module name (mirrors emit.py)
 _FLAG_TO_MODULE: dict[str, str] = {
     "projects-module": "Projects",
     "tickets-module": "Tickets",
@@ -30,244 +25,93 @@ _FLAG_TO_MODULE: dict[str, str] = {
     "rewards-module": "Rewards",
 }
 
-# Module flag → source_service and store keys that should be removed on cascade
-_MODULE_CASCADE: dict[str, dict] = {
-    "tickets-module": {
-        "source_service": "tickets",
-        "store_keys": ["tickets"],
-    },
-    "projects-module": {
-        "source_service": "projects",
-        "store_keys": ["tasks", "milestones", "projects"],
-    },
-    "hrhub-module": {
-        "source_service": "hr_hub",
-        "store_keys": ["employees"],
-    },
-    "weaves-module": {
-        "source_service": "weaves",
-        "store_keys": ["weaves"],
-    },
-    "chat-module": {
-        "source_service": None,
-        "store_keys": [],
-    },
-    "dashboard-module": {
-        "source_service": None,
-        "store_keys": ["dashboard_widgets", "dashboard_generation_output"],
-    },
-    "kpi-module": {
-        "source_service": None,
-        "store_keys": [],
-    },
-    "calendar_module": {
-        "source_service": None,
-        "store_keys": [],
-    },
-    "ai-toolkit-module": {
-        "source_service": None,
-        "store_keys": [],
-    },
-    "rewards-module": {
-        "source_service": None,
-        "store_keys": [],
-    },
+_ALLOWED_ACTIONS: set[EditActionType] = {
+    EditActionType.ADD_MODULE,
+    EditActionType.REMOVE_MODULE,
+    EditActionType.ADD_QUEUE,
+    EditActionType.REMOVE_QUEUE,
+    EditActionType.ADD_DASHBOARD,
+    EditActionType.REMOVE_DASHBOARD,
+    EditActionType.ADD_DASHBOARD_BY_ID,
+    EditActionType.REMOVE_DASHBOARD_BY_ID,
+    EditActionType.ADD_KPI,
+    EditActionType.REMOVE_KPI,
 }
 
-# Sample values per metric type — same as kpi.py
-_SAMPLE_VALUES: dict[str, float | int | str] = {
-    "percentage": 87.5,
-    "count": 42,
-    "duration": 3.2,
-    "status": "Healthy",
-    "ratio": 0.72,
-}
+_FROZEN_MANIFEST_SECTIONS = {"tenant", "projects", "hr_hub"}
 
 
-# ---------------------------------------------------------------------------
-# Internal mutators (all operate on the deep-copied payload)
-# ---------------------------------------------------------------------------
+def _normalize_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
 
 
-def _set_flag(flags: list[dict], flag_name: str, enabled: bool) -> None:
-    """Set isEnabled for a specific flag in the feature_flags list."""
-    for flag in flags:
-        if flag["name"] == flag_name:
-            flag["isEnabled"] = enabled
-            return
+def _as_positive_int(target: str | None) -> int | None:
+    if target is None:
+        return None
+    try:
+        parsed = int(target)
+    except ValueError:
+        return None
+    return parsed if parsed > 0 else None
 
 
-def _kpi_definition_key(item: object) -> str | None:
-    """Return KPI key from a config.kpi_definitions item (dict or legacy str)."""
-    if isinstance(item, str):
-        return item
-    if isinstance(item, dict):
-        key = item.get("key")
-        if isinstance(key, str) and key:
-            return key
-    return None
+def _get_manifest(payload: dict) -> dict | None:
+    manifest = payload.get("manifest")
+    if not isinstance(manifest, dict):
+        return None
+    if manifest.get("schema_version") != "2.0":
+        return None
+    return manifest
 
 
-def _remove_module(payload: dict, flag_name: str) -> None:
-    """Remove a module: disable flag, remove from modules[], cascade."""
-    gen = payload["generation_json"]
-    dummy = payload["dummy_data_json"]
+def _resolve_ref_by_name(
+    refs: list[dict],
+    target_name: str,
+) -> tuple[dict | None, str | None]:
+    normalized_target = _normalize_name(target_name)
+    if not normalized_target:
+        return None, "Target name is empty."
 
-    # 1. Disable the flag
-    _set_flag(gen["feature_flags"], flag_name, False)
+    exact_matches = [
+        ref
+        for ref in refs
+        if isinstance(ref, dict)
+        and isinstance(ref.get("name"), str)
+        and _normalize_name(ref["name"]) == normalized_target
+    ]
+    if len(exact_matches) == 1:
+        return exact_matches[0], None
+    if len(exact_matches) > 1:
+        names = [str(item.get("name")) for item in exact_matches]
+        return None, f"Ambiguous target '{target_name}'. Matches: {', '.join(names)}."
 
-    # 2. Remove display name from modules lists
-    display_name = _FLAG_TO_MODULE.get(flag_name)
-    if display_name:
-        gen["modules"] = [m for m in gen["modules"] if m != display_name]
-        payload["modules"] = [m for m in payload["modules"] if m != display_name]
-
-    # 3. Cascade: remove related KPIs and stores
-    cascade = _MODULE_CASCADE.get(flag_name, {})
-    source_service = cascade.get("source_service")
-    store_keys = cascade.get("store_keys", [])
-
-    if source_service and "stores" in dummy:
-        stores = dummy["stores"]
-        if "kpis" in stores:
-            stores["kpis"] = [
-                k for k in stores["kpis"] if k.get("source_service") != source_service
-            ]
-
-    if "stores" in dummy:
-        for key in store_keys:
-            dummy["stores"].pop(key, None)
-
-    logger.info("Removed module %s (display=%s)", flag_name, display_name)
-
-
-def _add_module(payload: dict, flag_name: str) -> None:
-    """Add a module: enable flag, add to modules[] (no data generation)."""
-    gen = payload["generation_json"]
-
-    # 1. Enable the flag
-    _set_flag(gen["feature_flags"], flag_name, True)
-
-    # 2. Add display name to modules lists (skip if already present)
-    display_name = _FLAG_TO_MODULE.get(flag_name)
-    if display_name:
-        if display_name not in gen["modules"]:
-            gen["modules"].append(display_name)
-        if display_name not in payload["modules"]:
-            payload["modules"].append(display_name)
-
-    logger.info("Added module %s (display=%s)", flag_name, display_name)
+    partial_matches = [
+        ref
+        for ref in refs
+        if isinstance(ref, dict)
+        and isinstance(ref.get("name"), str)
+        and normalized_target in _normalize_name(ref["name"])
+    ]
+    if len(partial_matches) == 1:
+        return partial_matches[0], None
+    if len(partial_matches) > 1:
+        names = [str(item.get("name")) for item in partial_matches]
+        return None, f"Ambiguous target '{target_name}'. Matches: {', '.join(names)}."
+    return None, f"Target '{target_name}' not found."
 
 
-def _remove_kpi(payload: dict, kpi_key: str) -> None:
-    """Remove a KPI by slug from stores.kpis and config.kpi_definitions."""
-    dummy = payload["dummy_data_json"]
-    gen = payload["generation_json"]
-
-    # Remove from stores
-    if "stores" in dummy and "kpis" in dummy["stores"]:
-        dummy["stores"]["kpis"] = [
-            k for k in dummy["stores"]["kpis"] if k.get("key") != kpi_key
-        ]
-
-    # Remove from config.kpi_definitions
-    config = gen.get("config", {})
-    if isinstance(config.get("kpi_definitions"), list):
-        config["kpi_definitions"] = [
-            item
-            for item in config["kpi_definitions"]
-            if _kpi_definition_key(item) != kpi_key
-        ]
-
-    logger.info("Removed KPI %s", kpi_key)
+def _warn(code: str, message: str) -> str:
+    return f"{code}: {message}"
 
 
-def _add_kpi(payload: dict, kpi_key: str, catalog: BundleCatalog) -> str | None:
-    """Add a KPI by slug from metrics catalog to stores.kpis and config."""
-    metrics_catalog = catalog.get_metrics_catalog()
-    catalog_entry = metrics_catalog.get(kpi_key)
-    if catalog_entry is None:
-        warning = f"KPI '{kpi_key}' not found in metrics catalog."
-        logger.warning(warning)
-        return warning
-
-    dummy = payload["dummy_data_json"]
-    gen = payload["generation_json"]
-
-    # Add to stores.kpis (skip if already present)
-    if "stores" not in dummy:
-        dummy["stores"] = {}
-    if "kpis" not in dummy["stores"]:
-        dummy["stores"]["kpis"] = []
-
-    existing_keys = {k.get("key") for k in dummy["stores"]["kpis"]}
-    if kpi_key not in existing_keys:
-        dummy["stores"]["kpis"].append(
-            {
-                "key": catalog_entry["key"],
-                "label": catalog_entry["label"],
-                "type": catalog_entry["type"],
-                "source_service": catalog_entry["source_service"],
-                "sample_value": _SAMPLE_VALUES.get(catalog_entry["type"], 0),
-            }
-        )
-
-    # Add to config.kpi_definitions
-    config = gen.get("config", {})
-    if not isinstance(config.get("kpi_definitions"), list):
-        config["kpi_definitions"] = []
-
-    existing_keys = {
-        key
-        for key in (_kpi_definition_key(item) for item in config["kpi_definitions"])
-        if key is not None
-    }
-    if kpi_key not in existing_keys:
-        config["kpi_definitions"].append(
-            {
-                "key": catalog_entry["key"],
-                "label": catalog_entry["label"],
-                "unit": catalog_entry["type"],
-            }
-        )
-    gen["config"] = config
-
-    logger.info("Added KPI %s", kpi_key)
-    return None
-
-
-def _remove_dashboard(payload: dict) -> None:
-    """Remove dashboard: disable flag, remove module, clear widgets."""
-    _set_flag(payload["generation_json"]["feature_flags"], "dashboard-module", False)
-
-    gen = payload["generation_json"]
-    gen["modules"] = [m for m in gen["modules"] if m != "Dashboard"]
-    payload["modules"] = [m for m in payload["modules"] if m != "Dashboard"]
-
-    dummy = payload["dummy_data_json"]
-    if "stores" in dummy:
-        dummy["stores"].pop("dashboard_widgets", None)
-        dummy["stores"].pop("dashboard_generation_output", None)
-
-    logger.info("Removed dashboard")
-
-
-def _add_dashboard(payload: dict) -> None:
-    """Add dashboard: enable flag, add module."""
-    _set_flag(payload["generation_json"]["feature_flags"], "dashboard-module", True)
-
-    gen = payload["generation_json"]
-    if "Dashboard" not in gen["modules"]:
-        gen["modules"].append("Dashboard")
-    if "Dashboard" not in payload["modules"]:
-        payload["modules"].append("Dashboard")
-
-    logger.info("Added dashboard")
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
+def _policy_denied(action: EditActionType) -> str:
+    return _warn(
+        "policy_violation",
+        (
+            f"Action '{action.value}' is not allowed. Allowed actions: "
+            "module toggle, add/remove queue, add/remove dashboard, add/remove KPI."
+        ),
+    )
 
 
 def apply_edit(
@@ -275,16 +119,10 @@ def apply_edit(
     action: EditAction,
     catalog: BundleCatalog,
 ) -> tuple[dict, str | None]:
-    """Apply an EditAction to an existing preview payload.
-
-    Returns (updated_payload, warning_or_None).
-    The input payload is NOT mutated — a deep copy is made.
-
-    Raises no exceptions; unsupported actions return the original with a warning.
-    """
-    # Deep copy to avoid mutating the caller's data
+    """Apply v2 edits against payload.manifest (schema_version=2.0)."""
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    _ = catalog
     result = copy.deepcopy(payload)
-    warning: str | None = None
 
     if action.action_type == EditActionType.UNSUPPORTED:
         warning = (
@@ -293,33 +131,186 @@ def apply_edit(
         )
         result["warning"] = warning
         return result, warning
-
-    target = action.target
-
-    if action.action_type == EditActionType.REMOVE_MODULE and target:
-        _remove_module(result, target)
-        return result, None
-
-    if action.action_type == EditActionType.ADD_MODULE and target:
-        _add_module(result, target)
-        return result, None
-
-    if action.action_type == EditActionType.REMOVE_KPI and target:
-        _remove_kpi(result, target)
-        return result, None
-
-    if action.action_type == EditActionType.ADD_KPI and target:
-        warning = _add_kpi(result, target, catalog)
+    if action.action_type not in _ALLOWED_ACTIONS:
+        warning = _policy_denied(action.action_type)
+        result["warning"] = warning
         return result, warning
 
-    if action.action_type == EditActionType.REMOVE_DASHBOARD:
-        _remove_dashboard(result)
+    manifest = _get_manifest(result)
+    if manifest is None:
+        warning = _warn(
+            "manifest_invalid", "manifest missing or invalid for edit path."
+        )
+        result["warning"] = warning
+        return result, warning
+    for section in _FROZEN_MANIFEST_SECTIONS:
+        if section not in manifest:
+            warning = _warn(
+                "manifest_invalid",
+                f"manifest missing required frozen section '{section}'.",
+            )
+            result["warning"] = warning
+            return result, warning
+
+    target_id = _as_positive_int(action.target)
+    modules = result.get("modules")
+    if not isinstance(modules, list):
+        modules = []
+        result["modules"] = modules
+
+    if action.action_type in {EditActionType.ADD_MODULE, EditActionType.REMOVE_MODULE}:
+        module_name = _FLAG_TO_MODULE.get(action.target or "", action.target)
+        if not isinstance(module_name, str) or not module_name:
+            return result, _warn(
+                "invalid_target", "Module edit requires valid module target."
+            )
+        if action.action_type == EditActionType.REMOVE_MODULE:
+            result["modules"] = [m for m in modules if m != module_name]
+            return result, None
+        if module_name not in modules:
+            modules.append(module_name)
         return result, None
 
-    if action.action_type == EditActionType.ADD_DASHBOARD:
-        _add_dashboard(result)
+    if action.action_type in {
+        EditActionType.ADD_DASHBOARD,
+        EditActionType.REMOVE_DASHBOARD,
+    }:
+        if action.target == "dashboard-module":
+            module_name = _FLAG_TO_MODULE["dashboard-module"]
+            if action.action_type == EditActionType.REMOVE_DASHBOARD:
+                result["modules"] = [m for m in modules if m != module_name]
+                return result, None
+            if module_name not in modules:
+                modules.append(module_name)
+            return result, None
+
+        target_name = (action.target or "").strip()
+        if not target_name:
+            return result, _warn(
+                "invalid_target", "Dashboard edit requires target name."
+            )
+
+        dashboard_section = manifest.setdefault("dashboard", {})
+        dashboards = dashboard_section.setdefault("dashboards", [])
+        if not isinstance(dashboards, list):
+            dashboards = []
+            dashboard_section["dashboards"] = dashboards
+
+        resolved, warning_msg = _resolve_ref_by_name(dashboards, target_name)
+        if action.action_type == EditActionType.REMOVE_DASHBOARD:
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"Dashboard edit failed: {warning_msg}"
+                )
+            resolved_id = resolved.get("id")
+            dashboard_section["dashboards"] = [
+                item
+                for item in dashboards
+                if not (isinstance(item, dict) and item.get("id") == resolved_id)
+            ]
+            return result, None
+
+        if warning_msg is None and resolved is not None:
+            return result, None
+        return result, _warn(
+            "resolution_failed", f"Dashboard edit failed: {warning_msg}"
+        )
+
+    if action.action_type in {EditActionType.ADD_QUEUE, EditActionType.REMOVE_QUEUE}:
+        ticket_section = manifest.setdefault("tickets", {})
+        queues = ticket_section.setdefault("queues", [])
+        if not isinstance(queues, list):
+            queues = []
+            ticket_section["queues"] = queues
+        if target_id is None:
+            target_name = (action.target or "").strip()
+            resolved, warning_msg = _resolve_ref_by_name(queues, target_name)
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"Queue edit failed: {warning_msg}"
+                )
+            target_id = _as_positive_int(str(resolved.get("id")))
+            if target_id is None:
+                return result, _warn(
+                    "invalid_target",
+                    "Queue edit failed: resolved queue has invalid id.",
+                )
+        if action.action_type == EditActionType.REMOVE_QUEUE:
+            ticket_section["queues"] = [
+                queue
+                for queue in queues
+                if not (isinstance(queue, dict) and queue.get("id") == target_id)
+            ]
+            return result, None
+        if not any(
+            isinstance(queue, dict) and queue.get("id") == target_id for queue in queues
+        ):
+            queues.append({"id": target_id, "name": f"Queue {target_id}"})
         return result, None
 
-    # Fallback — shouldn't reach here if EditActionType is exhaustive
-    logger.warning("Unhandled action type: %s", action.action_type)
-    return result, None
+    if action.action_type in {EditActionType.ADD_KPI, EditActionType.REMOVE_KPI}:
+        kpi_section = manifest.setdefault("kpi", {})
+        kpis = kpi_section.setdefault("kpis", [])
+        if not isinstance(kpis, list):
+            kpis = []
+            kpi_section["kpis"] = kpis
+
+        kpi_id = target_id
+        if kpi_id is None:
+            target_name = (action.target or "").strip()
+            resolved, warning_msg = _resolve_ref_by_name(kpis, target_name)
+            if warning_msg is not None or resolved is None:
+                return result, _warn(
+                    "resolution_failed", f"KPI edit failed: {warning_msg}"
+                )
+            kpi_id = _as_positive_int(str(resolved.get("id")))
+            if kpi_id is None:
+                return result, _warn(
+                    "invalid_target", "KPI edit failed: resolved KPI has invalid id."
+                )
+
+        if action.action_type == EditActionType.REMOVE_KPI:
+            kpi_section["kpis"] = [
+                item
+                for item in kpis
+                if not (isinstance(item, dict) and item.get("id") == kpi_id)
+            ]
+            return result, None
+        if not any(
+            isinstance(item, dict) and item.get("id") == kpi_id for item in kpis
+        ):
+            kpis.append({"id": kpi_id, "name": f"KPI {kpi_id}"})
+        return result, None
+
+    if action.action_type in {
+        EditActionType.ADD_DASHBOARD_BY_ID,
+        EditActionType.REMOVE_DASHBOARD_BY_ID,
+    }:
+        if target_id is None:
+            return result, "Dashboard edit requires positive integer target id."
+        dashboard_section = manifest.setdefault("dashboard", {})
+        dashboards = dashboard_section.setdefault("dashboards", [])
+        if not isinstance(dashboards, list):
+            dashboards = []
+            dashboard_section["dashboards"] = dashboards
+        if action.action_type == EditActionType.REMOVE_DASHBOARD_BY_ID:
+            dashboard_section["dashboards"] = [
+                item
+                for item in dashboards
+                if not (isinstance(item, dict) and item.get("id") == target_id)
+            ]
+            return result, None
+        if not any(
+            isinstance(item, dict) and item.get("id") == target_id
+            for item in dashboards
+        ):
+            dashboards.append({"id": target_id, "name": f"Dashboard {target_id}"})
+        return result, None
+
+    warning = (
+        f"Unsupported v2 edit action: '{action.action_type.value}'. "
+        "Supported actions: module toggle, add/remove queue by id, "
+        "add/remove dashboard by id, add/remove dashboard by name."
+    )
+    result["warning"] = warning
+    return result, warning

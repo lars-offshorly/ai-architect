@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from catalog.bundle_catalog import BundleCatalog
 from domain.models.extraction_result import ExtractionResult
 
-from .schemas import KpiMetric, PreviewOutput, UserContext
+from .schemas import KpiMetric, UserContext
 
 
 class PreviewGeneratorState(BaseModel):
@@ -88,6 +88,6 @@ class PreviewGeneratorState(BaseModel):
     max_retries: int = 2
 
     # --- emit_preview ---
-    output: PreviewOutput | None = None
+    output: dict[str, object] | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

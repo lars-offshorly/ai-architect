@@ -197,3 +197,13 @@ To export pip-compatible requirements:
 ```bash
 poetry export -f requirements.txt --output requirements.lock.txt --without-hashes --with dev
 ```
+# Canonical JSON Policy
+
+As of May 15, 2026, `new_json_samples/*.jsonc` is the canonical tenant provisioning contract.
+All other JSON payloads in this repository are considered deprecated for provisioning intent.
+
+Validate canonical samples with:
+
+```bash
+scripts/validate_canonical_manifests.py
+```

@@ -125,7 +125,7 @@ async def test_dev_bypass_returns_admin_user_without_redis(
     monkeypatch.setattr(auth_module, "_get_redis_client", _redis_must_not_be_called)
     monkeypatch.setattr(
         "api.middleware.auth.get_settings",
-        lambda: Settings(DEV_BYPASS=True),
+        lambda: Settings(DEV_BYPASS=True, DEBUG=True),
     )
 
     user = await is_authenticated(_request())

@@ -5,6 +5,8 @@ Updated: 2026-04-20 · Author: Lars Lenon
 
 Current priority: production preview generation flow — classify onboarding intent, select bundle + variant, run the LangGraph preview pipeline, overlay realistic `app-0*.json` fixtures, enrich dashboard widgets from static outputs, and return an `AppPayload` for workspace preview rendering.
 
+Migration status (as of 2026-05-20): v2 `TenantProvisioningManifest` is now first-class in preview/app contracts. Legacy `generation_json` and `dummy_data_json` remain for compatibility and are being phased out.
+
 ## 1. What We're Building
 
 AI-driven onboarding wizard: user describes what they need, the system interprets the business context, classifies the best bundle, selects a bundle variant, asks clarifying questions when confidence or required information is insufficient, then produces preview-ready workspace JSON.
@@ -24,7 +26,7 @@ We produce the JSON. Backend/API returns it.
 Two-stage pipeline:
 
 1. Conversation and interpretation — `ConversationFlow.process_turn()` runs summarisation, extraction, classification, deterministic variant selection, missing-field checks, fallback handling, and bundle confirmation.
-2. Preview generation — `PreviewFlow.run()` runs the LangGraph preview pipeline, overlays the selected bundle variant template, enriches dashboards from static outputs, and assembles the final `AppPayload`.
+2. Preview generation — `PreviewFlow.run()` runs the LangGraph preview pipeline, overlays the selected bundle variant template, enriches dashboards from static outputs, builds `v2_manifest` via `TenantProvisioningService`, and assembles the final `AppPayload`.
 
 ```text
 User message
@@ -48,6 +50,7 @@ PreviewFlow.run()
   ├── PreviewGeneratorService.generate()  LangGraph pipeline
   ├── _apply_bundle_template()            overlay src/templates/bundles/{bundle}/app-0*.json stores
   ├── _enrich_dashboard_widgets()         dashboard_output_templates/*.json (static)
+  ├── TenantProvisioningService.provision() canonical v2 manifest
   └── AppPayload                          final preview payload
 ```
 
@@ -310,6 +313,20 @@ All dashboard enrichment failures are swallowed. The preview still returns with 
 ### Stage 5 — Final Assembly
 
 `PreviewFlow.run()` builds `AppPayload` directly from the pipeline result and post-processing mutations.
+
+`AppPayload` now carries:
+- legacy v1 fields: `generation_json`, `dummy_data_json`
+- v2 field: `v2_manifest` (`TenantProvisioningManifest`, `schema_version="2.0"`)
+
+`/sessions/{id}/preview` behavior:
+- primary path: pass through `payload.v2_manifest` from `PreviewFlow`
+- fallback path: synthesize via `v2_manifest_adapter` only if orchestrator cannot provide v2
+
+`/sessions/{id}/app` behavior:
+- validates `v2_manifest` when provided
+- round-trips `v2_manifest` in response
+- when request is v2-driven, legacy v1 fields are echo-only compatibility fields
+- returns header `X-Deprecated-Fields: generation_json,dummy_data_json` for v2-only handoff signaling
 
 `AppGeneratorService.assemble()` is intentionally bypassed here because it loads `generation_json` from static disk templates and ignores pipeline output. It remains for legacy code paths, including older `/generate` flows, where it normalizes dummy data, validates schemas, and backfills `dashboard_generation_output`.
 

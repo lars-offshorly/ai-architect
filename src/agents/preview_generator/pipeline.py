@@ -9,7 +9,6 @@ from .nodes.emit import emit_preview
 from .nodes.extract_context import extract_user_context
 from .nodes.kpi import build_kpi_metrics
 from .nodes.resolve_flags import resolve_bundles_to_flags
-from .nodes.sample_data import generate_sample_data
 from .nodes.validate import (
     ROUTE_EMIT,
     ROUTE_RETRY,
@@ -25,41 +24,44 @@ from .state import PreviewGeneratorState
 #   extract_user_context
 #     → resolve_bundles_to_flags
 #       → select_data_tier
-#         → generate_sample_data
-#           → build_kpi_metrics
-#             → validate_schema
-#               ┌─ [valid or retries exhausted] → emit_preview → END
-#               └─ [invalid, retries remain]    → resolve_bundles_to_flags (retry)
+#         → build_kpi_metrics
+#           → validate_schema
+#             ┌─ [valid or retries exhausted] → emit_preview → END
+#             └─ [invalid, retries remain]    → resolve_bundles_to_flags (retry)
 # ---------------------------------------------------------------------------
 
-_workflow = StateGraph(PreviewGeneratorState)
 
-_workflow.add_node("extract_user_context", extract_user_context)
-_workflow.add_node("resolve_bundles_to_flags", resolve_bundles_to_flags)
-_workflow.add_node("select_data_tier", select_data_tier)
-_workflow.add_node("generate_sample_data", generate_sample_data)
-_workflow.add_node("build_kpi_metrics", build_kpi_metrics)
-_workflow.add_node("validate_schema", validate_schema)
-_workflow.add_node("emit_preview", emit_preview)
+def _build_workflow() -> StateGraph:
+    workflow = StateGraph(PreviewGeneratorState)
 
-_workflow.set_entry_point("extract_user_context")
+    workflow.add_node("extract_user_context", extract_user_context)
+    workflow.add_node("resolve_bundles_to_flags", resolve_bundles_to_flags)
+    workflow.add_node("select_data_tier", select_data_tier)
+    workflow.add_node("build_kpi_metrics", build_kpi_metrics)
+    workflow.add_node("validate_schema", validate_schema)
+    workflow.add_node("emit_preview", emit_preview)
 
-_workflow.add_edge("extract_user_context", "resolve_bundles_to_flags")
-_workflow.add_edge("resolve_bundles_to_flags", "select_data_tier")
-_workflow.add_edge("select_data_tier", "generate_sample_data")
-_workflow.add_edge("generate_sample_data", "build_kpi_metrics")
-_workflow.add_edge("build_kpi_metrics", "validate_schema")
+    workflow.set_entry_point("extract_user_context")
 
-_workflow.add_conditional_edges(
-    "validate_schema",
-    route_after_validation,
-    {
-        ROUTE_EMIT: "emit_preview",
-        ROUTE_RETRY: "resolve_bundles_to_flags",
-    },
-)
+    workflow.add_edge("extract_user_context", "resolve_bundles_to_flags")
+    workflow.add_edge("resolve_bundles_to_flags", "select_data_tier")
+    workflow.add_edge("select_data_tier", "build_kpi_metrics")
+    workflow.add_edge("build_kpi_metrics", "validate_schema")
 
-_workflow.add_edge("emit_preview", END)
+    workflow.add_conditional_edges(
+        "validate_schema",
+        route_after_validation,
+        {
+            ROUTE_EMIT: "emit_preview",
+            ROUTE_RETRY: "resolve_bundles_to_flags",
+        },
+    )
 
-# Compiled graph — imported and invoked by PreviewGeneratorService
-compiled_graph = _workflow.compile()
+    workflow.add_edge("emit_preview", END)
+    return workflow
+
+
+# Compiled graph used by PreviewGeneratorService.
+compiled_graph = _build_workflow().compile()
+# Compatibility alias kept so service toggle wiring does not break import surface.
+compiled_graph_skip_sample_data = compiled_graph

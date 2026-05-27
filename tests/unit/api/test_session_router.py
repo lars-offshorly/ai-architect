@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import BackgroundTasks, HTTPException
+
 from api.schemas.request import ReplyRequest, StartSessionRequest
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
@@ -130,7 +131,6 @@ class TestStartSessionPersistsExtraction:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         # Retrieve the saved session
@@ -163,7 +163,6 @@ class TestStartSessionPersistsExtraction:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -194,7 +193,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -222,7 +220,6 @@ class TestStartSessionValidatesPreselectedFields:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -250,7 +247,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -278,7 +274,6 @@ class TestStartSessionValidatesPreselectedFields:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -306,7 +301,6 @@ class TestStartSessionValidatesPreselectedFields:
                 session_repo=session_repo,
                 conv_repo=conv_repo,
                 flow=mock_flow,
-                catalog=mock_catalog,
             )
 
         assert exc_info.value.status_code == 400
@@ -410,7 +404,6 @@ class TestStartSessionPersistsLatestClassification:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -445,7 +438,6 @@ class TestStartSessionPersistsLatestClassification:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -637,7 +629,6 @@ class TestReplySessionForwardsPreselectedBundleKey:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -667,7 +658,6 @@ class TestStartSessionCaseInsensitiveIntent:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         assert response.session_id is not None
@@ -694,7 +684,6 @@ class TestStartSessionCaseInsensitiveIntent:
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
 
         saved = session_repo.get(response.session_id)
@@ -717,7 +706,7 @@ async def test_start_session_schedules_background_template_warm(
     import api.routers.session as session_module
     from api.routers.session import start_session
 
-    with patch.object(session_module, "_warm_template_caches") as mock_warm:
+    with patch.object(session_module, "_warm_runtime_caches") as mock_warm:
         background_tasks = MagicMock()
         response = await start_session(
             body=StartSessionRequest(user_id="u1", message="I need an HR dashboard"),
@@ -725,7 +714,6 @@ async def test_start_session_schedules_background_template_warm(
             session_repo=session_repo,
             conv_repo=conv_repo,
             flow=mock_flow,
-            catalog=mock_catalog,
         )
         assert response.session_id is not None
         background_tasks.add_task.assert_called_once_with(mock_warm)
@@ -733,38 +721,22 @@ async def test_start_session_schedules_background_template_warm(
 
 @pytest.mark.asyncio
 async def test_warm_template_caches_calls_both_providers() -> None:
-    """_warm_template_caches must call both dep providers via run_in_executor."""
-    from api.routers.session import _warm_template_caches
+    """_warm_runtime_caches must call canonical facade provider."""
+    from api.routers.session import _warm_runtime_caches
 
-    with (
-        patch(
-            "api.routers.session.get_bundle_template_loader"
-        ) as mock_loader,
-        patch(
-            "api.routers.session.get_dashboard_template_registry"
-        ) as mock_registry,
-    ):
-        await _warm_template_caches()
-        mock_loader.assert_called_once()
-        mock_registry.assert_called_once()
+    with patch("api.routers.session.get_registry_facade") as mock_facade:
+        await _warm_runtime_caches()
+        mock_facade.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_warm_template_caches_is_idempotent() -> None:
-    """Calling _warm_template_caches twice must not raise and must
-    call providers twice (lru_cache de-duplication is the provider's
+    """Calling _warm_runtime_caches twice must not raise and must
+    call provider twice (lru_cache de-duplication is the provider's
     responsibility, not the warm function)."""
-    from api.routers.session import _warm_template_caches
+    from api.routers.session import _warm_runtime_caches
 
-    with (
-        patch(
-            "api.routers.session.get_bundle_template_loader"
-        ) as mock_loader,
-        patch(
-            "api.routers.session.get_dashboard_template_registry"
-        ) as mock_registry,
-    ):
-        await _warm_template_caches()
-        await _warm_template_caches()
-        assert mock_loader.call_count == 2
-        assert mock_registry.call_count == 2
+    with patch("api.routers.session.get_registry_facade") as mock_facade:
+        await _warm_runtime_caches()
+        await _warm_runtime_caches()
+        assert mock_facade.call_count == 2

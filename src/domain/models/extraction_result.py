@@ -50,6 +50,16 @@ class ExtractionResult(BaseModel):
             slots["entity_type"] = cs.entities[0]
         if self.bundle_variant_key:
             slots["bundle_variant_key"] = self.bundle_variant_key
+        if cs.metrics:
+            slots["metrics"] = cs.metrics
+        if ps.role_names:
+            slots["roles"] = ps.role_names
+        if cs.domain_hints:
+            slots["industry"] = cs.domain_hints[0]
+        if cs.intents:
+            slots["intents"] = cs.intents
+        if ps.department_names:
+            slots["departments"] = ps.department_names
 
         return ExtractedInfo(
             session_id=self.session_id,

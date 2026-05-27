@@ -87,18 +87,12 @@ class TestReplyRequestNewFields:
 
 
 class TestGenerateAppRequestFields:
-    def test_generation_json_is_optional(self) -> None:
-        req = GenerateAppRequest(dummy_data_json={"bundle_key": "hr_management", "stores": {}})
-        assert req.generation_json is None
+    def test_manifest_is_required(self) -> None:
+        with pytest.raises(ValidationError):
+            GenerateAppRequest()
 
-    def test_generation_json_accepts_preview_payload(self) -> None:
+    def test_manifest_accepted_when_provided(self) -> None:
         req = GenerateAppRequest(
-            dummy_data_json={"bundle_key": "hr_management", "stores": {}},
-            generation_json={
-                "schema_version": "1.0",
-                "bundle_key": "hr_management",
-                "modules": ["HR Management"],
-                "config": {"ticket_categories": ["leave"]},
-            },
+            manifest={"schema_version": "2.0", "session_id": "s1"},
         )
-        assert req.generation_json is not None
+        assert req.manifest == {"schema_version": "2.0", "session_id": "s1"}

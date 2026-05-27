@@ -1,0 +1,171 @@
+// Tenant provisioning manifest produced by the AI agent for a single new org.
+//
+// What the AI actually decides (the ONLY mutable surface):
+//   1. `tenant.*`                  — company name, industry, locale, timezone, etc.
+//   2. `hr_hub.employees[]`        — per-employee: position, team, department,
+//                                    job_title, job_type, job_level.
+//   3. `tickets.queues[]`          — JUST the list of queue IDs to show.
+//   4. `projects.projects[]`       — JUST the list of project IDs to show.
+//   5. `dashboard.dashboards[]`    — JUST the list of dashboard IDs to show.
+//   6. `kpi.kpis[]`                — JUST the list of KPI IDs to show.
+//   7. `hr_hub.request_types[]`    — JUST the list of HR request type IDs to show.
+//
+// Everything else is FROZEN. Queue assignment (icon, email, members, managers,
+// allowed_categories), project leads/teams/start dates, dashboard widgets and
+// their KPI bindings, etc. are pre-configured in the static catalog and applied
+// automatically when an ID is included. The right employees come pre-attached
+// to the right queues/projects through the catalog.
+//
+// `name` fields next to IDs exist only so a human reviewing this JSON knows what
+// the ID refers to. They are frozen and ignored by the provisioning service.
+// Tickets are NOT listed: they travel with their queue from the catalog.
+
+{
+  "schema_version": "2.0",
+  "session_id": "1ef31e51-2950-4430-a2d8-b0e029e1bfdf",
+  "generated_at": "2026-05-12T10:00:00Z",
+
+  "tenant": {
+    "company_name": "Nexora Connect",
+    "industry": "bpo_contact_center",
+    "size_band": "200-500",
+    "primary_region": "APAC",
+    "locale": "en-PH",
+    "timezone": "Asia/Manila"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config (icon,
+  //     email, managers, members, allowed_categories, hidden_for_employees) and
+  //     the employees attached to each queue come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 101, "name": "Nexora Connect — Customer Care" },    // name frozen
+      { "id": 102, "name": "Nexora Connect — Billing Support" },  // name frozen
+      { "id": 103, "name": "Nexora Connect — Technical Support" },// name frozen
+      { "id": 104, "name": "Nexora Connect — Retention Team" },   // name frozen
+      { "id": 105, "name": "Nexora Connect — Sales Queue" },      // name frozen
+      { "id": 110, "name": "Escalation Queue" }                   // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 501, "name": "Queue Performance Optimization (Voice & Chat)" }, // name frozen
+      { "id": 502, "name": "QA Score Improvement Program — Q2" },             // name frozen
+      { "id": 503, "name": "Refund Processing Turnaround Improvement" }       // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout,
+  //     home-dashboard flag, and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 701, "name": "Operations Overview" },     // name frozen
+      { "id": 702, "name": "QA & Coaching" },           // name frozen
+      { "id": 703, "name": "Workforce & Attrition" }    // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 1,  "name": "Avg. Resolution Time" },         // name frozen
+      { "id": 2,  "name": "SLA Compliance" },               // name frozen
+      { "id": 3,  "name": "Active Work Items" },            // name frozen
+      { "id": 4,  "name": "CSAT" },                         // name frozen
+      { "id": 5,  "name": "First Contact Resolution" },     // name frozen
+      { "id": 10, "name": "QA Score" },                     // name frozen
+      { "id": 11, "name": "Coaching Recency" },             // name frozen
+      { "id": 12, "name": "Coaching Impact on Sales" },     // name frozen
+      { "id": 13, "name": "Training Completion Ratio" },    // name frozen
+      { "id": 20, "name": "Attrition Risk Signal" },        // name frozen
+      { "id": 21, "name": "Engagement Index" },             // name frozen
+      { "id": 22, "name": "Employee Burnout Index" },       // name frozen
+      { "id": 23, "name": "Proficiency Ramp Index" }        // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "Director of Operations",
+        "team": "Operations Team",
+        "department": "Operations",
+        "job_title": "Director of Operations",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 3,                                    // frozen: catalog ref
+        "position": "Head of Quality Assurance",
+        "team": "QA Team",
+        "department": "Quality Assurance",
+        "job_title": "Head of QA",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 4,                                    // frozen: catalog ref
+        "position": "Customer Support Supervisor",
+        "team": "Support Team",
+        "department": "Operations",
+        "job_title": "Team Leader",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 5,                                    // frozen: catalog ref
+        "position": "Customer Support Rep",
+        "team": "Support Team",
+        "department": "Operations",
+        "job_title": "CSR",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 6,                                    // frozen: catalog ref
+        "position": "Customer Support Rep",
+        "team": "Support Team",
+        "department": "Operations",
+        "job_title": "CSR",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 10,                                   // frozen: catalog ref
+        "position": "QA Analyst",
+        "team": "QA Team",
+        "department": "Quality Assurance",
+        "job_title": "QA Analyst",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 14,                                   // frozen: catalog ref
+        "position": "IT Support Specialist",
+        "team": "IT Team",
+        "department": "IT",
+        "job_title": "IT Support",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },             // name frozen
+      { "id": 802, "name": "Shift Swap" },                // name frozen
+      { "id": 803, "name": "Coaching Session Request" },  // name frozen
+      { "id": 805, "name": "Equipment Request" }          // name frozen
+    ]
+  }
+}

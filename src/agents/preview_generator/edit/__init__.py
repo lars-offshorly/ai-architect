@@ -1,4 +1,4 @@
-"""Preview edit sub-graph — parse instructions and apply edits."""
+"""Preview edit sub-graph — parse instructions and apply v2 edits."""
 
 from __future__ import annotations
 
