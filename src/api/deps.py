@@ -41,13 +41,13 @@ def get_bundle_catalog() -> BundleCatalog:
 @lru_cache(maxsize=1)
 def get_session_repository() -> SessionRepository:
     """Return a cached in-memory SessionRepository."""
-    return SessionRepository()
+    return SessionRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)
 def get_conversation_repository() -> ConversationRepository:
     """Return a cached in-memory ConversationRepository."""
-    return ConversationRepository()
+    return ConversationRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)

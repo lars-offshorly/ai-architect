@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     DEV_BYPASS: bool = False
     RATE_LIMIT_PER_MINUTE: int = 60
     ENABLE_RATE_LIMIT: bool = True
+    SESSION_TTL_SECONDS: int = Field(default=3600, ge=60)
 
     DISABLE_LLM_CALLS: bool = False
     DISABLE_DASHBOARD_CALLS: bool = False
