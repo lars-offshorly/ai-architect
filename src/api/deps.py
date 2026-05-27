@@ -62,12 +62,12 @@ def get_interpreter_service() -> InterpreterService:
         llm_industry_classifier: LLMIndustryClassifier | None = None
     else:
         model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_FAST,
             temperature=settings.CLASSIFIER_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
         summarizer_model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_CHAT,
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
@@ -105,7 +105,7 @@ def get_edit_llm_model() -> ChatOpenAI | None:
     if settings.DISABLE_LLM_CALLS or not settings.EDIT_LLM_FALLBACK_ENABLED:
         return None
     return ChatOpenAI(
-        model=settings.OPENAI_MODEL,
+        model=settings.OPENAI_MODEL_FAST,
         temperature=0.0,
         api_key=settings.OPENAI_API_KEY,
     )

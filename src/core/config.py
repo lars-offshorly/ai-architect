@@ -11,6 +11,14 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-5-mini"
+    """
+    Per-task model overrides (Fix #3).  Both default to OPENAI_MODEL's value
+    so existing deployments work unchanged.  Set in .env to route cheap tasks
+    (extraction, classification) to a smaller model and quality tasks
+    (summarization) to a larger one.
+    """
+    OPENAI_MODEL_FAST: str = "gpt-5-mini"
+    OPENAI_MODEL_CHAT: str = "gpt-5-mini"
 
     PORT: int = Field(default=8000, ge=1, le=65535)
     DEBUG: bool = False
