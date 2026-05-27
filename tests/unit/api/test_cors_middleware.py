@@ -43,5 +43,9 @@ def test_unauthorized_response_keeps_cors_header(client: TestClient) -> None:
         json={},
     )
 
-    assert response.status_code in (401, 403)  # exact code is auth concern, not CORS
+    assert response.status_code in (
+        401,
+        403,
+        503,
+    )  # auth behavior varies by safety-guard env
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"

@@ -1,0 +1,141 @@
+// HR / recruitment agency variant. Same envelope as the BPO sample.
+// AI's only mutable surface: tenant info, per-employee role assignment,
+// and the lists of IDs to show for queues / projects / dashboards / kpis /
+// hr request types. Everything else is frozen.
+
+{
+  "schema_version": "2.0",
+  "session_id": "2a8c10de-c4f1-4d7d-9d2b-31a9b6f5b201",
+  "generated_at": "2026-05-12T10:00:00Z",
+
+  "tenant": {
+    "company_name": "TalentBridge Partners",
+    "industry": "hr_recruitment_agency",
+    "size_band": "20-50",
+    "primary_region": "EMEA",
+    "locale": "en-GB",
+    "timezone": "Europe/London"
+  },
+
+  // === LIST ONLY: AI just picks which queue IDs to show. Queue config and
+  //     employee assignments come pre-set from the catalog.
+  "tickets": {
+    "queues": [
+      { "id": 120, "name": "Candidate Pipeline" },        // name frozen
+      { "id": 121, "name": "Client Requests" },           // name frozen
+      { "id": 122, "name": "Interview Scheduling" },      // name frozen
+      { "id": 123, "name": "Offer & Onboarding" }         // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which project IDs to show. Project lead, team,
+  //     start date, employees, and full task list come pre-set from the catalog.
+  "projects": {
+    "projects": [
+      { "id": 530, "name": "Q2 Tech Recruitment Drive" },         // name frozen
+      { "id": 531, "name": "Client Onboarding Playbook Refresh" } // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which dashboard IDs to show. Widgets, layout
+  //     and bound KPIs come pre-set from the catalog.
+  "dashboard": {
+    "dashboards": [
+      { "id": 730, "name": "Recruiter Performance" },     // name frozen
+      { "id": 731, "name": "Pipeline Health" }            // name frozen
+    ]
+  },
+
+  // === LIST ONLY: AI just picks which KPI IDs to show. ===
+  "kpi": {
+    "kpis": [
+      { "id": 30, "name": "Time-to-Hire" },                 // name frozen
+      { "id": 31, "name": "Offer-Acceptance Rate" },        // name frozen
+      { "id": 32, "name": "Candidate NPS" },                // name frozen
+      { "id": 33, "name": "Source Effectiveness" },         // name frozen
+      { "id": 34, "name": "Open Roles" },                   // name frozen
+      { "id": 35, "name": "Submission-to-Interview Ratio" } // name frozen
+    ]
+  },
+
+  // === HR Hub. Two collections:
+  //     - `employees`: MUTABLE per row — position, team, department,
+  //       job_title, job_type, job_level. `id` is frozen catalog ref.
+  //       7 employees: 2 senior leadership + 1 manager + 4 regular staff.
+  //     - `request_types`: LIST ONLY — AI picks which HR request type IDs to show.
+  "hr_hub": {
+    "employees": [
+      // --- senior leadership ---
+      {
+        "id": 1,                                    // frozen: catalog ref
+        "position": "Head of Recruitment",
+        "team": "Tech Recruiting",
+        "department": "Recruitment",
+        "job_title": "Head of Recruitment",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      {
+        "id": 2,                                    // frozen: catalog ref
+        "position": "Head of Client Services",
+        "team": "Account Mgmt",
+        "department": "Client Services",
+        "job_title": "Head of Client Services",
+        "job_type": "Full-Time",
+        "job_level": "Director"
+      },
+      // --- manager ---
+      {
+        "id": 3,                                    // frozen: catalog ref
+        "position": "Senior Recruiter",
+        "team": "Tech Recruiting",
+        "department": "Recruitment",
+        "job_title": "Senior Tech Recruiter",
+        "job_type": "Full-Time",
+        "job_level": "Manager"
+      },
+      // --- regular staff ---
+      {
+        "id": 5,                                    // frozen: catalog ref
+        "position": "Recruiter",
+        "team": "Tech Recruiting",
+        "department": "Recruitment",
+        "job_title": "Recruiter",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 6,                                    // frozen: catalog ref
+        "position": "Recruiter",
+        "team": "Tech Recruiting",
+        "department": "Recruitment",
+        "job_title": "Recruiter",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 9,                                    // frozen: catalog ref
+        "position": "Sourcer",
+        "team": "Sourcing",
+        "department": "Recruitment",
+        "job_title": "Talent Sourcer",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      },
+      {
+        "id": 12,                                   // frozen: catalog ref
+        "position": "Recruiting Coord.",
+        "team": "Coordinators",
+        "department": "Operations",
+        "job_title": "Recruiting Coordinator",
+        "job_type": "Full-Time",
+        "job_level": "Staff"
+      }
+    ],
+    "request_types": [
+      { "id": 801, "name": "Leave Request" },             // name frozen
+      { "id": 804, "name": "Commission Inquiry" },        // name frozen
+      { "id": 806, "name": "Expense Reimbursement" }      // name frozen
+    ]
+  }
+}

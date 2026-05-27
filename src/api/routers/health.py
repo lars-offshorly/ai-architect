@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from core import Database, pinecone_client
+from core import Database
 
 router = APIRouter(tags=["health"])
 
@@ -13,6 +13,5 @@ async def health_check() -> dict[str, object]:
         "status": "ok",
         "checks": {
             "database": await Database.health_check(),
-            "pinecone": await pinecone_client.health_check(),
         },
     }

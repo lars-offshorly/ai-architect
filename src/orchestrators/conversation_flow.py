@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import inspect
+import re
 from dataclasses import dataclass, field
 from logging import LoggerAdapter
 from typing import Any, Protocol, cast
 
 from agents.interpreter.fallback import FallbackHandler
 from agents.interpreter.missing_fields import MissingFieldDetector
-from catalog.bundle_catalog import BundleCatalog
+from agents.interpreter.provisioning_readiness import (
+    ProvisioningReadiness,
+    ProvisioningReadinessResult,
+)
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
@@ -16,7 +21,7 @@ from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
-from domain.services.bundle_recommendation import BundleRecommendationService
+from domain.services.registry_facade import RegistryFacade
 
 logger = get_logger(__name__)
 
@@ -51,6 +56,57 @@ _CONFIRMATION_PHRASES = [
 ]
 
 _NEGATION_WORDS = ["don't", "dont", "do not", "not", "never", "no"]
+_WORKFLOW_HINTS: dict[str, tuple[str, ...]] = {
+    "ticketing": ("ticket", "tickets", "ticketing", "queue", "queues"),
+    "project_mgmt": ("project", "projects", "task", "tasks"),
+    "hr_management": ("hr", "recruitment", "employee", "employees", "hiring"),
+}
+_INDUSTRY_LABELS: dict[str, str] = {
+    "construction_firm": "construction",
+    "bpo_contact_center": "BPO/contact center",
+    "hr_recruitment_agency": "HR recruitment",
+}
+
+
+def _contains_term(text: str, term: str) -> bool:
+    return re.search(r"\b" + re.escape(term.lower()) + r"\b", text.lower()) is not None
+
+
+# Phrases that introduce a company name. The capture group reads up to the
+# next clause boundary (and/with/that, punctuation, or end of string) so
+# names like "Equip", "Nexora Connect", or "Smith & Co." are captured cleanly.
+_COMPANY_NAME_PATTERN = re.compile(
+    (
+        r"\b(?:"
+        r"company\s+(?:called|named|name(?:'?s|d)?)"  # "company called/named/name is"
+        r"|business\s+(?:called|named)"  # "business called/named"
+        r"|team\s+(?:called|named)"  # "team called/named"
+        r"|(?:we|i)['’]?re?\s+called"  # "we're called X" / "i am called X"
+        r"|called"  # bare "called X"
+        r"|named"  # bare "named X"
+        r"|name\s+is"  # "name is X"
+        r"|by\s+the\s+name\s+of"  # "by the name of X"
+        r")\s+"
+        r"([A-Z0-9][A-Za-z0-9 '&.\-]{0,60}?)"  # capture: starts with caps/digit
+        r"(?=\s+(?:and|with|that|for|in|is|was|who|which|because|so|to)\b"
+        r"|[.,!?;:]|$)"
+    ),
+    flags=re.IGNORECASE,
+)
+
+
+def _extract_company_name(user_message: str) -> str | None:
+    """Extract a company name from a user message via introducer phrases.
+
+    Returns ``None`` when no introducer phrase is present. The LLM extractor
+    handles freer-form mentions; this regex is the deterministic fast-path
+    that keeps obvious cases out of the LLM round-trip.
+    """
+    match = _COMPANY_NAME_PATTERN.search(user_message)
+    if not match:
+        return None
+    candidate = match.group(1).strip(" .,!?:;'\"")
+    return candidate or None
 
 
 def _detect_preview_intent(user_message: str) -> bool:
@@ -107,7 +163,7 @@ class ConversationTurnRequest:
     # Canonical Week 3 input.
     session: Session | None = None
 
-    # Legacy compatibility fields (kept for existing tests/callers).
+    # Compatibility fields kept for existing tests/callers.
     confirmed: bool = False
     accumulated_extraction: ExtractionResult | None = None
     preselected_bundle_key: str | None = None
@@ -122,6 +178,7 @@ class _TurnContext:
     recommendation: RecommendationResult
     top: BundleSuggestion | None
     slots: dict[str, object]
+    selection_context: str = ""
 
 
 class InterpreterPort(Protocol):
@@ -149,7 +206,18 @@ class ReplierPort(Protocol):
         session_id: str,
         extracted: ExtractionResult,
         bundle_key: str,
+        history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> tuple[object | None, str]: ...
+
+    async def build_bundle_verification_question(
+        self,
+        session_id: str,
+        display_name: str,
+        slots: dict[str, object],
+        history: list[ConversationMessage] | None = None,
+        readiness: ProvisioningReadinessResult | None = None,
+    ) -> str: ...
 
     async def build_bundle_suggestion(
         self,
@@ -164,16 +232,17 @@ class ConversationFlow:
         self,
         interpreter_service: InterpreterPort,
         replier_service: ReplierPort,
-        bundle_catalog: BundleCatalog,
-        required_slots_by_bundle: dict[str, list[str]],
+        bundle_catalog: object | None = None,
+        required_slots_by_bundle: dict[str, list[str]] | None = None,
+        registry_facade: RegistryFacade | None = None,
     ) -> None:
+        _ = bundle_catalog  # backward-compatible constructor arg
         self._interpreter = interpreter_service
         self._replier = replier_service
         self._missing_field_detector = MissingFieldDetector(
-            bundle_catalog, required_slots_by_bundle
+            required_slots_by_bundle or {}
         )
         self._fallback_handler = FallbackHandler(
-            bundle_catalog,
             proceed_threshold=self._setting_or_default(
                 "CONFIDENCE_PROCEED_THRESHOLD", 0.75
             ),
@@ -185,7 +254,7 @@ class ConversationFlow:
                 self._setting_or_default("MAX_CLARIFICATION_TURNS", 3)
             ),
         )
-        self._recommendation_service = BundleRecommendationService(bundle_catalog)
+        self._registry_facade = registry_facade
 
     @staticmethod
     def _setting_or_default(name: str, default: float | int) -> float | int:
@@ -204,8 +273,10 @@ class ConversationFlow:
         request: ConversationTurnRequest | None = None,
         **kwargs: object,
     ) -> _FlowResult:
+        # pylint: disable=too-many-locals
         turn_request = self._coerce_turn_request(request, kwargs)
         session = self._resolve_session(turn_request)
+        self._update_session_context(session, turn_request.user_message)
         session_logger = get_session_logger(__name__, turn_request.session_id)
 
         summary_for_turn = await self._resolve_summary(turn_request, session)
@@ -214,6 +285,33 @@ class ConversationFlow:
             session,
             summary_for_turn,
         )
+
+        # Only ask the disambiguation question when the canonical resolver itself
+        # is uncertain. If classification already came back with `proceed` (i.e.,
+        # the alias scorer found a clear winner with margin), there is no real
+        # ambiguity — trust it and skip the question.
+        resolver_is_confident = (
+            context.classification.confidence_status == "proceed"
+            and context.top is not None
+        )
+        ambiguous_industries = (
+            []
+            if resolver_is_confident
+            else self._ambiguous_industries(turn_request.user_message)
+        )
+        if (
+            ambiguous_industries
+            and session.company_industry_claim is None
+            and not session.confirmed
+            and session.preselected_bundle_key is None
+        ):
+            question = (
+                "To tailor this correctly, which best describes your business: "
+                "construction, BPO/contact center, or HR recruitment?"
+            )
+            result = self._awaiting_input_response(question, context)
+            self._persist_session_state(session, context, result)
+            return result
 
         if self.should_generate_early_preview(
             turn_request.user_message, turn_request.options.force_preview
@@ -233,6 +331,31 @@ class ConversationFlow:
             )
             session.confirmed = True
             result = self._ready_for_preview_response(context, preview_type="confirmed")
+
+        # Provisioning-readiness gate. The v2 manifest only needs a few tenant
+        # header fields (industry, company_name, size_band, region). When the
+        # session already has the required ones, skip every question-asking
+        # branch and head straight to bundle suggestion.
+        readiness = ProvisioningReadiness.evaluate(session, context.extracted)
+        session_logger.info(
+            "Provisioning readiness: is_ready=%s missing_required=%s",
+            readiness.is_ready,
+            [f.value for f in readiness.missing_required],
+        )
+
+        # Ask one verification question on the first unconfirmed turn only when
+        # we are NOT already provisioning-ready. Skipping this when ready cuts
+        # out the unnecessary "How do you currently track..." follow-ups.
+        if (
+            session.clarification_turn_count == 0
+            and not session.confirmed
+            and session.preselected_bundle_key is None
+            and not readiness.is_ready
+        ):
+            question = await self._build_verification_question(
+                turn_request, context, readiness
+            )
+            result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
             return result
 
@@ -242,32 +365,41 @@ class ConversationFlow:
             status in {"clarify", "suggest_alternatives"}
             and not session.confirmed
             and session.preselected_bundle_key is None
+            and not readiness.is_ready
         ):
-            question = await self._build_awaiting_question(turn_request, context)
+            question = await self._build_awaiting_question(
+                turn_request, context, readiness
+            )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
             return result
 
-        # For proceed/fallback_generic/preselected, verify slot completeness.
-        target_key = context.top.bundle_key if context.top is not None else "unknown"
-        missing_field, question = await self._replier.build_clarification(
-            turn_request.session_id,
-            context.extracted,
-            target_key,
-        )
-        if missing_field is not None:
-            result = self._awaiting_input_response(question, context)
-            self._persist_session_state(session, context, result)
-            return result
+        # Slot-completeness clarification only runs when readiness is still
+        # incomplete. Once the tenant header is filled, no further LLM-invented
+        # follow-ups are useful — the catalog handles the rest.
+        if not readiness.is_ready:
+            target_key = (
+                context.top.bundle_key if context.top is not None else "unknown"
+            )
+            missing_field, question = await self._replier.build_clarification(
+                turn_request.session_id,
+                context.extracted,
+                target_key,
+                history=turn_request.history,
+                readiness=readiness,
+            )
+            if missing_field is not None:
+                result = self._awaiting_input_response(question, context)
+                self._persist_session_state(session, context, result)
+                return result
 
         if not session.confirmed:
             suggestion = context.top
             if suggestion is None:
-                question = "".join(
-                    [
-                        "Could you share a bit more so I can suggest ",
-                        "the right bundle?",
-                    ]
+                question = (
+                    "Could you tell me a bit more about what you're looking to "
+                    "manage? That'll help me configure this the right way for "
+                    "your team."
                 )
                 result = self._awaiting_input_response(question, context)
                 self._persist_session_state(session, context, result)
@@ -280,8 +412,10 @@ class ConversationFlow:
             )
             if status == "fallback_generic":
                 message = (
-                    "I couldn't confidently classify your request yet, so I'll use the "
-                    "generic bundle unless you'd like to clarify first.\n\n"
+                    "I want to make sure this is set up right for you - "
+                    "could you share "
+                    "a bit more about your team's focus? In the meantime, here's what "
+                    "I've put together based on what you've shared:\n\n"
                     f"{message}"
                 )
             result = self._pending_confirmation_response(message, context)
@@ -337,6 +471,161 @@ class ConversationFlow:
             preselected_bundle_key=request.preselected_bundle_key,
             preselected_intent=request.options.preselected_intent,
         )
+
+    def _industry_mapping(self) -> dict[str, dict[str, Any]]:
+        if self._registry_facade is None:
+            return {}
+        return self._registry_facade.industry_bundle_map()
+
+    def _ambiguous_industries(self, user_message: str) -> list[str]:
+        """Return industries that genuinely conflict in the user's message.
+
+        Score each industry by alias hits (industry-name hit weighted higher than
+        a single alias). Only return industries whose top two scores are both
+        above a meaningful threshold *and* close together. This prevents a
+        single weak alias hit (e.g. the word "employees" matching
+        ``hr_recruitment_agency``) from manufacturing ambiguity against an
+        otherwise clear industry signal.
+        """
+        mapping = self._industry_mapping()
+        if not mapping:
+            return []
+        scores = self._score_industry_aliases(user_message.lower(), mapping)
+        if len(scores) < 2:
+            return []
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        top_score = ranked[0][1]
+        second_score = ranked[1][1]
+        # A genuine conflict needs both to score >= 2.0 (i.e. neither is a
+        # single accidental alias hit) and the gap to be small (< 1.5).
+        if second_score < 2.0 or top_score - second_score >= 1.5:
+            return []
+        return [industry for industry, score in ranked if score >= 2.0]
+
+    @staticmethod
+    def _set_industry_claim_from_text(
+        session: Session,
+        lowered: str,
+        mapping: dict[str, dict[str, Any]],
+    ) -> None:
+        """Set ``company_industry_claim`` + ``preselected_bundle_key`` from text.
+
+        Two-stage matching:
+        1. Fast-path: if the industry's canonical name or human label appears
+           literally (e.g. "construction", "BPO/contact center"), claim it.
+        2. Fallback: use alias scoring so natural phrasings like "BPO
+           contact center" (no slash) also claim correctly. Requires the
+           top industry to score at least 2.0 and beat the runner-up by 1.0.
+        """
+        if not mapping:
+            return
+        claimed = ConversationFlow._match_industry_by_canonical_name(lowered)
+        if claimed is None:
+            claimed = ConversationFlow._match_industry_by_alias_score(lowered, mapping)
+        if claimed is None:
+            return
+        session.company_industry_claim = claimed
+        bundle_key = mapping.get(claimed, {}).get("bundle_key")
+        if isinstance(bundle_key, str):
+            session.preselected_bundle_key = bundle_key
+
+    @staticmethod
+    def _match_industry_by_canonical_name(lowered: str) -> str | None:
+        for industry, label in _INDUSTRY_LABELS.items():
+            if _contains_term(lowered, industry) or _contains_term(lowered, label):
+                return industry
+        return None
+
+    @staticmethod
+    def _match_industry_by_alias_score(
+        lowered: str,
+        mapping: dict[str, dict[str, Any]],
+    ) -> str | None:
+        scores = ConversationFlow._score_industry_aliases(lowered, mapping)
+        if not scores:
+            return None
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        top_industry, top_score = ranked[0]
+        if top_score < 2.0:
+            return None
+        second_score = ranked[1][1] if len(ranked) > 1 else 0.0
+        if top_score - second_score < 1.0:
+            return None
+        return top_industry
+
+    @staticmethod
+    def _score_industry_aliases(
+        lowered: str, mapping: dict[str, dict[str, Any]]
+    ) -> dict[str, float]:
+        scores: dict[str, float] = {}
+        for industry, spec in mapping.items():
+            score = 3.0 if _contains_term(lowered, industry.lower()) else 0.0
+            aliases = spec.get("aliases", [])
+            if isinstance(aliases, list):
+                score += sum(
+                    1.0
+                    for alias in aliases
+                    if isinstance(alias, str)
+                    and alias.strip()
+                    and _contains_term(lowered, alias)
+                )
+            if score > 0:
+                scores[industry] = score
+        return scores
+
+    def _update_session_context(self, session: Session, user_message: str) -> None:
+        text = user_message.lower()
+        mapping = self._industry_mapping()
+        self._set_industry_claim_from_text(session, text, mapping)
+
+        for workflow, hints in _WORKFLOW_HINTS.items():
+            if any(_contains_term(text, hint) for hint in hints):
+                session.primary_workflow = workflow
+                break
+
+        if "internal" in text and "only" in text:
+            session.audience_scope = "internal_only"
+        elif any(
+            _contains_term(text, token)
+            for token in ("client", "customer", "subcontractor")
+        ):
+            session.audience_scope = "external_or_mixed"
+
+        size_match = re.search(
+            r"\b(\d{1,4})\s+(?:people|person|users?|employees?|team)\b", text
+        )
+        if size_match:
+            session.inferred_team_size = int(size_match.group(1))
+
+        company_name = _extract_company_name(user_message)
+        if company_name:
+            session.inferred_company_name = company_name
+
+        if any(
+            _contains_term(text, token)
+            for token in ("philippines", "from ph", "manila", "cebu", "davao")
+        ):
+            session.inferred_region = "PH"
+
+    def _confirmation_summary(self, session: Session, bundle_key: str | None) -> str:
+        details: list[str] = []
+        industry = session.company_industry_claim
+        if industry:
+            details.append(f"Industry: {_INDUSTRY_LABELS.get(industry, industry)}")
+        workflow = session.primary_workflow
+        if workflow:
+            details.append(f"Workflow: {workflow.replace('_', ' ')}")
+        audience = session.audience_scope
+        if audience == "internal_only":
+            details.append("Audience: internal teams")
+        if not details:
+            return ""
+        bundle_line = (
+            f"Proposed bundle: {bundle_key}"
+            if bundle_key
+            else "Proposed bundle selected"
+        )
+        return bundle_line + " | " + " | ".join(details)
 
     async def _resolve_summary(
         self,
@@ -396,21 +685,102 @@ class ConversationFlow:
             clarification_turn_count=session.clarification_turn_count,
         )
 
-        recommendation = self._recommendation_service.recommend(
+        recommendation = self._build_recommendation(
             classification=classification,
-            extracted=extracted,
             preselected_bundle_key=preselected_bundle_key,
         )
 
         slots = extracted.to_extracted_info().slots
         top = recommendation.primary_bundle or classification.selected_bundle
+        selection_context = self._confirmation_summary(
+            session,
+            top.bundle_key if top is not None else None,
+        )
         return _TurnContext(
             extracted=extracted,
             classification=classification,
             recommendation=recommendation,
             top=top,
             slots=slots,
+            selection_context=selection_context,
         )
+
+    def _build_recommendation(
+        self,
+        classification: ClassificationResult,
+        preselected_bundle_key: str | None,
+    ) -> RecommendationResult:
+        """Map ``ClassificationResult`` → ``RecommendationResult``.
+
+        This is the sole owner of recommendation construction. The earlier
+        ``BundleRecommendationService`` was removed when the canonical
+        registry path landed; the logic now lives inline here.
+        """
+        selected = classification.selected_bundle
+
+        if preselected_bundle_key:
+            if selected is None:
+                selected = BundleSuggestion(
+                    bundle_key=preselected_bundle_key,
+                    display_name=preselected_bundle_key,
+                    confidence=1.0,
+                    reasoning="Pre-selected by user",
+                    matched_signals=[],
+                )
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=[],
+                recommendation_status="preselected",
+                inferred_modules=self._inferred_modules_for(selected.bundle_key),
+                reasoning="Bundle pre-selected by user",
+            )
+
+        if classification.confidence_status == "suggest_alternatives":
+            fallbacks = classification.ranked_candidates[1:3]
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=fallbacks,
+                recommendation_status="needs_clarification",
+                inferred_modules=self._inferred_modules_for(
+                    selected.bundle_key if selected is not None else "generic"
+                ),
+                reasoning="Multiple viable bundles; user choice required",
+            )
+
+        if classification.confidence_status == "fallback_generic":
+            return RecommendationResult(
+                session_id=classification.session_id,
+                primary_bundle=selected,
+                fallback_bundles=[],
+                recommendation_status="fallback_generic",
+                inferred_modules=self._inferred_modules_for(
+                    selected.bundle_key if selected is not None else "generic"
+                ),
+                reasoning=classification.reasoning,
+            )
+
+        status = (
+            "ready"
+            if classification.confidence_status == "proceed"
+            else "needs_clarification"
+        )
+        return RecommendationResult(
+            session_id=classification.session_id,
+            primary_bundle=selected,
+            fallback_bundles=[],
+            recommendation_status=status,
+            inferred_modules=self._inferred_modules_for(
+                selected.bundle_key if selected is not None else "generic"
+            ),
+            reasoning=classification.reasoning or "Need more context from the user",
+        )
+
+    def _inferred_modules_for(self, bundle_key: str) -> list[str]:
+        if self._registry_facade is not None:
+            return self._registry_facade.inferred_modules_for_bundle(bundle_key)
+        return []
 
     def _mock_preselected_classification(
         self,
@@ -439,22 +809,46 @@ class ConversationFlow:
         self,
         request: ConversationTurnRequest,
         context: _TurnContext,
+        readiness: ProvisioningReadinessResult | None = None,
     ) -> str:
         status = context.classification.confidence_status
         if status == "suggest_alternatives":
-            options = context.classification.ranked_candidates[:3]
-            if options:
-                names = ", ".join(option.display_name for option in options)
-                return (
-                    "I found multiple possible bundles. Which one fits best: "
-                    f"{names}?"
-                )
+            return await self._build_verification_question(request, context, readiness)
 
         target_key = context.top.bundle_key if context.top is not None else "unknown"
         _, question = await self._replier.build_clarification(
             request.session_id,
             context.extracted,
             target_key,
+            history=request.history,
+            readiness=readiness,
+        )
+        return question
+
+    async def _build_verification_question(
+        self,
+        request: ConversationTurnRequest,
+        context: _TurnContext,
+        readiness: ProvisioningReadinessResult | None = None,
+    ) -> str:
+        top_display = context.top.display_name if context.top is not None else ""
+        question_or_awaitable = self._replier.build_bundle_verification_question(
+            request.session_id,
+            top_display,
+            context.slots,
+            history=request.history,
+            readiness=readiness,
+        )
+        if inspect.isawaitable(question_or_awaitable):
+            return await question_or_awaitable
+
+        target_key = context.top.bundle_key if context.top is not None else "unknown"
+        _, question = await self._replier.build_clarification(
+            request.session_id,
+            context.extracted,
+            target_key,
+            history=request.history,
+            readiness=readiness,
         )
         return question
 
@@ -531,6 +925,7 @@ class ConversationFlow:
             "classification": context.classification,
             "recommendation": context.recommendation,
             "slots": context.slots,
+            "selection_context": context.selection_context,
             # Temporary migration shim removed - use classification directly
         }
 

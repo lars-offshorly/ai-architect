@@ -92,6 +92,15 @@ _bearer_scheme = _HTTPBearer()
 async def is_authenticated(request: Request) -> UserSchema:
     settings = get_settings()
     if settings.DEV_BYPASS:
+        if not settings.DEBUG:
+            logger.error(
+                "Unsafe auth config: DEV_BYPASS=true while DEBUG=false. "
+                "Rejecting request."
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Server auth misconfiguration: DEV_BYPASS requires DEBUG=true.",
+            )
         logger.warning(
             "DEV_BYPASS enabled: hardcoded admin user returned. Not for production."
         )

@@ -5,7 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
-from catalog.bundle_catalog import BundleCatalog, BundleDefinition
+from catalog.bundle_catalog import BundleDefinition
 from core.logging import get_logger
 from domain.models.conversation import ConversationMessage
 from domain.models.extraction_result import (
@@ -19,6 +19,26 @@ from .prompts import EXTRACTION_SYSTEM_PROMPT
 logger = get_logger(__name__)
 
 _HISTORY_WINDOW = 5
+
+
+def _build_synonym_index(
+    bundles: list[BundleDefinition],
+) -> tuple[dict[str, str], list[tuple[str, str]]]:
+    """Legacy helper retained for test/backward compatibility."""
+    exact_match_index: dict[str, str] = {}
+    phrase_match_index: list[tuple[str, str]] = []
+
+    for bundle in bundles:
+        for synonym in bundle.synonyms:
+            normalized = synonym.strip().casefold()
+            if not normalized:
+                continue
+            if normalized not in exact_match_index:
+                exact_match_index[normalized] = synonym
+                phrase_match_index.append((normalized, synonym))
+
+    phrase_match_index.sort(key=lambda item: len(item[0]), reverse=True)
+    return exact_match_index, phrase_match_index
 
 
 def _build_extraction_context(
@@ -40,32 +60,15 @@ def _build_extraction_context(
     return "\n\n".join(parts)
 
 
-def _build_synonym_index(
-    bundles: list[BundleDefinition],
-) -> tuple[dict[str, str], list[tuple[str, str]]]:
-    exact_match_index: dict[str, str] = {}
-    phrase_match_index: list[tuple[str, str]] = []
-
-    for bundle in bundles:
-        for synonym in bundle.synonyms:
-            normalized = synonym.strip().casefold()
-            if not normalized:
-                continue
-            if normalized not in exact_match_index:
-                exact_match_index[normalized] = synonym
-                phrase_match_index.append((normalized, synonym))
-
-    phrase_match_index.sort(key=lambda item: len(item[0]), reverse=True)
-    return exact_match_index, phrase_match_index
-
-
 def _normalize_keywords(
     keywords: list[str],
-    exact_match_index: dict[str, str],
-    phrase_match_index: list[tuple[str, str]],
+    exact_match_index: dict[str, str] | None = None,
+    phrase_match_index: list[tuple[str, str]] | None = None,
 ) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
+    exact = exact_match_index or {}
+    phrases = phrase_match_index or []
 
     for kw in keywords:
         stripped = kw.strip()
@@ -73,9 +76,9 @@ def _normalize_keywords(
             continue
 
         normalized = stripped.casefold()
-        canonical = exact_match_index.get(normalized)
+        canonical = exact.get(normalized)
         if canonical is None:
-            for phrase, mapped in phrase_match_index:
+            for phrase, mapped in phrases:
                 if phrase in normalized or normalized in phrase:
                     canonical = mapped
                     break
@@ -123,13 +126,8 @@ class _ExtractionOutput(BaseModel):
 
 
 class Extractor:
-    def __init__(self, model: ChatOpenAI, catalog: BundleCatalog) -> None:
+    def __init__(self, model: ChatOpenAI) -> None:
         self._model = model
-        self._catalog = catalog
-        self._bundles = catalog.list_all()
-        self._exact_synonym_index, self._phrase_synonym_index = _build_synonym_index(
-            self._bundles
-        )
 
     async def extract(
         self,
@@ -166,8 +164,6 @@ class Extractor:
         )
         normalized_keywords = _normalize_keywords(
             output.classification_signals.keywords,
-            self._exact_synonym_index,
-            self._phrase_synonym_index,
         )
         cs = output.classification_signals
         ps = output.personalization_signals

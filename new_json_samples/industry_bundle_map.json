@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "mappings": {
+    "bpo_contact_center": {
+      "bundle_key": "ticketing",
+      "aliases": [
+        "bpo",
+        "contact center",
+        "call center",
+        "customer support",
+        "customer service",
+        "help desk",
+        "helpdesk",
+        "support team",
+        "service desk",
+        "it support",
+        "it ticket",
+        "it ticketing"
+      ]
+    },
+    "construction_firm": {
+      "bundle_key": "construction",
+      "aliases": [
+        "construction",
+        "contractor",
+        "site",
+        "subcontractor",
+        "builder",
+        "building",
+        "jobsite",
+        "foreman",
+        "construction project",
+        "project management"
+      ]
+    },
+    "hr_recruitment_agency": {
+      "bundle_key": "hr_management",
+      "aliases": [
+        "recruitment",
+        "recruiter",
+        "candidate",
+        "hiring agency",
+        "hr",
+        "human resources",
+        "employees",
+        "employee",
+        "payroll",
+        "leave",
+        "attendance",
+        "onboarding",
+        "talent",
+        "hr team",
+        "people ops",
+        "people operations"
+      ]
+    }
+  }
+}

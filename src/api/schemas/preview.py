@@ -1,25 +1,11 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-
-class PreviewStoreSchema(BaseModel):
-    records: list[dict[str, object]] = Field(default_factory=list)
-
-
-class PreviewResponseSchema(BaseModel):
-    schema_version: str
-    session_id: str
-    bundle_key: str
-    display_name: str
-    modules: list[str] = Field(default_factory=list)
-    stores: dict[str, list[dict[str, object]]] = Field(default_factory=dict)
-
-
-class EditRequestSchema(BaseModel):
-    instruction: str
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 
 
 class EditPreviewRequestSchema(BaseModel):
@@ -40,3 +26,13 @@ class EditPreviewRequestSchema(BaseModel):
         min_length=1,
         max_length=500,
     )
+
+    @field_validator("instruction")
+    @classmethod
+    def _sanitize_instruction(cls, value: str) -> str:
+        normalized = re.sub(r"\s+", " ", value).strip()
+        if not normalized:
+            raise ValueError("instruction cannot be empty")
+        if _CONTROL_CHARS.search(normalized):
+            raise ValueError("instruction contains control characters")
+        return normalized

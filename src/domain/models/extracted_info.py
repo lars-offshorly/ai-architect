@@ -17,7 +17,7 @@ class ExtractedInfo(BaseModel):
     Use this when you need:
     - A flat key-value representation of extracted signals
     - Slots for downstream template injection
-    - Backward compatibility with legacy slot-based interfaces
+    - Backward compatibility with slot-based interfaces
 
     For new code, prefer using ExtractionResult directly with its structured
     ClassificationSignals and PersonalizationSignals.
