@@ -15,8 +15,8 @@ class ConversationRepository:
     def _evict_expired(self) -> None:
         """
         Remove all messages and summaries for sessions whose last-activity
-        timestamp is older than the TTL.  Called before each mutating
-        operation for lazy eviction without a background task.
+        timestamp is older than the TTL.  Called before every read and write
+        so expired data is never returned or accidentally refreshed.
         """
         now = datetime.now(tz=timezone.utc)
         expired = [
@@ -33,11 +33,13 @@ class ConversationRepository:
         self._timestamps[session_id] = datetime.now(tz=timezone.utc)
 
     def get_messages(self, session_id: str) -> list[ConversationMessage]:
+        self._evict_expired()
         return list(self._messages.get(session_id, []))
 
     def get_recent_messages(
         self, session_id: str, window: int
     ) -> list[ConversationMessage]:
+        self._evict_expired()
         messages = self._messages.get(session_id, [])
         return list(messages[-window:])
 
@@ -47,6 +49,7 @@ class ConversationRepository:
         self._timestamps[summary.session_id] = datetime.now(tz=timezone.utc)
 
     def get_summary(self, session_id: str) -> ConversationSummary | None:
+        self._evict_expired()
         return self._summaries.get(session_id)
 
     def clear(self, session_id: str) -> None:

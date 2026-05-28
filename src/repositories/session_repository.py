@@ -15,8 +15,8 @@ class SessionRepository:
     def _evict_expired(self) -> None:
         """
         Remove sessions whose last-activity timestamp is older than the TTL.
-        Called before each mutating operation so expired sessions are cleared
-        lazily without a background task.
+        Called before every read and write so an expired session is never
+        returned or resurrected by a timestamp refresh.
         """
         now = datetime.now(tz=timezone.utc)
         expired = [
@@ -32,6 +32,7 @@ class SessionRepository:
         self._timestamps[session.session_id] = datetime.now(tz=timezone.utc)
 
     def get(self, session_id: str) -> Session:
+        self._evict_expired()
         session = self._store.get(session_id)
         if session is None:
             raise SessionNotFoundError(session_id)
