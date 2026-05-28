@@ -41,13 +41,13 @@ def get_bundle_catalog() -> BundleCatalog:
 @lru_cache(maxsize=1)
 def get_session_repository() -> SessionRepository:
     """Return a cached in-memory SessionRepository."""
-    return SessionRepository()
+    return SessionRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)
 def get_conversation_repository() -> ConversationRepository:
     """Return a cached in-memory ConversationRepository."""
-    return ConversationRepository()
+    return ConversationRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)
@@ -62,12 +62,12 @@ def get_interpreter_service() -> InterpreterService:
         llm_industry_classifier: LLMIndustryClassifier | None = None
     else:
         model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_FAST,
             temperature=settings.CLASSIFIER_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
         summarizer_model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_CHAT,
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
@@ -105,7 +105,7 @@ def get_edit_llm_model() -> ChatOpenAI | None:
     if settings.DISABLE_LLM_CALLS or not settings.EDIT_LLM_FALLBACK_ENABLED:
         return None
     return ChatOpenAI(
-        model=settings.OPENAI_MODEL,
+        model=settings.OPENAI_MODEL_FAST,
         temperature=0.0,
         api_key=settings.OPENAI_API_KEY,
     )
@@ -118,6 +118,7 @@ def get_conversation_flow() -> ConversationFlow:
     return ConversationFlow(
         interpreter_service=get_interpreter_service(),
         replier_service=get_replier_service(),
+        conversation_repository=get_conversation_repository(),
         required_slots_by_bundle=required_slots,
         registry_facade=get_registry_facade(),
     )
