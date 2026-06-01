@@ -19,6 +19,14 @@ def test_software_build_request_is_outside_scope() -> None:
     assert decision.label == "outside_scope"
 
 
+def test_unsupported_operational_request_is_outside_scope() -> None:
+    classifier = SafetyClassifier(model=None)
+    decision = asyncio.run(
+        classifier.classify("s2b", "Please send an email to our customer")
+    )
+    assert decision.label == "outside_scope"
+
+
 class _FailIfCalledModel:
     def with_structured_output(self, *_args, **_kwargs):  # type: ignore[no-untyped-def]
         raise AssertionError("LLM safety should not be called for low-risk follow-up")
