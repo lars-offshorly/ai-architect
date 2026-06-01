@@ -65,7 +65,7 @@ class TestExtractorContextBuilder:
         assert "We have 50 employees" in ctx
         assert "And we need leave tracking" in ctx
 
-    def test_build_context_limits_history_to_last_five(self) -> None:
+    def test_build_context_limits_history_to_last_two(self) -> None:
         history = [
             ConversationMessage(role="user", content=f"msg {i}") for i in range(10)
         ]
@@ -75,8 +75,8 @@ class TestExtractorContextBuilder:
             history=history,
         )
         assert "msg 9" in ctx
-        assert "msg 5" in ctx
-        assert "msg 0" not in ctx
+        assert "msg 8" in ctx
+        assert "msg 7" not in ctx
 
 
 class TestExtractorSynonymNormalization:

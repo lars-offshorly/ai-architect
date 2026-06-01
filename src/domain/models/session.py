@@ -33,6 +33,7 @@ class Session(BaseModel):
     inferred_team_size: int | None = None
     inferred_company_name: str | None = None
     inferred_region: str | None = None
+    be_translator_revision: int = 0
 
     @field_validator("latest_classification", mode="before")
     @classmethod

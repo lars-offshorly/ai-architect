@@ -126,7 +126,7 @@ def main() -> None:
     for filename_stem, bundle_key, conversation in SCENARIOS:
         print(f"Generating: {filename_stem} (bundle={bundle_key}) ...", end=" ")
 
-        _, dummy_data_json, _ = service.generate(
+        _, dummy_data_json = service.generate(
             session_id=f"sample-{filename_stem}",
             bundle_key=bundle_key,
             conversation_history=conversation,

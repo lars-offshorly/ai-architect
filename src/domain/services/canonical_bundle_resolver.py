@@ -102,7 +102,7 @@ class CanonicalBundleResolver:
         return top_industry
 
     @staticmethod
-    def _score_industries(
+    def _score_industries(  # pylint: disable=too-many-branches
         haystack: str,
         mapping: dict[str, dict[str, object]],
     ) -> dict[str, float]:
@@ -124,18 +124,28 @@ class CanonicalBundleResolver:
                 "construction firm",
                 "contractor company",
                 "we are construction",
+                "i am construction",
             ),
             "hr_recruitment_agency": (
                 "recruitment agency",
                 "staffing agency",
                 "headhunting firm",
                 "hr agency",
+                "i am hr",
+                "we are hr",
             ),
             "bpo_contact_center": (
                 "bpo company",
                 "contact center company",
                 "call center company",
+                "i am bpo",
+                "we are bpo",
             ),
+        }
+        bare_token_boosts: dict[str, tuple[str, ...]] = {
+            "construction_firm": ("construction", "contractor"),
+            "hr_recruitment_agency": ("hr", "recruitment"),
+            "bpo_contact_center": ("bpo", "contact center", "call center"),
         }
 
         scores: dict[str, float] = dict.fromkeys(mapping, 0.0)
@@ -147,6 +157,9 @@ class CanonicalBundleResolver:
 
             if CanonicalBundleResolver._contains_term(haystack, industry.lower()):
                 scores[industry] += 3.0
+            for token in bare_token_boosts.get(industry, ()):
+                if CanonicalBundleResolver._contains_term(haystack, token):
+                    scores[industry] += 2.5
 
             aliases = spec.get("aliases", [])
             if not isinstance(aliases, list):

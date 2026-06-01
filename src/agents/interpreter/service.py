@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from langchain_openai import ChatOpenAI
 
 from core.logging import get_logger, get_session_logger
@@ -73,6 +75,7 @@ class InterpreterService:
         session_logger = get_session_logger(__name__, request.session_id)
         session_logger.info("Running interpreter")
 
+        t0 = time.perf_counter()
         if not self._extractor:
             # Deterministic stub for testing/CI when LLMs are disabled
             extracted = request.accumulated_extraction or ExtractionResult(
@@ -87,16 +90,24 @@ class InterpreterService:
             )
             extracted = SignalAccumulator.merge(request.accumulated_extraction, current)
             self._inject_preselected_intent(extracted, request.preselected_intent)
+        t1 = time.perf_counter()
 
         suggested = await self._resolve_classification(request, extracted)
+        t2 = time.perf_counter()
 
         session_logger.info(
-            "Interpreter complete: top_bundle=%s",
+            (
+                "Interpreter complete: top_bundle=%s extract_ms=%.1f "
+                "classify_ms=%.1f total_ms=%.1f"
+            ),
             (
                 suggested.selected_bundle.bundle_key
                 if suggested.selected_bundle is not None
                 else None
             ),
+            (t1 - t0) * 1000.0,
+            (t2 - t1) * 1000.0,
+            (t2 - t0) * 1000.0,
         )
         return extracted, suggested
 
@@ -118,14 +129,22 @@ class InterpreterService:
             extracted=extracted,
         )
         if stage1 is not None and stage1.selected_bundle is not None:
+            get_session_logger(__name__, request.session_id).info(
+                "Classification stage=alias_resolver"
+            )
             return stage1
 
         # Stage 2: LLM industry classifier (only if available).
         if self._llm_industry_classifier is not None:
+            stage2_start = time.perf_counter()
             choice = await self._llm_industry_classifier.classify(
                 session_id=request.session_id,
                 user_message=request.user_message,
                 extracted=extracted,
+            )
+            get_session_logger(__name__, request.session_id).info(
+                "Classification stage=llm_industry elapsed_ms=%.1f",
+                (time.perf_counter() - stage2_start) * 1000.0,
             )
             if choice.industry is not None:
                 return self._build_classification_from_industry(

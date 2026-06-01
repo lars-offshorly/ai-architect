@@ -16,11 +16,14 @@ from repositories.session_repository import SessionRepository
 
 
 def _build_app(
-    session_repo: SessionRepository, conv_repo: ConversationRepository
+    session_repo: SessionRepository,
+    conv_repo: ConversationRepository,
+    translator_client: object | None = None,
 ) -> FastAPI:
     """Build a minimal FastAPI app with the preview router."""
     from api.deps import (
         get_conversation_repository,
+        get_be_translator_client,
         get_session_repository,
     )
 
@@ -28,6 +31,8 @@ def _build_app(
     app.include_router(preview_router)
     app.dependency_overrides[get_session_repository] = lambda: session_repo
     app.dependency_overrides[get_conversation_repository] = lambda: conv_repo
+    if translator_client is not None:
+        app.dependency_overrides[get_be_translator_client] = lambda: translator_client
     return app
 
 
@@ -95,6 +100,15 @@ class FakeConvRepo:
         pass
 
 
+class FakeTranslatorClient:
+    def __init__(self) -> None:
+        self.calls: list[dict] = []
+
+    async def translate_preview(self, **kwargs: object) -> dict:
+        self.calls.append(dict(kwargs))
+        return {"status": "accepted"}
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -104,7 +118,12 @@ class TestEditEndpoint:
     def setup_method(self) -> None:
         self.session_repo = FakeSessionRepo()
         self.conv_repo = FakeConvRepo()
-        self.app = _build_app(self.session_repo, self.conv_repo)  # type: ignore
+        self.translator = FakeTranslatorClient()
+        self.app = _build_app(
+            self.session_repo,
+            self.conv_repo,
+            self.translator,
+        )  # type: ignore
         self.client = TestClient(self.app)
 
         # Seed a session
@@ -187,3 +206,17 @@ class TestEditEndpoint:
         assert "schema_version" in data
         assert "manifest" in data
         assert "modules" in data
+
+    def test_edit_dispatches_to_be_translator(self) -> None:
+        resp = self.client.post(
+            "/sessions/sess-1/preview/edit",
+            json={
+                "current_preview": _make_preview_payload(),
+                "instruction": "remove projects",
+            },
+        )
+        assert resp.status_code == 200
+        assert len(self.translator.calls) == 1
+        call = self.translator.calls[0]
+        assert call["operation"] == "remove"
+        assert call["revision"] == 1
