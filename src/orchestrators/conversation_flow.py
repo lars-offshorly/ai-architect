@@ -75,16 +75,6 @@ _INDUSTRY_TERMS: dict[str, tuple[str, ...]] = {
     "bpo_contact_center": ("bpo", "contact center", "call center", "customer support"),
     "hr_recruitment_agency": ("hr", "human resources", "recruitment", "staffing"),
 }
-_PROMPT_INJECTION_CLEAN_PATTERNS = (
-    (
-        r"(?i)\b(ignore|override|bypass)\b.{0,80}\b("
-        r"system|developer|policy|instruction)s?\b"
-    ),
-    (
-        r"(?i)\b(reveal|show|print|dump)\b.{0,80}\b("
-        r"system prompt|developer prompt|hidden prompt)\b"
-    ),
-)
 _INDUSTRY_CORRECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(
         (
@@ -329,16 +319,12 @@ class ConversationFlow:
         session = self._resolve_session(turn_request)
         preselected_before_turn = session.preselected_bundle_key
         session_logger = get_session_logger(__name__, turn_request.session_id)
-        safety_result, safety_label = await self._apply_input_safety_gate(
+        safety_result, _ = await self._apply_input_safety_gate(
             turn_request=turn_request,
             session_logger=session_logger,
         )
         if safety_result is not None:
             return safety_result
-        if safety_label == "prompt_injection":
-            turn_request.user_message = self._sanitize_prompt_injection_text(
-                turn_request.user_message
-            )
         if self._apply_industry_correction_override(session, turn_request.user_message):
             self._reset_stale_context_after_correction(turn_request.session_id, session)
         self._update_session_context(session, turn_request.user_message)
@@ -517,16 +503,9 @@ class ConversationFlow:
             return {"status": "awaiting_input", "message": decision.safe_reply}, label
         if label == "needs_review":
             return {"status": "awaiting_input", "question": decision.safe_reply}, label
-        # prompt_injection: ignore malicious instruction layer, continue normal flow.
+        if label == "prompt_injection":
+            return {"status": "awaiting_input", "message": decision.safe_reply}, label
         return None, label
-
-    @staticmethod
-    def _sanitize_prompt_injection_text(user_message: str) -> str:
-        cleaned = user_message
-        for pattern in _PROMPT_INJECTION_CLEAN_PATTERNS:
-            cleaned = re.sub(pattern, " ", cleaned)
-        cleaned = re.sub(r"\s+", " ", cleaned).strip()
-        return cleaned or "Follow safe task scope."
 
     @staticmethod
     def _enforce_action_policy(result: _FlowResult) -> _FlowResult:

@@ -33,6 +33,12 @@ _OUTSIDE_SCOPE_SOFTWARE_PATTERNS: tuple[str, ...] = (
     ),
     r"\b(write|generate)\b.{0,36}\b(code|source code)\b",
 )
+_OUTSIDE_SCOPE_UNSUPPORTED_ACTION_PATTERNS: tuple[str, ...] = (
+    r"\b(book|reserve|schedule)\b.{0,36}\b(flight|hotel|meeting|appointment)\b",
+    r"\b(send|email|message|call|text)\b.{0,36}\b(customer|client|vendor|supplier)\b",
+    r"\b(process|pay|charge|refund|transfer)\b.{0,36}\b(payment|invoice|money|funds)\b",
+    r"\b(login|sign in|access)\b.{0,36}\b(account|portal|bank|gmail|slack)\b",
+)
 
 SafetyLabel = Literal[
     "allow",
@@ -169,6 +175,11 @@ class SafetyClassifier:
             re.search(pattern, lowered) for pattern in _OUTSIDE_SCOPE_SOFTWARE_PATTERNS
         ):
             label = "outside_scope"
+        elif any(
+            re.search(pattern, lowered)
+            for pattern in _OUTSIDE_SCOPE_UNSUPPORTED_ACTION_PATTERNS
+        ):
+            label = "outside_scope"
         elif re.search(
             r"(ignore|override).*(system|developer|instruction|policy)", lowered
         ):
@@ -239,8 +250,9 @@ class SafetyClassifier:
                 "alternative."
             ),
             "outside_scope": (
-                "I can help set up a Knit workspace, not build software directly. "
-                "Tell me the workflow to manage: tickets, projects, HR, or support."
+                "I can help configure a Knit workspace only. I cannot execute that "
+                "action directly. Tell me the workflow to manage: tickets, projects, "
+                "HR, or support."
             ),
             "needs_review": (
                 "I need one clarification to proceed safely. Please restate "
