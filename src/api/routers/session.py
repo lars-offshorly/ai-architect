@@ -275,8 +275,6 @@ async def reply_to_session(
     extracted = result.get("extracted")
     if isinstance(extracted, ExtractionResult):
         session.accumulated_extraction = extracted
-    if result.get("status") == "awaiting_input":
-        session.clarification_turn_count += 1
     session.latest_classification = latest_classification
     session.latest_recommendation = latest_recommendation
     _persist_result_bundle_key(session, result)

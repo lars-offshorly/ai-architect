@@ -11,6 +11,14 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-5-mini"
+    """
+    Per-task model overrides (Fix #3).  Both default to OPENAI_MODEL's value
+    so existing deployments work unchanged.  Set in .env to route cheap tasks
+    (extraction, classification) to a smaller model and quality tasks
+    (summarization) to a larger one.
+    """
+    OPENAI_MODEL_FAST: str = "gpt-5-mini"
+    OPENAI_MODEL_CHAT: str = "gpt-5-mini"
 
     PORT: int = Field(default=8000, ge=1, le=65535)
     DEBUG: bool = False
@@ -43,6 +51,7 @@ class Settings(BaseSettings):
     DEV_BYPASS: bool = False
     RATE_LIMIT_PER_MINUTE: int = 60
     ENABLE_RATE_LIMIT: bool = True
+    SESSION_TTL_SECONDS: int = Field(default=3600, ge=60)
 
     DISABLE_LLM_CALLS: bool = False
     DISABLE_DASHBOARD_CALLS: bool = False
@@ -54,6 +63,10 @@ class Settings(BaseSettings):
     EDIT_LLM_CB_COOLDOWN_SEC: int = Field(default=30, ge=1, le=600)
     MAX_APP_MANIFEST_BYTES: int = Field(default=200_000, ge=10_000, le=5_000_000)
     MAX_EDIT_PREVIEW_BYTES: int = Field(default=400_000, ge=10_000, le=10_000_000)
+    BE_TRANSLATOR_MODE: str = "mock"
+    BE_TRANSLATOR_URL: str = "http://localhost:8090/translate-preview"
+    BE_TRANSLATOR_TIMEOUT_MS: int = Field(default=4000, ge=100, le=60000)
+    BE_TRANSLATOR_MOCK_DELAY_MS: int = Field(default=0, ge=0, le=30000)
 
     SENTRY_DSN: str = ""
     LANGCHAIN_TRACING_V2: bool = False

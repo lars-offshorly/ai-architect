@@ -1,6 +1,6 @@
 # Environment and Virtual Environment
 .env
-/venv/
+.venv
 
 # Python Cache Directories
 __pycache__/

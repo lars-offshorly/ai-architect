@@ -370,6 +370,45 @@ class TestReplySessionPersistsExtraction:
         assert saved.accumulated_extraction is not None
         assert isinstance(saved.accumulated_extraction, ExtractionResult)
 
+    @pytest.mark.asyncio
+    async def test_reply_awaiting_input_increments_clarification_once(
+        self,
+        session_repo: SessionRepository,
+        conv_repo: ConversationRepository,
+    ) -> None:
+        async def _process_turn(request):  # type: ignore[no-untyped-def]
+            if request.session is not None:
+                request.session.clarification_turn_count += 1
+            return {
+                "status": "awaiting_input",
+                "question": "One follow-up question",
+                "extracted": _make_extraction(request.session_id),
+                "classification": _make_classification(request.session_id),
+                "slots": {},
+            }
+
+        flow = MagicMock()
+        flow.process_turn = AsyncMock(side_effect=_process_turn)
+
+        session = Session(session_id="sess-clarify-once")
+        session_repo.save(session)
+        conv_repo.append_message(
+            "sess-clarify-once", ConversationMessage(role="user", content="initial")
+        )
+
+        from api.routers.session import reply_to_session
+
+        await reply_to_session(
+            session_id="sess-clarify-once",
+            body=ReplyRequest(message="Need help"),
+            session_repo=session_repo,
+            conv_repo=conv_repo,
+            flow=flow,
+        )
+
+        saved = session_repo.get("sess-clarify-once")
+        assert saved.clarification_turn_count == 1
+
 
 class TestStartSessionPersistsLatestClassification:
     @pytest.mark.asyncio

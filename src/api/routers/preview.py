@@ -5,7 +5,9 @@ from __future__ import annotations
 # pylint: disable=duplicate-code
 import json
 import time
+from datetime import datetime, timezone
 from typing import Annotated, Any
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from langchain_openai import ChatOpenAI
@@ -21,6 +23,7 @@ from agents.tenant_provisioning.validators import (
     validate_manifest_model,
 )
 from api.deps import (
+    get_be_translator_client,
     get_bundle_catalog,
     get_conversation_repository,
     get_edit_llm_model,
@@ -40,6 +43,7 @@ from core.exceptions import (
 from core.logging import get_logger
 from core.metrics import metrics
 from domain.models.extraction_result import ExtractionResult
+from domain.services.be_translator import BEOperation, BETranslatorClient
 from domain.services.early_preview_policy import (
     resolve_early_bundle_key,
 )
@@ -110,6 +114,55 @@ def _format_preview_warnings(
         if existing_warning
         else degraded_warning
     )
+
+
+def _operation_from_action(action_type: str) -> BEOperation:
+    lowered = action_type.lower()
+    if "rename" in lowered:
+        return "rename"
+    if lowered.startswith("remove_"):
+        return "remove"
+    return "edit"
+
+
+async def _dispatch_preview_to_be_translator(
+    *,
+    session: Any,
+    session_repo: SessionRepository,
+    translator_client: BETranslatorClient,
+    operation: BEOperation,
+    payload: AppPayloadResponseSchema,
+) -> None:
+    session.be_translator_revision = int(session.be_translator_revision or 0) + 1
+    session_repo.save(session)
+    request_id = str(uuid4())
+    preview_json = payload.model_dump(mode="json")
+    try:
+        await translator_client.translate_preview(
+            request_id=request_id,
+            document_id=payload.session_id,
+            revision=session.be_translator_revision,
+            operation=operation,
+            preview_json={
+                "requestId": request_id,
+                "documentId": payload.session_id,
+                "revision": session.be_translator_revision,
+                "operation": operation,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "previewJson": preview_json,
+            },
+        )
+        metrics.inc("be_translator.requests.total")
+        metrics.inc(f"be_translator.requests.{operation}")
+    except Exception as exc:  # pylint: disable=broad-except
+        metrics.inc("be_translator.errors.total")
+        logger.warning(
+            "be_translator_dispatch_failed session=%s revision=%s operation=%s err=%s",
+            payload.session_id,
+            session.be_translator_revision,
+            operation,
+            exc,
+        )
 
 
 async def _execute_preview_pipeline(
@@ -205,6 +258,7 @@ async def generate_preview(
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    translator_client: Annotated[BETranslatorClient, Depends(get_be_translator_client)],
 ) -> AppPayloadResponseSchema:
     """Run the preview pipeline for a confirmed session and return the AppPayload."""
     try:
@@ -220,7 +274,7 @@ async def generate_preview(
             detail="Session bundle must be confirmed before generating preview.",
         )
 
-    return await _execute_preview_pipeline(
+    response = await _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=session.selected_bundle_key,
         conv_repo=conv_repo,
@@ -231,6 +285,14 @@ async def generate_preview(
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
+    await _dispatch_preview_to_be_translator(
+        session=session,
+        session_repo=session_repo,
+        translator_client=translator_client,
+        operation="create",
+        payload=response,
+    )
+    return response
 
 
 @router.post("/{session_id}/preview/early", response_model=AppPayloadResponseSchema)
@@ -241,6 +303,7 @@ async def generate_early_preview(
     flow: Annotated[PreviewFlow, Depends(get_preview_flow)],
     registry_facade: Annotated[RegistryFacade, Depends(get_registry_facade)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
+    translator_client: Annotated[BETranslatorClient, Depends(get_be_translator_client)],
 ) -> AppPayloadResponseSchema:
     """Generate a preview without requiring bundle confirmation.
 
@@ -261,7 +324,7 @@ async def generate_early_preview(
         "Early preview for session=%s using bundle=%s", session_id, resolved_key
     )
 
-    return await _execute_preview_pipeline(
+    response = await _execute_preview_pipeline(
         session_id=session_id,
         bundle_key=resolved_key,
         conv_repo=conv_repo,
@@ -273,6 +336,14 @@ async def generate_early_preview(
         extraction_result=session.accumulated_extraction,
         preselected_intent=session.preselected_intent,
     )
+    await _dispatch_preview_to_be_translator(
+        session=session,
+        session_repo=session_repo,
+        translator_client=translator_client,
+        operation="create",
+        payload=response,
+    )
+    return response
 
 
 @router.post("/{session_id}/preview/edit", response_model=AppPayloadResponseSchema)
@@ -283,6 +354,7 @@ async def edit_preview(
     session_repo: Annotated[SessionRepository, Depends(get_session_repository)],
     catalog: Annotated[BundleCatalog, Depends(get_bundle_catalog)],
     edit_llm_model: Annotated[ChatOpenAI | None, Depends(get_edit_llm_model)],
+    translator_client: Annotated[BETranslatorClient, Depends(get_be_translator_client)],
 ) -> AppPayloadResponseSchema:
     """Apply a natural-language edit to an existing preview payload.
 
@@ -294,7 +366,7 @@ async def edit_preview(
     """
     # pylint: disable=too-many-locals
     try:
-        session_repo.get(session_id)
+        session = session_repo.get(session_id)
     except SessionNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
@@ -415,5 +487,12 @@ async def edit_preview(
         session_id,
         elapsed_ms,
         preview_bytes,
+    )
+    await _dispatch_preview_to_be_translator(
+        session=session,
+        session_repo=session_repo,
+        translator_client=translator_client,
+        operation=_operation_from_action(action.action_type.value),
+        payload=response,
     )
     return response

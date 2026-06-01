@@ -60,6 +60,11 @@ class LLMIndustryClassifier:
         self._model = model
         self._industry_map = industry_map
         self._min_confidence = min_confidence
+        """
+        Fix #6: pre-compute once at construction; industry_map is immutable at
+        runtime so there is no need to rebuild this string on every classify() call.
+        """
+        self._industries_block = self._format_industries(industry_map)
 
     async def classify(
         self,
@@ -77,7 +82,7 @@ class LLMIndustryClassifier:
                 industry=None, confidence=0.0, reasoning="No industries configured"
             )
 
-        industry_block = self._format_industries(self._industry_map)
+        industry_block = self._industries_block
         prompt = _SYSTEM_PROMPT.format(industry_block=industry_block)
         context = self._build_context(user_message, extracted)
 

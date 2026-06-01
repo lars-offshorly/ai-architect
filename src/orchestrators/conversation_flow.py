@@ -1,5 +1,7 @@
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
+import asyncio
 import inspect
 import re
 from dataclasses import dataclass, field
@@ -12,16 +14,18 @@ from agents.interpreter.provisioning_readiness import (
     ProvisioningReadiness,
     ProvisioningReadinessResult,
 )
+from agents.interpreter.safety_classifier import SafetyDecision
 from core.config import get_settings
 from core.logging import get_logger, get_session_logger
 from domain.models.bundle import BundleSuggestion
 from domain.models.classification_result import ClassificationResult
-from domain.models.conversation import ConversationMessage
+from domain.models.conversation import ConversationMessage, ConversationSummary
 from domain.models.extraction_result import ExtractionResult
 from domain.models.interpreter_request import InterpreterRequest
 from domain.models.recommendation_result import RecommendationResult
 from domain.models.session import Session
 from domain.services.registry_facade import RegistryFacade
+from repositories.conversation_repository import ConversationRepository
 
 logger = get_logger(__name__)
 
@@ -66,6 +70,38 @@ _INDUSTRY_LABELS: dict[str, str] = {
     "bpo_contact_center": "BPO/contact center",
     "hr_recruitment_agency": "HR recruitment",
 }
+_INDUSTRY_TERMS: dict[str, tuple[str, ...]] = {
+    "construction_firm": ("construction", "contractor", "builder"),
+    "bpo_contact_center": ("bpo", "contact center", "call center", "customer support"),
+    "hr_recruitment_agency": ("hr", "human resources", "recruitment", "staffing"),
+}
+_PROMPT_INJECTION_CLEAN_PATTERNS = (
+    (
+        r"(?i)\b(ignore|override|bypass)\b.{0,80}\b("
+        r"system|developer|policy|instruction)s?\b"
+    ),
+    (
+        r"(?i)\b(reveal|show|print|dump)\b.{0,80}\b("
+        r"system prompt|developer prompt|hidden prompt)\b"
+    ),
+)
+_INDUSTRY_CORRECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        (
+            r"\b(?:no[\s,]+)?(?:i am|i'm|we are|we're|my industry is|"
+            r"our industry is)\s+(.+)$"
+        ),
+        flags=re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:it is|it's)\s+(.+)$",
+        flags=re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:change|switch|update)\s+(?:it\s+)?(?:to|as)\s+(.+)$",
+        flags=re.IGNORECASE,
+    ),
+)
 
 
 def _contains_term(text: str, term: str) -> bool:
@@ -227,11 +263,22 @@ class ReplierPort(Protocol):
     ) -> str: ...
 
 
+class SafetyClassifierPort(Protocol):
+    async def classify(
+        self,
+        session_id: str,
+        user_message: str,
+        history: list[ConversationMessage] | None = None,
+    ) -> SafetyDecision: ...
+
+
 class ConversationFlow:
     def __init__(
         self,
         interpreter_service: InterpreterPort,
         replier_service: ReplierPort,
+        safety_classifier: SafetyClassifierPort | None = None,
+        conversation_repository: ConversationRepository | None = None,
         bundle_catalog: object | None = None,
         required_slots_by_bundle: dict[str, list[str]] | None = None,
         registry_facade: RegistryFacade | None = None,
@@ -239,6 +286,10 @@ class ConversationFlow:
         _ = bundle_catalog  # backward-compatible constructor arg
         self._interpreter = interpreter_service
         self._replier = replier_service
+        self._safety_classifier = safety_classifier
+        self._conversation_repository = (
+            conversation_repository or ConversationRepository()
+        )
         self._missing_field_detector = MissingFieldDetector(
             required_slots_by_bundle or {}
         )
@@ -268,7 +319,7 @@ class ConversationFlow:
     ) -> bool:
         return force_preview or _detect_preview_intent(user_message)
 
-    async def process_turn(
+    async def process_turn(  # pylint: disable=too-many-branches,too-many-statements
         self,
         request: ConversationTurnRequest | None = None,
         **kwargs: object,
@@ -276,14 +327,35 @@ class ConversationFlow:
         # pylint: disable=too-many-locals
         turn_request = self._coerce_turn_request(request, kwargs)
         session = self._resolve_session(turn_request)
-        self._update_session_context(session, turn_request.user_message)
+        preselected_before_turn = session.preselected_bundle_key
         session_logger = get_session_logger(__name__, turn_request.session_id)
+        safety_result, safety_label = await self._apply_input_safety_gate(
+            turn_request=turn_request,
+            session_logger=session_logger,
+        )
+        if safety_result is not None:
+            return safety_result
+        if safety_label == "prompt_injection":
+            turn_request.user_message = self._sanitize_prompt_injection_text(
+                turn_request.user_message
+            )
+        if self._apply_industry_correction_override(session, turn_request.user_message):
+            self._reset_stale_context_after_correction(turn_request.session_id, session)
+        self._update_session_context(session, turn_request.user_message)
+        ambiguous_from_text = self._ambiguous_industries(turn_request.user_message)
+        if ambiguous_from_text and preselected_before_turn is None:
+            # Prevent inferred preselection from bypassing disambiguation
+            # when the same message strongly matches multiple industries.
+            session.preselected_bundle_key = None
 
-        summary_for_turn = await self._resolve_summary(turn_request, session)
-        context = await self._resolve_turn_context(
-            turn_request,
-            session,
-            summary_for_turn,
+        # Run summarization and context extraction concurrently.
+        # _resolve_summary saves the fresh summary to the conversation repository;
+        # _resolve_turn_context reads the *previous* turn's cached summary from
+        # the same repository, so the two coroutines have no data dependency and
+        # can safely run in parallel.
+        _, context = await asyncio.gather(
+            self._resolve_summary(turn_request, session),
+            self._resolve_turn_context(turn_request, session),
         )
 
         # Only ask the disambiguation question when the canonical resolver itself
@@ -294,16 +366,11 @@ class ConversationFlow:
             context.classification.confidence_status == "proceed"
             and context.top is not None
         )
-        ambiguous_industries = (
-            []
-            if resolver_is_confident
-            else self._ambiguous_industries(turn_request.user_message)
-        )
+        ambiguous_industries = [] if resolver_is_confident else ambiguous_from_text
         if (
             ambiguous_industries
-            and session.company_industry_claim is None
             and not session.confirmed
-            and session.preselected_bundle_key is None
+            and preselected_before_turn is None
         ):
             question = (
                 "To tailor this correctly, which best describes your business: "
@@ -311,14 +378,14 @@ class ConversationFlow:
             )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
-            return result
+            return self._enforce_action_policy(result)
 
         if self.should_generate_early_preview(
             turn_request.user_message, turn_request.options.force_preview
         ):
             result = self._build_early_preview_response(context, session_logger)
             self._persist_session_state(session, context, result)
-            return result
+            return self._enforce_action_policy(result)
 
         if (
             not session.confirmed
@@ -331,6 +398,8 @@ class ConversationFlow:
             )
             session.confirmed = True
             result = self._ready_for_preview_response(context, preview_type="confirmed")
+            self._persist_session_state(session, context, result)
+            return self._enforce_action_policy(result)
 
         # Provisioning-readiness gate. The v2 manifest only needs a few tenant
         # header fields (industry, company_name, size_band, region). When the
@@ -357,7 +426,7 @@ class ConversationFlow:
             )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
-            return result
+            return self._enforce_action_policy(result)
 
         status = context.classification.confidence_status
 
@@ -372,7 +441,7 @@ class ConversationFlow:
             )
             result = self._awaiting_input_response(question, context)
             self._persist_session_state(session, context, result)
-            return result
+            return self._enforce_action_policy(result)
 
         # Slot-completeness clarification only runs when readiness is still
         # incomplete. Once the tenant header is filled, no further LLM-invented
@@ -391,7 +460,7 @@ class ConversationFlow:
             if missing_field is not None:
                 result = self._awaiting_input_response(question, context)
                 self._persist_session_state(session, context, result)
-                return result
+                return self._enforce_action_policy(result)
 
         if not session.confirmed:
             suggestion = context.top
@@ -403,7 +472,7 @@ class ConversationFlow:
                 )
                 result = self._awaiting_input_response(question, context)
                 self._persist_session_state(session, context, result)
-                return result
+                return self._enforce_action_policy(result)
 
             message = await self._replier.build_bundle_suggestion(
                 turn_request.session_id,
@@ -420,10 +489,68 @@ class ConversationFlow:
                 )
             result = self._pending_confirmation_response(message, context)
             self._persist_session_state(session, context, result)
-            return result
+            return self._enforce_action_policy(result)
 
         result = self._ready_for_preview_response(context, preview_type="confirmed")
         self._persist_session_state(session, context, result)
+        return self._enforce_action_policy(result)
+
+    async def _apply_input_safety_gate(
+        self,
+        turn_request: ConversationTurnRequest,
+        session_logger: LoggerAdapter[Any],
+    ) -> tuple[_FlowResult | None, str]:
+        if self._safety_classifier is None:
+            return None, "allow"
+        decision = await self._safety_classifier.classify(
+            turn_request.session_id,
+            turn_request.user_message,
+            history=turn_request.history,
+        )
+        session_logger.info("Input safety label=%s", decision.label)
+        label = decision.label
+        if label == "allow":
+            return None, label
+        if label == "outside_scope":
+            return {"status": "awaiting_input", "question": decision.safe_reply}, label
+        if label in {"block", "self_harm", "violence", "illegal", "data_exfiltration"}:
+            return {"status": "awaiting_input", "message": decision.safe_reply}, label
+        if label == "needs_review":
+            return {"status": "awaiting_input", "question": decision.safe_reply}, label
+        # prompt_injection: ignore malicious instruction layer, continue normal flow.
+        return None, label
+
+    @staticmethod
+    def _sanitize_prompt_injection_text(user_message: str) -> str:
+        cleaned = user_message
+        for pattern in _PROMPT_INJECTION_CLEAN_PATTERNS:
+            cleaned = re.sub(pattern, " ", cleaned)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        return cleaned or "Follow safe task scope."
+
+    @staticmethod
+    def _enforce_action_policy(result: _FlowResult) -> _FlowResult:
+        text_parts = [
+            str(result.get("message", "")),
+            str(result.get("question", "")),
+        ]
+        rendered = " ".join(text_parts).lower()
+        blocked_patterns = (
+            (
+                r"\b(print|show|reveal|dump|export)\b.{0,50}\b("
+                r"secret|token|password|api[_ -]?key|\.env)\b"
+            ),
+            r"\b(cat|read|open)\b.{0,50}\b(/etc/passwd|\.ssh|id_rsa)\b",
+            r"\b(ignore|override).{0,40}\b(system|developer)\b",
+        )
+        if any(re.search(pattern, rendered) for pattern in blocked_patterns):
+            return {
+                "status": "awaiting_input",
+                "message": (
+                    "Cannot perform that action. Request touches restricted data "
+                    "or out-of-scope instructions."
+                ),
+            }
         return result
 
     @staticmethod
@@ -532,7 +659,14 @@ class ConversationFlow:
     @staticmethod
     def _match_industry_by_canonical_name(lowered: str) -> str | None:
         for industry, label in _INDUSTRY_LABELS.items():
-            if _contains_term(lowered, industry) or _contains_term(lowered, label):
+            if _contains_term(lowered, industry):
+                return industry
+            if any(_contains_term(lowered, term) for term in _INDUSTRY_TERMS[industry]):
+                return industry
+            label_tokens = [
+                token for token in re.split(r"[^a-z0-9]+", label.lower()) if token
+            ]
+            if any(_contains_term(lowered, token) for token in label_tokens):
                 return industry
         return None
 
@@ -607,6 +741,47 @@ class ConversationFlow:
         ):
             session.inferred_region = "PH"
 
+    def _apply_industry_correction_override(
+        self, session: Session, user_message: str
+    ) -> bool:
+        lowered = user_message.lower().strip()
+        candidate: str | None = None
+        for pattern in _INDUSTRY_CORRECTION_PATTERNS:
+            match = pattern.search(lowered)
+            if match:
+                candidate = match.group(1).strip(" .,!?:;'\"")
+                break
+        if not candidate:
+            return False
+        mapping = self._industry_mapping()
+        matched = self._match_industry_by_canonical_name(candidate)
+        if matched is None:
+            matched = self._match_industry_by_alias_score(candidate, mapping)
+        if matched is None:
+            return False
+        session.company_industry_claim = matched
+        bundle_key = mapping.get(matched, {}).get("bundle_key")
+        if isinstance(bundle_key, str) and bundle_key:
+            session.preselected_bundle_key = bundle_key
+            session.selected_bundle_key = bundle_key
+            session.confirmed = False
+        return True
+
+    def _reset_stale_context_after_correction(
+        self, session_id: str, session: Session
+    ) -> None:
+        session.accumulated_extraction = None
+        session.latest_classification = None
+        session.latest_recommendation = None
+        session.clarification_turn_count = 0
+        self._conversation_repository.save_summary(
+            ConversationSummary(
+                session_id=session_id,
+                summary_text="",
+                message_count=0,
+            )
+        )
+
     def _confirmation_summary(self, session: Session, bundle_key: str | None) -> str:
         details: list[str] = []
         industry = session.company_industry_claim
@@ -631,22 +806,61 @@ class ConversationFlow:
         self,
         request: ConversationTurnRequest,
         session: Session,
-    ) -> str:
+    ) -> None:
+        """Compute the current-turn summary and persist it to the conversation
+        repository.
+
+        The return value is intentionally ``None``; callers retrieve the
+        summary from the repository via ``_resolve_turn_context``.  This
+        decoupling is what allows the two coroutines to run concurrently in
+        ``process_turn`` — ``_resolve_turn_context`` reads the *previous*
+        turn's cached summary while this coroutine computes the fresh one.
+        """
         if request.options.summary:
-            return request.options.summary
+            self._conversation_repository.save_summary(
+                ConversationSummary(
+                    session_id=request.session_id,
+                    summary_text=request.options.summary,
+                    message_count=len(request.history),
+                )
+            )
+            return
+
         summary_history = request.history[:-1] if request.history else []
-        return await self._interpreter.summarize_history(
+
+        # Fix #2: skip the LLM call if the cached summary already covers this
+        # exact history length.  A message_count mismatch means new turns have
+        # been added since the last summarisation, so we recompute.
+        existing = self._conversation_repository.get_summary(request.session_id)
+        if existing is not None and existing.message_count == len(summary_history):
+            return  # cache hit — nothing to recompute
+
+        summary_text = await self._interpreter.summarize_history(
             request.session_id,
             summary_history,
             session.accumulated_extraction,
+        )
+        self._conversation_repository.save_summary(
+            ConversationSummary(
+                session_id=request.session_id,
+                summary_text=summary_text,
+                message_count=len(summary_history),
+            )
         )
 
     async def _resolve_turn_context(
         self,
         request: ConversationTurnRequest,
         session: Session,
-        summary_for_turn: str,
     ) -> _TurnContext:
+        # Read the summary that was cached by the *previous* turn's
+        # ``_resolve_summary`` call.  On turn 1 this is ``None`` and we fall
+        # back to an empty string, which is identical to the prior behaviour.
+        # On subsequent turns the cached summary provides full prior context
+        # while the fresh summary for *this* turn is computed concurrently.
+        cached = self._conversation_repository.get_summary(request.session_id)
+        summary_for_turn = cached.summary_text if cached is not None else ""
+
         interpreter_request = InterpreterRequest(
             session_id=request.session_id,
             user_message=request.user_message,
@@ -774,7 +988,15 @@ class ConversationFlow:
             inferred_modules=self._inferred_modules_for(
                 selected.bundle_key if selected is not None else "generic"
             ),
-            reasoning=classification.reasoning or "Need more context from the user",
+            reasoning=(
+                classification.reasoning
+                if classification.reasoning
+                else (
+                    "Bundle selection is ready."
+                    if status == "ready"
+                    else "Need more context from the user"
+                )
+            ),
         )
 
     def _inferred_modules_for(self, bundle_key: str) -> list[str]:

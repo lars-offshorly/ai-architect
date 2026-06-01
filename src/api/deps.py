@@ -8,12 +8,18 @@ from pathlib import Path
 from langchain_openai import ChatOpenAI
 
 from agents.interpreter.llm_industry_classifier import LLMIndustryClassifier
+from agents.interpreter.safety_classifier import SafetyClassifier
 from agents.interpreter.service import InterpreterService
 from agents.preview_generator.service import PreviewGeneratorService
 from agents.replier.service import ReplierService
 from agents.tenant_provisioning.service import TenantProvisioningService
 from catalog.bundle_catalog import BundleCatalog
 from core.config import get_settings
+from domain.services.be_translator import (
+    BETranslatorClient,
+    HttpBETranslatorClient,
+    MockBETranslatorClient,
+)
 from domain.services.canonical_bundle_resolver import CanonicalBundleResolver
 from domain.services.canonical_manifest_registry import CanonicalManifestRegistry
 from domain.services.canonical_metadata_service import CanonicalMetadataService
@@ -41,13 +47,13 @@ def get_bundle_catalog() -> BundleCatalog:
 @lru_cache(maxsize=1)
 def get_session_repository() -> SessionRepository:
     """Return a cached in-memory SessionRepository."""
-    return SessionRepository()
+    return SessionRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)
 def get_conversation_repository() -> ConversationRepository:
     """Return a cached in-memory ConversationRepository."""
-    return ConversationRepository()
+    return ConversationRepository(ttl_seconds=get_settings().SESSION_TTL_SECONDS)
 
 
 @lru_cache(maxsize=1)
@@ -62,12 +68,12 @@ def get_interpreter_service() -> InterpreterService:
         llm_industry_classifier: LLMIndustryClassifier | None = None
     else:
         model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_FAST,
             temperature=settings.CLASSIFIER_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
         summarizer_model = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
+            model=settings.OPENAI_MODEL_CHAT,
             temperature=settings.CONVERSATIONAL_TEMPERATURE,
             api_key=settings.OPENAI_API_KEY,
         )
@@ -105,7 +111,7 @@ def get_edit_llm_model() -> ChatOpenAI | None:
     if settings.DISABLE_LLM_CALLS or not settings.EDIT_LLM_FALLBACK_ENABLED:
         return None
     return ChatOpenAI(
-        model=settings.OPENAI_MODEL,
+        model=settings.OPENAI_MODEL_FAST,
         temperature=0.0,
         api_key=settings.OPENAI_API_KEY,
     )
@@ -118,9 +124,25 @@ def get_conversation_flow() -> ConversationFlow:
     return ConversationFlow(
         interpreter_service=get_interpreter_service(),
         replier_service=get_replier_service(),
+        safety_classifier=get_safety_classifier(),
+        conversation_repository=get_conversation_repository(),
         required_slots_by_bundle=required_slots,
         registry_facade=get_registry_facade(),
     )
+
+
+@lru_cache(maxsize=1)
+def get_safety_classifier() -> SafetyClassifier:
+    """Return cached first-gate safety classifier."""
+    settings = get_settings()
+    if settings.DISABLE_LLM_CALLS:
+        return SafetyClassifier(model=None)
+    model = ChatOpenAI(
+        model="gpt-4o-mini",
+        temperature=0.0,
+        api_key=settings.OPENAI_API_KEY,
+    )
+    return SafetyClassifier(model=model)
 
 
 @lru_cache(maxsize=1)
@@ -141,6 +163,18 @@ def get_preview_flow() -> PreviewFlow:
         bundle_display_names=display_names,
         tenant_provisioning_service=get_tenant_provisioning_service(),
     )
+
+
+@lru_cache(maxsize=1)
+def get_be_translator_client() -> BETranslatorClient:
+    """Return BE translator client based on runtime mode."""
+    settings = get_settings()
+    if settings.BE_TRANSLATOR_MODE.lower() == "real":
+        return HttpBETranslatorClient(
+            url=settings.BE_TRANSLATOR_URL,
+            timeout_ms=settings.BE_TRANSLATOR_TIMEOUT_MS,
+        )
+    return MockBETranslatorClient(delay_ms=settings.BE_TRANSLATOR_MOCK_DELAY_MS)
 
 
 @lru_cache(maxsize=1)

@@ -18,7 +18,12 @@ from .prompts import EXTRACTION_SYSTEM_PROMPT
 
 logger = get_logger(__name__)
 
-_HISTORY_WINDOW = 5
+"""
+Fix #5 (delta extraction): reduced from 5 to 2.  The conversation summary
+supplied by Fix #1/#2 already covers full prior context; two recent messages
+are enough to resolve direct anaphora in the latest exchange.
+"""
+_HISTORY_WINDOW = 2
 
 
 def _build_synonym_index(
